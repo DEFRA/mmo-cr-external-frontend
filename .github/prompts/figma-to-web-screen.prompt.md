@@ -1,8 +1,8 @@
 ---
-description: "Plan, build or update an accessible Nunjucks + GOV.UK Frontend web page from a Figma design (design-to-code) — or from a description + acceptance criteria when there is no design — by orchestrating the full working framework (Planner → approval gate → Developer → Code Reviewer). Enforces strict read-only Figma MCP use and gathers inputs to avoid rate-limited re-reads."
-name: "Figma design to web page"
-argument-hint: "Figma URL (or description) + page name"
-agent: "Frontend Orchestrator"
+description: 'Plan, build or update an accessible Nunjucks + GOV.UK Frontend web page from a Figma design (design-to-code) — or from a description + acceptance criteria when there is no design — by orchestrating the full working framework (Planner → approval gate → Developer → Code Reviewer). Enforces strict read-only Figma MCP use and gathers inputs to avoid rate-limited re-reads.'
+name: 'Figma design to web page'
+argument-hint: 'Figma URL (or description) + page name'
+agent: 'Frontend Orchestrator'
 tools: [read, search, todo, agent]
 ---
 
@@ -19,12 +19,14 @@ read-only review. You own the **user-approval gate**: present the validated plan
 question before any implementation begins.
 
 ## Inputs
+
 - **Figma URL:** ${input:figmaUrl:Paste the Figma link to the specific frame/layer (leave blank if there is no design)}
 - **Node / page names:** ${input:nodesOrPages:For large files, name the exact node(s)/page(s) to import (leave blank to list pages first)}
 - **Page / feature:** ${input:pageName:e.g. Catch Recording — Add Catch}
 - **Acceptance criteria:** ${input:acceptanceCriteria:States, validation, navigation, content — the more detail, the fewer Figma reads}
 
 ## Rules (non-negotiable)
+
 - **You orchestrate; you do not implement.** Do not read Figma, edit files, or run build/test yourself —
   delegate to the specialist agents via clear handoff briefs and verify their output before continuing.
 - **Figma MCP is READ-ONLY** (enforced by the agent you delegate the read to). The read must never call
@@ -41,6 +43,7 @@ question before any implementation begins.
   (marked "written spec — no Figma"); confirm assumptions with me before planning.
 
 ## Do (orchestrate the §3 loop)
+
 1. **Clarify inputs.** Gather/confirm the inputs above; for a large or ambiguous file, have the design read
    list pages first and ask me which to import. Surface any requirement gaps before planning.
 2. **Plan handoff.** Delegate planning to the **Frontend Planner** — the plan must cover reading the design

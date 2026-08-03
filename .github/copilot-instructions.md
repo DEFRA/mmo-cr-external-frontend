@@ -67,30 +67,30 @@ Non-trivial loop:
 
 1. **Read** — Read the relevant files/config in the repo for context before acting. Never assume; verify.
 2. **Research** — Do a thorough internet research in the open, **scoped to the task's risk**, and validate
-  findings against DEFRA/GDS, the GOV.UK Design System, and framework (Node.js/Hapi) guidance so advice
-  reflects current APIs and policy. Cite sources.
+   findings against DEFRA/GDS, the GOV.UK Design System, and framework (Node.js/Hapi) guidance so advice
+   reflects current APIs and policy. Cite sources.
 3. **Clarify** — Ask the user targeted questions whenever requirements are ambiguous or missing. Surface
-  requirement gaps explicitly with suggested fixes. Do not guess at intent.
+   requirement gaps explicitly with suggested fixes. Do not guess at intent.
 4. **Plan handoff** — Delegate planning to the task's designated planning agent when one exists (for
-  frontend implementation, this is [Frontend Planner](.github/agents/frontend-planner.agent.md)). The
-  planning agent returns the complete implementation plan.
+   frontend implementation, this is [Frontend Planner](.github/agents/frontend-planner.agent.md)). The
+   planning agent returns the complete implementation plan.
 5. **Plan validation research** — Perform a thorough internet research in the open to validate the plan
-  against DEFRA/GDS, the GOV.UK Design System, and framework guidance, **focusing on the steps the planner
-  flagged as risky or version-sensitive** (unfamiliar APIs, security, policy). Send targeted revisions
-  back to the planner.
+   against DEFRA/GDS, the GOV.UK Design System, and framework guidance, **focusing on the steps the planner
+   flagged as risky or version-sensitive** (unfamiliar APIs, security, policy). Send targeted revisions
+   back to the planner.
 6. **Approval** — Present the complete validated plan to the user and obtain explicit approval before
-  implementation. If changes are requested, update the plan, re-validate, and re-approve. **Cap the
-  plan → validate → approve → implement replanning cycle at 3 iterations**; if it is still unresolved,
-  stop and surface the blocker to the user instead of looping.
+   implementation. If changes are requested, update the plan, re-validate, and re-approve. **Cap the
+   plan → validate → approve → implement replanning cycle at 3 iterations**; if it is still unresolved,
+   stop and surface the blocker to the user instead of looping.
 7. **Implement** — Deliver one task at a time (or parallel independent tasks) from the approved plan. Stay
-  focused on the requested outcome; do not scope-creep or refactor unrelated code. **When a change
-  establishes or alters architecture** (a new routing pattern, session/cache strategy, external
-  integration, auth), create the required ADR(s) first under `docs/adr/`, then build against them.
+   focused on the requested outcome; do not scope-creep or refactor unrelated code. **When a change
+   establishes or alters architecture** (a new routing pattern, session/cache strategy, external
+   integration, auth), create the required ADR(s) first under `docs/adr/`, then build against them.
 8. **Test / Validate** — Build, run unit/accessibility tests, lint, check errors, and confirm each task
-  works before moving on.
+   works before moving on.
 9. **Iterate** — Refine until the user is satisfied with each task.
 10. **Summarise** — End with a detailed **executive summary** of what changed, why, how it was validated,
-  and any follow-ups or risks.
+    and any follow-ups or risks.
 
 ## 4. Tech stack (current decisions)
 
@@ -116,9 +116,9 @@ Non-trivial loop:
 - Develop (watch): `npm run dev`
 - Build client assets: `npm run build:frontend`
 - Production start: `npm start`
-- Lint (JS + SCSS): `npm run lint`  ·  Fix JS: `npm run lint:js:fix`
-- Format: `npm run format`  ·  Check: `npm run format:check`
-- Test + coverage: `npm test`  ·  Watch: `npm run test:watch`
+- Lint (JS + SCSS): `npm run lint` · Fix JS: `npm run lint:js:fix`
+- Format: `npm run format` · Check: `npm run format:check`
+- Test + coverage: `npm test` · Watch: `npm run test:watch`
 - Security audit: `npm run security-audit`
 - Full pre-commit gate: `npm run git:pre-commit-hook`
 

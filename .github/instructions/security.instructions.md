@@ -1,6 +1,6 @@
 ---
-description: "Security standards for the MMO Catch Recording external web frontend: DEFRA Secure by Design, OWASP Top 10/ASVS, HTTPS/TLS, secure headers & CSP, input validation, session/cookie safety, secrets management, error logging. Use when handling data, requests, sessions, config, or reviewing security."
-applyTo: "src/**/*.js, src/**/*.njk"
+description: 'Security standards for the MMO Catch Recording external web frontend: DEFRA Secure by Design, OWASP Top 10/ASVS, HTTPS/TLS, secure headers & CSP, input validation, session/cookie safety, secrets management, error logging. Use when handling data, requests, sessions, config, or reviewing security.'
+applyTo: 'src/**/*.js, src/**/*.njk'
 ---
 
 # Security standards

@@ -1,6 +1,6 @@
 ---
-description: "Figma design-to-code standards for the MMO Catch Recording external web frontend: STRICT read-only Figma MCP guardrails, rate-limit-aware reading, URL/node parsing, Design Spec capture, and mapping Figma layouts/tokens to Nunjucks + GOV.UK Frontend. Use when a page is built from a Figma design, when reading a Figma URL, or when using any Figma MCP tool."
-applyTo: "src/**/*.njk, src/**/*.js, src/client/**/*.scss"
+description: 'Figma design-to-code standards for the MMO Catch Recording external web frontend: STRICT read-only Figma MCP guardrails, rate-limit-aware reading, URL/node parsing, Design Spec capture, and mapping Figma layouts/tokens to Nunjucks + GOV.UK Frontend. Use when a page is built from a Figma design, when reading a Figma URL, or when using any Figma MCP tool.'
+applyTo: 'src/**/*.njk, src/**/*.js, src/client/**/*.scss'
 ---
 
 # Figma design-to-code standards

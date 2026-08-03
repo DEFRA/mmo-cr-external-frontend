@@ -1,6 +1,6 @@
 ---
-description: "Testing standards for the MMO Catch Recording external web frontend: Vitest unit/integration tests, Hapi server.inject route tests, cheerio HTML assertions, accessibility checks, coverage targets and SonarCloud. Use when writing or reviewing tests or setting quality gates."
-applyTo: "**/*.test.js"
+description: 'Testing standards for the MMO Catch Recording external web frontend: Vitest unit/integration tests, Hapi server.inject route tests, cheerio HTML assertions, accessibility checks, coverage targets and SonarCloud. Use when writing or reviewing tests or setting quality gates.'
+applyTo: '**/*.test.js'
 ---
 
 # Testing standards

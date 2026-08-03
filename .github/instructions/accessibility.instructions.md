@@ -1,6 +1,6 @@
 ---
-description: "Accessibility standards (WCAG 2.2 AA, DEFRA/GDS legal requirement) for the MMO Catch Recording external web frontend. Use when building UI, reviewing Nunjucks templates/GOV.UK Frontend components, or auditing keyboard, screen-reader, contrast and focus support."
-applyTo: "src/**/*.njk, src/**/*.js, src/client/**/*.scss"
+description: 'Accessibility standards (WCAG 2.2 AA, DEFRA/GDS legal requirement) for the MMO Catch Recording external web frontend. Use when building UI, reviewing Nunjucks templates/GOV.UK Frontend components, or auditing keyboard, screen-reader, contrast and focus support.'
+applyTo: 'src/**/*.njk, src/**/*.js, src/client/**/*.scss'
 ---
 
 # Accessibility standards (legal requirement)

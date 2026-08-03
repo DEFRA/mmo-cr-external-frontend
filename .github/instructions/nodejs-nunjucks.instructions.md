@@ -1,6 +1,6 @@
 ---
-description: "Node.js, Hapi.js and Nunjucks coding standards for the MMO Catch Recording external web frontend: ES modules, Hapi routing/controllers, Nunjucks + GOV.UK Frontend views, convict config, Catbox sessions, project layout and progressive enhancement. Use when writing or reviewing frontend code."
-applyTo: "src/**/*.js, src/**/*.njk, src/client/**/*.scss"
+description: 'Node.js, Hapi.js and Nunjucks coding standards for the MMO Catch Recording external web frontend: ES modules, Hapi routing/controllers, Nunjucks + GOV.UK Frontend views, convict config, Catbox sessions, project layout and progressive enhancement. Use when writing or reviewing frontend code.'
+applyTo: 'src/**/*.js, src/**/*.njk, src/client/**/*.scss'
 ---
 
 # Node.js, Hapi & Nunjucks standards
@@ -115,6 +115,7 @@ mmo-cr-external-frontend/
 ```
 
 ## Notes
+
 - **One folder per route** under `routes/`, self-contained (controller + tests + route + view).
 - **common/helpers** holds cross-cutting logic; controllers stay thin and delegate to it.
 - **Reusable UI** lives in GOV.UK Frontend + shared `common/` partials/components — reuse before building.

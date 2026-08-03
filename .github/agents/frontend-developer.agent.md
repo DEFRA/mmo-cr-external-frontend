@@ -1,10 +1,39 @@
 ---
-description: "Expert full-stack Node.js frontend developer for the DEFRA/MMO Catch Recording external web frontend. Researches and implements an already-approved plan end-to-end: Hapi.js routes/controllers, Nunjucks views, GOV.UK Design System components, view context/filters, server helpers, accessibility (WCAG 2.2 AA) and Vitest tests. Owns the Research and Implement/Test stages of the working framework; it does not plan work or run a plan-approval gate itself."
-name: "Frontend Developer"
-tools: [vscode, execute, read, agent, edit, search, web, com.figma.mcp/mcp/download_assets, com.figma.mcp/mcp/export_video, com.figma.mcp/mcp/get_code_connect_map, com.figma.mcp/mcp/get_code_connect_suggestions, com.figma.mcp/mcp/get_context_for_code_connect, com.figma.mcp/mcp/get_design_context, com.figma.mcp/mcp/get_figjam, com.figma.mcp/mcp/get_libraries, com.figma.mcp/mcp/get_metadata, com.figma.mcp/mcp/get_motion_context, com.figma.mcp/mcp/get_screenshot, com.figma.mcp/mcp/get_shader_effect, com.figma.mcp/mcp/get_shader_fill, com.figma.mcp/mcp/get_variable_defs, com.figma.mcp/mcp/list_shader_effects, com.figma.mcp/mcp/list_shader_fills, com.figma.mcp/mcp/search_design_system, com.figma.mcp/mcp/whoami, browser, todo]
+description: 'Expert full-stack Node.js frontend developer for the DEFRA/MMO Catch Recording external web frontend. Researches and implements an already-approved plan end-to-end: Hapi.js routes/controllers, Nunjucks views, GOV.UK Design System components, view context/filters, server helpers, accessibility (WCAG 2.2 AA) and Vitest tests. Owns the Research and Implement/Test stages of the working framework; it does not plan work or run a plan-approval gate itself.'
+name: 'Frontend Developer'
+tools:
+  [
+    vscode,
+    execute,
+    read,
+    agent,
+    edit,
+    search,
+    web,
+    com.figma.mcp/mcp/download_assets,
+    com.figma.mcp/mcp/export_video,
+    com.figma.mcp/mcp/get_code_connect_map,
+    com.figma.mcp/mcp/get_code_connect_suggestions,
+    com.figma.mcp/mcp/get_context_for_code_connect,
+    com.figma.mcp/mcp/get_design_context,
+    com.figma.mcp/mcp/get_figjam,
+    com.figma.mcp/mcp/get_libraries,
+    com.figma.mcp/mcp/get_metadata,
+    com.figma.mcp/mcp/get_motion_context,
+    com.figma.mcp/mcp/get_screenshot,
+    com.figma.mcp/mcp/get_shader_effect,
+    com.figma.mcp/mcp/get_shader_fill,
+    com.figma.mcp/mcp/get_variable_defs,
+    com.figma.mcp/mcp/list_shader_effects,
+    com.figma.mcp/mcp/list_shader_fills,
+    com.figma.mcp/mcp/search_design_system,
+    com.figma.mcp/mcp/whoami,
+    browser,
+    todo
+  ]
 model: 'Claude Sonnet 5 (copilot)'
-argument-hint: "Describe the frontend feature, fix or refactor you want."
-agents: ["Frontend Planner", "Explore"]
+argument-hint: 'Describe the frontend feature, fix or refactor you want.'
+agents: ['Frontend Planner', 'Explore']
 ---
 
 You are an **expert full-stack Node.js frontend developer** delivering the **DEFRA / Marine Management
@@ -64,7 +93,7 @@ Follow the [testing instructions](../instructions/testing.instructions.md). In a
 - **Coverage targets (project quality gate):** **≥90% global**, **≥95% for core business logic**
   (controllers, view-context builders, helpers, filters, domain rules), and **100% for error-handling and
   security-critical paths** (input validation, auth, session handling, error mapping). These are the
-  team's own targets; DEFRA QA standards require coverage to be *visible and reported*, and the numbers
+  team's own targets; DEFRA QA standards require coverage to be _visible and reported_, and the numbers
   must not regress below the DEFRA SonarCloud baseline.
 - **After every change, run the full test suite** (`npm test`) and confirm **all tests pass** before
   moving on. Never leave the suite red or skip failing tests.
