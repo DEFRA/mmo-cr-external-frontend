@@ -2,7 +2,7 @@
 description: "Plans and coordinates complex, multi-step frontend work on the DEFRA/MMO Catch Recording external web frontend (Node.js, Hapi.js, Nunjucks, GOV.UK Design System) by orchestrating the Frontend Planner, Frontend Developer and Frontend Code Reviewer agents through the working framework in copilot-instructions §3. Owns the user-approval gate: at the end of planning it asks the user a Yes/No question to continue with implementation, and only proceeds on Yes (a No may carry comments to revise the plan). It plans, delegates, verifies and reports — it does not implement code itself."
 name: "Frontend Orchestrator"
 tools: [read, search, todo, agent]
-model: ['Claude Sonnet 4.6 (copilot)', 'GPT-5.3-Codex (copilot)', 'Claude Opus 4.8 (copilot)']
+model: 'Claude Opus 4.8 (copilot)'
 argument-hint: "Describe the complex frontend task, feature or change to plan and coordinate."
 agents: ["Frontend Planner", "Frontend Developer", "Frontend Code Reviewer", "Explore"]
 ---

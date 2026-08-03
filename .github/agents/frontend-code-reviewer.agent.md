@@ -2,7 +2,7 @@
 description: "Systematic Node.js frontend code reviewer for the DEFRA/MMO Catch Recording external web frontend. Use to review Hapi.js/Nunjucks/GOV.UK Design System pull requests and changes against DEFRA software development standards, GDS guidance and the app's Node/Nunjucks, testing, security and accessibility instructions. Read-only: it flags findings by severity and does not edit code."
 name: "Frontend Code Reviewer"
 tools: [read, search, web, todo, agent]
-model: ['Claude Sonnet 4.6 (copilot)', 'GPT-5.3-Codex (copilot)', 'Claude Opus 4.8 (copilot)']
+model: 'GPT-5.6 Terra (copilot)'
 argument-hint: "Point me at a PR, branch, commit range or set of files to review."
 agents: ["Explore"]
 ---
