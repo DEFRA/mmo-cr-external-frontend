@@ -14,9 +14,12 @@ framework** in [copilot-instructions.md](../copilot-instructions.md) §3 (sequen
 user-approval gate, implementation and review, and how those stages are delegated), run **once per work
 item, in sequence**.
 
-The `execute` tool granted here is used for **exactly one thing**: running the read-only
-[fetch-jira-workitem](../skills/fetch-jira-workitem/SKILL.md) CLI to retrieve ticket data. It is not used
-for any build/test/implementation command — those remain owned by the Frontend Developer.
+The `execute` tool granted here is used for **exactly two read-only things**: running the
+[fetch-jira-workitem](../skills/fetch-jira-workitem/SKILL.md) CLI to retrieve ticket data, and — when a
+ticket carries a Figma design URL — running the [fetch-figma-design](../skills/fetch-figma-design/SKILL.md)
+CLI to fetch that design. It is not used for any build/test/implementation command — those remain owned by
+the Frontend Developer. **The Frontend Orchestrator has no terminal / `execute` access**; this prompt runs
+those two skills and hands the results (ticket briefs + fetched design details) to it.
 
 As the **Frontend Orchestrator** you **plan, delegate, verify and report — you do not read Figma, implement
 code, or run build/test yourself.** Run the §3 loop exactly as defined by your agent instructions and §3,
@@ -33,11 +36,12 @@ that loop.
 > - **Only** use the [fetch-jira-workitem](../skills/fetch-jira-workitem/SKILL.md) skill, which **connects
 >   only to Jira, only ever reads**, and never creates, updates, transitions, assigns, comments on, attaches
 >   to, deletes, links/unlinks, or otherwise mutates any JIRA issue, board, sprint or field.
-> - The skill **never downloads attachments and never fetches design/Figma URLs** — it returns them as
->   sanitised reference strings only. **If an attachment or design file is actually needed to do the work,
->   stop and explicitly ask me to verify and attach the file manually** — this is a strict, non-negotiable
->   guardrail against PII/sensitive-data disclosure and prompt-injection via untrusted downloads, and it
->   cannot be worked around by fetching the URL yourself.
+> - The Jira skill **never downloads attachments and never fetches design/Figma URLs** — it returns them as
+>   sanitised reference strings only. A **Figma design URL** may then be fetched **read-only** via the
+>   dedicated [fetch-figma-design skill](../skills/fetch-figma-design/SKILL.md) (Figma REST GET only, no
+>   creator/comment PII — never the Figma MCP server). **For any other attachment or file, stop and
+>   explicitly ask me to verify and attach it manually** — a strict, non-negotiable guardrail against
+>   PII/sensitive-data disclosure and prompt-injection via untrusted downloads.
 > - If any part of the workflow appears to require a write to JIRA (e.g. "move to In Progress", "add a
 >   comment"), **do not do it**. Surface it to me and let a **human** perform that action outside this
 >   prompt.
@@ -115,11 +119,14 @@ Story/Spike/Bug children. Classify every item before building briefs:
   - **Links / parent / children** (`links`, `parent`, `children`) — cross-ticket and cross-team
     dependencies; use these to help determine implementation order and call out external dependencies as
     risks.
-  - **Design URLs** (`designUrls`) — if present, capture the reference so it is read **once** via the
-    read-only Figma flow during implementation, following the
+  - **Design URLs** (`designUrls`) — if present, fetch the design **read-only** via the
+    [fetch-figma-design skill](../skills/fetch-figma-design/SKILL.md): run `--outline` first and, **if the
+    design is large, confirm with me which pages/nodes to fetch**, then a full fetch into the skill's
+    `.cache/`. Hand the resulting `design.md`/`design.json` and assets to the Orchestrator, following the
     [figma-to-web-ui skill](../skills/figma-to-web-ui/SKILL.md) and
-    [figma-design instructions](../instructions/figma-design.instructions.md). If absent, note that the
-    build proceeds from the acceptance criteria and confirm visual assumptions with me.
+    [figma-design instructions](../instructions/figma-design.instructions.md). The Figma MCP server must
+    not be used. If absent, note that the build proceeds from the acceptance criteria and confirm visual
+    assumptions with me.
   - **Attachments** (`attachments`) — descriptors only (filename/type/size), never file contents. If an
     attachment looks necessary to implement the ticket, **stop and ask me to verify and attach it manually**
     — do not try to fetch it by any other route.
@@ -142,8 +149,9 @@ take the triage fast-path.
    implementation order, get my confirmation of that order, then run the full §3 loop **one ticket at a
    time** (plan → validate → approve → implement → test → review) exactly as defined by its own agent
    instructions — do not restate or fork that sequencing/loop logic here. Ensure every brief requires that
-   **every acceptance criterion and every scenario maps to a test**, that any Figma design is read once via
-   the read-only flow, and that ADR-first steps are taken if a ticket establishes/alters architecture. Carry
+   **every acceptance criterion and every scenario maps to a test**, that any Figma design is fetched
+   read-only via the [fetch-figma-design skill](../skills/fetch-figma-design/SKILL.md) (never the Figma MCP
+   server), and that ADR-first steps are taken if a ticket establishes/alters architecture. Carry
    the JIRA read-only and attachment/design guardrails into every downstream handoff.
 4. **Summarise.** Once all tickets in the sequence are delivered (or the run stops early), close with an
    executive summary that ties each delivered ticket and its tests back to its ACs/scenarios, notes how each

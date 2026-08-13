@@ -40,6 +40,12 @@ function authError (status) {
   }
 }
 
+function rateLimitError (status) {
+  if (status === 429) {
+    throw new SafeError('Jira rate limit reached (429) — stopping early without retrying. Wait a while before re-running.', { code: 'ERR_RATE_LIMIT' })
+  }
+}
+
 // Read-only Jira Cloud client (Basic auth). Requests only the allowlisted fields.
 export function createJiraClient (config) {
   const basic = Buffer.from(`${config.email}:${config.apiToken}`).toString('base64')
@@ -53,6 +59,7 @@ export function createJiraClient (config) {
     const res = await guardedFetch(url, { headers }, { allowedHosts: config.egressHosts })
     if (res.status === 404) return null
     authError(res.status)
+    rateLimitError(res.status)
     if (!res.ok) throw new SafeError(`Jira request failed (${res.status}).`, { code: 'ERR_JIRA' })
     return res.json()
   }
@@ -74,6 +81,7 @@ export function createJiraClient (config) {
         body: JSON.stringify(body)
       }, { allowedHosts: config.egressHosts })
       authError(res.status)
+      rateLimitError(res.status)
       if (res.status === 400 || res.status === 404) return issues
       if (!res.ok) throw new SafeError(`Jira child search failed (${res.status}).`, { code: 'ERR_JIRA' })
       const data = await res.json()

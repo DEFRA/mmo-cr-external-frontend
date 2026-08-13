@@ -52,8 +52,10 @@ plan and implements it, rather than re-running its own plan→approval loop).
   trivial. For **non-trivial** work, run the full loop below.
 - **Context (§3.1–3.2).** Gather just enough repo/workspace context (yourself or via **Explore**) to write
   a good brief. **Delegate all open/internet research to Frontend Planner** — you coordinate research, you
-  do not perform it. Note if a Figma design is involved so it can be read during planning (the developer
-  owns the deep Figma read).
+  do not perform it. Note if a Figma design is involved: you have **no terminal access**, so the design is
+  fetched **read-only** via the [fetch-figma-design skill](../skills/fetch-figma-design/SKILL.md) (never the
+  Figma MCP server) by the entry prompt or the **Frontend Developer** — you receive the fetched design
+  details and pass them on.
 - **Clarify (§3.3).** Ask the user targeted questions and surface requirement gaps before planning. Do not
   guess intent.
 - **Plan handoff (§3.4).** Delegate 100% of planning — and the open/internet research behind it — to
