@@ -123,6 +123,11 @@ offer. Keep the review focused and proportional to the change.
   the change summary/Design Spec (the design is the visual authority here). Flag **undocumented** deviations
   and any deviation that breaks **WCAG 2.2 AA** or **security** — those remain **Blocking** and are never
   excused by the design.
+- **Visual fidelity, including vertical rhythm.** For a page built from a design/Design Spec, check the
+  change reflects the spec's layout, component map and **spacing/vertical rhythm** (spacing classes on the
+  govuk scale, no crowded/compressed/visually-merged blocks). A visually compressed layout that departs
+  from the design/spec is a **Recommended** (or **Blocking** where the spec set it as an acceptance
+  criterion) finding — spacing fidelity is part of visual fidelity, not optional polish.
 - No heavyweight client framework introduced; progressive enhancement preserved. Dependencies are minimal,
   pinned and justified. No circular dependencies between modules.
 

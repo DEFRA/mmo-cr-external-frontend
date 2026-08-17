@@ -104,15 +104,20 @@ page *looks* right:
 3. **Compare against the design.** Where a Figma design exists, open the design's rendered images/Design
    Spec (from the fetch-figma-design skill's `.cache/` and `docs/design-specs/`) side by side and check
    layout, spacing, typography, components, colours and every state match the design — the design is the
-   visual authority. Where there is no design, verify the page against the acceptance criteria and GOV.UK
-   Design System patterns.
-4. **Check responsive and interaction basics** — resize to a narrow (mobile) and wide viewport, confirm the
+   visual authority. When the design was read from a **screenshot/PNG fallback**, compare against that
+   target image. Where there is no design, verify the page against the acceptance criteria and GOV.UK
+   Design System patterns. Work through the Design Spec's **Visual acceptance criteria** one by one.
+4. **Check vertical rhythm and spacing explicitly.** Spacing fidelity is part of visual fidelity: compare
+   the spacing and grouping between every major block against the design/spec. Treat a crowded, compressed
+   or visually-merged layout as a **defect** and fix it with GOV.UK spacing classes/scale before moving on.
+5. **Check responsive and interaction basics** — resize to a narrow (mobile) and wide viewport, confirm the
    layout holds, focus states are visible, and the journey still works **with JavaScript disabled**
    (progressive enhancement).
-5. **Record the result.** Note in your summary that you visually verified the page(s), what you compared
-   against, and **list any GOV.UK Design System deviations** the design required (accessibility and security
-   still override the design). If the rendered page does not match, fix it and re-check before moving on.
-6. **Stop the dev server** when finished so it does not linger.
+6. **Record the result.** Note in your summary that you visually verified the page(s), what you compared
+   against (Figma render / screenshot target / acceptance criteria), that vertical rhythm matches, and
+   **list any GOV.UK Design System deviations** the design required (accessibility and security still
+   override the design). If the rendered page does not match, fix it and re-check before moving on.
+7. **Stop the dev server** when finished so it does not linger.
 
 Accessibility is still a separate, mandatory check (WCAG 2.2 AA) — visual verification does not replace the
 [web-accessibility-audit skill](../skills/web-accessibility-audit/SKILL.md) or the accessibility tests.
@@ -189,6 +194,15 @@ Follow the [figma-design instructions](../instructions/figma-design.instructions
   GOV.UK Frontend components and shared `src/server/common/` partials where the design matches them; where
   the design **deviates** from the GOV.UK Design System, **follow the design and record the deviation** — do
   **not** silently rewrite it to the GDS default, and do not stop mid-build to reconcile.
+- **Reading the design: Figma API first, screenshot fallback.** The primary source is the Figma API via the
+  [fetch-figma-design skill](../skills/fetch-figma-design/SKILL.md). When the Figma API is genuinely
+  unavailable, a user-supplied **screenshot/PNG export is a supported fallback** — analyse it top-to-bottom
+  as the definitive visual source of truth, mark anything you cannot read confidently as an assumption to
+  confirm, and capture the **same Design Spec**. Either way, complete the spec's analysis sections
+  (evidence classification, shared-shell vs page ownership, component map, **vertical rhythm & spacing**,
+  visual acceptance criteria).
+- **Vertical rhythm & spacing are a first-class requirement.** Reproduce the spacing and grouping in the
+  design using GOV.UK spacing classes/scale, not ad-hoc pixels; a crowded/compressed layout is a defect.
 - **Two non-negotiable overrides still win over the design:** **WCAG 2.2 AA** (a legal requirement) and
   **security**. If honouring the design would break accessibility or security, follow the standard instead
   and flag it prominently. A design never justifies weakening the CSP, disabling autoescape, storing
