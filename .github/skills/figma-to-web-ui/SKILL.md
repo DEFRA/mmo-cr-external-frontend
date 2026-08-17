@@ -66,8 +66,10 @@ source of truth for subsequent work.
 
 ### 3. Plan → approve (per the working framework)
 
-Hand the spec to the **Frontend Planner** for a full implementation plan, validate risky/version-sensitive
-steps, and get **explicit user approval** before writing code.
+Plan per the framework's triage: for **Standard** page work, produce a **lightweight inline plan**
+(Objective · Plan · Files · Validation · Risks) directly; for **Complex/architectural** work, hand the spec
+to the **Frontend Planner** for a full plan. Run a single risk-scoped research pass only where genuinely
+uncertain, then get **explicit user approval** before writing code.
 
 ### 4. Implement in Nunjucks + GOV.UK Frontend
 
@@ -81,6 +83,11 @@ raw hex). The skill-specific procedure on top of those standards:
 - Match each Figma element to a GOV.UK Frontend component using the
   [GDS mapping cheat-sheet](references/gds-mapping.md), which is tailored to this repo's layout, shared
   `appHeading` component and `layouts/page.njk` chrome.
+- **The design is the visual/component authority.** Build as designed and reuse a GOV.UK Frontend component
+  where it renders the design faithfully; where the design **deviates** from the GOV.UK Design System,
+  **follow the design and record the deviation** in the Design Spec and the change summary — do not silently
+  swap in the GDS default. **Accessibility (WCAG 2.2 AA) and security still override the design** and are
+  never traded away for visual fidelity.
 - Keep the controller thin — it builds the view context; put reusable formatting in Nunjucks filters.
 - Represent **every** state (default / empty / error / validation) explicitly.
 - Copy only genuine app assets the page needs from the fetch skill's `assets/` into `src/client/`.
@@ -107,5 +114,6 @@ raw hex). The skill-specific procedure on top of those standards:
 
 - A saved Design Spec under `docs/design-specs/`.
 - The implemented Nunjucks page (route + controller + view) + tests.
-- A short summary: what was read (nodes), what was reused vs new, accessibility handling, and any
-  follow-ups (missing tokens, ambiguous states) confirmed with the user.
+- A short summary: what was read (nodes), what was reused vs new, **any GOV.UK Design System deviations the
+  design required** (listed for governance), accessibility handling, and any follow-ups (missing tokens,
+  ambiguous states) confirmed with the user.

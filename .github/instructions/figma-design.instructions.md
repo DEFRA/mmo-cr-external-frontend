@@ -7,8 +7,14 @@ applyTo: 'src/**/*.njk, src/**/*.js, src/client/**/*.scss'
 
 Some pages are built from a Figma design. Reading that design is part of the **"Read" stage** of the
 working framework in [copilot-instructions.md](../copilot-instructions.md) §3 — do it **before** planning
-or writing any code. Precedence still applies: **DEFRA > GDS > GOV.UK Design System > community**.
-Accessibility (WCAG 2.2 AA) and the security rules below are **non-negotiable**.
+or writing any code.
+
+**For component and layout choices, the Figma design is the authority:** build the page **as designed** and
+**record any deviation from the GOV.UK Design System** (see §6) rather than silently overriding the design
+with a GDS default. Two things still win over the design and are **non-negotiable**: **accessibility
+(WCAG 2.2 AA — a legal requirement)** and the **security** rules below. If honouring the design would break
+either, follow the standard and flag it. For everything else the DEFRA precedence
+(**DEFRA > GDS > GOV.UK Design System > community**) still governs.
 
 For the full workflow (input gathering, read-once sequence, fallback when there is no design) use the
 [figma-to-web-ui skill](../skills/figma-to-web-ui/SKILL.md).
@@ -93,19 +99,27 @@ Translate the design into idiomatic Nunjucks templates using the GOV.UK Design S
 [nodejs-nunjucks instructions](nodejs-nunjucks.instructions.md); the skill's `design.json`/`design.md` are a
 **reference**, not final markup.
 
-- **Reuse first.** Map Figma components to existing **GOV.UK Frontend** components and the shared
-  partials/components under `src/server/common/`. Find the right one before building anything new. Do not
-  hand-roll markup a GDS component already provides.
+- **Build as designed; reuse where it matches.** Map Figma components to existing **GOV.UK Frontend**
+  components and the shared partials/components under `src/server/common/` **where the design matches them**
+  — prefer a GDS component when it renders the design faithfully. Where the design **deviates** from the
+  GOV.UK Design System, **follow the design and record the deviation** (see the deviation register below);
+  do **not** silently rewrite it to the GDS default, and do not stop mid-build to reconcile.
+- **Record every GDS deviation (deviation register).** Keep a running note of each deviation from the
+  GOV.UK Design System (component swapped, bespoke markup, spacing/type off the govuk scale) in the Design
+  Spec and **list them all in the change summary** so the team can log them for governance (Delivery
+  Architecture, `delivery.architecture@defra.gov.uk`). Deviations are followed, not hidden — never silently.
 - **Tokens, not raw hex.** Map the skill's design tokens (`assets/tokens.json` — colours, typography and
   named styles derived from the design, plus Enterprise variables when available) and the colours/type in
   `design.json` to GOV.UK Frontend Sass variables/design tokens and the govuk spacing/typography scale —
   never hard-code raw hex or magic pixel values that break the responsive/accessible defaults.
-- **Accessibility is derived from the design and mandatory** — follow the
+- **Accessibility is derived from the design and mandatory, and overrides it** — follow the
   [accessibility instructions](accessibility.instructions.md): semantic HTML, labels, error summary, 4.5:1
   contrast, visible focus, keyboard operability, meaning never by colour alone, and every state (default /
-  loading where relevant / empty / error / validation) represented.
-- **Security & progressive enhancement still apply** — a design never justifies weakening the CSP,
-  disabling autoescape, storing secrets, or making the page depend on JavaScript to function.
+  loading where relevant / empty / error / validation) represented. If the design conflicts with WCAG 2.2
+  AA, the standard wins — flag the conflict.
+- **Security & progressive enhancement still apply and override the design** — a design never justifies
+  weakening the CSP, disabling autoescape, storing secrets, or making the page depend on JavaScript to
+  function.
 
 ## 7. No design provided → build from the spec
 

@@ -1,6 +1,6 @@
 ---
 name: deep-research-defra-alignment
-description: 'Do thorough, risk-scoped internet research in the open and align findings to the DEFRA standards precedence (DEFRA > GDS > GOV.UK Design System > community) for the MMO Catch Recording external web frontend. Use for the Research (§3.2) and Plan validation research (§3.5) stages of the working framework — validating APIs, patterns, security and policy against DEFRA/GDS, the GOV.UK Design System and framework (Node/Hapi/Nunjucks) guidance, and citing sources before a plan is approved or implemented.'
+description: 'Do thorough, risk-scoped internet research in the open and align findings to the DEFRA standards precedence (DEFRA > GDS > GOV.UK Design System > community) for the MMO Catch Recording external web frontend. Use for the single Research (§3.2) pass of the working framework — validating APIs, patterns, security and policy against DEFRA/GDS, the GOV.UK Design System and framework (Node/Hapi/Nunjucks) guidance, and citing sources before a plan is approved or implemented. There is no separate validation-research round; the plan is checked against these same cited sources.'
 argument-hint: "e.g. 'validate the Hapi CSRF + yar session approach the planner flagged' or 'research the GOV.UK error summary pattern for this form'"
 user-invocable: false
 ---
@@ -8,23 +8,27 @@ user-invocable: false
 # Deep research & DEFRA alignment
 
 Turn an open question or a flagged plan step into a **sourced, DEFRA-aligned recommendation**. This is the
-**Research (§3.2)** and **Plan validation research (§3.5)** stages of the working framework in
+**single Research (§3.2)** pass of the working framework in
 [copilot-instructions.md](../../copilot-instructions.md) §3 — it does **not** replace or fork that
-framework, and it never authorises implementation (that still needs user **approval** at §3.6).
+framework, and it never authorises implementation (that still needs user **approval** at §3.5). Run it
+**once**, scoped to risk; there is no separate validation-research round — the plan is validated against the
+same cited sources this pass produces.
 
 **Division of labour (do not blur it):**
 
-- **Frontend Planner flags** which steps are risky or version-sensitive (unfamiliar APIs, security, policy).
-- **The Frontend Planner performs** this research to validate those flagged steps before returning the plan,
-  and does general Research at §3.2. (When the Frontend Developer runs standalone, it performs its own §3.2
-  research; §3.5 plan-validation research stays with the Planner.)
+- **Whoever plans** identifies which steps are risky or version-sensitive (unfamiliar APIs, security, policy).
+- **The planner performs this single research pass** to validate those steps before returning the plan: the
+  **Frontend Planner** for Complex work, or the **Frontend Developer** when it produces the lightweight
+  inline plan for Standard work (or runs standalone). The parent agent only coordinates and checks the
+  citations — it does not commission a second research round.
 
 ## When to use
 
 - **Research (§3.2):** an unfamiliar API, framework, pattern, or policy point is genuinely uncertain.
-- **Plan validation research (§3.5):** validating the steps the **Frontend Planner flagged** as risky or
-  version-sensitive before user approval.
 - A DEFRA/GDS/GOV.UK Design System requirement is ambiguous and could change the design.
+
+This is the **only** research round. Do not run a separate "plan validation" pass afterwards — the plan is
+checked against the sources this pass cites.
 
 **Do NOT use for framework-trivial work.** Per §3 triage, a typo/copy/comment/small localised change skips
 heavy research — research only the one point that is genuinely uncertain, if any.
@@ -102,10 +106,12 @@ Return a short brief the parent agent can drop into a plan or an approval messag
 - **Risks & alternative** — residual risks and a fallback if the recommendation is blocked.
 - **Sources** — the full list of cited URLs.
 
-For **plan validation (§3.5)**, add a one-line verdict per flagged step (**confirmed** / **revise** /
-**blocked**); send **revise/blocked** items back to the **Frontend Planner** rather than fixing the plan
-yourself. Respect the framework's **3-iteration cap** on plan → validate → approve → implement; if a point
-is still unresolved after three passes, stop and surface the blocker to the user.
+Because this is the single research pass, add a one-line verdict per flagged step (**confirmed** /
+**revise** / **blocked**) so the plan can be finalised against it. When the **Frontend Planner** produced
+the plan, send **revise/blocked** items back to it rather than fixing the plan yourself; when the
+**Frontend Developer** ran this for its own inline plan, fold the verdict straight into that plan. Respect
+the framework's **3-iteration cap** on plan → approve → implement; if a point is still unresolved after
+three passes, stop and surface the blocker to the user.
 
 ## Guardrails
 

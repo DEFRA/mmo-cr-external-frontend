@@ -1,5 +1,5 @@
 ---
-description: 'Read a JIRA ticket and its work-item hierarchy (via the fetch-jira-workitem skill, or pasted content) and hand it to the Frontend Orchestrator to deliver the described feature/user story/bug/spike end-to-end for the MMO Catch Recording external web frontend. Parses the standard ticket format (user story, context, acceptance criteria, Gherkin scenarios, Figma URL, considerations, technical notes) into delivery briefs and lets the Orchestrator sequence and drive the §3 non-trivial loop one ticket at a time.'
+description: 'Read a JIRA ticket and its work-item hierarchy (via the fetch-jira-workitem skill, or pasted content) and hand it to the Frontend Orchestrator to deliver the described feature/user story/bug/spike end-to-end for the MMO Catch Recording external web frontend. Parses the standard ticket format (user story, context, acceptance criteria, Gherkin scenarios, Figma URL, considerations, technical notes) into delivery briefs and lets the Orchestrator sequence and drive the §3 loop (Complex, multi-item) one ticket at a time.'
 name: 'JIRA ticket to code'
 argument-hint: 'JIRA ticket URL/key or paste JIRA ticket content'
 agent: 'Frontend Orchestrator'
@@ -11,8 +11,8 @@ work-item hierarchy) for the **MMO Catch Recording** external frontend, and hand
 Orchestrator** to deliver end-to-end. This prompt has **one job**: turn the fetched ticket data into clear
 delivery briefs and start the Orchestrator on them — the Orchestrator then owns the full **working
 framework** in [copilot-instructions.md](../copilot-instructions.md) §3 (sequencing, planning, the
-user-approval gate, implementation and review, and how those stages are delegated), run **once per work
-item, in sequence**.
+user-approval gate, implementation, and an **optional on-request** code review, and how those stages are
+delegated), run **once per work item, in sequence**.
 
 The `execute` tool granted here is used for **exactly two read-only things**: running the
 [fetch-jira-workitem](../skills/fetch-jira-workitem/SKILL.md) CLI to retrieve ticket data, and — when a
@@ -133,8 +133,8 @@ Story/Spike/Bug children. Classify every item before building briefs:
 
 ## Do
 
-This is a **non-trivial** change — the Orchestrator runs the full §3 loop, once per leaf ticket; do **not**
-take the triage fast-path.
+This is a **Complex**, multi-item change — the Orchestrator runs the full §3 loop, once per leaf ticket; do
+**not** take the triage fast-path.
 
 1. **Read the ticket data.** Fetch it via the [fetch-jira-workitem skill](../skills/fetch-jira-workitem/SKILL.md)
    if a key/URL is given (or use the pasted content as fallback), and parse every leaf ticket into its own
@@ -147,12 +147,16 @@ take the triage fast-path.
 3. **Hand off to the Orchestrator for sequencing and delivery.** Give the Orchestrator **all** parsed
    delivery briefs plus the Epic/Initiative context in one message, and let it: determine and present the
    implementation order, get my confirmation of that order, then run the full §3 loop **one ticket at a
-   time** (plan → validate → approve → implement → test → review) exactly as defined by its own agent
-   instructions — do not restate or fork that sequencing/loop logic here. Ensure every brief requires that
-   **every acceptance criterion and every scenario maps to a test**, that any Figma design is fetched
-   read-only via the [fetch-figma-design skill](../skills/fetch-figma-design/SKILL.md) (never the Figma MCP
-   server), and that ADR-first steps are taken if a ticket establishes/alters architecture. Carry
-   the JIRA read-only and attachment/design guardrails into every downstream handoff.
+   time** (plan → approve → implement → test) exactly as defined by its own agent instructions — do not
+   restate or fork that sequencing/loop logic here. A code review is **not** part of this default loop: the
+   Orchestrator offers an optional review with a single Yes/No question **once at the end of the whole
+   sequence** (or whenever I explicitly ask), and runs the **Frontend Code Reviewer** only on `Yes`. Ensure
+   every brief requires that **every acceptance criterion and every scenario maps to a test**, that any
+   Figma design is fetched read-only via the [fetch-figma-design skill](../skills/fetch-figma-design/SKILL.md)
+   (never the Figma MCP server) and built **as designed** with any GOV.UK Design System deviation recorded
+   (accessibility and security still overriding the design), and that ADR-first steps are taken if a ticket
+   establishes/alters architecture. Carry the JIRA read-only and attachment/design guardrails into every
+   downstream handoff.
 4. **Summarise.** Once all tickets in the sequence are delivered (or the run stops early), close with an
    executive summary that ties each delivered ticket and its tests back to its ACs/scenarios, notes how each
    was validated, and lists any follow-ups, risks or ticket updates the team should make (e.g. recording
