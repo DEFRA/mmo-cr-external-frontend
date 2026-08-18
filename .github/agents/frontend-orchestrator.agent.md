@@ -37,7 +37,7 @@ a clear written brief (see **Writing a handoff brief**).
 | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **Frontend Planner**       | Producing the complete, approval-ready implementation plan: decomposition, sequencing, dependencies, risks, validation strategy, **and the open/internet research (via the deep-research-defra-alignment skill) that validates the risky/version-sensitive steps**. Internal-only; never shown raw to the user without your framing. |
 | **Frontend Developer**     | Implementing an **already-approved** plan end-to-end: Hapi routes/controllers, Nunjucks views, GOV.UK Frontend components, view context/filters, server helpers, and the tests that ship with the code. For **Standard**-tier work it also produces the lightweight inline plan (no heavyweight planning agent).                     |
-| **Frontend Code Reviewer** | **Optional, on-request only.** Read-only review of the completed change against DEFRA standards, security, accessibility, testing and Node/Nunjucks conventions, reported by severity. Invoke **only** when the user asks for a review (or answers Yes to the end-of-work review offer) — never as a default step.                     |
+| **Frontend Code Reviewer** | **Optional, on-request only.** Read-only review of the completed change against DEFRA standards, security, accessibility, testing and Node/Nunjucks conventions, reported by severity. Invoke **only** when the user asks for a review (or answers Yes to the end-of-work review offer) — never as a default step.                   |
 | **Explore**                | Fast, read-only codebase exploration and Q&A when you need quick workspace context before writing the planning brief (codebase reading only — not open/internet research).                                                                                                                                                           |
 
 ## How you orchestrate the working framework
@@ -58,8 +58,8 @@ plan and implements it, rather than re-running its own plan→approval loop).
     surface, or multi-ticket JIRA delivery) — run the full loop with **Frontend Planner** below.
   - **Manual override.** If the user explicitly names a gear ("treat this as trivial", "just a lightweight
     standard plan", "force the full complex plan / planner", "skip the planner", "run a full review"),
-    **honour it over the automatic classification.** Always allow *more* rigour; when the user asks for
-    *less* than the risk warrants, comply but **flag the risk in one line first**, and still **keep the
+    **honour it over the automatic classification.** Always allow _more_ rigour; when the user asks for
+    _less_ than the risk warrants, comply but **flag the risk in one line first**, and still **keep the
     approval gate, WCAG 2.2 AA and security** for any change that genuinely touches architecture, auth,
     sessions/caching, data correctness or a security surface. Echo back which gear you are running so the
     user can correct you.

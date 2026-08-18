@@ -1,6 +1,6 @@
 ---
 name: fetch-figma-design
-description: 'Fetches a Figma design by URL or fileKey#node via the Figma REST API (read-only) and writes the design ONLY — sanitised node tree, rendered images (PNG/SVG), user-supplied image fills and best-effort design tokens — to the skill''s git-ignored .cache/ folder, stripping all creator/author/comment/approval PII. Use whenever a Figma design must be read for planning or implementation. Never uses the Figma MCP server and never writes to Figma.'
+description: "Fetches a Figma design by URL or fileKey#node via the Figma REST API (read-only) and writes the design ONLY — sanitised node tree, rendered images (PNG/SVG), user-supplied image fills and best-effort design tokens — to the skill's git-ignored .cache/ folder, stripping all creator/author/comment/approval PII. Use whenever a Figma design must be read for planning or implementation. Never uses the Figma MCP server and never writes to Figma."
 argument-hint: '<figma-url-or-fileKey#node>'
 user-invocable: true
 ---
@@ -74,9 +74,11 @@ Requires Node.js 18+ (built-in `fetch`). No dependencies, no install.
    already cached. The `fileKey` and `node` come from the URL (`node-id`'s `-`
    becomes `:`); a plain node is written to `.cache/<fileKey>/<node>/` and a
    section to `.cache/<fileKey>/<node>/frames/`:
+
    ```bash
    ls "<skill-dir>/.cache/<fileKey>" 2>/dev/null
    ```
+
    **If a cached copy exists, tell the user it is already in the local cache and
    ask whether they want to re-fetch it** — warn that each fetch spends Figma API
    quota and that too many requests in a short window cause 429 rate-limit errors.
@@ -85,9 +87,11 @@ Requires Node.js 18+ (built-in `fetch`). No dependencies, no install.
    `design.md`/`design.json` from `.cache/` and skip the fetch.
 
 2. **Parse & confirm scope with an outline first (cheap, no downloads).** Run:
+
    ```bash
    cd "<skill-dir>" && node scripts/cli.mjs "<figma-url-or-fileKey#node>" --outline
    ```
+
    This writes `outline.json` (pages/frames: id, name, type, size, child counts)
    and prints `pageCount`/`frameCount`/`sectionCount`. **If the design is large** (a whole page
    or file, or many frames), show the outline to the user and **ask whether to
@@ -103,11 +107,13 @@ Requires Node.js 18+ (built-in `fetch`). No dependencies, no install.
 
 3. **Full fetch** (design tree + all assets) for the whole node, or the confirmed
    subset:
+
    ```bash
    cd "<skill-dir>" && node scripts/cli.mjs "<figma-url-or-fileKey#node>"
    # or, for a confirmed subset of a large design:
    cd "<skill-dir>" && node scripts/cli.mjs "<figma-url>" --nodes 1-23,4-56
    ```
+
    - **Plain node (frame/page):** writes to `.cache/<fileKey>/<node>/`:
      - `design.json` — the full **sanitised** node tree + component/style maps.
      - `design.md` — a readable summary (frames, colours, text, asset manifest).
@@ -134,15 +140,15 @@ Requires Node.js 18+ (built-in `fetch`). No dependencies, no install.
 
 ## Options
 
-| Flag              | Effect                                                             |
-| ----------------- | ------------------------------------------------------------------ |
-| `--outline`       | List pages/frames only; no downloads (use to confirm scope)        |
-| `--nodes a-b,c-d` | Restrict to specific node ids                                      |
-| `--no-assets`     | Sanitised node tree only; skip image/asset downloads               || `--geometry`      | Include raw vector path data (off by default)                      |
-| `--batch <n>`     | Frame node-trees fetched per request when expanding a section      || `--format png,svg`| Override rendered image formats                                    |
-| `--scale <n>`     | Override render scale (0.01–4)                                      |
-| `--depth <n>`     | Cap node-tree depth for very large nodes                           |
-| `--out [path]`    | Write under a chosen dir instead of `.cache/`                      |
+| Flag              | Effect                                                        |
+| ----------------- | ------------------------------------------------------------- | --- | ------------------ | --------------------------------------------- |
+| `--outline`       | List pages/frames only; no downloads (use to confirm scope)   |
+| `--nodes a-b,c-d` | Restrict to specific node ids                                 |
+| `--no-assets`     | Sanitised node tree only; skip image/asset downloads          |     | `--geometry`       | Include raw vector path data (off by default) |
+| `--batch <n>`     | Frame node-trees fetched per request when expanding a section |     | `--format png,svg` | Override rendered image formats               |
+| `--scale <n>`     | Override render scale (0.01–4)                                |
+| `--depth <n>`     | Cap node-tree depth for very large nodes                      |
+| `--out [path]`    | Write under a chosen dir instead of `.cache/`                 |
 
 Errors are printed to stderr as redacted JSON: `{ "error": "...", "code": "..." }`.
 

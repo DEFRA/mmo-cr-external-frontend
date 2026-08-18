@@ -18,51 +18,51 @@ Adapted for **this repo** (Hapi.js + Nunjucks CDP service, `govuk-frontend` 6.2.
 These live in [`layouts/page.njk`](../../../../src/server/common/templates/layouts/page.njk); a view that
 extends it renders them automatically.
 
-| Figma element                     | Rendered by the layout                                    |
-| --------------------------------- | --------------------------------------------------------- |
-| GOV.UK header / crown / service name | `govukHeader` (in the `header` block)                  |
-| Top service navigation bar        | `govukServiceNavigation` (pass `navigation` from context) |
-| Breadcrumbs (top-left trail)      | `govukBreadcrumbs` (in `beforeContent`, shown when > 1)   |
-| Footer + Privacy/Cookies/Accessibility links | `govukFooter` (in the `footer` block)          |
-| Page caption + `<h1>` heading     | `appHeading` — imported **globally** by the layout; call `{{ appHeading({ text: heading, caption: "…" }) }}` directly |
+| Figma element                                | Rendered by the layout                                                                                                |
+| -------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| GOV.UK header / crown / service name         | `govukHeader` (in the `header` block)                                                                                 |
+| Top service navigation bar                   | `govukServiceNavigation` (pass `navigation` from context)                                                             |
+| Breadcrumbs (top-left trail)                 | `govukBreadcrumbs` (in `beforeContent`, shown when > 1)                                                               |
+| Footer + Privacy/Cookies/Accessibility links | `govukFooter` (in the `footer` block)                                                                                 |
+| Page caption + `<h1>` heading                | `appHeading` — imported **globally** by the layout; call `{{ appHeading({ text: heading, caption: "…" }) }}` directly |
 
 ## Content, form and feedback components
 
 Import each per-view with `{% from "govuk/components/<name>/macro.njk" import <macro> %}` — import **only**
 what the screen uses.
 
-| Figma element                                   | GDS macro                                                  | Import path                                        |
-| ----------------------------------------------- | ---------------------------------------------------------- | -------------------------------------------------- |
-| Back link ("‹ Back")                            | `govukBackLink`                                            | `govuk/components/back-link/macro.njk`             |
-| Single-line text field                          | `govukInput`                                              | `govuk/components/input/macro.njk`                 |
-| Multi-line text box                             | `govukTextarea`                                           | `govuk/components/textarea/macro.njk`              |
-| Text box with a character/word limit            | `govukCharacterCount`                                     | `govuk/components/character-count/macro.njk`       |
-| Dropdown / select                               | `govukSelect`                                             | `govuk/components/select/macro.njk`                |
-| Radio group (choose one)                        | `govukRadios`                                             | `govuk/components/radios/macro.njk`                |
-| "or" / exclusive divider between options        | `govukRadios` with a `{ divider: "or" }` item            | `govuk/components/radios/macro.njk`                |
-| Checkboxes (choose several)                     | `govukCheckboxes`                                         | `govuk/components/checkboxes/macro.njk`            |
-| Day / month / year date fields                  | `govukDateInput`                                         | `govuk/components/date-input/macro.njk`            |
-| File upload ("Choose file" / drop zone)         | `govukFileUpload` with **`javascript: true`** (see note)  | `govuk/components/file-upload/macro.njk`           |
-| Group of related inputs with a legend           | `govukFieldset`                                          | `govuk/components/fieldset/macro.njk`              |
-| Primary action button                           | `govukButton`                                            | `govuk/components/button/macro.njk`                |
-| Secondary action ("Cancel", "Back")             | `govukButton` with `classes: "govuk-button--secondary"`  | `govuk/components/button/macro.njk`                |
-| Start-now button                                | `govukButton` with `isStartButton: true`                 | `govuk/components/button/macro.njk`                |
-| Error summary (top of a page with errors)       | `govukErrorSummary`                                      | `govuk/components/error-summary/macro.njk`         |
-| Inline field error message                      | `govukErrorMessage` (or the field macro's `errorMessage`) | `govuk/components/error-message/macro.njk`         |
-| Warning text ("!" callout)                      | `govukWarningText`                                       | `govuk/components/warning-text/macro.njk`          |
-| Inset text (highlighted quote/callout)          | `govukInsetText`                                         | `govuk/components/inset-text/macro.njk`            |
-| Expandable "What is …?" / "Help with …"         | `govukDetails`                                           | `govuk/components/details/macro.njk`               |
-| Notification / important banner                 | `govukNotificationBanner`                                | `govuk/components/notification-banner/macro.njk`   |
-| Confirmation panel (big green "done")           | `govukPanel`                                             | `govuk/components/panel/macro.njk`                 |
-| Status pill / badge                             | `govukTag` (`--green` done, `--yellow` in progress, `--red` problem) | `govuk/components/tag/macro.njk`      |
-| Alpha / beta phase banner                       | `govukPhaseBanner`                                       | `govuk/components/phase-banner/macro.njk`          |
-| Key / value pairs ("check your answers")        | `govukSummaryList`                                       | `govuk/components/summary-list/macro.njk`          |
-| Data grid / table of rows                       | `govukTable`                                             | `govuk/components/table/macro.njk`                 |
-| Task list (steps + statuses)                    | `govukTaskList`                                          | `govuk/components/task-list/macro.njk`             |
-| Accordion (stacked expandable sections)         | `govukAccordion`                                         | `govuk/components/accordion/macro.njk`             |
-| Tabbed sections                                 | `govukTabs`                                              | `govuk/components/tabs/macro.njk`                  |
-| Pagination (previous / next / numbered)         | `govukPagination`                                        | `govuk/components/pagination/macro.njk`            |
-| Cookie consent banner                           | `govukCookieBanner`                                      | `govuk/components/cookie-banner/macro.njk`         |
+| Figma element                             | GDS macro                                                            | Import path                                      |
+| ----------------------------------------- | -------------------------------------------------------------------- | ------------------------------------------------ |
+| Back link ("‹ Back")                      | `govukBackLink`                                                      | `govuk/components/back-link/macro.njk`           |
+| Single-line text field                    | `govukInput`                                                         | `govuk/components/input/macro.njk`               |
+| Multi-line text box                       | `govukTextarea`                                                      | `govuk/components/textarea/macro.njk`            |
+| Text box with a character/word limit      | `govukCharacterCount`                                                | `govuk/components/character-count/macro.njk`     |
+| Dropdown / select                         | `govukSelect`                                                        | `govuk/components/select/macro.njk`              |
+| Radio group (choose one)                  | `govukRadios`                                                        | `govuk/components/radios/macro.njk`              |
+| "or" / exclusive divider between options  | `govukRadios` with a `{ divider: "or" }` item                        | `govuk/components/radios/macro.njk`              |
+| Checkboxes (choose several)               | `govukCheckboxes`                                                    | `govuk/components/checkboxes/macro.njk`          |
+| Day / month / year date fields            | `govukDateInput`                                                     | `govuk/components/date-input/macro.njk`          |
+| File upload ("Choose file" / drop zone)   | `govukFileUpload` with **`javascript: true`** (see note)             | `govuk/components/file-upload/macro.njk`         |
+| Group of related inputs with a legend     | `govukFieldset`                                                      | `govuk/components/fieldset/macro.njk`            |
+| Primary action button                     | `govukButton`                                                        | `govuk/components/button/macro.njk`              |
+| Secondary action ("Cancel", "Back")       | `govukButton` with `classes: "govuk-button--secondary"`              | `govuk/components/button/macro.njk`              |
+| Start-now button                          | `govukButton` with `isStartButton: true`                             | `govuk/components/button/macro.njk`              |
+| Error summary (top of a page with errors) | `govukErrorSummary`                                                  | `govuk/components/error-summary/macro.njk`       |
+| Inline field error message                | `govukErrorMessage` (or the field macro's `errorMessage`)            | `govuk/components/error-message/macro.njk`       |
+| Warning text ("!" callout)                | `govukWarningText`                                                   | `govuk/components/warning-text/macro.njk`        |
+| Inset text (highlighted quote/callout)    | `govukInsetText`                                                     | `govuk/components/inset-text/macro.njk`          |
+| Expandable "What is …?" / "Help with …"   | `govukDetails`                                                       | `govuk/components/details/macro.njk`             |
+| Notification / important banner           | `govukNotificationBanner`                                            | `govuk/components/notification-banner/macro.njk` |
+| Confirmation panel (big green "done")     | `govukPanel`                                                         | `govuk/components/panel/macro.njk`               |
+| Status pill / badge                       | `govukTag` (`--green` done, `--yellow` in progress, `--red` problem) | `govuk/components/tag/macro.njk`                 |
+| Alpha / beta phase banner                 | `govukPhaseBanner`                                                   | `govuk/components/phase-banner/macro.njk`        |
+| Key / value pairs ("check your answers")  | `govukSummaryList`                                                   | `govuk/components/summary-list/macro.njk`        |
+| Data grid / table of rows                 | `govukTable`                                                         | `govuk/components/table/macro.njk`               |
+| Task list (steps + statuses)              | `govukTaskList`                                                      | `govuk/components/task-list/macro.njk`           |
+| Accordion (stacked expandable sections)   | `govukAccordion`                                                     | `govuk/components/accordion/macro.njk`           |
+| Tabbed sections                           | `govukTabs`                                                          | `govuk/components/tabs/macro.njk`                |
+| Pagination (previous / next / numbered)   | `govukPagination`                                                    | `govuk/components/pagination/macro.njk`          |
+| Cookie consent banner                     | `govukCookieBanner`                                                  | `govuk/components/cookie-banner/macro.njk`       |
 
 ## No GDS equivalent (non-standard cluster)
 

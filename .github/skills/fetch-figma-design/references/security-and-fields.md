@@ -1,6 +1,7 @@
 # Output contract, requested endpoints, and PII controls
 
 ## Contents
+
 - Endpoints used (data minimisation)
 - Endpoints never called
 - How PII is stripped

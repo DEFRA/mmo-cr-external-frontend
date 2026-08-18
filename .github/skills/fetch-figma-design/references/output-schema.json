@@ -60,7 +60,14 @@
     },
     "figmaDesign": {
       "type": "object",
-      "required": ["schemaVersion", "kind", "fileKey", "requestedNodeIds", "retrievedAt", "nodes"],
+      "required": [
+        "schemaVersion",
+        "kind",
+        "fileKey",
+        "requestedNodeIds",
+        "retrievedAt",
+        "nodes"
+      ],
       "additionalProperties": false,
       "properties": {
         "schemaVersion": { "type": "string" },
@@ -75,7 +82,10 @@
             "type": "object",
             "additionalProperties": false,
             "properties": {
-              "document": { "type": "object", "description": "Sanitised node subtree (plugin data removed; identity keys forbidden)." },
+              "document": {
+                "type": "object",
+                "description": "Sanitised node subtree (plugin data removed; identity keys forbidden)."
+              },
               "components": { "type": "object" },
               "componentSets": { "type": "object" },
               "styles": { "type": "object" }
@@ -87,7 +97,14 @@
     },
     "figmaSection": {
       "type": "object",
-      "required": ["schemaVersion", "kind", "fileKey", "retrievedAt", "sections", "frames"],
+      "required": [
+        "schemaVersion",
+        "kind",
+        "fileKey",
+        "retrievedAt",
+        "sections",
+        "frames"
+      ],
       "additionalProperties": false,
       "description": "Section-level index written when a requested node is a SECTION. Holds no design detail — it lists the frames extracted from the section(s), each written to its own subfolder as a figmaDesign document.",
       "properties": {
@@ -122,7 +139,10 @@
               "sectionId": { "type": ["string", "null"] },
               "width": { "type": "number" },
               "height": { "type": "number" },
-              "dir": { "type": "string", "description": "Path (relative to the section output dir) of the frame's own design.json/design.md/assets." }
+              "dir": {
+                "type": "string",
+                "description": "Path (relative to the section output dir) of the frame's own design.json/design.md/assets."
+              }
             }
           }
         },

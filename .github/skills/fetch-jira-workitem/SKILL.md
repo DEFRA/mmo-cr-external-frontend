@@ -34,7 +34,7 @@ that strips all personal and identity data before any result reaches the agent.
 
 1. Copy [assets/.env.example](assets/.env.example) to `.env` in this skill folder.
 2. Create an API token at https://id.atlassian.com/manage-profile/security/api-tokens
-   (prefer a low-privilege account with only *Browse projects*).
+   (prefer a low-privilege account with only _Browse projects_).
 3. Set `JIRA_BASE_URL`, `JIRA_EMAIL`, `JIRA_API_TOKEN` in `.env`.
 
 Requires Node.js 18+ (built-in `fetch`). No dependencies, no install.
@@ -79,9 +79,11 @@ Requires Node.js 18+ (built-in `fetch`). No dependencies, no install.
    > command below.
 
 2. If the user wants the hierarchy, get the index first (cheap, compact):
+
    ```bash
    cd "<skill-dir>" && node scripts/cli.mjs "<jira-ticket-url-or-key>" --out
    ```
+
    Returns a `hierarchy-index`: the bounded tree with keys, types, one-line
    summaries, statuses, relations, and counts. Only the given ticket, container
    types (Epic/Initiative), and leaf types (Story, Spike, Bug) are included —
@@ -89,14 +91,17 @@ Requires Node.js 18+ (built-in `fetch`). No dependencies, no install.
 
    If the user only wants the given ticket, add `--no-traverse` (returns a full
    `work-item` for that ticket only):
+
    ```bash
    cd "<skill-dir>" && node scripts/cli.mjs "<jira-ticket-url-or-key>" --out --no-traverse
    ```
 
 3. Then pull full detail for **every** ticket the index listed, in one call:
+
    ```bash
    cd "<skill-dir>" && node scripts/cli.mjs details "<jira-ticket-url-or-key>" --out
    ```
+
    Returns a `work-item-set`: the complete `work-item` for each item in the
    hierarchy (same filtering as the index), so you get full context on the whole
    epic/story set — not just the parent. Add `--no-traverse` to get the set for

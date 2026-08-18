@@ -52,34 +52,34 @@ Separate what the **shared layout** (`layouts/page.njk`) already renders from wh
 page template must **not** re-add shared-shell elements. See the
 [GDS mapping cheat-sheet](gds-mapping.md) — "Already provided by the layout".
 
-| Element | Owner (shared layout / this page) | Action (inherit as-is / configure via context / show / hide) |
-| ------- | --------------------------------- | ------------------------------------------------------------ |
-| GOV.UK header / crown / service name | shared layout | inherit |
-| Service navigation | shared layout | configure via `navigation` context |
-| Breadcrumbs | shared layout | configure via `breadcrumbs` context |
-| Footer + OGL/copyright | shared layout | inherit |
-| Page caption + `<h1>` | shared layout (`appHeading`) | configure via `heading`/caption |
-|  |  |  |
+| Element                              | Owner (shared layout / this page) | Action (inherit as-is / configure via context / show / hide) |
+| ------------------------------------ | --------------------------------- | ------------------------------------------------------------ |
+| GOV.UK header / crown / service name | shared layout                     | inherit                                                      |
+| Service navigation                   | shared layout                     | configure via `navigation` context                           |
+| Breadcrumbs                          | shared layout                     | configure via `breadcrumbs` context                          |
+| Footer + OGL/copyright               | shared layout                     | inherit                                                      |
+| Page caption + `<h1>`                | shared layout (`appHeading`)      | configure via `heading`/caption                              |
+|                                      |                                   |                                                              |
 
 ## Vertical rhythm & spacing (first-class requirement)
 
 Spacing fidelity is **part of visual fidelity**, not a secondary styling concern. A crowded, compressed or
 visually-merged layout is a **visual defect**. Prefer GOV.UK spacing classes/scale (`govuk-!-margin-*`,
 `govuk-!-padding-*`, `govuk-body`/`govuk-body-l` rhythm) over ad-hoc pixels; where an exact token is
-uncertain, state the **closest likely GOV.UK spacing value** and mark it a *recommendation* (not a measured
+uncertain, state the **closest likely GOV.UK spacing value** and mark it a _recommendation_ (not a measured
 fact).
 
 Document the expected spacing between the major blocks on this page, for example:
 
-| Between… | Expected spacing (GOV.UK scale / class) | Grouping intent | Evidence |
-| -------- | --------------------------------------- | --------------- | -------- |
-| Caption → `<h1>` |  |  |  |
-| `<h1>` → intro paragraph |  |  |  |
-| Paragraph → form control / list |  |  |  |
-| Fieldset → button |  |  |  |
-| Warning/inset text → surrounding content |  |  |  |
-| Content section → next section |  |  |  |
-| Final section → footer |  |  |  |
+| Between…                                 | Expected spacing (GOV.UK scale / class) | Grouping intent | Evidence |
+| ---------------------------------------- | --------------------------------------- | --------------- | -------- |
+| Caption → `<h1>`                         |                                         |                 |          |
+| `<h1>` → intro paragraph                 |                                         |                 |          |
+| Paragraph → form control / list          |                                         |                 |          |
+| Fieldset → button                        |                                         |                 |          |
+| Warning/inset text → surrounding content |                                         |                 |          |
+| Content section → next section           |                                         |                 |          |
+| Final section → footer                   |                                         |                 |          |
 
 Also note: which elements are **grouped** (kept tight together) vs **separated** (clear whitespace between
 unrelated blocks).
@@ -139,9 +139,9 @@ unrelated blocks).
 If a **current-implementation screenshot** was supplied (the page already exists and is being corrected),
 list the differences element by element; otherwise state _"No current implementation — new page"_.
 
-| # | Element | Target | Current | Difference | Fix |
-| - | ------- | ------ | ------- | ---------- | --- |
-|  |  |  |  |  |  |
+| #   | Element | Target | Current | Difference | Fix |
+| --- | ------- | ------ | ------- | ---------- | --- |
+|     |         |        |         |            |     |
 
 ## Visual acceptance criteria (objective, verifiable)
 

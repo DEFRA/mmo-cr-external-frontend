@@ -12,7 +12,7 @@ no server, read-only by design.
 
 - Fetches a Jira issue by **URL or key** and returns summary, description,
   acceptance criteria, status, priority, labels, parent/child/linked-issue
-  references, attachment *descriptors* (not files) and design-URL references.
+  references, attachment _descriptors_ (not files) and design-URL references.
 - Optionally **traverses the work-item hierarchy**: an Epic/Initiative is
   expanded to collect its Story/Spike/Bug children; a leaf ticket collects its
   parent as context. Tasks, Sub-tasks and any other type are excluded.
@@ -42,16 +42,16 @@ JSON shape.
    low-privilege account scoped to **Browse projects** only.
 3. Fill in `.env`:
 
-   | Variable                       | Required | Default              | Purpose                                                        |
-   | ------------------------------ | :------: | -------------------- | ---------------------------------------------------------------- |
-   | `JIRA_BASE_URL`                 |    ✅    | —                     | Your Jira Cloud site, e.g. `https://your-domain.atlassian.net`  |
-   | `JIRA_EMAIL`                    |    ✅    | —                     | Account email for Basic auth                                    |
-   | `JIRA_API_TOKEN`                |    ✅    | —                     | API token for Basic auth                                        |
-   | `JIRA_MAX_DEPTH`                |    —     | `5`                   | Max traversal depth from the root ticket                        |
-   | `JIRA_MAX_ISSUES`               |    —     | `100`                 | Max issues collected in one run                                 |
-   | `JIRA_LEAF_TICKET_TYPES`        |    —     | `story,spike,bug`     | Types collected but never expanded                               |
-   | `JIRA_CONTAINER_TICKET_TYPES`   |    —     | `epic,initiative`     | Types traversed through to reach leaves                          |
-   | `JIRA_DESIGN_HOST_ALLOWLIST`    |    —     | `figma.com`           | Hosts classified as design-URL references (never fetched)        |
+   | Variable                      | Required | Default           | Purpose                                                        |
+   | ----------------------------- | :------: | ----------------- | -------------------------------------------------------------- |
+   | `JIRA_BASE_URL`               |    ✅    | —                 | Your Jira Cloud site, e.g. `https://your-domain.atlassian.net` |
+   | `JIRA_EMAIL`                  |    ✅    | —                 | Account email for Basic auth                                   |
+   | `JIRA_API_TOKEN`              |    ✅    | —                 | API token for Basic auth                                       |
+   | `JIRA_MAX_DEPTH`              |    —     | `5`               | Max traversal depth from the root ticket                       |
+   | `JIRA_MAX_ISSUES`             |    —     | `100`             | Max issues collected in one run                                |
+   | `JIRA_LEAF_TICKET_TYPES`      |    —     | `story,spike,bug` | Types collected but never expanded                             |
+   | `JIRA_CONTAINER_TICKET_TYPES` |    —     | `epic,initiative` | Types traversed through to reach leaves                        |
+   | `JIRA_DESIGN_HOST_ALLOWLIST`  |    —     | `figma.com`       | Hosts classified as design-URL references (never fetched)      |
 
 `.env` is git-ignored and must **never** be committed, read back, or printed —
 including by the agent, on any error.
@@ -74,11 +74,11 @@ node scripts/cli.mjs details "<url-or-key>" --out
 node scripts/cli.mjs item "<ticket-key>" --out
 ```
 
-| Flag             | Effect                                                                 |
-| ---------------- | ----------------------------------------------------------------------- |
-| `--out`          | Write full JSON to the git-ignored `.cache/` folder; print a compact summary (with `outputFile`) instead of the full payload |
-| `--out <path>`   | Write full JSON to a path you choose instead                          |
-| `--no-traverse`  | Don't expand containers — return only the given ticket                |
+| Flag            | Effect                                                                                                                       |
+| --------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `--out`         | Write full JSON to the git-ignored `.cache/` folder; print a compact summary (with `outputFile`) instead of the full payload |
+| `--out <path>`  | Write full JSON to a path you choose instead                                                                                 |
+| `--no-traverse` | Don't expand containers — return only the given ticket                                                                       |
 
 A ticket **URL** must belong to the configured `JIRA_BASE_URL` host (a URL from
 another site is rejected before any request is made). Bare **keys** are
@@ -86,12 +86,12 @@ accepted case-insensitively.
 
 ### Output shapes
 
-| Command                | Returns           | Contents                                                         |
-| ----------------------- | ----------------- | ------------------------------------------------------------------ |
-| `<url-or-key>`          | `hierarchy-index` | Bounded tree: keys, types, one-line summaries, statuses, relations |
-| `<url-or-key> --no-traverse` | `work-item`  | Full sanitised detail for the one ticket                          |
-| `details <url-or-key>`  | `work-item-set`   | Full sanitised detail for every item the index listed              |
-| `item <ticket-key>`     | `work-item`       | Full sanitised detail for one ticket, standalone                   |
+| Command                      | Returns           | Contents                                                           |
+| ---------------------------- | ----------------- | ------------------------------------------------------------------ |
+| `<url-or-key>`               | `hierarchy-index` | Bounded tree: keys, types, one-line summaries, statuses, relations |
+| `<url-or-key> --no-traverse` | `work-item`       | Full sanitised detail for the one ticket                           |
+| `details <url-or-key>`       | `work-item-set`   | Full sanitised detail for every item the index listed              |
+| `item <ticket-key>`          | `work-item`       | Full sanitised detail for one ticket, standalone                   |
 
 Every item carries `notes` (e.g. `"Details for contextual purpose"` for a
 parent pulled in as context) and `error` (for a ticket that failed to fetch).

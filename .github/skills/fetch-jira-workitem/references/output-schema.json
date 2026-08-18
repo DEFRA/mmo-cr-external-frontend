@@ -3,7 +3,11 @@
   "$id": "https://defra/fetch-jira-workitem/output-schema.json",
   "title": "fetch-jira-workitem agent output",
   "description": "Sanitised, PII-free work-item contract returned to the agent. Unknown fields are never emitted.",
-  "oneOf": [{ "$ref": "#/$defs/workItem" }, { "$ref": "#/$defs/workItemSet" }, { "$ref": "#/$defs/hierarchyIndex" }],
+  "oneOf": [
+    { "$ref": "#/$defs/workItem" },
+    { "$ref": "#/$defs/workItemSet" },
+    { "$ref": "#/$defs/hierarchyIndex" }
+  ],
   "$defs": {
     "reference": {
       "type": "object",
@@ -47,14 +51,28 @@
         "ticketType": { "type": ["string", "null"] },
         "summary": { "type": ["string", "null"] },
         "description": { "type": ["string", "null"] },
-        "acceptanceCriteria": { "type": "array", "items": { "type": "string" } },
+        "acceptanceCriteria": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
         "status": { "type": ["string", "null"] },
         "priority": { "type": ["string", "null"] },
-        "parent": { "oneOf": [{ "$ref": "#/$defs/reference" }, { "type": "null" }] },
-        "children": { "type": "array", "items": { "$ref": "#/$defs/reference" } },
+        "parent": {
+          "oneOf": [{ "$ref": "#/$defs/reference" }, { "type": "null" }]
+        },
+        "children": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/reference" }
+        },
         "links": { "type": "array", "items": { "$ref": "#/$defs/reference" } },
-        "attachments": { "type": "array", "items": { "$ref": "#/$defs/attachment" } },
-        "designUrls": { "type": "array", "items": { "$ref": "#/$defs/designUrl" } },
+        "attachments": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/attachment" }
+        },
+        "designUrls": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/designUrl" }
+        },
         "labels": { "type": "array", "items": { "type": "string" } },
         "sourceJiraUrl": { "type": "string", "format": "uri" },
         "provenance": {
@@ -65,11 +83,17 @@
             "retrievedAt": { "type": "string" },
             "jiraUpdated": { "type": ["string", "null"] },
             "sanitiserVersion": { "type": "string" },
-            "contentHash": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" }
+            "contentHash": {
+              "type": "string",
+              "pattern": "^sha256:[0-9a-f]{64}$"
+            }
           }
         },
         "truncated": { "type": "boolean" },
-        "sanitisationWarnings": { "type": "array", "items": { "type": "string" } },
+        "sanitisationWarnings": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
         "error": { "type": ["string", "null"] },
         "notes": { "type": ["string", "null"] },
         "relation": { "type": "string" },
@@ -98,7 +122,15 @@
         "count": { "type": "integer" },
         "truncated": { "type": "boolean" },
         "warnings": { "type": "array", "items": { "type": "string" } },
-        "items": { "type": "array", "items": { "oneOf": [{ "$ref": "#/$defs/workItem" }, { "$ref": "#/$defs/errorItem" }] } }
+        "items": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              { "$ref": "#/$defs/workItem" },
+              { "$ref": "#/$defs/errorItem" }
+            ]
+          }
+        }
       }
     },
     "hierarchyIndex": {

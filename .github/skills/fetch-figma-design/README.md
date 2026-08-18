@@ -41,16 +41,17 @@ full data-minimisation and PII contract, and
    immediately (shown once).
 3. Fill in `.env`:
 
-   | Variable                     | Required | Default                  | Purpose                                            |
-   | ---------------------------- | :------: | ------------------------ | -------------------------------------------------- |
-   | `FIGMA_PAT`                  |    ✅    | —                        | PAT, sent as `X-Figma-Token`                       |
-   | `FIGMA_API_BASE`             |    —     | `https://api.figma.com`  | API base (`https://api.figma-gov.com` for gov)     |
-   | `FIGMA_IMAGE_FORMATS`        |    —     | `png,svg`                | Rendered image formats                             |
-   | `FIGMA_IMAGE_SCALE`          |    —     | `2`                      | Render scale (0.01–4)                              |
-   | `FIGMA_MAX_NODES`            |    —     | `200`                    | Cap on frames rendered per run                     |
-| `FIGMA_NODE_BATCH`           |    —     | `5`                      | Frame node-trees fetched per request for a section |
-`.env` is git-ignored and must **never** be committed, read back, or printed —
-including by the agent, on any error.
+   | Variable              | Required | Default                 | Purpose                                            |
+   | --------------------- | :------: | ----------------------- | -------------------------------------------------- |
+   | `FIGMA_PAT`           |    ✅    | —                       | PAT, sent as `X-Figma-Token`                       |
+   | `FIGMA_API_BASE`      |    —     | `https://api.figma.com` | API base (`https://api.figma-gov.com` for gov)     |
+   | `FIGMA_IMAGE_FORMATS` |    —     | `png,svg`               | Rendered image formats                             |
+   | `FIGMA_IMAGE_SCALE`   |    —     | `2`                     | Render scale (0.01–4)                              |
+   | `FIGMA_MAX_NODES`     |    —     | `200`                   | Cap on frames rendered per run                     |
+   | `FIGMA_NODE_BATCH`    |    —     | `5`                     | Frame node-trees fetched per request for a section |
+
+   `.env` is git-ignored and must **never** be committed, read back, or printed —
+   including by the agent, on any error.
 
 ## Usage
 
@@ -76,40 +77,40 @@ frame**: each child frame gets its own `frames/<slug>/` subfolder
 `section.md` index lists every extracted frame. A section is never implemented as
 a single page — work through its frames one at a time.
 
-| Flag              | Effect                                                        |
-| ----------------- | ------------------------------------------------------------- |
-| `--outline`       | Pages/frames only; no downloads                               |
-| `--nodes a-b,c-d` | Restrict to specific node ids                                 |
-| `--no-assets`     | Sanitised node tree only                                      |
-| `--geometry`      | Include raw vector path data (off by default)                 |
-| `--batch <n>`     | Frame node-trees fetched per request when expanding a section |
-| `--format png,svg`| Override rendered image formats                               |
-| `--scale <n>`     | Override render scale (0.01–4)                                |
-| `--depth <n>`     | Cap node-tree depth                                           |
-| `--out [path]`    | Write under a chosen dir instead of `.cache/`                 |
+| Flag               | Effect                                                        |
+| ------------------ | ------------------------------------------------------------- |
+| `--outline`        | Pages/frames only; no downloads                               |
+| `--nodes a-b,c-d`  | Restrict to specific node ids                                 |
+| `--no-assets`      | Sanitised node tree only                                      |
+| `--geometry`       | Include raw vector path data (off by default)                 |
+| `--batch <n>`      | Frame node-trees fetched per request when expanding a section |
+| `--format png,svg` | Override rendered image formats                               |
+| `--scale <n>`      | Override render scale (0.01–4)                                |
+| `--depth <n>`      | Cap node-tree depth                                           |
+| `--out [path]`     | Write under a chosen dir instead of `.cache/`                 |
 
 ### Output
 
 Written to `.cache/<fileKey>/<node>/` (overwritten per run):
 
-| File                    | Contents                                                    |
-| ----------------------- | ----------------------------------------------------------- |
-| `design.json`           | Full sanitised node tree + component/style maps             |
-| `design.md`             | Readable summary: frames, colours, text, asset manifest     |
-| `assets/render-*.{png,svg}` | Rendered node/frame images                              |
-| `assets/fill-*`         | Downloaded user-supplied image fills                        |
-| `assets/tokens.json`    | Design tokens derived from the tree (+ Enterprise variables) |
-| `assets/manifest.json`  | Map of asset files → node ids / imageRefs                   |
-| `outline.json`          | (`--outline` only) pages/frames outline                     |
+| File                        | Contents                                                     |
+| --------------------------- | ------------------------------------------------------------ |
+| `design.json`               | Full sanitised node tree + component/style maps              |
+| `design.md`                 | Readable summary: frames, colours, text, asset manifest      |
+| `assets/render-*.{png,svg}` | Rendered node/frame images                                   |
+| `assets/fill-*`             | Downloaded user-supplied image fills                         |
+| `assets/tokens.json`        | Design tokens derived from the tree (+ Enterprise variables) |
+| `assets/manifest.json`      | Map of asset files → node ids / imageRefs                    |
+| `outline.json`              | (`--outline` only) pages/frames outline                      |
 
 When the requested node is a **SECTION**, output is instead written per frame:
 
-| Path                          | Contents                                               |
-| ----------------------------- | ------------------------------------------------------ |
-| `section.json` / `section.md` | Section-level index listing every extracted frame      |
-| `frames/<slug>/design.json`   | That frame's sanitised node tree                       |
-| `frames/<slug>/design.md`     | That frame's readable summary                          |
-| `frames/<slug>/assets/`       | That frame's renders, image fills, tokens, manifest    |
+| Path                          | Contents                                            |
+| ----------------------------- | --------------------------------------------------- |
+| `section.json` / `section.md` | Section-level index listing every extracted frame   |
+| `frames/<slug>/design.json`   | That frame's sanitised node tree                    |
+| `frames/<slug>/design.md`     | That frame's readable summary                       |
+| `frames/<slug>/assets/`       | That frame's renders, image fills, tokens, manifest |
 
 ## Errors
 

@@ -1,6 +1,7 @@
 # Output contract, requested fields, and PII controls
 
 ## Contents
+
 - Requested Jira fields (data minimisation)
 - Fields and endpoints never requested
 - How PII is stripped
