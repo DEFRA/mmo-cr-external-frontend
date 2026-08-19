@@ -9,6 +9,7 @@ import { ports } from './ports.js'
 import { gearSelection } from './gear.js'
 import { potsDetails } from './pots-details.js'
 import {
+  nearbyStatisticalAreas,
   statisticalAreas,
   alternativeStatisticalAreaExample
 } from './statistical-areas.js'
@@ -27,6 +28,7 @@ const dataByKey = {
   ports,
   gearSelection,
   potsDetails,
+  nearbyStatisticalAreas,
   statisticalAreas,
   alternativeStatisticalAreaExample,
   speciesSelection,

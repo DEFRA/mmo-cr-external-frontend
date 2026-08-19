@@ -129,26 +129,21 @@ Reuse the shared header, centred menu, white middle logo dot, phase banner, Back
 #### Gear Selection Figma URL
 
 ```text
-<ADD_GEAR_SELECTION_FIGMA_URL_HERE>
+https://www.figma.com/design/9Jve7RKNprYeeaNYsbTUH1/MMO-Catch-Records?node-id=48-25901&t=ffkmqdjC5IXaXW7u-0
 ```
 
 #### Gear Selection PNG
-
-```text
-<ADD_OR_ATTACH_GEAR_SELECTION_PNG_HERE>
-```
+![Gear Selection](./../screens/WhatGearDidYouUsed.png)
 
 #### Pots Details Figma URL
 
 ```text
-<ADD_POTS_DETAILS_FIGMA_URL_HERE>
+https://www.figma.com/design/9Jve7RKNprYeeaNYsbTUH1/MMO-Catch-Records?node-id=48-26034&t=ffkmqdjC5IXaXW7u-0
 ```
 
 #### Pots Details PNG
 
-```text
-<ADD_OR_ATTACH_POTS_DETAILS_PNG_HERE>
-```
+![pots Details](./../screens/WhatGearDidYouUse-2.png)
 
 If the design includes more than one Pots Details screen, add one Figma URL and one PNG placeholder for each screen before planning.
 

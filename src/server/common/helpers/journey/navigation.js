@@ -16,7 +16,6 @@ const SAFE_RETURN_PATHS = [
   '/departure-port',
   '/return-port',
   '/gear-selection',
-  '/pots-details',
   '/statistical-area',
   '/statistical-area-other',
   '/species-selection',

@@ -39,29 +39,44 @@ describe('#getData', () => {
     )
   })
 
-  test('Should return gear options with exactly one implemented sublevel', () => {
+  test('Should return gear options with exactly one option requiring pots details', () => {
     const gearOptions = getData('gearSelection')
-    const implemented = gearOptions.filter(
-      (option) => option.hasImplementedSublevel
+    const requiresPots = gearOptions.filter(
+      (option) => option.requiresPotsDetails
     )
 
-    expect(implemented).toHaveLength(1)
-    expect(implemented[0].value).toBe('pots')
+    expect(gearOptions).toHaveLength(9)
+    expect(requiresPots).toHaveLength(1)
+    expect(requiresPots[0].id).toBe('pots')
+  })
+
+  test('Should return gear options with unique stable ids', () => {
+    const gearOptions = getData('gearSelection')
+    const ids = gearOptions.map((option) => option.id)
+
+    expect(new Set(ids).size).toBe(ids.length)
   })
 
   test('Should return pots details', () => {
     expect(getData('potsDetails')).toEqual({ potsHauled: 45, potsInWater: 12 })
   })
 
-  test('Should return statistical areas with a primary and an Other entry', () => {
-    const statisticalAreas = getData('statisticalAreas')
+  test('Should return nearby statistical areas with unique stable ids', () => {
+    const nearbyStatisticalAreas = getData('nearbyStatisticalAreas')
+    const ids = nearbyStatisticalAreas.map((area) => area.id)
 
-    expect(statisticalAreas).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ value: 'area-viid' }),
-        expect.objectContaining({ value: 'other' })
-      ])
-    )
+    expect(nearbyStatisticalAreas).toHaveLength(11)
+    expect(new Set(ids).size).toBe(ids.length)
+    expect(nearbyStatisticalAreas.map((area) => area.code)).toContain('38F02')
+  })
+
+  test('Should return 8 statistical areas with unique stable ids', () => {
+    const statisticalAreas = getData('statisticalAreas')
+    const ids = statisticalAreas.map((area) => area.id)
+
+    expect(statisticalAreas).toHaveLength(8)
+    expect(new Set(ids).size).toBe(ids.length)
+    expect(statisticalAreas.map((area) => area.code)).toContain('30F02')
   })
 
   test('Should return the alternative statistical area example', () => {
