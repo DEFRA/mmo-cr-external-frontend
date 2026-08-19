@@ -32,9 +32,9 @@ describe('#departurePortController', () => {
     })
     const $ = load(result)
 
-    expect($('[data-testid="app-page-navigation-back-link"]').attr('href')).toBe(
-      '/trip-date'
-    )
+    expect(
+      $('[data-testid="app-page-navigation-back-link"]').attr('href')
+    ).toBe('/trip-date')
   })
 
   test('Should point the Back link to trip return date after the different-date branch', async () => {
@@ -43,7 +43,7 @@ describe('#departurePortController', () => {
       url: '/trip-date',
       payload: { tripSameDate: 'no' }
     })
-    const cookie = setResponse.headers['set-cookie']
+    const cookie = setResponse.headers['set-cookie'][0].split(';')[0]
 
     const { result } = await server.inject({
       method: 'GET',
@@ -52,9 +52,9 @@ describe('#departurePortController', () => {
     })
     const $ = load(result)
 
-    expect($('[data-testid="app-page-navigation-back-link"]').attr('href')).toBe(
-      '/trip-return-date'
-    )
+    expect(
+      $('[data-testid="app-page-navigation-back-link"]').attr('href')
+    ).toBe('/trip-return-date')
   })
 })
 

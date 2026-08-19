@@ -43,7 +43,7 @@ describe('#speciesSelectionController', () => {
       url: '/statistical-area',
       payload: { statisticalArea: 'other' }
     })
-    const cookie = setResponse.headers['set-cookie']
+    const cookie = setResponse.headers['set-cookie'][0].split(';')[0]
 
     const { result } = await server.inject({
       method: 'GET',

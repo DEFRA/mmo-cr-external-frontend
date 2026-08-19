@@ -1,4 +1,4 @@
-import { draftController } from './controller.js'
+import { draftController, draftSubmitController } from './controller.js'
 
 /**
  * Sets up the routes used in the draft page.
@@ -13,6 +13,11 @@ export const draft = {
           method: 'GET',
           path: '/draft',
           ...draftController
+        },
+        {
+          method: 'POST',
+          path: '/draft',
+          ...draftSubmitController
         }
       ])
     }

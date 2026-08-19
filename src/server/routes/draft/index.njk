@@ -1,20 +1,28 @@
 {% extends 'layouts/page.njk' %}
-{% from "placeholder-page/macro.njk" import appPlaceholderPage %}
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
 
 {% block pageContent %}
-  {{ appPlaceholderPage({ heading: heading }) }}
-
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-      {{ govukButton({
-        text: "Complete catch record",
-        href: "/select-vessel"
-      }) }}
+      <form method="post" novalidate>
+        {{ govukRadios({
+          name: "draftAction",
+          fieldset: {
+            legend: {
+              html: '<span class="govuk-caption-l">' ~ caption ~ '</span>' ~ heading,
+              isPageHeading: true,
+              classes: "govuk-fieldset__legend--xl"
+            }
+          },
+          items: [
+            { value: "complete", text: "Complete catch record" },
+            { value: "delete", text: "Delete catch record" }
+          ]
+        }) }}
 
-      <p class="govuk-body">
-        <a class="govuk-link" href="/not-implemented?return=/draft">Delete catch record</a>
-      </p>
+        {{ govukButton({ text: "Save and continue" }) }}
+      </form>
     </div>
   </div>
 {% endblock %}

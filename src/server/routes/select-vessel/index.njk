@@ -1,19 +1,24 @@
 {% extends 'layouts/page.njk' %}
-{% from "placeholder-page/macro.njk" import appPlaceholderPage %}
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
 
 {% block pageContent %}
-  {{ appPlaceholderPage({
-    heading: heading,
-    description: "OLGA is the only vessel available in this walkthrough."
-  }) }}
-
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-      <p class="govuk-body">Vessel: {{ vesselName }}</p>
-
       <form method="post" novalidate>
-        {{ govukButton({ text: "Continue" }) }}
+        {{ govukRadios({
+          name: "vesselId",
+          fieldset: {
+            legend: {
+              html: '<span class="govuk-caption-l">' ~ caption ~ '</span>' ~ heading,
+              isPageHeading: true,
+              classes: "govuk-fieldset__legend--xl"
+            }
+          },
+          items: vesselOptions
+        }) }}
+
+        {{ govukButton({ text: "Save and continue" }) }}
       </form>
     </div>
   </div>

@@ -1,18 +1,60 @@
+import { validateDateInput } from '#/server/common/helpers/journey/date-input.js'
+import { statusCodes } from '#/server/common/constants/status-codes.js'
+
+const pageTitle = 'When did you leave for your trip?'
+const hintText = 'Enter the date you departed. For example, 31/03/2020'
+
+function viewContext(overrides = {}) {
+  return {
+    pageTitle,
+    heading: pageTitle,
+    caption: 'New catch record',
+    hintText,
+    backLink: {
+      href: '/trip-date',
+      text: 'Back'
+    },
+    ...overrides
+  }
+}
+
 export const tripDepartureDateController = {
   handler(_request, h) {
-    return h.view('trip-departure-date/index', {
-      pageTitle: 'When did you leave?',
-      heading: 'When did you leave?',
-      backLink: {
-        href: '/trip-date',
-        text: 'Back'
-      }
-    })
+    return h.view('trip-departure-date/index', viewContext())
   }
 }
 
 export const tripDepartureDateSubmitController = {
-  handler(_request, h) {
+  handler(request, h) {
+    const payload = request.payload || {}
+    const result = validateDateInput(
+      {
+        day: payload['tripDepartureDate-day'],
+        month: payload['tripDepartureDate-month'],
+        year: payload['tripDepartureDate-year']
+      },
+      'tripDepartureDate',
+      'the date you left for your trip'
+    )
+
+    if (!result.isValid) {
+      return h
+        .view(
+          'trip-departure-date/index',
+          viewContext({
+            errorSummary: {
+              titleText: 'There is a problem',
+              errorList: [
+                { text: result.errorMessage, href: '#tripDepartureDate-day' }
+              ]
+            },
+            fieldErrors: result.fieldErrors,
+            values: result.values
+          })
+        )
+        .code(statusCodes.ok)
+    }
+
     return h.redirect('/trip-return-date').code(303)
   }
 }
