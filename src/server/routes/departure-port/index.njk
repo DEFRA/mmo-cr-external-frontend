@@ -1,14 +1,27 @@
 {% extends 'layouts/page.njk' %}
-{% from "placeholder-page/macro.njk" import appPlaceholderPage %}
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
 
 {% block pageContent %}
-  {{ appPlaceholderPage({ heading: heading }) }}
+  {% set radioErrorMessage = { text: fieldErrors.departurePort } if fieldErrors.departurePort else false %}
 
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
       <form method="post" novalidate>
-        {{ govukButton({ text: "Continue" }) }}
+        {{ govukRadios({
+          name: "departurePort",
+          fieldset: {
+            legend: {
+              html: '<span class="govuk-caption-l">' ~ caption ~ '</span>' ~ heading,
+              isPageHeading: true,
+              classes: "govuk-fieldset__legend--xl"
+            }
+          },
+          errorMessage: radioErrorMessage,
+          items: portOptions
+        }) }}
+
+        {{ govukButton({ text: "Save and continue" }) }}
       </form>
     </div>
   </div>

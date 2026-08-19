@@ -1,0 +1,727 @@
+# Step 11: Gear Selection and Pots Details
+
+## ARTIFACT-INSTRUCTION
+
+Create or update only the files required to implement Step 11. Use safe repository-relative paths. Do not use absolute paths or paths containing `..`.
+
+This GitHub Copilot prompt must be stored at:
+
+```text
+design/github-prompts/Step 11-gear-selection-pots-details.md
+```
+
+After the implementation plan is approved, the first action must be to save the approved plan at:
+
+```text
+design/github-prompts/Step 11-gear-selection-pots-details-plan.md
+```
+
+Do not implement before the plan is approved and saved.
+
+## ARTIFACT-CONTENT
+
+### 1. Title
+
+Catch Record Web UI: Step 11 - Implement Gear Selection and Conditional Pots Details
+
+### 2. Agent Workflow
+
+Use only the agents required for this task.
+
+#### Planning
+
+**Agent:** `.github/agents/frontend-planner.agent.md`
+
+**Thinking effort:** High
+
+The planning agent must:
+
+1. Inspect the repository, previous approved plans and existing Catch Record journey implementation.
+2. Inspect every supplied Gear Selection and Pots Details PNG carefully.
+3. Transcribe visible wording from each PNG exactly.
+4. Identify the existing route, controller, Nunjucks, validation, journey-state, JSON-data and testing conventions.
+5. Define the branching behaviour for gear selections that do and do not require Pots Details.
+6. Define the Back link for every page and branch.
+7. Define how saved selections and pots details are restored when a user returns to a page.
+8. Identify exact files to create or modify.
+9. Define unit, route, integration, responsive and accessibility testing.
+10. Record genuine ambiguities that affect behaviour.
+11. Produce the implementation plan and stop for approval.
+
+After approval, the first action must be to save the plan at:
+
+```text
+design/github-prompts/Step 11-gear-selection-pots-details-plan.md
+```
+
+#### Implementation
+
+**Agent:** `.github/agents/frontend-developer.agent.md`
+
+**Thinking effort:** High
+
+High effort is recommended because this step contains conditional routing, multi-value selection, state persistence and conditional validation.
+
+The developer agent must:
+
+1. Read the approved saved plan.
+2. Implement only the approved scope.
+3. Reuse the existing application shell, route patterns and shared components.
+4. Store dummy reference data in editable JSON object files.
+5. Add or update focused tests.
+6. Run the relevant checks and report the results.
+
+#### Review
+
+**Agent:** `.github/agents/frontend-code-reviewer.agent.md`
+
+**Thinking effort:** Medium
+
+The reviewer must check:
+
+- Fidelity to every supplied PNG
+- Correct branching and Back navigation
+- Journey-state behaviour
+- GDS component usage
+- Validation and error handling
+- Accessibility
+- Responsive layout
+- Test quality
+- Regressions and scope control
+
+Classify findings as:
+
+```text
+Blocking
+Important
+Suggestion
+```
+
+#### Orchestrator
+
+Do not use `.github/agents/frontend-orchestrator.agent.md`. This is one contained frontend journey capability and does not require orchestration.
+
+### 3. Objective
+
+Implement the Gear Selection page and the conditional Pots Details page for the Catch Record journey.
+
+The user must be able to:
+
+1. Select the gear used during the trip.
+2. Submit the selection.
+3. Continue directly to the next approved journey step when no selected gear requires pots details.
+4. Continue to Pots Details when the selected gear requires that information.
+5. Enter and submit the pots information shown in the supplied PNG.
+6. Navigate backwards without losing valid saved data.
+
+### 4. Background Context
+
+Catch Recording is a frontend-only application with no backend or database.
+
+All dummy reference data and journey data must use the repository's existing editable JSON object-file approach. Do not introduce a backend, database, remote API or hidden hard-coded data source.
+
+This step follows Step 10, Departure and Return Ports. It precedes the next approved Catch Record journey step.
+
+Reuse the shared header, centred menu, white middle logo dot, phase banner, Back link region, English/Cymraeg selector and footer with its thin grey top border. Do not redesign shared components.
+
+### 5. Visual Sources of Truth
+
+#### Gear Selection Figma URL
+
+```text
+<ADD_GEAR_SELECTION_FIGMA_URL_HERE>
+```
+
+#### Gear Selection PNG
+
+```text
+<ADD_OR_ATTACH_GEAR_SELECTION_PNG_HERE>
+```
+
+#### Pots Details Figma URL
+
+```text
+<ADD_POTS_DETAILS_FIGMA_URL_HERE>
+```
+
+#### Pots Details PNG
+
+```text
+<ADD_OR_ATTACH_POTS_DETAILS_PNG_HERE>
+```
+
+If the design includes more than one Pots Details screen, add one Figma URL and one PNG placeholder for each screen before planning.
+
+The corresponding PNG is authoritative for visible wording, labels, hints, control type, order, positioning and spacing. Follow the PNG even when this prompt, a journey map or earlier documentation uses different visible wording.
+
+Use this precedence:
+
+1. Corresponding PNG for visible UI content and presentation.
+2. Explicit functional and technical constraints in this prompt.
+3. Approved implementation plan and existing application architecture.
+4. Figma URL for supplementary design detail.
+5. Journey documentation for route context.
+6. GOV.UK Design System where the design does not resolve a detail.
+
+Do not silently replace PNG wording. Ask only when an ambiguity affects functionality and cannot be resolved from the repository or supplied images.
+
+### 6. Critical Constraints
+
+1. Implement only Gear Selection, conditional Pots Details and their direct navigation.
+2. Do not implement statistical area, species, weights, not-landed catch, Check Your Answers, submission or confirmation.
+3. Do not redesign shared layout components.
+4. Do not add a backend, database or remote API.
+5. Store gear reference data in an editable JSON object file.
+6. Store journey selections through the existing JSON object/state pattern.
+7. Do not hard-code gear options or conditional rules in Nunjucks templates.
+8. Do not invent gear options, pots fields, units, labels, hints or validation rules.
+9. Use the exact wording and input types shown in the supplied PNGs.
+10. Do not assume that every gear selection requires Pots Details.
+11. Do not assume that only one gear can be selected. Follow the PNG.
+12. Do not add an Add Gear or Remove Gear management journey unless it is explicitly part of the Step 11 PNGs supplied with this prompt.
+13. Do not use browser history for Back links.
+14. Do not introduce new dependencies.
+15. Do not refactor unrelated code.
+16. Do not use JavaScript where server-rendered HTML is sufficient.
+17. Do not use absolute positioning or arbitrary offsets to imitate the design.
+18. Preserve all valid data unrelated to this step.
+
+### 7. Required Outcome
+
+After this task:
+
+1. The approved previous route navigates to Gear Selection.
+2. Gear Selection matches its PNG.
+3. Gear choices load from editable JSON data.
+4. The user can submit the selection type shown in the PNG.
+5. Required and invalid selections produce accessible errors.
+6. Valid selections persist in the current draft journey state.
+7. The route evaluates the selected gear against explicit JSON configuration to determine whether Pots Details is required.
+8. Users who require Pots Details are routed there.
+9. Users who do not require Pots Details proceed to the next approved route.
+10. Pots Details matches its PNG.
+11. Pots Details validation is structural and based only on visible fields and approved rules.
+12. Saved gear selections and pots data are restored when pages are revisited.
+13. Back links use explicit destinations and preserve data.
+14. Relevant tests pass.
+15. Both pages meet WCAG 2.2 AA requirements.
+
+### 8. Scope
+
+#### In scope
+
+- Gear Selection GET and POST routes, or repository equivalent
+- Conditional route decision after valid gear submission
+- Pots Details GET and POST routes, or equivalent
+- Controllers or handlers
+- Nunjucks templates
+- Editable JSON gear reference data
+- Explicit configuration indicating which gear requires pots details
+- Existing journey-state integration
+- Restoring valid prior values
+- Structural validation
+- Error Summary and inline errors
+- Explicit Back and Continue navigation
+- English/Cymraeg integration through shared mechanisms
+- Unit, route, rendering, integration and accessibility tests
+- Responsive verification
+
+#### Out of scope
+
+- Account-level gear management
+- Adding or removing gear from a vessel profile
+- Remote gear lookup
+- Backend persistence
+- Statistical areas
+- Species or weights
+- Catch submission
+- Full translation infrastructure
+- Shared shell changes
+- Business rules not shown in the images or existing approved requirements
+
+### 9. Inspect Before Planning
+
+Inspect:
+
+```text
+.github/copilot-instructions.md
+.github/instructions/
+.github/skills/
+design/github-prompts/
+src/
+test-helpers/
+package.json
+```
+
+Locate and report:
+
+1. Step 10 routes and the approved next-step pattern.
+2. Shared layout and Back link contract.
+3. Existing question-page and conditional-routing patterns.
+4. Existing checkbox, radio and numeric-input macros.
+5. Existing Error Summary and inline-error helpers.
+6. Editable JSON fixture conventions.
+7. Journey-state helpers and current catch-record shape.
+8. Localisation utilities.
+9. Tests for earlier multi-page steps.
+10. Accessibility testing setup.
+11. Any existing gear or pots data that should be reused.
+
+Do not assume filenames.
+
+### 10. Journey and Branching Rules
+
+Implement the approved equivalent of:
+
+```text
+Step 10 completed
+  -> Gear Selection
+     -> valid selection requiring pots information
+        -> Pots Details
+           -> next approved step
+     -> valid selection not requiring pots information
+        -> next approved step
+```
+
+If multiple selections are allowed and at least one selected option requires pots details, route to Pots Details.
+
+The conditional rule must come from editable JSON configuration or an existing domain mapping, not visible labels and not template logic.
+
+#### Back navigation
+
+```text
+Gear Selection
+  -> explicit Step 10 Return Port route
+
+Pots Details
+  -> explicit Gear Selection route
+```
+
+If a user changes gear so pots details are no longer required, follow the approved state-cleanup rule defined during planning. Do not silently keep stale pots data if it could later appear in review or submission. Do not silently delete it unless the approved plan defines that behaviour.
+
+### 11. Gear Selection Requirements
+
+Implement exactly what the Gear Selection PNG shows.
+
+The page must:
+
+1. Load gear options from editable JSON.
+2. Use the control type shown in the PNG.
+3. Display options in the PNG order unless existing approved data explicitly defines the order.
+4. Restore saved selections.
+5. Validate required input.
+6. Reject values not present in the approved data set.
+7. Save valid selections using stable IDs rather than display labels where consistent with the existing model.
+8. Route conditionally after successful submission.
+
+If the PNG uses checkboxes, use the GOV.UK Checkboxes component and a page-heading legend. If the PNG uses radios, use GOV.UK Radios. Do not choose the component based on assumption.
+
+### 12. Pots Details Requirements
+
+Implement every visible field in the Pots Details PNG and no additional fields.
+
+For each field, planning must record:
+
+- Exact label
+- Exact hint text
+- Input type
+- Unit or suffix, if shown
+- Whether required
+- Valid structural format
+- Error wording from the PNG, if supplied
+- Journey-state property
+
+Requirements:
+
+1. Use GOV.UK input components and appropriate input modes.
+2. Use numeric input only where the design and rule require numeric data.
+3. Do not invent minimums, maximums, decimals or cross-field calculations.
+4. Do not add chronological or biological validation unrelated to visible pots information.
+5. Restore saved values on GET and invalid POST.
+6. Save valid values only after successful validation.
+7. Continue to the next approved journey route.
+
+### 13. GDS Components
+
+Use the design to determine exact components.
+
+Likely components include:
+
+- GOV.UK Back Link through the shared shell
+- GOV.UK Checkboxes or Radios for gear selection
+- GOV.UK Input for pots details
+- GOV.UK Input suffix or adjacent unit text only when shown
+- GOV.UK Hint text when shown
+- GOV.UK Button for Continue
+- GOV.UK Error Summary
+- GOV.UK inline Error Message
+
+For a single grouped question, use a `fieldset` with a `legend` styled as the page heading and `isPageHeading: true`, following existing project conventions.
+
+Do not render empty Summary Lists, cards or panels unless shown in the PNG.
+
+### 14. Positioning and Spacing
+
+Match each PNG using GOV.UK spacing tokens and current project utilities.
+
+Requirements:
+
+1. Use the shared width container.
+2. Keep Back and English/Cymraeg controls in the shared pre-main region.
+3. Align the heading or page-heading legend with the main content column.
+4. Use the content width shown by the PNG, normally a two-thirds column for question pages.
+5. Keep hint text immediately associated with its heading or control.
+6. Use standard vertical spacing between options or fields.
+7. Place Continue below the final control using the spacing shown in the PNG.
+8. Place Error Summary before the page question.
+9. Do not centre page form content unless the PNG does so.
+10. Do not use empty elements for spacing.
+11. Ensure controls stack and reflow at narrow widths.
+12. Preserve the corrected shared header and footer styling.
+
+The plan must identify the exact macros, classes and spacing utilities to use.
+
+### 15. Editable JSON Data
+
+Create or reuse safe repository-relative JSON object files following existing conventions.
+
+Gear data should contain only approved properties, such as:
+
+```json
+{
+  "id": "stable-gear-id",
+  "label": "Visible label from PNG",
+  "requiresPotsDetails": true,
+  "displayOrder": 1
+}
+```
+
+This is an illustrative shape only. Adapt it to existing repository conventions.
+
+Requirements:
+
+1. Do not hard-code the complete list in route or template code.
+2. Do not use labels as conditional-routing logic.
+3. Keep data easy to edit.
+4. Do not duplicate existing suitable data.
+5. Do not add executable logic to JSON.
+6. Use kebab-case filenames.
+7. Use safe relative paths.
+
+### 16. Journey-State Requirements
+
+Use the existing state mechanism and naming conventions.
+
+Store the approved equivalent of:
+
+```text
+selectedGearIds
+potsDetails
+```
+
+Requirements:
+
+1. Save only after valid submission.
+2. Restore saved values when revisiting.
+3. Replace only values owned by the current screen.
+4. Preserve ports, trip dates and other prior data.
+5. Keep the current draft-record context.
+6. Do not expose internal JSON state unnecessarily to the browser.
+7. Define explicit stale-pots-data behaviour when gear selection changes.
+8. Do not introduce backend persistence.
+
+### 17. Validation
+
+#### Gear Selection
+
+Validate:
+
+1. Required selection according to the design.
+2. Submitted values exist in the approved data set.
+3. Duplicate or malformed values are rejected or normalised using existing conventions.
+
+#### Pots Details
+
+Validate only approved structural rules for fields visible in the PNG, such as:
+
+- Required value
+- Numeric format when required
+- Whole-number format when required
+- Decimal format only when explicitly allowed
+- Non-negative value only when explicitly required by the design or an existing approved rule
+
+Do not invent domain ranges.
+
+For all errors:
+
+1. Render Error Summary and inline errors.
+2. Link summary errors to the relevant control.
+3. Preserve submitted values where safe.
+4. Use PNG wording when error examples are supplied.
+5. Otherwise use existing repository conventions and record the wording in the plan.
+6. Use the existing invalid-form HTTP status convention, preferably `400` where already established.
+
+### 18. Error Handling and Security
+
+1. Handle missing or invalid draft context using existing patterns.
+2. Do not silently start a new draft.
+3. Do not treat missing gear JSON as an empty valid list.
+4. Reject unknown gear IDs and unexpected fields.
+5. Escape all dynamic labels through Nunjucks defaults.
+6. Preserve existing CSRF protection.
+7. Do not log sensitive journey data.
+8. Do not expose stack traces or filesystem paths.
+9. Do not render submitted values as trusted HTML.
+10. Preserve existing authentication and authorisation.
+
+### 19. Accessibility
+
+Meet WCAG 2.2 AA and repository accessibility instructions.
+
+Verify:
+
+1. Unique browser titles.
+2. One clear page heading or page-heading legend per screen.
+3. Correct `fieldset` and `legend` semantics for grouped choices.
+4. Labels and hints are programmatically associated with fields.
+5. Error messages are associated with controls.
+6. Error Summary links focus the correct invalid control.
+7. Keyboard and screen-reader order is logical.
+8. Focus indicators remain visible.
+9. Selected and checked states are programmatically available.
+10. Numeric fields use appropriate input mode without preventing valid entry or paste.
+11. Controls work without JavaScript where practical.
+12. Pages reflow at 320 CSS pixels.
+13. Pages work at 200% and 400% zoom.
+14. No information relies on colour alone.
+15. English/Cymraeg metadata continues through the shared shell.
+
+Use `.github/skills/web-accessibility-audit/` during implementation or review.
+
+### 20. Responsive Requirements
+
+Validate at:
+
+```text
+320px
+768px
+1024px
+1440px
+```
+
+Confirm:
+
+- No clipped option, label, hint, error or button text
+- No inappropriate horizontal scrolling
+- No overlap with Back or language controls
+- Touch targets remain usable
+- Errors reflow correctly
+- Input suffixes or units remain associated with inputs
+- Footer remains in normal document flow
+- Visual spacing matches the PNG at the reference viewport
+
+### 21. Testing Requirements
+
+Follow existing testing instructions and use `.github/skills/unit-tests/` where relevant.
+
+#### JSON data tests
+
+Cover:
+
+1. Gear data loads successfully.
+2. IDs are stable and unique.
+3. Labels and required properties exist.
+4. Conditional pots flags have valid boolean values.
+5. Display order is deterministic where used.
+
+#### Gear Selection tests
+
+Cover:
+
+1. GET renders approved options.
+2. GET restores saved selections.
+3. Valid submission saves selected stable IDs.
+4. A pots-requiring selection routes to Pots Details.
+5. A non-pots selection routes to the next approved step.
+6. Mixed selections route to Pots Details if any selected option requires it.
+7. Blank required submission renders accessible errors.
+8. Unknown values are rejected.
+9. Explicit Back links to Step 10.
+10. Unrelated journey state remains unchanged.
+
+#### Pots Details tests
+
+Cover:
+
+1. GET is available when the selected gear requires pots details.
+2. GET restores saved pots data.
+3. Valid POST saves pots details and redirects correctly.
+4. Missing required values render errors.
+5. Invalid structural values render field-specific errors.
+6. Error Summary links target the correct controls.
+7. Gear state and prior journey data remain unchanged.
+8. Back links explicitly to Gear Selection.
+9. Direct access when pots details are not required follows the approved guard behaviour.
+
+#### Template tests
+
+Cover:
+
+1. Visible wording matches each PNG.
+2. Correct GDS component structure is rendered.
+3. No unapproved fields appear.
+4. Continue appears once.
+5. Error Summary is absent on initial GET.
+6. Shared language selector is not duplicated.
+7. Shared layout corrections remain intact.
+
+#### Integration tests
+
+Cover:
+
+```text
+Step 10
+  -> Gear Selection
+  -> conditional Pots Details
+  -> next approved step
+  -> Back through the journey with values restored
+```
+
+Also cover the no-pots branch where it exists.
+
+#### Accessibility tests
+
+Run existing automated accessibility checks for:
+
+- Gear Selection initial state
+- Gear Selection error state
+- Pots Details initial state
+- Pots Details error state
+
+Do not rely only on snapshots.
+
+### 22. Documentation
+
+If new data or state fields are introduced, document briefly:
+
+- Gear JSON location and shape
+- How to add or edit dummy gear
+- How `requiresPotsDetails` or the approved equivalent controls routing
+- Journey-state properties
+- Stale pots-data handling
+- Validation behaviour
+- Relevant tests
+
+### 23. Suggested Files to Modify
+
+The plan must identify actual files. Likely areas include:
+
+- Catch Record route configuration
+- Gear Selection controller/handler
+- Pots Details controller/handler
+- Gear Selection Nunjucks template
+- Pots Details Nunjucks template
+- Editable gear JSON object file
+- Existing journey-state mapper or object
+- Validation helpers only if required
+- Route and rendering tests
+- Integration and accessibility tests
+- Minimal documentation
+
+Modify other files only when necessary and explain why.
+
+### 24. Delivery Plan Rules
+
+Before implementation, produce:
+
+1. Repository findings.
+2. Exact PNG transcription for every screen.
+3. GDS component mapping.
+4. Route and branch diagram.
+5. Explicit Back destinations.
+6. Editable JSON design.
+7. Journey-state design, including stale pots-data handling.
+8. Field-by-field validation rules.
+9. Positioning and spacing plan.
+10. Exact files to create or modify.
+11. Test plan.
+12. Accessibility plan.
+13. Risks, dependencies and ambiguities.
+14. Confirmation that the orchestrator is not required.
+
+Do not modify code during planning. Stop and wait for approval.
+
+After approval, save the approved plan first as:
+
+```text
+design/github-prompts/Step 11-gear-selection-pots-details-plan.md
+```
+
+Then implement only the approved plan.
+
+At completion, report:
+
+- Files changed
+- Routes and branching implemented
+- JSON and state changes
+- Validation implemented
+- Tests and results
+- Accessibility checks and results
+- Manual verification completed
+- Any approved-plan deviation and reason
+
+### 25. Manual Verification
+
+1. Start the application using the documented command.
+2. Navigate from Step 10 to Gear Selection.
+3. Compare Gear Selection with its PNG.
+4. Submit an empty selection and verify accessible errors.
+5. Test a valid selection that does not require pots details, if present.
+6. Test a valid selection that requires pots details.
+7. Compare Pots Details with its PNG.
+8. Submit empty and invalid pots values and verify errors.
+9. Submit valid pots details and continue.
+10. Navigate backwards and confirm all saved values are restored.
+11. Change gear so pots details are no longer required and verify the approved stale-data behaviour.
+12. Test English/Cymraeg switching through the existing mechanism.
+13. Test keyboard-only navigation.
+14. Test 320px, 768px, 1024px and 1440px widths.
+15. Test 200% and, where practical, 400% zoom.
+16. Confirm no browser-console errors.
+17. Confirm the logo, centred menu and thin grey footer border remain unchanged.
+
+### 26. Acceptance Criteria
+
+- [ ] The approved plan is saved as `design/github-prompts/Step 11-gear-selection-pots-details-plan.md` before implementation.
+- [ ] Gear Selection matches its PNG.
+- [ ] Pots Details matches its PNG.
+- [ ] Visible wording follows each PNG where documentation differs.
+- [ ] Gear reference data is stored in editable JSON.
+- [ ] No backend, database or remote API is introduced.
+- [ ] Gear selections persist and restore correctly.
+- [ ] Pots Details is shown only when required by approved JSON configuration.
+- [ ] The no-pots branch proceeds to the approved next step.
+- [ ] Pots values persist and restore correctly.
+- [ ] Stale pots-data behaviour is explicit and tested.
+- [ ] Required and malformed input produces accessible errors.
+- [ ] Back links use explicit routes and preserve state.
+- [ ] Shared layout and previous data remain unchanged.
+- [ ] Unit, route, integration and accessibility tests pass.
+- [ ] No later journey step is implemented prematurely.
+- [ ] No unrelated change or dependency is included.
+
+### 27. Quality Requirements
+
+- Follow existing Node.js, Nunjucks and testing conventions.
+- Reuse GOV.UK components and project wrappers.
+- Keep branching and validation logic out of templates.
+- Use stable data IDs rather than display labels for stored selections.
+- Keep JSON easy to edit.
+- Use GOV.UK spacing tokens.
+- Preserve progressive enhancement.
+- Keep tests behaviour-focused.
+- Avoid overengineering and unapproved business rules.
+
+### 28. Final Instruction
+
+if you reach any ambiguity ask me to clarify
