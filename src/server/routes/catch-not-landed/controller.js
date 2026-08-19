@@ -6,7 +6,7 @@ export const catchNotLandedController = {
       pageTitle: 'Was any catch not landed?',
       heading: 'Was any catch not landed?',
       backLink: {
-        href: '/species-weight',
+        href: '/species-selection',
         text: 'Back'
       }
     })

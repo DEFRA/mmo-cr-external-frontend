@@ -19,7 +19,6 @@ const SAFE_RETURN_PATHS = [
   '/statistical-area',
   '/statistical-area-other',
   '/species-selection',
-  '/species-weight',
   '/catch-not-landed',
   '/check-answers',
   '/confirmation',
@@ -52,7 +51,5 @@ export function backForSpeciesSelection(request) {
 }
 
 export function safeReturnPath(candidate) {
-  return SAFE_RETURN_PATHS.includes(candidate)
-    ? candidate
-    : DEFAULT_RETURN_PATH
+  return SAFE_RETURN_PATHS.includes(candidate) ? candidate : DEFAULT_RETURN_PATH
 }

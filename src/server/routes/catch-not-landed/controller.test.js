@@ -1,3 +1,5 @@
+import { load } from 'cheerio'
+
 import { createServer } from '#/server/server.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 
@@ -23,6 +25,18 @@ describe('#catchNotLandedController', () => {
       expect.stringContaining('Was any catch not landed? |')
     )
     expect(statusCode).toBe(statusCodes.ok)
+  })
+
+  test('Should render the Back link to the species selection page', async () => {
+    const { result } = await server.inject({
+      method: 'GET',
+      url: '/catch-not-landed'
+    })
+    const $ = load(result)
+
+    expect(
+      $('[data-testid="app-page-navigation-back-link"]').attr('href')
+    ).toBe('/species-selection')
   })
 })
 
@@ -57,9 +71,7 @@ describe('#catchNotLandedSubmitController', () => {
     })
 
     expect(statusCode).toBe(303)
-    expect(headers.location).toBe(
-      '/not-implemented?return=/catch-not-landed'
-    )
+    expect(headers.location).toBe('/not-implemented?return=/catch-not-landed')
   })
 
   test('Should reject an invalid choice', async () => {
