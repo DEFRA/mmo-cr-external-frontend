@@ -3,9 +3,8 @@ import { load } from 'cheerio'
 import { createServer } from '#/server/server.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 
-describe('#homeController', () => {
+describe('#guidanceController', () => {
   let server
-  let $
 
   beforeAll(async () => {
     server = await createServer()
@@ -22,11 +21,37 @@ describe('#homeController', () => {
       url: '/'
     })
 
-    expect(result).toEqual(expect.stringContaining('Home |'))
+    expect(result).toEqual(expect.stringContaining('Guidance |'))
     expect(statusCode).toBe(statusCodes.ok)
   })
 
+  describe('Onward links', () => {
+    let $
+
+    beforeAll(async () => {
+      const { result } = await server.inject({
+        method: 'GET',
+        url: '/'
+      })
+      $ = load(result)
+    })
+
+    test('Should link to the privacy notice', () => {
+      expect($('a[href="/privacy-notice"]').text().trim()).toBe(
+        'Privacy notice'
+      )
+    })
+
+    test('Should render a Start now button linking to sign in', () => {
+      const $startButton = $('.govuk-button[href="/sign-in"]')
+      expect($startButton).toHaveLength(1)
+      expect($startButton.text().trim()).toBe('Start now')
+    })
+  })
+
   describe('Shared application shell', () => {
+    let $
+
     beforeAll(async () => {
       const { result } = await server.inject({
         method: 'GET',
@@ -36,7 +61,9 @@ describe('#homeController', () => {
     })
 
     test('Should compose the page title with the service name', () => {
-      expect($('title').text().trim()).toBe('Home | Record your catch')
+      expect($('head > title').text().trim()).toBe(
+        'Guidance | Record your catch'
+      )
     })
 
     test('Should render the skip link as the first focusable element, targeting #main-content', () => {
@@ -96,4 +123,3 @@ describe('#homeController', () => {
     })
   })
 })
-

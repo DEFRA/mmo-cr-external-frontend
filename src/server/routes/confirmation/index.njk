@@ -1,0 +1,14 @@
+{% extends 'layouts/page.njk' %}
+{% from "placeholder-page/macro.njk" import appPlaceholderPage %}
+
+{% block pageContent %}
+  {{ appPlaceholderPage({ heading: heading }) }}
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <p class="govuk-body">
+        <a class="govuk-link" href="/records">View your catch records</a>
+      </p>
+    </div>
+  </div>
+{% endblock %}

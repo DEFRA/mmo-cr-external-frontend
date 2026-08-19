@@ -1,0 +1,25 @@
+{% extends 'layouts/page.njk' %}
+{% from "placeholder-page/macro.njk" import appPlaceholderPage %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% block pageContent %}
+  {{ appPlaceholderPage({ heading: heading }) }}
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <ul class="govuk-list" data-testid="app-records-list">
+        {% for record in records %}
+          <li>
+            <a class="govuk-link" href="{{ record.href }}">{{ record.recordId }}</a>
+            — {{ record.status }}
+          </li>
+        {% endfor %}
+      </ul>
+
+      {{ govukButton({
+        text: "Create a new catch record",
+        href: "/draft"
+      }) }}
+    </div>
+  </div>
+{% endblock %}

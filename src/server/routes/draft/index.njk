@@ -1,0 +1,20 @@
+{% extends 'layouts/page.njk' %}
+{% from "placeholder-page/macro.njk" import appPlaceholderPage %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% block pageContent %}
+  {{ appPlaceholderPage({ heading: heading }) }}
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {{ govukButton({
+        text: "Complete catch record",
+        href: "/select-vessel"
+      }) }}
+
+      <p class="govuk-body">
+        <a class="govuk-link" href="/not-implemented?return=/draft">Delete catch record</a>
+      </p>
+    </div>
+  </div>
+{% endblock %}

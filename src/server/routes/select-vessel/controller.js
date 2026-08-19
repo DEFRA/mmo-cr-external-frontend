@@ -1,0 +1,22 @@
+/**
+ * A single vessel (OLGA) is available in this placeholder journey, so
+ * Continue is sufficient without a real vessel choice.
+ */
+export const selectVesselController = {
+  handler(_request, h) {
+    return h.view('select-vessel/index', {
+      pageTitle: 'Select a vessel',
+      heading: 'Select a vessel',
+      backLink: {
+        href: '/draft',
+        text: 'Back'
+      }
+    })
+  }
+}
+
+export const selectVesselSubmitController = {
+  handler(_request, h) {
+    return h.redirect('/trip-date').code(303)
+  }
+}

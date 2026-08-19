@@ -1,0 +1,25 @@
+{% extends 'layouts/page.njk' %}
+{% from "placeholder-page/macro.njk" import appPlaceholderPage %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% block pageContent %}
+  {{ appPlaceholderPage({
+    heading: heading,
+    description: "Atlantic cod (COD) has been added to this catch record."
+  }) }}
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <p class="govuk-body">
+        <a class="govuk-link" href="/not-implemented?return=/species-selection">Add species</a>
+      </p>
+      <p class="govuk-body">
+        <a class="govuk-link" href="/not-implemented?return=/species-selection">Remove species</a>
+      </p>
+
+      <form method="post" novalidate>
+        {{ govukButton({ text: "Continue" }) }}
+      </form>
+    </div>
+  </div>
+{% endblock %}
