@@ -1,17 +1,57 @@
 {% extends 'layouts/page.njk' %}
-{% from "placeholder-page/macro.njk" import appPlaceholderPage %}
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
 
 {% block pageContent %}
-  {{ appPlaceholderPage({ heading: heading }) }}
-
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-      <p class="govuk-body">
-        <a class="govuk-link" href="/not-implemented?return=/records/{{ recordId }}">Edit catch record</a>
-      </p>
-      <p class="govuk-body">
-        <a class="govuk-link" href="/not-implemented?return=/records/{{ recordId }}">Download PDF</a>
-      </p>
+      <span class="govuk-caption-l" data-testid="app-record-reference">{{ details.reference }}</span>
+      <h1 class="govuk-heading-xl" data-testid="app-heading-title">{{ heading }}</h1>
+
+      <h2 class="govuk-heading-l">Trips details</h2>
+      {{ govukSummaryList({ rows: [
+        { key: { text: "Vessel" }, value: { text: details.vesselName } },
+        { key: { text: "Departure date" }, value: { text: details.departureDate | formatDate("d MMMM yyyy") } },
+        { key: { text: "Return date" }, value: { text: details.returnDate | formatDate("d MMMM yyyy") } },
+        { key: { text: "Departure port" }, value: { text: details.departurePort } },
+        { key: { text: "Return port" }, value: { text: details.returnPort } },
+        { key: { text: "Statistical sub area" }, value: { text: details.statisticalSubArea } }
+      ] }) }}
+
+      <h2 class="govuk-heading-l">Gear used</h2>
+      {{ govukSummaryList({ rows: [
+        { key: { text: "Gear type" }, value: { text: details.gear } },
+        { key: { text: "Total pots or traps hauled" }, value: { text: details.potsHauled } },
+        { key: { text: "Total pots or traps left in water" }, value: { text: details.potsInWater } }
+      ] }) }}
+
+      <h2 class="govuk-heading-l">Species caught</h2>
+      {{ govukSummaryList({ rows: [
+        { key: { text: "Species" }, value: { text: details.species } },
+        { key: { text: "Weight above minimum size retained" }, value: { text: details.weightAboveMinimumRetained ~ " " ~ details.weightUnit } },
+        { key: { text: "Weight below minimum size retained" }, value: { text: details.weightBelowMinimumRetained ~ " " ~ details.weightUnit } },
+        { key: { text: "Weight legally discard" }, value: { text: details.weightLegallyDiscarded ~ " " ~ details.weightUnit } }
+      ] }) }}
+
+      <h2 class="govuk-heading-l">Species not landed</h2>
+      {{ govukSummaryList({ rows: [
+        { key: { text: "Not landed" }, value: { text: "Yes" if details.catchNotLanded else "No" } },
+        { key: { text: "Species" }, value: { text: details.notLandedSpecies } },
+        { key: { text: "Weight above minimum size kept onboard or in keep pots (kg)" }, value: { text: details.notLandedWeightAboveMinimumKept } }
+      ] }) }}
+
+      <div class="govuk-button-group">
+        {{ govukButton({
+          text: "Edit catch record",
+          href: "/not-implemented?return=/records/" + recordId
+        }) }}
+        {# Download PDF is intentionally inert in this walkthrough (no PDF generation) #}
+        {{ govukButton({
+          text: "Download PDF",
+          classes: "govuk-button--secondary",
+          type: "button"
+        }) }}
+      </div>
     </div>
   </div>
 {% endblock %}

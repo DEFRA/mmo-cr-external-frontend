@@ -1,10 +1,6 @@
 import Joi from 'joi'
 
-// Placeholder gear options — a small, temporary fixture pending the Step 03 mock-data layer.
-export const gearOptions = [
-  { value: 'pots', text: 'Pots' },
-  { value: 'nets', text: 'Nets' }
-]
+import { getData } from '#/server/common/data/get-data.js'
 
 export const gearSelectionController = {
   handler(_request, h) {
@@ -15,7 +11,7 @@ export const gearSelectionController = {
         href: '/return-port',
         text: 'Back'
       },
-      gearOptions
+      gearOptions: getData('gearSelection')
     })
   }
 }

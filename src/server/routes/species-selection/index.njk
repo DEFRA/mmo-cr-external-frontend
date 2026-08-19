@@ -10,6 +10,12 @@
 
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
+      <ul class="govuk-list" data-testid="app-species-options-list">
+        {% for species in speciesOptions %}
+          <li>{{ species.text }}</li>
+        {% endfor %}
+      </ul>
+
       <p class="govuk-body">
         <a class="govuk-link" href="/not-implemented?return=/species-selection">Add species</a>
       </p>

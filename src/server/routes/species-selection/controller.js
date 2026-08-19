@@ -1,4 +1,5 @@
 import { backForSpeciesSelection } from '#/server/common/helpers/journey/navigation.js'
+import { getData } from '#/server/common/data/get-data.js'
 
 export const speciesSelectionController = {
   handler(request, h) {
@@ -8,7 +9,8 @@ export const speciesSelectionController = {
       backLink: {
         href: backForSpeciesSelection(request),
         text: 'Back'
-      }
+      },
+      speciesOptions: getData('speciesSelection')
     })
   }
 }

@@ -21,9 +21,7 @@ describe('#confirmationController', () => {
       url: '/confirmation'
     })
 
-    expect(result).toEqual(
-      expect.stringContaining('Catch record submitted |')
-    )
+    expect(result).toEqual(expect.stringContaining('Catch record submitted |'))
     expect(statusCode).toBe(statusCodes.ok)
   })
 
@@ -47,5 +45,15 @@ describe('#confirmationController', () => {
     expect($('a[href="/records"]').text().trim()).toBe(
       'View your catch records'
     )
+  })
+
+  test('Should render the confirmation reference number', async () => {
+    const { result } = await server.inject({
+      method: 'GET',
+      url: '/confirmation'
+    })
+    const $ = load(result)
+
+    expect($('.govuk-body').text()).toContain('A1234520260727150815')
   })
 })

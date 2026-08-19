@@ -1,7 +1,7 @@
 import Joi from 'joi'
 import Boom from '@hapi/boom'
 
-import { sampleRecords } from '#/server/common/helpers/journey/records.js'
+import { getData } from '#/server/common/data/get-data.js'
 
 /**
  * Dispatches by record status: an unsent record has no details yet and
@@ -17,7 +17,9 @@ export const recordDetailsController = {
   },
   handler(request, h) {
     const { recordId } = request.params
-    const record = sampleRecords.find((item) => item.recordId === recordId)
+    const record = getData('allRecords').find(
+      (item) => item.recordId === recordId
+    )
 
     if (!record) {
       throw Boom.notFound()
@@ -27,13 +29,16 @@ export const recordDetailsController = {
       return h.redirect('/draft').code(302)
     }
 
+    const details = getData('catchRecordDetails')
+
     return h.view('record-details/index', {
-      pageTitle: 'Catch record details',
-      heading: 'Catch record details',
+      pageTitle: `Catch record for ${details.vesselName}`,
+      heading: `Catch record for ${details.vesselName}`,
       backLink: {
         href: '/records',
         text: 'Back'
       },
+      details,
       recordId
     })
   }

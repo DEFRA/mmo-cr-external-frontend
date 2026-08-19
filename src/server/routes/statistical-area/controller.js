@@ -1,12 +1,7 @@
 import Joi from 'joi'
 
 import { setJourneyState } from '#/server/common/helpers/journey/navigation.js'
-
-// Placeholder statistical areas — a small, temporary fixture pending the Step 03 mock-data layer.
-export const statisticalAreaOptions = [
-  { value: 'area-viid', text: 'Area VIId' },
-  { value: 'other', text: 'Other' }
-]
+import { getData } from '#/server/common/data/get-data.js'
 
 export const statisticalAreaController = {
   handler(_request, h) {
@@ -17,7 +12,7 @@ export const statisticalAreaController = {
         href: '/pots-details',
         text: 'Back'
       },
-      statisticalAreaOptions
+      statisticalAreaOptions: getData('statisticalAreas')
     })
   }
 }

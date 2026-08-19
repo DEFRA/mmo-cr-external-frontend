@@ -1,16 +1,33 @@
 {% extends 'layouts/page.njk' %}
-{% from "placeholder-page/macro.njk" import appPlaceholderPage %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
 
 {% block pageContent %}
-  {{ appPlaceholderPage({ heading: heading }) }}
+  {{ appHeading({ text: heading }) }}
 
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
       <form method="post" novalidate>
-        {{ govukButton({ text: "Continue" }) }}
+        {{ govukInput({
+          label: { text: "Email address" },
+          id: "email",
+          name: "email",
+          type: "email",
+          autocomplete: "username"
+        }) }}
+
+        {{ govukInput({
+          label: { text: "Password" },
+          id: "password",
+          name: "password",
+          type: "password",
+          autocomplete: "current-password"
+        }) }}
+
+        {{ govukButton({ text: "Sign in" }) }}
       </form>
 
+      <h2 class="govuk-heading-m">Having trouble signing in?</h2>
       <p class="govuk-body">
         <a class="govuk-link" href="/not-implemented?return=/sign-in">Forgotten your password?</a>
       </p>

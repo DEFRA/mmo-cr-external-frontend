@@ -60,6 +60,26 @@ Supply `errorSummary` (GOV.UK `govukErrorSummary` params) and/or `notification` 
 `govukNotificationBanner` params) in the view context to render them above `pageContent`. Neither renders
 when not supplied — an empty error/notification region is never announced to assistive technology.
 
+## Mock-data layer (walkthrough-only)
+
+Routes source their placeholder content from `src/server/common/data/` via the single accessor
+`getData(pageName)` in [data/get-data.js](data/get-data.js). This data exists **only to support the
+frontend walkthrough** — it is fictional, non-persistent, and not read from or written to any backend.
+
+Supported keys: `service`, `account`, `allRecords`, `catchRecordDetails`, `selectVessel`, `tripDates`,
+`ports`, `gearSelection`, `potsDetails`, `statisticalAreas`, `alternativeStatisticalAreaExample`,
+`speciesSelection`, `speciesWeights`, `catchNotLanded`, `confirmation`.
+
+Calling `getData` with a key not in this list throws an `Error` naming the unknown key — it does not leak
+file paths or stack details.
+
+Each call returns a `structuredClone` of the underlying data, so mutating a returned value never affects
+the source constant or any later call to `getData`.
+
+To add or edit a mock value, edit the relevant file under `src/server/common/data/` and, if adding a new
+key, register it in the `dataByKey` map in `get-data.js`. **No real personal data or secrets may be added
+to this layer** — only clearly fictional placeholder content.
+
 ### Tests verifying the shell
 
 - [components/page-navigation/template.test.js](components/page-navigation/template.test.js) — Back link
@@ -71,4 +91,3 @@ when not supplied — an empty error/notification region is never announced to a
 - [../config/nunjucks/context/context.test.js](../../config/nunjucks/context/context.test.js) and
   [../config/nunjucks/context/build-navigation.test.js](../../config/nunjucks/context/build-navigation.test.js) —
   context and navigation data feeding the shell.
-

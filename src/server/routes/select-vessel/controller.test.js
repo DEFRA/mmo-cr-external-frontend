@@ -1,3 +1,5 @@
+import { load } from 'cheerio'
+
 import { createServer } from '#/server/server.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 
@@ -21,6 +23,16 @@ describe('#selectVesselController', () => {
 
     expect(result).toEqual(expect.stringContaining('Select a vessel |'))
     expect(statusCode).toBe(statusCodes.ok)
+  })
+
+  test('Should render the vessel name', async () => {
+    const { result } = await server.inject({
+      method: 'GET',
+      url: '/select-vessel'
+    })
+    const $ = load(result)
+
+    expect($('.govuk-body').text()).toContain('OLGA')
   })
 })
 

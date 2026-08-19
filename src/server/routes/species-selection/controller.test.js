@@ -32,9 +32,9 @@ describe('#speciesSelectionController', () => {
     })
     const $ = load(result)
 
-    expect($('[data-testid="app-page-navigation-back-link"]').attr('href')).toBe(
-      '/statistical-area'
-    )
+    expect(
+      $('[data-testid="app-page-navigation-back-link"]').attr('href')
+    ).toBe('/statistical-area')
   })
 
   test('Should point the Back link to the alternative statistical area after the Other branch', async () => {
@@ -52,9 +52,9 @@ describe('#speciesSelectionController', () => {
     })
     const $ = load(result)
 
-    expect($('[data-testid="app-page-navigation-back-link"]').attr('href')).toBe(
-      '/statistical-area-other'
-    )
+    expect(
+      $('[data-testid="app-page-navigation-back-link"]').attr('href')
+    ).toBe('/statistical-area-other')
   })
 
   test('Should link Add species and Remove species to the Empty Page', async () => {
@@ -67,6 +67,19 @@ describe('#speciesSelectionController', () => {
     expect(
       $('a[href="/not-implemented?return=/species-selection"]')
     ).toHaveLength(2)
+  })
+
+  test('Should render the available species options', async () => {
+    const { result } = await server.inject({
+      method: 'GET',
+      url: '/species-selection'
+    })
+    const $ = load(result)
+    const optionsText = $('[data-testid="app-species-options-list"]').text()
+
+    expect(optionsText).toContain('Atlantic cod (COD)')
+    expect(optionsText).toContain('Haddock (HAD)')
+    expect(optionsText).toContain('Salmon (SAL)')
   })
 })
 

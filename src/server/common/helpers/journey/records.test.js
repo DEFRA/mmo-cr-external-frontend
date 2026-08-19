@@ -1,4 +1,4 @@
-import { resolveRecordDestination, sampleRecords } from './records.js'
+import { resolveRecordDestination } from './records.js'
 
 describe('#resolveRecordDestination', () => {
   test('Should route an unsent record to the draft page', () => {
@@ -21,11 +21,5 @@ describe('#resolveRecordDestination', () => {
     expect(() => resolveRecordDestination('unknown')).toThrow(
       'Unknown record status: unknown'
     )
-  })
-})
-
-describe('#sampleRecords', () => {
-  test('Should provide 4 sample records', () => {
-    expect(sampleRecords).toHaveLength(4)
   })
 })

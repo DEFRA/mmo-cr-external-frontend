@@ -21,8 +21,55 @@ describe('#guidanceController', () => {
       url: '/'
     })
 
-    expect(result).toEqual(expect.stringContaining('Guidance |'))
+    expect(result).toEqual(
+      expect.stringContaining('How to record your catch |')
+    )
     expect(statusCode).toBe(statusCodes.ok)
+  })
+
+  describe('Guidance content', () => {
+    let $
+
+    beforeAll(async () => {
+      const { result } = await server.inject({
+        method: 'GET',
+        url: '/'
+      })
+      $ = load(result)
+    })
+
+    test('Should render the expected heading', () => {
+      expect($('[data-testid="app-heading-title"]').text().trim()).toBe(
+        'How to record your catch'
+      )
+    })
+
+    test('Should render the key section headings', () => {
+      const headings = $('h2')
+        .map((_i, el) => $(el).text().trim())
+        .get()
+
+      expect(headings).toContain('What we need from you')
+      expect(headings).toContain('When to create your record')
+      expect(headings).toContain('Get help with your record')
+    })
+
+    test('Should resolve each contents anchor to a real id that exists exactly once', () => {
+      const $links = $('[data-testid="app-guidance-contents-link"]')
+      expect($links).toHaveLength(5)
+
+      $links.each((_i, el) => {
+        const href = $(el).attr('href')
+        const id = href.replace('#', '')
+        expect($(`#${id}`)).toHaveLength(1)
+      })
+    })
+
+    test('Should NOT render the old placeholder description', () => {
+      expect($.html()).not.toContain(
+        'The detailed Guidance page will be implemented in a later step.'
+      )
+    })
   })
 
   describe('Onward links', () => {
@@ -62,7 +109,7 @@ describe('#guidanceController', () => {
 
     test('Should compose the page title with the service name', () => {
       expect($('head > title').text().trim()).toBe(
-        'Guidance | Record your catch'
+        'How to record your catch | Record your catch'
       )
     })
 
@@ -73,7 +120,9 @@ describe('#guidanceController', () => {
     })
 
     test('Should render the shared header with the service name', () => {
-      expect($('.govuk-header').text()).toContain('Record your catch')
+      expect($('.govuk-service-navigation').text()).toContain(
+        'Record your catch'
+      )
     })
 
     test('Should render exactly one main landmark with id main-content', () => {
@@ -85,9 +134,7 @@ describe('#guidanceController', () => {
     })
 
     test('Should NOT render an empty Back link control', () => {
-      expect($('[data-testid="app-page-navigation-back-link"]')).toHaveLength(
-        0
-      )
+      expect($('[data-testid="app-page-navigation-back-link"]')).toHaveLength(0)
       expect($('.govuk-back-link')).toHaveLength(0)
     })
 
@@ -100,9 +147,7 @@ describe('#guidanceController', () => {
     })
 
     test('Should render the language selector with current language and a Cymraeg link preserving the path', () => {
-      const $current = $(
-        '[data-testid="app-page-navigation-language-current"]'
-      )
+      const $current = $('[data-testid="app-page-navigation-language-current"]')
       expect($current.attr('lang')).toBe('en')
       expect($current.text().trim()).toBe('English')
 

@@ -1,10 +1,4 @@
-// Placeholder sample record data — replaced by the Step 03 mock-data layer.
-export const sampleRecords = [
-  { recordId: 'unsent-1', status: 'unsent' },
-  { recordId: 'submitted-1', status: 'submitted' },
-  { recordId: 'amended-1', status: 'amended' },
-  { recordId: 'late-1', status: 'late' }
-]
+// Record status routing only — record content data lives in the Step 03 mock-data layer.
 
 /**
  * Resolves which placeholder page a record status routes to: an unsent record
