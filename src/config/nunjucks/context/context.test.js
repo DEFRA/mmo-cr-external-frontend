@@ -57,22 +57,29 @@ describe('context and cache', () => {
       test('Should provide expected context', () => {
         expect(contextResult).toEqual({
           assetPath: '/public/assets',
-          breadcrumbs: [],
           getAssetPath: expect.any(Function),
           navigation: [
             {
-              current: true,
               text: 'Home',
-              href: '/'
+              href: '#'
             },
             {
-              current: false,
-              text: 'About',
-              href: '/about'
+              text: 'Your account',
+              href: '#'
+            },
+            {
+              text: 'Sign out',
+              href: '#'
             }
           ],
-          serviceName: 'mmo-cr-external-frontend',
-          serviceUrl: '/'
+          serviceName: 'Record your catch',
+          serviceUrl: '/',
+          feedbackUrl: '#',
+          htmlLang: 'en',
+          languageToggle: {
+            current: 'en',
+            href: '/?lang=cy'
+          }
         })
       })
 
@@ -146,22 +153,29 @@ describe('context and cache', () => {
       test('Should provide expected context', () => {
         expect(contextResult).toEqual({
           assetPath: '/public/assets',
-          breadcrumbs: [],
           getAssetPath: expect.any(Function),
           navigation: [
             {
-              current: true,
               text: 'Home',
-              href: '/'
+              href: '#'
             },
             {
-              current: false,
-              text: 'About',
-              href: '/about'
+              text: 'Your account',
+              href: '#'
+            },
+            {
+              text: 'Sign out',
+              href: '#'
             }
           ],
-          serviceName: 'mmo-cr-external-frontend',
-          serviceUrl: '/'
+          serviceName: 'Record your catch',
+          serviceUrl: '/',
+          feedbackUrl: '#',
+          htmlLang: 'en',
+          languageToggle: {
+            current: 'en',
+            href: '/?lang=cy'
+          }
         })
       })
     })

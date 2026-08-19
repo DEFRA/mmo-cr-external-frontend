@@ -7,15 +7,10 @@ export const aboutController = {
     return h.view('about/index', {
       pageTitle: 'About',
       heading: 'About',
-      breadcrumbs: [
-        {
-          text: 'Home',
-          href: '/'
-        },
-        {
-          text: 'About'
-        }
-      ]
+      backLink: {
+        href: '/',
+        text: 'Back'
+      }
     })
   }
 }

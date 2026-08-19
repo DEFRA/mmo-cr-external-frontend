@@ -1,0 +1,25 @@
+{% from "govuk/components/back-link/macro.njk" import govukBackLink %}
+
+<div class="app-page-navigation" data-testid="app-page-navigation">
+  {% if params.backLink and params.backLink.href %}
+    {{ govukBackLink({
+      href: params.backLink.href,
+      text: params.backLink.text | default("Back", true),
+      attributes: { "data-testid": "app-page-navigation-back-link" }
+    }) }}
+  {% endif %}
+
+  {# Non-functional integration point for a future localisation step: the Cymraeg link only
+     preserves the current path via ?lang=cy and does not perform real translation/switching. #}
+  <nav class="app-page-navigation__language" aria-label="Language switcher" data-testid="app-page-navigation-language">
+    <ul class="app-page-navigation__language-list">
+      <li class="app-page-navigation__language-item">
+        <span lang="en" aria-current="true" data-testid="app-page-navigation-language-current">English</span>
+      </li>
+      <li class="app-page-navigation__language-item" aria-hidden="true">|</li>
+      <li class="app-page-navigation__language-item">
+        <a lang="cy" hreflang="cy" href="{{ params.language.href }}" class="govuk-link govuk-link--no-visited-state" data-testid="app-page-navigation-language-link">Cymraeg</a>
+      </li>
+    </ul>
+  </nav>
+</div>

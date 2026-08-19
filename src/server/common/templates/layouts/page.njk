@@ -1,11 +1,14 @@
 {% extends "govuk/template.njk" %}
 
 {# Import GOVUK components globally #}
-{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 {% from "govuk/components/service-navigation/macro.njk" import govukServiceNavigation %}
+{% from "govuk/components/phase-banner/macro.njk" import govukPhaseBanner %}
+{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
 
 {# Import custom components globally #}
 {% from "heading/macro.njk" import appHeading %}
+{% from "page-navigation/macro.njk" import appPageNavigation %}
 
 {% set mainClasses = "app-main-wrapper" %}
 
@@ -22,19 +25,25 @@
 {% endblock %}
 
 {% block header %}
-  {# serviceName being used in govukHeader will be @deprecated in v6. It has moved to govukServiceNavigation - https://github.com/alphagov/govuk-frontend/blob/main/CHANGELOG.md#move-service-name-and-navigation-links-from-the-govuk-header-to-service-navigation-component #}
-  {{ govukHeader({
-    homepageUrl: "https://www.gov.uk/",
-    classes: "app-header",
-    containerClasses: "govuk-width-container",
-    serviceName: serviceName,
-    serviceUrl: serviceUrl,
-    useTudorCrown: true
-  }) }}
+  {# serviceName/serviceUrl live on govukServiceNavigation, not govukHeader, in GOV.UK Frontend v6 #}
+  {# Outer band is full-width blue; the inner width-container aligns content with the page #}
+  <div class="app-header-row">
+    <div class="app-header-row__inner govuk-width-container">
+      {{ govukHeader({
+        homepageUrl: "https://www.gov.uk/",
+        classes: "app-header",
+        containerClasses: "",
+        useTudorCrown: true
+      }) }}
 
-  {{ govukServiceNavigation({
-    navigation: navigation
-  }) }}
+      {{ govukServiceNavigation({
+        classes: "govuk-service-navigation--inverse app-service-navigation",
+        serviceName: serviceName,
+        serviceUrl: serviceUrl,
+        navigation: navigation
+      }) }}
+    </div>
+  </div>
 {% endblock %}
 
 {% block pageTitle %}
@@ -42,35 +51,59 @@
 {% endblock %}
 
 {% block beforeContent %}
-  {% if breadcrumbs.length > 1 %}
-    {{ govukBreadcrumbs({
-      items: breadcrumbs
-    }) }}
-  {% endif %}
+  {% set feedbackHtml %}This is a new service – your <a class="govuk-link" href="{{ feedbackUrl }}">feedback</a> will help us to improve it.{% endset %}
+
+  {{ govukPhaseBanner({
+    tag: {
+      text: "Beta"
+    },
+    html: feedbackHtml
+  }) }}
+
+  {{ appPageNavigation({
+    backLink: backLink,
+    language: languageToggle
+  }) }}
 {% endblock %}
 
-{% block content %}{% endblock %}
+{% block content %}
+  {% block notification %}
+    {% if notification %}
+      {{ govukNotificationBanner(notification) }}
+    {% endif %}
+  {% endblock %}
+
+  {% block errorSummary %}
+    {% if errorSummary %}
+      {{ govukErrorSummary(errorSummary) }}
+    {% endif %}
+  {% endblock %}
+
+  {% block pageContent %}{% endblock %}
+{% endblock %}
 
 {% block footer %}
   {{ govukFooter({
+    classes: "app-footer",
     meta: {
       items: [
         {
-          href: "https://www.gov.uk/help/privacy-notice",
-          text: "Privacy"
+          href: feedbackUrl,
+          text: "Feedback"
         },
         {
-          href: "https://www.gov.uk/help/cookies",
-          text: "Cookies"
+          href: "https://www.gov.uk/help/privacy-notice",
+          text: "Privacy policy"
         },
         {
           href: "https://www.gov.uk/help/accessibility-statement",
-          text: "Accessibility statement"
+          text: "Accessibility Statement"
         }
       ]
     }
   }) }}
 {% endblock %}
+
 
 {% block bodyEnd %}
   <script type="module" src="{{ getAssetPath('src/client/javascripts/application.js') }}"></script>
