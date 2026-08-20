@@ -34,7 +34,8 @@ export const catchNotLandedSubmitController = {
         catchNotLanded: Joi.string().valid('yes', 'no').required()
       }),
       failAction(_request, h) {
-        const errorText = 'Select yes if any catch will not be landed straight away'
+        const errorText =
+          'Select yes if any catch will not be landed straight away'
 
         return h
           .view(

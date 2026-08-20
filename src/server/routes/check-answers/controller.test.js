@@ -33,10 +33,14 @@ describe('#checkAnswersController', () => {
     const $ = load(result)
 
     expect($('h1').text()).toContain('Check your catch record')
+    expect($('[data-testid="app-check-answers-caption"]').text().trim()).toBe(
+      'New catch record'
+    )
     expect(
-      $('[data-testid="app-check-answers-caption"]').text().trim()
-    ).toBe('New catch record')
-    expect($('h2.govuk-heading-l').map((_, el) => $(el).text().trim()).get()).toEqual([
+      $('h2.govuk-heading-l')
+        .map((_, el) => $(el).text().trim())
+        .get()
+    ).toEqual([
       'Trips details',
       'Gear used',
       'Species caught',
@@ -207,4 +211,3 @@ describe('#checkAnswers change loop', () => {
     expect(headers.location).toBe('/return-port')
   })
 })
-

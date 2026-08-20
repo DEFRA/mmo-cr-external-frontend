@@ -131,7 +131,9 @@ describe('#buildCheckAnswersViewModel', () => {
     const rows = rowsFor(viewModel, 'Gear used')
 
     expect(rowValue(rows, 'Mesh size')).toBe('80mm mesh')
-    expect(rows.find((row) => row.key.text === 'Total pots or traps hauled')).toBeUndefined()
+    expect(
+      rows.find((row) => row.key.text === 'Total pots or traps hauled')
+    ).toBeUndefined()
   })
 
   test('Should omit the Mesh size row when the selected gear has no mesh data', () => {
@@ -158,9 +160,7 @@ describe('#buildCheckAnswersViewModel', () => {
     )
 
     expect(
-      viewModel.sections.find(
-        (section) => section.heading === 'Species caught'
-      )
+      viewModel.sections.find((section) => section.heading === 'Species caught')
     ).toBeUndefined()
   })
 
@@ -221,7 +221,10 @@ describe('#buildCheckAnswersViewModel', () => {
     expect(rowValue(rows, 'Not landed')).toBe('Yes')
     expect(rowValue(rows, 'Species')).toBe('Atlantic cod (COD)')
     expect(
-      rowValue(rows, 'Weight above minimum size kept onboard or in keep pots (kg)')
+      rowValue(
+        rows,
+        'Weight above minimum size kept onboard or in keep pots (kg)'
+      )
     ).toBe('5')
   })
 

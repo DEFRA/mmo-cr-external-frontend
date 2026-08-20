@@ -20,7 +20,8 @@ function mapAreaItems(selectedValue) {
 }
 
 function viewContext(request, overrides = {}) {
-  const selectedStatisticalArea = getJourneyState(request).selectedStatisticalArea
+  const selectedStatisticalArea =
+    getJourneyState(request).selectedStatisticalArea
 
   return {
     pageTitle,

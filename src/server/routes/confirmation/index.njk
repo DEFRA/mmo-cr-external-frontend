@@ -1,16 +1,24 @@
 {% extends 'layouts/page.njk' %}
-{% from "placeholder-page/macro.njk" import appPlaceholderPage %}
+{% from "govuk/components/panel/macro.njk" import govukPanel %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
 
 {% block pageContent %}
-  {{ appPlaceholderPage({ heading: heading }) }}
-
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-      <p class="govuk-body">Reference: {{ reference }}</p>
+      {{ govukPanel({
+        titleText: heading,
+        html: 'Your reference number<br><strong>' + reference + '</strong>'
+      }) }}
 
-      <p class="govuk-body">
-        <a class="govuk-link" href="/records">View your catch records</a>
-      </p>
+      <h2 class="govuk-heading-m">What happens next</h2>
+      <ul class="govuk-list govuk-list--bullet">
+        <li>Your catch record has been received by the relevant fishing authority</li>
+        <li>You'll receive a confirmation email within 24 hours</li>
+        <li>You can view your submitted records in your account at any time</li>
+        <li>Save your catch record reference for your records</li>
+      </ul>
+
+      {{ govukButton({ text: "View your catch records", href: "/records" }) }}
     </div>
   </div>
 {% endblock %}

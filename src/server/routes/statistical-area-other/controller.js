@@ -45,8 +45,7 @@ function viewContext(request, overrides = {}) {
     areaOptions: areaRadioItems(selectedArea),
     selectedArea,
     showAlternativeInput: selectedArea === 'other',
-    alternativeStatisticalArea:
-      journeyState.alternativeStatisticalArea || '',
+    alternativeStatisticalArea: journeyState.alternativeStatisticalArea || '',
     ...overrides
   }
 }
@@ -100,7 +99,9 @@ export const statisticalAreaOtherSubmitController = {
         alternativeStatisticalArea: undefined
       })
 
-      return h.redirect(resolveNextPath(request, '/species-selection')).code(303)
+      return h
+        .redirect(resolveNextPath(request, '/species-selection'))
+        .code(303)
     }
 
     const submitted = alternativeStatisticalArea

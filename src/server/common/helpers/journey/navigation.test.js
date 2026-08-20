@@ -106,13 +106,19 @@ describe('#resolveNextPath', () => {
 
   test('Should return a safe return path when supplied', () => {
     expect(
-      resolveNextPath({ query: { return: '/check-answers' } }, '/gear-selection')
+      resolveNextPath(
+        { query: { return: '/check-answers' } },
+        '/gear-selection'
+      )
     ).toBe('/check-answers')
   })
 
   test('Should fall back to the default path for an unsafe return candidate', () => {
     expect(
-      resolveNextPath({ query: { return: 'https://evil.example' } }, '/gear-selection')
+      resolveNextPath(
+        { query: { return: 'https://evil.example' } },
+        '/gear-selection'
+      )
     ).toBe('/gear-selection')
   })
 })

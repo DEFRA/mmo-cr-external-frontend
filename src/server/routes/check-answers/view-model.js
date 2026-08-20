@@ -90,7 +90,8 @@ function tripsDetailsSection(journeyState, fallback) {
 function gearUsedSection(journeyState, fallback, meshSizeDefault) {
   const gearOptions = getData('gearSelection')
   const selectedGearIds = journeyState.selectedGearIds
-  const hasSelection = Array.isArray(selectedGearIds) && selectedGearIds.length > 0
+  const hasSelection =
+    Array.isArray(selectedGearIds) && selectedGearIds.length > 0
   const potsSelected = hasSelection ? selectedGearIds.includes('pots') : true
   const potsDetails = journeyState.potsDetails || {}
   const changeHref = `/gear-selection${RETURN_TO_CHECK_ANSWERS}`
