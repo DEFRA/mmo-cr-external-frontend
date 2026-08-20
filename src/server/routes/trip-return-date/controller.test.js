@@ -87,6 +87,21 @@ describe('#tripReturnDateSubmitController', () => {
     expect(headers.location).toBe('/departure-port')
   })
 
+  test('Should redirect back to check your answers when a return query is supplied', async () => {
+    const { statusCode, headers } = await server.inject({
+      method: 'POST',
+      url: '/trip-return-date?return=/check-answers',
+      payload: {
+        'tripReturnDate-day': '31',
+        'tripReturnDate-month': '3',
+        'tripReturnDate-year': '2020'
+      }
+    })
+
+    expect(statusCode).toBe(303)
+    expect(headers.location).toBe('/check-answers')
+  })
+
   test('Should re-render with an error summary when the whole date is missing', async () => {
     const { statusCode, result } = await server.inject({
       method: 'POST',

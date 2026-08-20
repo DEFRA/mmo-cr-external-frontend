@@ -2,6 +2,7 @@ import {
   backForDeparturePort,
   backForSpeciesSelection,
   getJourneyState,
+  resolveNextPath,
   safeReturnPath,
   setJourneyState
 } from './navigation.js'
@@ -89,5 +90,29 @@ describe('#safeReturnPath', () => {
 
   test('Should fall back to /records when no candidate is supplied', () => {
     expect(safeReturnPath(undefined)).toBe('/records')
+  })
+})
+
+describe('#resolveNextPath', () => {
+  test('Should return the default path when no return query is present', () => {
+    expect(resolveNextPath({ query: {} }, '/gear-selection')).toBe(
+      '/gear-selection'
+    )
+  })
+
+  test('Should return the default path when query is undefined', () => {
+    expect(resolveNextPath({}, '/gear-selection')).toBe('/gear-selection')
+  })
+
+  test('Should return a safe return path when supplied', () => {
+    expect(
+      resolveNextPath({ query: { return: '/check-answers' } }, '/gear-selection')
+    ).toBe('/check-answers')
+  })
+
+  test('Should fall back to the default path for an unsafe return candidate', () => {
+    expect(
+      resolveNextPath({ query: { return: 'https://evil.example' } }, '/gear-selection')
+    ).toBe('/gear-selection')
   })
 })

@@ -1,4 +1,8 @@
 import { validateDateInput } from '#/server/common/helpers/journey/date-input.js'
+import {
+  resolveNextPath,
+  setJourneyState
+} from '#/server/common/helpers/journey/navigation.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 
 const pageTitle = 'When did you leave for your trip?'
@@ -55,6 +59,8 @@ export const tripDepartureDateSubmitController = {
         .code(statusCodes.ok)
     }
 
-    return h.redirect('/trip-return-date').code(303)
+    setJourneyState(request, { departureDate: result.isoDate })
+
+    return h.redirect(resolveNextPath(request, '/trip-return-date')).code(303)
   }
 }

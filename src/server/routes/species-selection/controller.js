@@ -3,6 +3,7 @@ import Joi from 'joi'
 import {
   backForSpeciesSelection,
   getJourneyState,
+  resolveNextPath,
   setJourneyState
 } from '#/server/common/helpers/journey/navigation.js'
 import { getData } from '#/server/common/data/get-data.js'
@@ -268,6 +269,6 @@ export const speciesSelectionSubmitController = {
       weightFieldsVisible: currentVisibility
     })
 
-    return h.redirect('/catch-not-landed').code(303)
+    return h.redirect(resolveNextPath(request, '/catch-not-landed')).code(303)
   }
 }

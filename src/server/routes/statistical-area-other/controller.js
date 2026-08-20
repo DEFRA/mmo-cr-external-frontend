@@ -2,6 +2,7 @@ import Joi from 'joi'
 
 import {
   getJourneyState,
+  resolveNextPath,
   setJourneyState
 } from '#/server/common/helpers/journey/navigation.js'
 import { getData } from '#/server/common/data/get-data.js'
@@ -99,7 +100,7 @@ export const statisticalAreaOtherSubmitController = {
         alternativeStatisticalArea: undefined
       })
 
-      return h.redirect('/species-selection').code(303)
+      return h.redirect(resolveNextPath(request, '/species-selection')).code(303)
     }
 
     const submitted = alternativeStatisticalArea
@@ -138,6 +139,6 @@ export const statisticalAreaOtherSubmitController = {
       alternativeStatisticalArea: submitted.trim().toUpperCase()
     })
 
-    return h.redirect('/species-selection').code(303)
+    return h.redirect(resolveNextPath(request, '/species-selection')).code(303)
   }
 }

@@ -2,6 +2,7 @@ import Joi from 'joi'
 
 import {
   getJourneyState,
+  resolveNextPath,
   setJourneyState
 } from '#/server/common/helpers/journey/navigation.js'
 import { getData } from '#/server/common/data/get-data.js'
@@ -84,7 +85,12 @@ export const statisticalAreaSubmitController = {
     })
 
     return h
-      .redirect(isOther ? '/statistical-area-other' : '/species-selection')
+      .redirect(
+        resolveNextPath(
+          request,
+          isOther ? '/statistical-area-other' : '/species-selection'
+        )
+      )
       .code(303)
   }
 }

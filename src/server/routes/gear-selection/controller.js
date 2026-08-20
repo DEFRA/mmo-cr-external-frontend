@@ -2,6 +2,7 @@ import Joi from 'joi'
 
 import {
   getJourneyState,
+  resolveNextPath,
   setJourneyState
 } from '#/server/common/helpers/journey/navigation.js'
 import { getData } from '#/server/common/data/get-data.js'
@@ -160,6 +161,6 @@ export const gearSelectionSubmitController = {
       })
     }
 
-    return h.redirect('/statistical-area').code(303)
+    return h.redirect(resolveNextPath(request, '/statistical-area')).code(303)
   }
 }

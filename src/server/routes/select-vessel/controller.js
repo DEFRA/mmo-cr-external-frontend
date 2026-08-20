@@ -1,6 +1,7 @@
 import Joi from 'joi'
 
 import { getData } from '#/server/common/data/get-data.js'
+import { resolveNextPath } from '#/server/common/helpers/journey/navigation.js'
 
 const { id: vesselId, name: vesselName } = getData('selectVessel')
 
@@ -31,7 +32,7 @@ export const selectVesselSubmitController = {
       })
     }
   },
-  handler(_request, h) {
-    return h.redirect('/trip-date').code(303)
+  handler(request, h) {
+    return h.redirect(resolveNextPath(request, '/trip-date')).code(303)
   }
 }

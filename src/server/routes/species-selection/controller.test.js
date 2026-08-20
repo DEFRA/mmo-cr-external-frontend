@@ -264,6 +264,21 @@ describe('#speciesSelectionSubmitController', () => {
     expect(headers.location).toBe('/catch-not-landed')
   })
 
+  test('Should redirect back to check your answers when a return query is supplied', async () => {
+    const { statusCode, headers } = await server.inject({
+      method: 'POST',
+      url: '/species-selection?return=/check-answers',
+      payload: {
+        speciesIds: 'cod',
+        speciesAction: 'continue',
+        weightAboveMinimum: '120.5'
+      }
+    })
+
+    expect(statusCode).toBe(303)
+    expect(headers.location).toBe('/check-answers')
+  })
+
   test('Should redirect to the Empty Page when cod is not among the selected species', async () => {
     const { statusCode, headers } = await server.inject({
       method: 'POST',

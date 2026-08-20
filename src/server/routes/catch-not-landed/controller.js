@@ -1,5 +1,9 @@
 import Joi from 'joi'
 
+import {
+  resolveNextPath,
+  setJourneyState
+} from '#/server/common/helpers/journey/navigation.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 
 const pageTitle = 'Is there any catch you won\u2019t be landing straight away?'
@@ -51,10 +55,12 @@ export const catchNotLandedSubmitController = {
   handler(request, h) {
     const { catchNotLanded } = request.payload
 
+    setJourneyState(request, { catchNotLanded: catchNotLanded === 'yes' })
+
     return h
       .redirect(
         catchNotLanded === 'no'
-          ? '/check-answers'
+          ? resolveNextPath(request, '/check-answers')
           : '/not-implemented?return=/catch-not-landed'
       )
       .code(303)

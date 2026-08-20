@@ -113,6 +113,17 @@ describe('#statisticalAreaOtherSubmitController', () => {
     expect(headers.location).toBe('/species-selection')
   })
 
+  test('Should redirect back to check your answers when a return query is supplied', async () => {
+    const { statusCode, headers } = await server.inject({
+      method: 'POST',
+      url: '/statistical-area-other?return=/check-answers',
+      payload: { statisticalArea: '30f02', alternativeStatisticalArea: '' }
+    })
+
+    expect(statusCode).toBe(303)
+    expect(headers.location).toBe('/check-answers')
+  })
+
   test('Should redirect to the species selection page on a valid Other submission', async () => {
     const { statusCode, headers } = await server.inject({
       method: 'POST',

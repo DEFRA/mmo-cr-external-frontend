@@ -17,6 +17,7 @@ import { speciesSelection } from './species.js'
 import { speciesWeights } from './species-weights.js'
 import { catchNotLanded } from './catch-not-landed.js'
 import { confirmation } from './confirmation.js'
+import { checkAnswersDefaults } from './check-answers.js'
 
 const dataByKey = {
   service,
@@ -34,7 +35,8 @@ const dataByKey = {
   speciesSelection,
   speciesWeights,
   catchNotLanded,
-  confirmation
+  confirmation,
+  checkAnswersDefaults
 }
 
 export function getData(pageName) {

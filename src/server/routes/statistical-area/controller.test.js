@@ -112,6 +112,17 @@ describe('#statisticalAreaSubmitController', () => {
     expect(headers.location).toBe('/species-selection')
   })
 
+  test('Should redirect back to check your answers when a return query is supplied', async () => {
+    const { statusCode, headers } = await server.inject({
+      method: 'POST',
+      url: '/statistical-area?return=/check-answers',
+      payload: { statisticalArea: '38f02' }
+    })
+
+    expect(statusCode).toBe(303)
+    expect(headers.location).toBe('/check-answers')
+  })
+
   test('Should set the direct branch back-link on species selection when a named area is chosen', async () => {
     const setResponse = await server.inject({
       method: 'POST',

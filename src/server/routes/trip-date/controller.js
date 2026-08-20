@@ -1,6 +1,9 @@
 import Joi from 'joi'
 
-import { setJourneyState } from '#/server/common/helpers/journey/navigation.js'
+import {
+  resolveNextPath,
+  setJourneyState
+} from '#/server/common/helpers/journey/navigation.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 
 const pageTitle = 'Did your trip start and finish today?'
@@ -56,7 +59,10 @@ export const tripDateSubmitController = {
 
     return h
       .redirect(
-        tripSameDate === 'yes' ? '/departure-port' : '/trip-departure-date'
+        resolveNextPath(
+          request,
+          tripSameDate === 'yes' ? '/departure-port' : '/trip-departure-date'
+        )
       )
       .code(303)
   }

@@ -2,6 +2,7 @@ import Joi from 'joi'
 
 import {
   getJourneyState,
+  resolveNextPath,
   setJourneyState
 } from '#/server/common/helpers/journey/navigation.js'
 import { getData } from '#/server/common/data/get-data.js'
@@ -70,6 +71,6 @@ export const returnPortSubmitController = {
 
     setJourneyState(request, { returnPort })
 
-    return h.redirect('/gear-selection').code(303)
+    return h.redirect(resolveNextPath(request, '/gear-selection')).code(303)
   }
 }

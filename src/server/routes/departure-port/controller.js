@@ -3,6 +3,7 @@ import Joi from 'joi'
 import {
   backForDeparturePort,
   getJourneyState,
+  resolveNextPath,
   setJourneyState
 } from '#/server/common/helpers/journey/navigation.js'
 import { getData } from '#/server/common/data/get-data.js'
@@ -71,6 +72,6 @@ export const departurePortSubmitController = {
 
     setJourneyState(request, { departurePort })
 
-    return h.redirect('/return-port').code(303)
+    return h.redirect(resolveNextPath(request, '/return-port')).code(303)
   }
 }

@@ -1,14 +1,53 @@
 {% extends 'layouts/page.njk' %}
-{% from "placeholder-page/macro.njk" import appPlaceholderPage %}
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+{% from "govuk/components/warning-text/macro.njk" import govukWarningText %}
+{% from "govuk/components/checkboxes/macro.njk" import govukCheckboxes %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
 
 {% block pageContent %}
-  {{ appPlaceholderPage({ heading: heading }) }}
-
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
+      <span class="govuk-caption-l" data-testid="app-check-answers-caption">{{ caption }}</span>
+      <h1 class="govuk-heading-xl" data-testid="app-heading-title">{{ heading }}</h1>
+
+      {% for section in sections %}
+        <h2 class="govuk-heading-l">{{ section.heading }}</h2>
+        {{ govukSummaryList({ rows: section.rows }) }}
+      {% endfor %}
+
+      {{ govukWarningText({
+        text: "By submitting this record, you agree that the information you've given is complete and correct.",
+        iconFallbackText: "Warning"
+      }) }}
+
+      <p class="govuk-body">By submitting your catch record, you're confirming:</p>
+      <ul class="govuk-list govuk-list--bullet">
+        <li>The weight of fish you have landed is accurate</li>
+        <li>This is within permitted tolerance levels</li>
+        <li>Fishing authorities may take action in respect of inaccurate catch recording</li>
+      </ul>
+
       <form method="post" novalidate>
-        {{ govukButton({ text: "Submit" }) }}
+        {{ govukCheckboxes({
+          name: "confirmAccurate",
+          fieldset: {
+            legend: {
+              text: "Declaration",
+              classes: "govuk-visually-hidden"
+            }
+          },
+          errorMessage: { text: fieldErrors.confirmAccurate } if fieldErrors.confirmAccurate else false,
+          items: [
+            {
+              value: "true",
+              text: "I confirm the information is complete and accurate"
+            }
+          ]
+        }) }}
+
+        <h2 class="govuk-heading-l">Trips details</h2>
+
+        {{ govukButton({ text: "Accept and submit trip details" }) }}
       </form>
     </div>
   </div>

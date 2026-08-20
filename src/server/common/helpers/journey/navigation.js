@@ -53,3 +53,12 @@ export function backForSpeciesSelection(request) {
 export function safeReturnPath(candidate) {
   return SAFE_RETURN_PATHS.includes(candidate) ? candidate : DEFAULT_RETURN_PATH
 }
+
+// Lets an edit page's successful submit send the user back to the page that linked to it
+// (for example a Check Your Answers "Change" link) instead of always continuing the journey.
+export function resolveNextPath(request, defaultPath) {
+  const candidate = request.query && request.query.return
+  return candidate && SAFE_RETURN_PATHS.includes(candidate)
+    ? candidate
+    : defaultPath
+}

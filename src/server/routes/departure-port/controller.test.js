@@ -142,6 +142,17 @@ describe('#departurePortSubmitController', () => {
     expect(headers.location).toBe('/return-port')
   })
 
+  test('Should redirect back to check your answers when a return query is supplied', async () => {
+    const { statusCode, headers } = await server.inject({
+      method: 'POST',
+      url: '/departure-port?return=/check-answers',
+      payload: { departurePort: 'hastings' }
+    })
+
+    expect(statusCode).toBe(303)
+    expect(headers.location).toBe('/check-answers')
+  })
+
   test('Should re-render the page with an error summary when nothing is selected', async () => {
     const { statusCode, result } = await server.inject({
       method: 'POST',

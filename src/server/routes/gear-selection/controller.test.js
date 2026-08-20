@@ -172,6 +172,17 @@ describe('#gearSelectionSubmitController', () => {
     expect(headers.location).toBe('/statistical-area')
   })
 
+  test('Should redirect back to check your answers when a return query is supplied', async () => {
+    const { statusCode, headers } = await server.inject({
+      method: 'POST',
+      url: '/gear-selection?return=/check-answers',
+      payload: { gearIds: 'dredge' }
+    })
+
+    expect(statusCode).toBe(303)
+    expect(headers.location).toBe('/check-answers')
+  })
+
   test('Should save the selected gear ids and leave pots details absent for a non-pots selection', async () => {
     const setResponse = await server.inject({
       method: 'POST',

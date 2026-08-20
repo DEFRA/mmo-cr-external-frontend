@@ -120,6 +120,17 @@ describe('#selectVesselSubmitController', () => {
     expect(getData('selectVessel')).toEqual(beforeVessel)
   })
 
+  test('Should redirect back to check your answers when a return query is supplied', async () => {
+    const { statusCode, headers } = await server.inject({
+      method: 'POST',
+      url: '/select-vessel?return=/check-answers',
+      payload: { vesselId: 'olga' }
+    })
+
+    expect(statusCode).toBe(303)
+    expect(headers.location).toBe('/check-answers')
+  })
+
   test('Should reject an unknown vessel id', async () => {
     const { statusCode } = await server.inject({
       method: 'POST',
