@@ -1,10 +1,9 @@
 {% extends 'layouts/page.njk' %}
-{% from "placeholder-page/macro.njk" import appPlaceholderPage %}
 {% from "govuk/components/radios/macro.njk" import govukRadios %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
 
 {% block pageContent %}
-  {{ appPlaceholderPage({ heading: heading }) }}
+  {% set radioErrorMessage = { text: fieldErrors.catchNotLanded } if fieldErrors.catchNotLanded else false %}
 
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
@@ -13,17 +12,22 @@
           name: "catchNotLanded",
           fieldset: {
             legend: {
-              text: heading,
-              classes: "govuk-fieldset__legend--m"
+              html: '<span class="govuk-caption-l">' ~ caption ~ '</span>' ~ heading,
+              isPageHeading: true,
+              classes: "govuk-fieldset__legend--xl"
             }
           },
+          hint: {
+            text: "For example, keeping white fish onboard for bait or storing shellfish in keep pots."
+          },
+          errorMessage: radioErrorMessage,
           items: [
             { value: "yes", text: "Yes" },
             { value: "no", text: "No" }
           ]
         }) }}
 
-        {{ govukButton({ text: "Continue" }) }}
+        {{ govukButton({ text: "Save and continue" }) }}
       </form>
     </div>
   </div>
