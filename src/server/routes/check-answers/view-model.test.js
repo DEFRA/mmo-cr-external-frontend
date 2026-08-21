@@ -278,8 +278,7 @@ describe('#buildCheckAnswersViewModel', () => {
 
     expect(vesselRow.actions.items).toHaveLength(0)
     expect(
-      tripsRows.find((row) => row.key.text === 'Departure date').actions
-        .items
+      tripsRows.find((row) => row.key.text === 'Departure date').actions.items
     ).toHaveLength(1)
   })
 })

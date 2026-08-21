@@ -50,9 +50,7 @@ describe('#catchNotLandedController', () => {
     })
 
     expect(result).not.toContain('Was any catch not landed?')
-    expect(result).not.toContain(
-      'will be implemented in a later step'
-    )
+    expect(result).not.toContain('will be implemented in a later step')
   })
 
   test('Should render the approved hint text', async () => {

@@ -103,7 +103,7 @@ If the approved artifacts, existing implementation, mock-data contract, and desi
 Use these references once as the complete visual evidence set for this task:
 
 ```text
-Figma URL: 
+Figma URL:
 Trip same date  : https://www.figma.com/design/9Jve7RKNprYeeaNYsbTUH1/MMO-Catch-Records?node-id=48-27014&t=ffkmqdjC5IXaXW7u-0
 Trip departure date : https://www.figma.com/design/9Jve7RKNprYeeaNYsbTUH1/MMO-Catch-Records?node-id=48-27077&t=ffkmqdjC5IXaXW7u-0
 Trip return date :  https://www.figma.com/design/9Jve7RKNprYeeaNYsbTUH1/MMO-Catch-Records?node-id=48-27142&t=ffkmqdjC5IXaXW7u-0
@@ -112,10 +112,10 @@ Trip return date :  https://www.figma.com/design/9Jve7RKNprYeeaNYsbTUH1/MMO-Catc
 Same Date Question
 ![TRIP_SAME_DATE_PNG_PATH](./../screens/DidYourTripStartAndFinishToday.png)
 
-Trip Departure Date 
+Trip Departure Date
 ![TRIP_DEPARTURE_DATE_PNG_PATH](./../screens/WhenDidYouLeave.png)
 
-Trip Return Date 
+Trip Return Date
 ![TRIP_RETURN_DATE_PNG_PATH](./../screens/WhenDidYouReturn.png)
 
 Replace the placeholders before starting.

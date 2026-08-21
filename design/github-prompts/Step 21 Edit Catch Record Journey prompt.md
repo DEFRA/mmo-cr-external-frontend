@@ -108,19 +108,19 @@ If existing implementation or older navigation documents conflict with this conf
 Use these references once as the complete visual evidence set for this task:
 
 ```text
-Figma URL 
+Figma URL
 Editing Catch Record : https://www.figma.com/design/9Jve7RKNprYeeaNYsbTUH1/MMO-Catch-Records?node-id=48-26712&t=NUg9uxzWWs0SP7ND-0
 Check Your Answers - Edit record virant : https://www.figma.com/design/9Jve7RKNprYeeaNYsbTUH1/MMO-Catch-Records?node-id=48-26775&t=NUg9uxzWWs0SP7ND-0
 
 ```
-Catch record details 
+
+Catch record details
 ![Catch record details](./../screens/CatchRecordsForVessel.png)
-Editing Catch Record 
+Editing Catch Record
 ![EDITING_CATCH_RECORD](./../screens/WhyAreYouEndingThisCatchRecord.png)
 
-Check Your Answers 
+Check Your Answers
 ![CHECK_YOUR_ANSWERS](./../screens/CatchRecordForVessel%20-%20edit.png)
-
 
 Reference roles:
 

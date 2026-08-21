@@ -11,14 +11,16 @@ describe('Placeholder Page Component', () => {
     })
 
     test('Should render the heading', () => {
-      expect($placeholder('[data-testid="app-heading-title"]').text().trim()).toBe(
-        'Guidance'
-      )
+      expect(
+        $placeholder('[data-testid="app-heading-title"]').text().trim()
+      ).toBe('Guidance')
     })
 
     test('Should render the default placeholder sentence', () => {
       expect(
-        $placeholder('[data-testid="app-placeholder-description"]').text().trim()
+        $placeholder('[data-testid="app-placeholder-description"]')
+          .text()
+          .trim()
       ).toBe('The detailed Guidance page will be implemented in a later step.')
     })
   })
@@ -35,7 +37,9 @@ describe('Placeholder Page Component', () => {
 
     test('Should render the custom description instead of the default sentence', () => {
       expect(
-        $placeholder('[data-testid="app-placeholder-description"]').text().trim()
+        $placeholder('[data-testid="app-placeholder-description"]')
+          .text()
+          .trim()
       ).toBe('This feature is not included in this walkthrough.')
     })
   })

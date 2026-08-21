@@ -1,6 +1,6 @@
-@use "govuk-frontend" as *;
+@use 'govuk-frontend' as *;
 
 // Thin grey top border to match the design, replacing the default thick blue one
 .app-footer {
-  border-top: 1px solid govuk-colour("mid-grey");
+  border-top: 1px solid govuk-colour('mid-grey');
 }

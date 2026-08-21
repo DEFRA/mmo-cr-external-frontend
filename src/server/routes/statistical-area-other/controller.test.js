@@ -173,7 +173,10 @@ describe('#statisticalAreaOtherSubmitController', () => {
     const { statusCode, result } = await server.inject({
       method: 'POST',
       url: '/statistical-area-other',
-      payload: { statisticalArea: 'other', alternativeStatisticalArea: 'abcdef' }
+      payload: {
+        statisticalArea: 'other',
+        alternativeStatisticalArea: 'abcdef'
+      }
     })
     const $ = load(result)
 
@@ -188,7 +191,10 @@ describe('#statisticalAreaOtherSubmitController', () => {
     const { result } = await server.inject({
       method: 'POST',
       url: '/statistical-area-other',
-      payload: { statisticalArea: 'other', alternativeStatisticalArea: 'abcdef' }
+      payload: {
+        statisticalArea: 'other',
+        alternativeStatisticalArea: 'abcdef'
+      }
     })
     const $ = load(result)
 

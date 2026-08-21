@@ -5,6 +5,7 @@
 Replace the three Step 02 placeholders (Trip Date, Trip Departure Date, Trip Return Date) with detailed GOV.UK pages matching `DidYourTripStartAndFinishToday.png`, `WhenDidYouLeave.png`, `WhenDidYouReturn.png`. Branching (Yes→Departure Port, No→departure/return date pages→Departure Port) and branch-aware Back navigation already exist via the Step 02 `@hapi/yar` journey-state helpers (`setJourneyState`/`backForDeparturePort`) — reused as-is.
 
 **Approved wording/scope decisions (user-confirmed, PNG overrides the prompt body wherever they conflict):**
+
 - **Q1:** Page question is exactly **"Did your trip start and finish today?"** (verbatim PNG wording — not "on the same date").
 - **Q2:** **Structural date validation only** (missing/non-numeric/invalid-day-for-month/leap-year). No cross-field chronological ("return ≥ departure") rule, no new journey-state handling beyond what already exists.
 

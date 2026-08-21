@@ -24,7 +24,7 @@ const DEFAULTS = {
 }
 
 // Minimal KEY=VALUE .env reader. Values already present in the environment win.
-function loadEnvFile (env) {
+function loadEnvFile(env) {
   let text
   try {
     text = readFileSync(ENV_FILE, 'utf8')
@@ -37,7 +37,10 @@ function loadEnvFile (env) {
     if (!m) continue
     if (merged[m[1]] != null && merged[m[1]] !== '') continue
     let val = m[2].trim()
-    if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+    if (
+      (val.startsWith('"') && val.endsWith('"')) ||
+      (val.startsWith("'") && val.endsWith("'"))
+    ) {
       val = val.slice(1, -1)
     }
     merged[m[1]] = val
@@ -45,7 +48,7 @@ function loadEnvFile (env) {
   return merged
 }
 
-function requireEnv (env, name) {
+function requireEnv(env, name) {
   const value = env[name]
   if (typeof value !== 'string' || value.trim() === '') {
     throw new SafeError(
@@ -56,42 +59,56 @@ function requireEnv (env, name) {
   return value.trim()
 }
 
-function parsePositiveInt (raw, fallback) {
+function parsePositiveInt(raw, fallback) {
   const n = Number.parseInt(raw, 10)
   return Number.isInteger(n) && n > 0 ? n : fallback
 }
 
-function parseTypeList (raw, fallback) {
+function parseTypeList(raw, fallback) {
   const list = String(raw ?? '')
-    .split(',').map((t) => t.trim().toLowerCase()).filter(Boolean)
+    .split(',')
+    .map((t) => t.trim().toLowerCase())
+    .filter(Boolean)
   return list.length ? list : fallback
 }
 
-function parseSite (raw) {
+function parseSite(raw) {
   let url
   try {
     url = new URL(raw)
   } catch {
-    throw new SafeError('JIRA_BASE_URL is not a valid URL.', { code: 'ERR_CONFIG_INVALID' })
+    throw new SafeError('JIRA_BASE_URL is not a valid URL.', {
+      code: 'ERR_CONFIG_INVALID'
+    })
   }
-  if (url.protocol !== 'https:') throw new SafeError('JIRA_BASE_URL must use https.', { code: 'ERR_CONFIG_INVALID' })
+  if (url.protocol !== 'https:')
+    throw new SafeError('JIRA_BASE_URL must use https.', {
+      code: 'ERR_CONFIG_INVALID'
+    })
   // Preserve any sub-path (some Jira sites are hosted under a path) while
   // dropping trailing slashes so request URLs join cleanly.
   const path = url.pathname.replace(/\/+$/, '')
   return { baseUrl: `${url.protocol}//${url.host}${path}`, host: url.host }
 }
 
-export function loadConfig (rawEnv = process.env) {
+export function loadConfig(rawEnv = process.env) {
   const env = loadEnvFile(rawEnv)
   const site = parseSite(requireEnv(env, 'JIRA_BASE_URL'))
   const designHostAllowlist = (env.JIRA_DESIGN_HOST_ALLOWLIST ?? '')
-    .split(',').map((h) => h.trim().toLowerCase()).filter(Boolean)
+    .split(',')
+    .map((h) => h.trim().toLowerCase())
+    .filter(Boolean)
 
   // Leaf types win over container types so an overlapping entry can never make
   // a leaf (e.g. Story) be expanded into its sub-tasks.
-  const leafTicketTypes = parseTypeList(env.JIRA_LEAF_TICKET_TYPES, DEFAULTS.leafTicketTypes)
-  const containerTicketTypes = parseTypeList(env.JIRA_CONTAINER_TICKET_TYPES, DEFAULTS.containerTicketTypes)
-    .filter((t) => !leafTicketTypes.includes(t))
+  const leafTicketTypes = parseTypeList(
+    env.JIRA_LEAF_TICKET_TYPES,
+    DEFAULTS.leafTicketTypes
+  )
+  const containerTicketTypes = parseTypeList(
+    env.JIRA_CONTAINER_TICKET_TYPES,
+    DEFAULTS.containerTicketTypes
+  ).filter((t) => !leafTicketTypes.includes(t))
 
   return Object.freeze({
     baseUrl: site.baseUrl,
@@ -101,7 +118,9 @@ export function loadConfig (rawEnv = process.env) {
     apiToken: requireEnv(env, 'JIRA_API_TOKEN'),
     maxDepth: parsePositiveInt(env.JIRA_MAX_DEPTH, DEFAULTS.maxDepth),
     maxIssues: parsePositiveInt(env.JIRA_MAX_ISSUES, DEFAULTS.maxIssues),
-    designHostAllowlist: designHostAllowlist.length ? designHostAllowlist : DEFAULTS.designHostAllowlist,
+    designHostAllowlist: designHostAllowlist.length
+      ? designHostAllowlist
+      : DEFAULTS.designHostAllowlist,
     leafTicketTypes: Object.freeze(leafTicketTypes),
     containerTicketTypes: Object.freeze(containerTicketTypes)
   })

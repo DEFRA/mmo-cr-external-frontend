@@ -14,8 +14,17 @@ const DENY_KEYS = new Set(['plugindata', 'sharedplugindata'])
 // endpoints this skill never calls (comments/versions/meta/users); the guard is
 // belt-and-braces so a future change can't silently leak them.
 const IDENTITY_KEYS = new Set([
-  'creator', 'user', 'users', 'handle', 'email', 'ownerid', 'owner',
-  'last_touched_by', 'lasttouchedby', 'reactedusers', 'orderid'
+  'creator',
+  'user',
+  'users',
+  'handle',
+  'email',
+  'ownerid',
+  'owner',
+  'last_touched_by',
+  'lasttouchedby',
+  'reactedusers',
+  'orderid'
 ])
 
 // Top-level file metadata we keep (design/staleness only — no identity).
@@ -24,7 +33,7 @@ const META_KEYS = ['name', 'lastModified', 'version']
 // Deep-copies a node subtree, dropping denylisted keys. Design properties
 // (layout, fills, strokes, effects, characters, style, children, …) are kept so
 // the calling agent has full structural context.
-function stripTree (value, seen = new WeakSet()) {
+function stripTree(value, seen = new WeakSet()) {
   if (value == null || typeof value !== 'object') return value
   if (seen.has(value)) return undefined
   seen.add(value)
@@ -40,7 +49,7 @@ function stripTree (value, seen = new WeakSet()) {
 // Fails closed: throws if any identity-bearing key survives anywhere in the
 // record. Only structural keys are inspected — design text (`characters`) is
 // never treated as PII, so legitimate mock copy is preserved.
-export function assertNoPii (record, seen = new WeakSet()) {
+export function assertNoPii(record, seen = new WeakSet()) {
   if (record == null || typeof record !== 'object') return
   if (seen.has(record)) return
   seen.add(record)
@@ -50,7 +59,10 @@ export function assertNoPii (record, seen = new WeakSet()) {
   }
   for (const [key, val] of Object.entries(record)) {
     if (IDENTITY_KEYS.has(key.toLowerCase())) {
-      throw new SafeError(`PII guard tripped: identity key "${key}" present in output.`, { code: 'ERR_PII' })
+      throw new SafeError(
+        `PII guard tripped: identity key "${key}" present in output.`,
+        { code: 'ERR_PII' }
+      )
     }
     assertNoPii(val, seen)
   }
@@ -59,9 +71,11 @@ export function assertNoPii (record, seen = new WeakSet()) {
 // Turns a raw GET /v1/files/:key/nodes response into a sanitised, design-only
 // document. Identity metadata (role, editorType, thumbnailUrl, etc.) is dropped;
 // only name/lastModified/version are kept.
-export function sanitiseNodesResponse (raw, { fileKey, requestedNodeIds }) {
+export function sanitiseNodesResponse(raw, { fileKey, requestedNodeIds }) {
   if (!raw || typeof raw !== 'object' || typeof raw.nodes !== 'object') {
-    throw new SafeError('Unexpected Figma nodes response shape.', { code: 'ERR_SHAPE' })
+    throw new SafeError('Unexpected Figma nodes response shape.', {
+      code: 'ERR_SHAPE'
+    })
   }
   const warnings = []
   const meta = {}
@@ -97,7 +111,7 @@ export function sanitiseNodesResponse (raw, { fileKey, requestedNodeIds }) {
 
 // Sanitises the local-variables (design tokens) payload, dropping any identity
 // keys defensively. Returns null when tokens were unavailable.
-export function sanitiseVariables (raw) {
+export function sanitiseVariables(raw) {
   if (!raw || typeof raw !== 'object') return null
   const stripped = stripTree(raw.meta ?? raw)
   assertNoPii(stripped)

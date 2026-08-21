@@ -13,7 +13,12 @@ function joinWithAnd(items) {
   return `${items.slice(0, -1).join(', ')} and ${items[items.length - 1]}`
 }
 
-function tripsDetailsSection(journeyState, fallback, buildChangeHref, hideVesselChange) {
+function tripsDetailsSection(
+  journeyState,
+  fallback,
+  buildChangeHref,
+  hideVesselChange
+) {
   const ports = getData('ports')
   const isSameDayTrip = journeyState.tripSameDate !== false
   const departurePortName =

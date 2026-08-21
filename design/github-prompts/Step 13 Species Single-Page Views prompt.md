@@ -144,19 +144,19 @@ If the approved artifacts, implementation, mock-data contract, and design refere
 Use these references once as the complete visual evidence set:
 
 ```text
-Figma URL: 
+Figma URL:
 Species Selection : https://www.figma.com/design/9Jve7RKNprYeeaNYsbTUH1/MMO-Catch-Records?node-id=48-25220&t=ffkmqdjC5IXaXW7u-0
 Species Weight : https://www.figma.com/design/9Jve7RKNprYeeaNYsbTUH1/MMO-Catch-Records?node-id=48-25428&t=ffkmqdjC5IXaXW7u-0
 Species Weight Expanded : https://www.figma.com/design/9Jve7RKNprYeeaNYsbTUH1/MMO-Catch-Records?node-id=48-25352&t=ffkmqdjC5IXaXW7u-0
 ```
 
-*Species Selection*
+_Species Selection_
 ![SPECIES_SELECTION](./../screens/WhatSpeciesDidYouCatchUsingGear.png)
 
-*Species Weight*
+_Species Weight_
 ![SPECIES_WEIGHT](./../screens/WhatSpeciesDidYouCatch-2.png)
 
-*Species Weight Expanded*
+_Species Weight Expanded_
 ![SPECIES_WEIGHT_EXPANDED](./../screens/WhatSpeciesDidYouCatchUsingGear-3.png)
 
 Replace the placeholders before starting.

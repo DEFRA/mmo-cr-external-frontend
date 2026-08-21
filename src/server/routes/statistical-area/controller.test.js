@@ -83,9 +83,9 @@ describe('#statisticalAreaController', () => {
     })
     const $ = load(result)
 
-    expect(
-      $('.app-statistical-area-map__zone--38f02').attr('class')
-    ).toContain('app-statistical-area-map__zone--selected')
+    expect($('.app-statistical-area-map__zone--38f02').attr('class')).toContain(
+      'app-statistical-area-map__zone--selected'
+    )
   })
 })
 

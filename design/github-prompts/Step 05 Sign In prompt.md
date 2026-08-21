@@ -83,7 +83,8 @@ Use these references once as the complete visual evidence set for this task:
 ```text
 Figma URL: https://www.figma.com/design/9Jve7RKNprYeeaNYsbTUH1/MMO-Catch-Records?node-id=0-1&p=f&t=ffkmqdjC5IXaXW7u-0
 ```
-Sign in 
+
+Sign in
 ![Sign In](./../screens/SIgnIn.png)
 
 Replace the placeholders before starting.

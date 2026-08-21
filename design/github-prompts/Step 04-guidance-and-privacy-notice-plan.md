@@ -7,6 +7,7 @@ Replace the Step 02 placeholders for Guidance (`/`) and Privacy Notice (`/privac
 ## 2. Visual Source of Truth
 
 Figma API/skill could not be invoked in this session (terminal tools were unavailable when planning began), so per the documented fallback, the committed PNGs are used as the visual and textual source of truth:
+
 - Guidance: `design/screens/Guidance.png`
 - Privacy Notice: `design/screens/PrivaciNotice.png`
 

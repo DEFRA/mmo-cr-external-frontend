@@ -21,9 +21,7 @@ describe('#notImplementedController', () => {
       url: '/not-implemented'
     })
 
-    expect(result).toEqual(
-      expect.stringContaining('Feature not available |')
-    )
+    expect(result).toEqual(expect.stringContaining('Feature not available |'))
     expect(statusCode).toBe(statusCodes.ok)
   })
 
@@ -34,7 +32,9 @@ describe('#notImplementedController', () => {
     })
 
     expect(result).toEqual(
-      expect.stringContaining('This feature is not included in this walkthrough.')
+      expect.stringContaining(
+        'This feature is not included in this walkthrough.'
+      )
     )
   })
 
@@ -45,9 +45,9 @@ describe('#notImplementedController', () => {
     })
     const $ = load(result)
 
-    expect($('[data-testid="app-page-navigation-back-link"]').attr('href')).toBe(
-      '/records'
-    )
+    expect(
+      $('[data-testid="app-page-navigation-back-link"]').attr('href')
+    ).toBe('/records')
   })
 
   test('Should use a known internal return path as the Back link', async () => {
@@ -57,21 +57,22 @@ describe('#notImplementedController', () => {
     })
     const $ = load(result)
 
-    expect($('[data-testid="app-page-navigation-back-link"]').attr('href')).toBe(
-      '/account'
-    )
+    expect(
+      $('[data-testid="app-page-navigation-back-link"]').attr('href')
+    ).toBe('/account')
   })
 
   test('Should NOT allow an external URL as the Back link (open redirect protection)', async () => {
     const { result } = await server.inject({
       method: 'GET',
-      url: '/not-implemented?return=' + encodeURIComponent('https://evil.example')
+      url:
+        '/not-implemented?return=' + encodeURIComponent('https://evil.example')
     })
     const $ = load(result)
 
-    expect($('[data-testid="app-page-navigation-back-link"]').attr('href')).toBe(
-      '/records'
-    )
+    expect(
+      $('[data-testid="app-page-navigation-back-link"]').attr('href')
+    ).toBe('/records')
   })
 
   test('Should NOT allow a protocol-relative URL as the Back link', async () => {
@@ -81,8 +82,8 @@ describe('#notImplementedController', () => {
     })
     const $ = load(result)
 
-    expect($('[data-testid="app-page-navigation-back-link"]').attr('href')).toBe(
-      '/records'
-    )
+    expect(
+      $('[data-testid="app-page-navigation-back-link"]').attr('href')
+    ).toBe('/records')
   })
 })

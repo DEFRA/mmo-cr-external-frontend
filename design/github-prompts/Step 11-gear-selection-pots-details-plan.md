@@ -14,14 +14,19 @@ Single page `/gear-selection`: `govukCheckboxes` "Select all that apply" (9 gear
 ## 3. Implementation Plan
 
 **Gear data** (`gear.js`, reshaped from the old 2-item single-select set):
+
 ```js
-{ id, label, hint, requiresPotsDetails, displayOrder }
+{
+  ;(id, label, hint, requiresPotsDetails, displayOrder)
+}
 ```
+
 9 items as listed above; only Pots has `requiresPotsDetails: true`.
 
 **Pots fields** (unchanged property names `potsHauled`/`potsInWater` in `pots-details.js`, only visible labels change): "Total pots or traps hauled" and "Total pots or traps left in the water", rendered as `govukInput` with `inputmode="numeric"`, inside the Pots checkbox's `conditional.html`.
 
 **Controller** (`gear-selection/controller.js`):
+
 - GET: restore `selectedGearIds` (checkboxes ticked) and `potsDetails` (fields pre-filled) from journey state via `getJourneyState`.
 - POST: Joi validates submitted gear values are a non-empty array/string, each present in the approved 9 ids (unknown → rejected); if `pots` is among the selections, additionally require `potsHauled`/`potsInWater` as whole non-negative numbers (reusing the Step 09 `failAction`-style re-render pattern: same view + `govukErrorSummary`/`fieldErrors`, preserved submitted values, 400).
 - On success: `setJourneyState(request, { selectedGearIds, potsDetails: potsSelected ? { potsHauled, potsInWater } : undefined })` — explicit stale-data rule: if Pots is not selected this submission, `potsDetails` is cleared from journey state. Redirect to `/statistical-area` always (no Empty Page branching for "unsupported gear").

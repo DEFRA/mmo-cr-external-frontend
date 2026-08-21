@@ -23,18 +23,18 @@ No simulated sign-in/session mechanism exists anywhere in the repo. `sign-in` su
 
 ## 4. Header route-destination matrix
 
-| Link | Destination | Notes |
-|---|---|---|
-| Home | `/records` | Existing "landing page after sign in"; not the public `/` guidance page |
-| Your account | `/account` | `current: true` only on this route |
-| Sign out | `/sign-out` | GET, clears session, redirects to `/` |
+| Link         | Destination | Notes                                                                   |
+| ------------ | ----------- | ----------------------------------------------------------------------- |
+| Home         | `/records`  | Existing "landing page after sign in"; not the public `/` guidance page |
+| Your account | `/account`  | `current: true` only on this route                                      |
+| Sign out     | `/sign-out` | GET, clears session, redirects to `/`                                   |
 
 ## 5. Signed-in/out navigation matrix
 
-| State | Home | Your account | Sign out |
-|---|---|---|---|
-| Signed in | shown | shown (current on `/account`) | shown |
-| Signed out | — | — | — (empty nav array; no PNG evidence for a signed-out header) |
+| State      | Home  | Your account                  | Sign out                                                     |
+| ---------- | ----- | ----------------------------- | ------------------------------------------------------------ |
+| Signed in  | shown | shown (current on `/account`) | shown                                                        |
+| Signed out | —     | —                             | — (empty nav array; no PNG evidence for a signed-out header) |
 
 ## 6. Account page mapping (from `YourAccount.png`)
 

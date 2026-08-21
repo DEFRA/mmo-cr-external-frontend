@@ -111,7 +111,6 @@ Footer
 Full layaut smple page
 ![Full layaut sample page](./../screens/SIgnIn.png)
 
-
 ### Reference precedence
 
 When references differ, use the following order:

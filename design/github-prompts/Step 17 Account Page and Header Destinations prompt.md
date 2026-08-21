@@ -149,7 +149,6 @@ https://www.figma.com/design/9Jve7RKNprYeeaNYsbTUH1/MMO-Catch-Records?node-id=48
 
 ![HEADER](./../screens/Header.png)
 
-
 The supplied PNG for each visual area is authoritative for visible wording, labels, menu order, link text, page content, component order, positioning, and spacing.
 
 Use this precedence:

@@ -97,7 +97,7 @@ Use these references once as the complete visual evidence set for this task:
 Figma URL: https://www.figma.com/design/9Jve7RKNprYeeaNYsbTUH1/MMO-Catch-Records?node-id=48-25698&t=NUg9uxzWWs0SP7ND-0
 ```
 
-Confirmation 
+Confirmation
 
 ![CONFIRMATION_PNG_PATH](./../screens/YourCatchRecordSubmitted.png)
 

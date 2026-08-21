@@ -96,7 +96,10 @@ export const editCatchRecordReviewSubmitController = {
         findRecord(recordId)
 
         if (!hasValidAmendment(request, recordId)) {
-          return h.redirect(`/records/${recordId}/edit-reason`).code(302).takeover()
+          return h
+            .redirect(`/records/${recordId}/edit-reason`)
+            .code(302)
+            .takeover()
         }
 
         const errorText =

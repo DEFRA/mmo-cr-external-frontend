@@ -1,4 +1,4 @@
-@use "govuk-frontend" as *;
+@use 'govuk-frontend' as *;
 
 // Merge the inverse (blue) service navigation seamlessly with the header above it
 .app-service-navigation.govuk-service-navigation--inverse {
@@ -21,12 +21,12 @@
   margin: 0;
   padding: 0;
   font: inherit;
-  color: govuk-colour("white");
+  color: govuk-colour('white');
   text-decoration: underline;
   cursor: pointer;
 
   &:hover {
-    color: govuk-colour("white");
+    color: govuk-colour('white');
     background: none;
     text-decoration-thickness: max(3px, 0.1875rem, 0.12em);
   }
@@ -41,7 +41,7 @@
   .app-header-row {
     // Fill any height mismatch between the logo and the taller service name/menu
     // block with the same brand blue, so no white band shows above/below either
-    background-color: govuk-functional-colour("brand");
+    background-color: govuk-functional-colour('brand');
   }
 
   // Inner width-container aligns the row's content with the rest of the page.

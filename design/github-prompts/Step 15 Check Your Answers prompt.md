@@ -136,10 +136,8 @@ https://www.figma.com/design/9Jve7RKNprYeeaNYsbTUH1/MMO-Catch-Records?node-id=48
 ```
 
 ### Check Your Answers PNG
+
 ![Check your answers](./../screens/CheckYourCatchRecord.png)
-
-
-
 
 The supplied PNG or PNG sequence is authoritative for visible wording, displayed sections, row order, labels, value formatting, Change links, declaration text, component positioning and spacing.
 

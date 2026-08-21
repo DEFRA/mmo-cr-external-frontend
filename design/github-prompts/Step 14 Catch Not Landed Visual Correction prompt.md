@@ -104,10 +104,11 @@ Use these references once as the complete visual evidence set:
 ```text
 Figma URL: https://www.figma.com/design/9Jve7RKNprYeeaNYsbTUH1/MMO-Catch-Records?node-id=48-25500&t=NUg9uxzWWs0SP7ND-0
 ```
-Current implementation 
+
+Current implementation
 ![CURRENT_CATCH_NOT_LANDED](./../screens/CatchNoLandedCurrent.png)
 
-Target Catch Not Landed 
+Target Catch Not Landed
 ![TARGET_CATCH_NOT_LANDED](./../screens/IsThereACatchNoLanding.png)
 
 Replace the placeholders before starting.

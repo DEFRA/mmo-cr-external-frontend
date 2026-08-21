@@ -110,11 +110,12 @@ If the approved artifacts, existing implementation, mock-data contract, and desi
 Use these references once as the complete visual evidence set for this task:
 
 ```text
-Figma URL: 
+Figma URL:
 Statistical area page : https://www.figma.com/design/9Jve7RKNprYeeaNYsbTUH1/MMO-Catch-Records?node-id=48-26178&t=ffkmqdjC5IXaXW7u-0
 Statistical area selected : https://www.figma.com/design/9Jve7RKNprYeeaNYsbTUH1/MMO-Catch-Records?node-id=48-26253&t=ffkmqdjC5IXaXW7u-0
 Statistical area alternative : https://www.figma.com/design/9Jve7RKNprYeeaNYsbTUH1/MMO-Catch-Records?node-id=48-26104&t=ffkmqdjC5IXaXW7u-0
 ```
+
 Statistical Area page
 ![Statistical Area page](./../screens/WhereWasCatchCought.png)
 

@@ -4,10 +4,25 @@ import { resolve, dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { loadConfig } from './config.mjs'
 import { createFigmaClient, parseLocation, parseNodeList } from './figma.mjs'
-import { sanitiseNodesResponse, sanitiseVariables, assertNoPii } from './sanitise.mjs'
-import { topFrames, sectionChildFrames, collectImageRefs, nodeIdToFilePart, sanitiseFileName } from './tree.mjs'
+import {
+  sanitiseNodesResponse,
+  sanitiseVariables,
+  assertNoPii
+} from './sanitise.mjs'
+import {
+  topFrames,
+  sectionChildFrames,
+  collectImageRefs,
+  nodeIdToFilePart,
+  sanitiseFileName
+} from './tree.mjs'
 import { extractTokens } from './tokens.mjs'
-import { buildDesignMarkdown, buildOutline, buildSectionIndex, buildSectionMarkdown } from './summary.mjs'
+import {
+  buildDesignMarkdown,
+  buildOutline,
+  buildSectionIndex,
+  buildSectionMarkdown
+} from './summary.mjs'
 import { downloadAssets, writeTokens } from './assets.mjs'
 import { redactString } from './redactor.mjs'
 
@@ -41,7 +56,7 @@ Options:
 Read-only: this skill only ever performs Figma REST GET requests. It never writes
 to Figma and never fetches anything outside the Figma API + its asset hosts.`
 
-function parseArgs (argv) {
+function parseArgs(argv) {
   const positionals = []
   const unknown = []
   const opts = { outline: false, assets: true, geometry: false }
@@ -49,7 +64,10 @@ function parseArgs (argv) {
     const arg = argv[i]
     const takeValue = () => {
       const next = argv[i + 1]
-      if (next != null && !next.startsWith('-')) { i += 1; return next }
+      if (next != null && !next.startsWith('-')) {
+        i += 1
+        return next
+      }
       return true
     }
     if (arg === '--outline') opts.outline = true
@@ -75,10 +93,13 @@ function parseArgs (argv) {
 }
 
 // Applies any --format/--scale overrides on top of the frozen config.
-function effectiveConfig (config, opts) {
+function effectiveConfig(config, opts) {
   const cfg = { ...config }
   if (opts.format) {
-    const formats = String(opts.format).split(',').map((f) => f.trim().toLowerCase()).filter(Boolean)
+    const formats = String(opts.format)
+      .split(',')
+      .map((f) => f.trim().toLowerCase())
+      .filter(Boolean)
     if (formats.length) cfg.imageFormats = formats
   }
   if (opts.scale != null && opts.scale !== true) {
@@ -94,7 +115,7 @@ function effectiveConfig (config, opts) {
 
 // Resolves the node ids to fetch: explicit --nodes, the URL's node, or the file's
 // first page when nothing was specified.
-async function resolveNodeIds ({ client, fileKey, nodeId, opts, config }) {
+async function resolveNodeIds({ client, fileKey, nodeId, opts, config }) {
   const listed = parseNodeList(opts.nodes)
   if (listed.length) return listed.slice(0, config.maxNodes)
   if (nodeId) return [nodeId]
@@ -104,8 +125,10 @@ async function resolveNodeIds ({ client, fileKey, nodeId, opts, config }) {
   return [firstPage.id]
 }
 
-function outDirFor (opts, fileKey, nodeIds) {
-  const nodePart = nodeIds.length ? nodeIds.map(nodeIdToFilePart).join('_').slice(0, 60) : 'page'
+function outDirFor(opts, fileKey, nodeIds) {
+  const nodePart = nodeIds.length
+    ? nodeIds.map(nodeIdToFilePart).join('_').slice(0, 60)
+    : 'page'
   if (opts.out && opts.out !== true) return resolve(String(opts.out))
   return join(CACHE_DIR, fileKey, nodePart)
 }
@@ -113,27 +136,44 @@ function outDirFor (opts, fileKey, nodeIds) {
 // Fetches node trees in bounded batches (never one giant request) and merges the
 // sanitised entries into a single id→entry map. Each batch still passes through
 // the sanitiser, so the PII/read-only guarantees are unchanged.
-async function fetchNodeTreesBatched ({ client, fileKey, ids, depth, geometry, batch, warnings }) {
+async function fetchNodeTreesBatched({
+  client,
+  fileKey,
+  ids,
+  depth,
+  geometry,
+  batch,
+  warnings
+}) {
   const out = {}
   const size = Number.isInteger(batch) && batch > 0 ? batch : 5
   for (let i = 0; i < ids.length; i += size) {
     const slice = ids.slice(i, i + size)
     const raw = await client.getNodes(fileKey, slice, { depth, geometry })
-    const part = sanitiseNodesResponse(raw, { fileKey, requestedNodeIds: slice })
+    const part = sanitiseNodesResponse(raw, {
+      fileKey,
+      requestedNodeIds: slice
+    })
     Object.assign(out, part.nodes)
     if (part.warnings.length) warnings.push(...part.warnings)
   }
   return out
 }
 
-async function runOutline ({ client, fileKey, nodeIds, opts }) {
+async function runOutline({ client, fileKey, nodeIds, opts }) {
   const depth = opts.depth ? Number.parseInt(opts.depth, 10) : 2
   const raw = await client.getNodes(fileKey, nodeIds, { depth })
-  const record = sanitiseNodesResponse(raw, { fileKey, requestedNodeIds: nodeIds })
+  const record = sanitiseNodesResponse(raw, {
+    fileKey,
+    requestedNodeIds: nodeIds
+  })
   const outDir = outDirFor(opts, fileKey, nodeIds)
   await mkdir(outDir, { recursive: true })
   const outline = buildOutline(record)
-  await writeFile(join(outDir, 'outline.json'), JSON.stringify(outline, null, 2))
+  await writeFile(
+    join(outDir, 'outline.json'),
+    JSON.stringify(outline, null, 2)
+  )
   const sectionPages = outline.pages.filter((p) => p.type === 'SECTION')
   return {
     ok: true,
@@ -154,11 +194,14 @@ async function runOutline ({ client, fileKey, nodeIds, opts }) {
 
 // Full fetch of plain (non-section) nodes — the original combined output: one
 // design.json/design.md plus a shared assets/ folder in the node's cache dir.
-async function runFullPlain ({ client, fileKey, nodeIds, opts, config }) {
+async function runFullPlain({ client, fileKey, nodeIds, opts, config }) {
   const geometry = opts.geometry ? 'paths' : undefined
   const depth = opts.depth ? Number.parseInt(opts.depth, 10) : undefined
   const raw = await client.getNodes(fileKey, nodeIds, { depth, geometry })
-  const built = sanitiseNodesResponse(raw, { fileKey, requestedNodeIds: nodeIds })
+  const built = sanitiseNodesResponse(raw, {
+    fileKey,
+    requestedNodeIds: nodeIds
+  })
 
   const outDir = outDirFor(opts, fileKey, nodeIds)
   await mkdir(outDir, { recursive: true })
@@ -168,7 +211,8 @@ async function runFullPlain ({ client, fileKey, nodeIds, opts, config }) {
   for (const entry of Object.values(built.nodes)) {
     if (!entry.document) continue
     for (const frame of topFrames(entry.document)) {
-      if (renderNodes.length < config.maxNodes) renderNodes.push({ id: frame.id, name: frame.name ?? frame.id })
+      if (renderNodes.length < config.maxNodes)
+        renderNodes.push({ id: frame.id, name: frame.name ?? frame.id })
     }
     for (const ref of collectImageRefs(entry.document)) imageRefs.add(ref)
   }
@@ -177,16 +221,27 @@ async function runFullPlain ({ client, fileKey, nodeIds, opts, config }) {
   try {
     figmaVariables = sanitiseVariables(await client.getLocalVariables(fileKey))
   } catch (err) {
-    built.warnings.push(`Figma variables endpoint unavailable: ${redactString(String(err?.message ?? err))}`)
+    built.warnings.push(
+      `Figma variables endpoint unavailable: ${redactString(String(err?.message ?? err))}`
+    )
   }
-  if (!figmaVariables) built.warnings.push('Figma variables endpoint returned no data (Enterprise plan/scope required); design tokens were derived from the node tree and named styles instead.')
+  if (!figmaVariables)
+    built.warnings.push(
+      'Figma variables endpoint returned no data (Enterprise plan/scope required); design tokens were derived from the node tree and named styles instead.'
+    )
 
   const tokens = extractTokens(built, figmaVariables)
 
   let assetResult = { manifest: null, warnings: [] }
   if (opts.assets) {
     assetResult = await downloadAssets({
-      client, fileKey, nodes: renderNodes, imageRefs: [...imageRefs], tokens, outDir, config
+      client,
+      fileKey,
+      nodes: renderNodes,
+      imageRefs: [...imageRefs],
+      tokens,
+      outDir,
+      config
     })
     built.warnings.push(...assetResult.warnings)
   } else {
@@ -194,7 +249,10 @@ async function runFullPlain ({ client, fileKey, nodeIds, opts, config }) {
   }
 
   await writeFile(join(outDir, 'design.json'), JSON.stringify(built, null, 2))
-  const md = buildDesignMarkdown(built, { manifest: assetResult.manifest, tokens })
+  const md = buildDesignMarkdown(built, {
+    manifest: assetResult.manifest,
+    tokens
+  })
   await writeFile(join(outDir, 'design.md'), md)
 
   return {
@@ -213,7 +271,10 @@ async function runFullPlain ({ client, fileKey, nodeIds, opts, config }) {
       imageFills: assetResult.manifest?.imageFills?.length ?? 0,
       colours: tokens.colours.length,
       typography: tokens.typography.length,
-      namedStyles: Object.values(tokens.namedStyles).reduce((n, g) => n + g.length, 0),
+      namedStyles: Object.values(tokens.namedStyles).reduce(
+        (n, g) => n + g.length,
+        0
+      ),
       figmaVariables: figmaVariables ? 1 : 0
     },
     warnings: built.warnings,
@@ -224,7 +285,16 @@ async function runFullPlain ({ client, fileKey, nodeIds, opts, config }) {
 // Full fetch of one or more SECTIONs: fetch each child frame individually and
 // write it to its own subfolder (frames/<slug>/design.json + design.md + assets),
 // with a section-level index (section.json / section.md) listing every frame.
-async function runSection ({ client, fileKey, nodeIds, sections, plainIds, discovery, opts, config }) {
+async function runSection({
+  client,
+  fileKey,
+  nodeIds,
+  sections,
+  plainIds,
+  discovery,
+  opts,
+  config
+}) {
   const geometry = opts.geometry ? 'paths' : undefined
   const depth = opts.depth ? Number.parseInt(opts.depth, 10) : undefined
   const outDir = outDirFor(opts, fileKey, nodeIds)
@@ -234,25 +304,41 @@ async function runSection ({ client, fileKey, nodeIds, sections, plainIds, disco
 
   // Ordered list of frames to fetch: each section's frames, then any plain nodes.
   const frameList = []
-  for (const s of sections) for (const f of s.frames) frameList.push({ ...f, sectionId: s.sectionId })
+  for (const s of sections)
+    for (const f of s.frames) frameList.push({ ...f, sectionId: s.sectionId })
   for (const id of plainIds) {
     const doc = discovery.nodes[id]?.document
-    frameList.push({ id, name: doc?.name ?? id, type: doc?.type ?? null, sectionId: null })
+    frameList.push({
+      id,
+      name: doc?.name ?? id,
+      type: doc?.type ?? null,
+      sectionId: null
+    })
   }
   const capped = frameList.slice(0, config.maxNodes)
   if (frameList.length > config.maxNodes) {
-    warnings.push(`Section(s) contain ${frameList.length} frames; capped to ${config.maxNodes} (FIGMA_MAX_NODES).`)
+    warnings.push(
+      `Section(s) contain ${frameList.length} frames; capped to ${config.maxNodes} (FIGMA_MAX_NODES).`
+    )
   }
 
   let figmaVariables = null
   try {
     figmaVariables = sanitiseVariables(await client.getLocalVariables(fileKey))
   } catch (err) {
-    warnings.push(`Figma variables endpoint unavailable: ${redactString(String(err?.message ?? err))}`)
+    warnings.push(
+      `Figma variables endpoint unavailable: ${redactString(String(err?.message ?? err))}`
+    )
   }
 
   const entries = await fetchNodeTreesBatched({
-    client, fileKey, ids: capped.map((f) => f.id), depth, geometry, batch: config.nodeBatch, warnings
+    client,
+    fileKey,
+    ids: capped.map((f) => f.id),
+    depth,
+    geometry,
+    batch: config.nodeBatch,
+    warnings
   })
 
   const file = discovery.file
@@ -289,7 +375,13 @@ async function runSection ({ client, fileKey, nodeIds, sections, plainIds, disco
     if (opts.assets) {
       const imageRefs = collectImageRefs(entry.document)
       const res = await downloadAssets({
-        client, fileKey, nodes: [{ id: f.id, name: f.name }], imageRefs, tokens, outDir: frameDir, config
+        client,
+        fileKey,
+        nodes: [{ id: f.id, name: f.name }],
+        imageRefs,
+        tokens,
+        outDir: frameDir,
+        config
       })
       manifest = res.manifest
       frameRecord.warnings.push(...res.warnings)
@@ -297,8 +389,14 @@ async function runSection ({ client, fileKey, nodeIds, sections, plainIds, disco
       await writeTokens(frameDir, tokens)
     }
 
-    await writeFile(join(frameDir, 'design.json'), JSON.stringify(frameRecord, null, 2))
-    await writeFile(join(frameDir, 'design.md'), buildDesignMarkdown(frameRecord, { manifest, tokens }))
+    await writeFile(
+      join(frameDir, 'design.json'),
+      JSON.stringify(frameRecord, null, 2)
+    )
+    await writeFile(
+      join(frameDir, 'design.md'),
+      buildDesignMarkdown(frameRecord, { manifest, tokens })
+    )
 
     const box = entry.document.absoluteBoundingBox ?? {}
     indexFrames.push({
@@ -312,7 +410,15 @@ async function runSection ({ client, fileKey, nodeIds, sections, plainIds, disco
     })
   }
 
-  const index = buildSectionIndex({ schemaVersion: discovery.schemaVersion, fileKey, file, retrievedAt, sections, frames: indexFrames, warnings })
+  const index = buildSectionIndex({
+    schemaVersion: discovery.schemaVersion,
+    fileKey,
+    file,
+    retrievedAt,
+    sections,
+    frames: indexFrames,
+    warnings
+  })
   await writeFile(join(outDir, 'section.json'), JSON.stringify(index, null, 2))
   await writeFile(join(outDir, 'section.md'), buildSectionMarkdown(index))
 
@@ -337,19 +443,28 @@ async function runSection ({ client, fileKey, nodeIds, sections, plainIds, disco
   }
 }
 
-async function run (location, opts) {
+async function run(location, opts) {
   const baseConfig = loadConfig()
   const config = effectiveConfig(baseConfig, opts)
   const client = createFigmaClient(config)
   const { fileKey, nodeId } = parseLocation(location)
-  const nodeIds = await resolveNodeIds({ client, fileKey, nodeId, opts, config })
+  const nodeIds = await resolveNodeIds({
+    client,
+    fileKey,
+    nodeId,
+    opts,
+    config
+  })
 
   if (opts.outline) return runOutline({ client, fileKey, nodeIds, opts })
 
   // Discovery: shallow (depth 1, no geometry) to detect SECTION nodes cheaply and
   // enumerate their child frames before any heavy per-frame fetch.
   const discoveryRaw = await client.getNodes(fileKey, nodeIds, { depth: 1 })
-  const discovery = sanitiseNodesResponse(discoveryRaw, { fileKey, requestedNodeIds: nodeIds })
+  const discovery = sanitiseNodesResponse(discoveryRaw, {
+    fileKey,
+    requestedNodeIds: nodeIds
+  })
 
   const sections = []
   const plainIds = []
@@ -360,7 +475,11 @@ async function run (location, opts) {
       sections.push({
         sectionId: id,
         name: doc.name ?? null,
-        frames: sectionChildFrames(doc).map((f) => ({ id: f.id, name: f.name ?? f.id, type: f.type ?? null }))
+        frames: sectionChildFrames(doc).map((f) => ({
+          id: f.id,
+          name: f.name ?? f.id,
+          type: f.type ?? null
+        }))
       })
     } else {
       plainIds.push(id)
@@ -368,15 +487,29 @@ async function run (location, opts) {
   }
 
   if (sections.length > 0) {
-    return runSection({ client, fileKey, nodeIds, sections, plainIds, discovery, opts, config })
+    return runSection({
+      client,
+      fileKey,
+      nodeIds,
+      sections,
+      plainIds,
+      discovery,
+      opts,
+      config
+    })
   }
   return runFullPlain({ client, fileKey, nodeIds, opts, config })
 }
 
-async function main () {
+async function main() {
   const { positionals, opts, unknown } = parseArgs(process.argv.slice(2))
   if (unknown.length > 0) {
-    process.stderr.write(JSON.stringify({ error: `Unknown option(s): ${unknown.join(', ')}`, code: 'ERR_INPUT' }) + '\n')
+    process.stderr.write(
+      JSON.stringify({
+        error: `Unknown option(s): ${unknown.join(', ')}`,
+        code: 'ERR_INPUT'
+      }) + '\n'
+    )
     process.exit(1)
   }
   if (positionals.length === 0 || positionals[0] === '--help') {

@@ -7,19 +7,23 @@ import { walk, collectColours } from './tree.mjs'
 // return data it is added under `figmaVariables`. This mirrors how the design's
 // own tree is the source of truth (no reliance on an Enterprise-gated endpoint).
 
-function round (n) {
+function round(n) {
   return Math.round((Number(n) || 0) * 100) / 100
 }
 
 // Aggregates the named-style maps from every requested node into groups by type.
-function collectNamedStyles (record) {
+function collectNamedStyles(record) {
   const groups = {}
   for (const entry of Object.values(record.nodes)) {
     for (const [id, style] of Object.entries(entry.styles ?? {})) {
       const type = style.styleType ?? 'OTHER'
       groups[type] ??= []
       if (!groups[type].some((s) => s.id === id)) {
-        groups[type].push({ id, name: style.name ?? null, description: style.description || undefined })
+        groups[type].push({
+          id,
+          name: style.name ?? null,
+          description: style.description || undefined
+        })
       }
     }
   }
@@ -28,7 +32,7 @@ function collectNamedStyles (record) {
 
 // Unique text styles used in the tree (typography tokens), with the named style
 // they reference where one is applied.
-function collectTypography (record) {
+function collectTypography(record) {
   const seen = new Map()
   for (const entry of Object.values(record.nodes)) {
     const styleNames = entry.styles ?? {}
@@ -37,16 +41,27 @@ function collectTypography (record) {
       const s = node.style
       const styleId = node.styles?.text
       const token = {
-        name: styleId && styleNames[styleId] ? styleNames[styleId].name : undefined,
+        name:
+          styleId && styleNames[styleId] ? styleNames[styleId].name : undefined,
         fontFamily: s.fontFamily,
         fontWeight: s.fontWeight,
         fontSize: s.fontSize,
-        lineHeightPx: s.lineHeightPx != null ? round(s.lineHeightPx) : undefined,
-        letterSpacing: s.letterSpacing != null ? round(s.letterSpacing) : undefined,
+        lineHeightPx:
+          s.lineHeightPx != null ? round(s.lineHeightPx) : undefined,
+        letterSpacing:
+          s.letterSpacing != null ? round(s.letterSpacing) : undefined,
         textCase: s.textCase,
         textAlignHorizontal: s.textAlignHorizontal
       }
-      const key = JSON.stringify([token.name, token.fontFamily, token.fontWeight, token.fontSize, token.lineHeightPx, token.letterSpacing, token.textCase])
+      const key = JSON.stringify([
+        token.name,
+        token.fontFamily,
+        token.fontWeight,
+        token.fontSize,
+        token.lineHeightPx,
+        token.letterSpacing,
+        token.textCase
+      ])
       if (!seen.has(key)) seen.set(key, token)
     })
   }
@@ -55,9 +70,10 @@ function collectTypography (record) {
 
 // Builds the tokens artefact. `figmaVariables` is the (already sanitised)
 // Enterprise variables payload or null.
-export function extractTokens (record, figmaVariables) {
+export function extractTokens(record, figmaVariables) {
   const colours = []
-  for (const entry of Object.values(record.nodes)) colours.push(...collectColours(entry.document, 200))
+  for (const entry of Object.values(record.nodes))
+    colours.push(...collectColours(entry.document, 200))
   const uniqueColours = [...new Set(colours)]
 
   return {

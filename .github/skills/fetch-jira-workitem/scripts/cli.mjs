@@ -4,7 +4,12 @@ import { resolve, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { loadConfig } from './config.mjs'
 import { createJiraClient, parseTicketRef } from './jira.mjs'
-import { resolveHierarchy, buildIndex, buildItemDocument, buildDetailSet } from './traverse.mjs'
+import {
+  resolveHierarchy,
+  buildIndex,
+  buildItemDocument,
+  buildDetailSet
+} from './traverse.mjs'
 import { sanitiseIssue, SCHEMA_VERSION } from './sanitise.mjs'
 import { redactString } from './redactor.mjs'
 
@@ -30,18 +35,26 @@ Options:
                  then read the file and delete it when done.`
 
 // Validates the ref against the configured Jira site.
-const parseRef = (ref, config) => parseTicketRef(ref, { expectedHost: config.egressHosts[0] })
+const parseRef = (ref, config) =>
+  parseTicketRef(ref, { expectedHost: config.egressHosts[0] })
 
 // Sanitiser options derived from config (shared by the single-item paths).
-const sanitiseOpts = (config) => ({ baseUrl: config.baseUrl, designHostAllowlist: config.designHostAllowlist, leafTicketTypes: config.leafTicketTypes })
+const sanitiseOpts = (config) => ({
+  baseUrl: config.baseUrl,
+  designHostAllowlist: config.designHostAllowlist,
+  leafTicketTypes: config.leafTicketTypes
+})
 
-async function runIndex (ref, config) {
+async function runIndex(ref, config) {
   const client = createJiraClient(config)
-  const hierarchy = await resolveHierarchy(parseRef(ref, config), { client, config })
+  const hierarchy = await resolveHierarchy(parseRef(ref, config), {
+    client,
+    config
+  })
   return buildIndex(hierarchy)
 }
 
-async function runItem (ref, config) {
+async function runItem(ref, config) {
   const client = createJiraClient(config)
   const key = parseRef(ref, config)
   const raw = await client.getIssue(key)
@@ -52,7 +65,7 @@ async function runItem (ref, config) {
 // Stage 2: full detail for the whole hierarchy (or just the root when traversal
 // is disabled), always returned as a `work-item-set`. A missing/inaccessible
 // ticket yields a single error stub rather than an empty set.
-async function runDetails (ref, config, traverse) {
+async function runDetails(ref, config, traverse) {
   if (!traverse) {
     const client = createJiraClient(config)
     const key = parseRef(ref, config)
@@ -60,17 +73,29 @@ async function runDetails (ref, config, traverse) {
     const items = raw
       ? [buildItemDocument(sanitiseIssue(raw, sanitiseOpts(config)))]
       : [{ ticketKey: key, error: 'Issue was not found or is not accessible.' }]
-    return { schemaVersion: SCHEMA_VERSION, kind: 'work-item-set', root: key, retrievedAt: new Date().toISOString(), count: items.length, truncated: false, warnings: [], items }
+    return {
+      schemaVersion: SCHEMA_VERSION,
+      kind: 'work-item-set',
+      root: key,
+      retrievedAt: new Date().toISOString(),
+      count: items.length,
+      truncated: false,
+      warnings: [],
+      items
+    }
   }
   const client = createJiraClient(config)
-  const hierarchy = await resolveHierarchy(parseRef(ref, config), { client, config })
+  const hierarchy = await resolveHierarchy(parseRef(ref, config), {
+    client,
+    config
+  })
   return buildDetailSet(hierarchy)
 }
 
 // Splits positional args from flags. `--no-traverse`/`--traverse=false` disable
 // hierarchy traversal so only the given ticket is fetched. Unknown flags are
 // rejected so a typo can never be misread as a ticket reference.
-function parseArgs (argv) {
+function parseArgs(argv) {
   const positionals = []
   const unknownFlags = []
   let traverse = true
@@ -83,7 +108,10 @@ function parseArgs (argv) {
     else if (arg.startsWith('--out=')) outPath = arg.slice(6)
     else if (arg === '--out' || arg === '-o') {
       const next = argv[i + 1]
-      if (next && !next.startsWith('-')) { outPath = next; i += 1 } else outPath = true
+      if (next && !next.startsWith('-')) {
+        outPath = next
+        i += 1
+      } else outPath = true
     } else if (arg.startsWith('-')) unknownFlags.push(arg)
     else positionals.push(arg)
   }
@@ -93,9 +121,12 @@ function parseArgs (argv) {
 // Emits the result: either the full JSON to stdout, or (with --out) the full
 // JSON to a file plus a compact summary to stdout so huge epics never overflow
 // the terminal.
-function emit (result, outPath) {
+function emit(result, outPath) {
   const json = JSON.stringify(result, null, 2)
-  if (outPath === undefined) { process.stdout.write(json + '\n'); return }
+  if (outPath === undefined) {
+    process.stdout.write(json + '\n')
+    return
+  }
   const root = result.root ?? result.ticketKey ?? 'jira'
   let file
   if (outPath === true) {
@@ -120,10 +151,17 @@ function emit (result, outPath) {
   process.stdout.write(JSON.stringify(summary, null, 2) + '\n')
 }
 
-async function main () {
-  const { positionals, traverse, unknownFlags, outPath } = parseArgs(process.argv.slice(2))
+async function main() {
+  const { positionals, traverse, unknownFlags, outPath } = parseArgs(
+    process.argv.slice(2)
+  )
   if (unknownFlags.length > 0) {
-    process.stderr.write(JSON.stringify({ error: `Unknown option(s): ${unknownFlags.join(', ')}`, code: 'ERR_INPUT' }) + '\n')
+    process.stderr.write(
+      JSON.stringify({
+        error: `Unknown option(s): ${unknownFlags.join(', ')}`,
+        code: 'ERR_INPUT'
+      }) + '\n'
+    )
     process.exit(1)
   }
   if (positionals.length === 0 || positionals[0] === '--help') {
@@ -133,7 +171,8 @@ async function main () {
   const config = loadConfig()
   let result
   if (positionals[0] === 'item') result = await runItem(positionals[1], config)
-  else if (positionals[0] === 'details') result = await runDetails(positionals[1], config, traverse)
+  else if (positionals[0] === 'details')
+    result = await runDetails(positionals[1], config, traverse)
   else if (!traverse) result = await runItem(positionals[0], config)
   else result = await runIndex(positionals[0], config)
   emit(result, outPath)

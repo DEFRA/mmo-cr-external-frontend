@@ -12,9 +12,9 @@ describe('Page Navigation Component', () => {
     })
 
     test('Should render the page navigation component', () => {
-      expect($pageNavigation('[data-testid="app-page-navigation"]')).toHaveLength(
-        1
-      )
+      expect(
+        $pageNavigation('[data-testid="app-page-navigation"]')
+      ).toHaveLength(1)
     })
 
     test('Should render the Back link with the supplied href', () => {

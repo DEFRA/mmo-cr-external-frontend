@@ -27,25 +27,30 @@ Replace the placeholder `/check-answers` page with a real GOV.UK Check Your Answ
 ## 4. Section → row → source mapping
 
 ### Trips details (one `govukSummaryList`)
-| Row | Source | Change href |
-|---|---|---|
-| Vessel | `getData('selectVessel').name` | `/select-vessel?return=/check-answers` |
-| Departure date | `journeyState.departureDate` if `tripSameDate === false`, else `checkAnswersDefaults.sameDayDate` | `/trip-departure-date` or `/trip-date` + `?return=/check-answers` |
-| Return date | `journeyState.returnDate` if `tripSameDate === false`, else `checkAnswersDefaults.sameDayDate` | `/trip-return-date` or `/trip-date` + `?return=/check-answers` |
-| Departure port | `ports.find(code).name` | `/departure-port?return=/check-answers` |
-| Return port | `ports.find(code).name` | `/return-port?return=/check-answers` |
-| Statistical sub area | branch-aware (`direct`/`other`+listed/`other`+typed) | `/statistical-area(-other)?return=/check-answers` |
+
+| Row                  | Source                                                                                            | Change href                                                       |
+| -------------------- | ------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| Vessel               | `getData('selectVessel').name`                                                                    | `/select-vessel?return=/check-answers`                            |
+| Departure date       | `journeyState.departureDate` if `tripSameDate === false`, else `checkAnswersDefaults.sameDayDate` | `/trip-departure-date` or `/trip-date` + `?return=/check-answers` |
+| Return date          | `journeyState.returnDate` if `tripSameDate === false`, else `checkAnswersDefaults.sameDayDate`    | `/trip-return-date` or `/trip-date` + `?return=/check-answers`    |
+| Departure port       | `ports.find(code).name`                                                                           | `/departure-port?return=/check-answers`                           |
+| Return port          | `ports.find(code).name`                                                                           | `/return-port?return=/check-answers`                              |
+| Statistical sub area | branch-aware (`direct`/`other`+listed/`other`+typed)                                              | `/statistical-area(-other)?return=/check-answers`                 |
 
 ### Gear used (rendered when gear is selected)
+
 Gear type (joined labels) · Total pots or traps hauled (if `pots`) · Total pots or traps left in water (if `pots`) · Mesh size (gear hint, or pots mock default, or omitted). Change href: `/gear-selection?return=/check-answers`.
 
 ### Species caught (rendered when `cod` selected)
+
 Species (plain name) · Weight above minimum size retained · Weight below minimum size retained (if visible) · Weight legally discard (if visible). Change href: `/species-selection?return=/check-answers`.
 
 ### Species not landed
+
 Not landed (Yes/No) · Species (if Yes) · Weight above minimum size kept onboard or in keep pots (kg) (if Yes). Change href: `/catch-not-landed?return=/check-answers`.
 
 ### Declaration
+
 `govukWarningText` + confirming body/bullets + single `govukCheckboxes` item ("I confirm the information is complete and accurate", required) + literal `<h2>Trips details</h2>` + `govukButton` "Accept and submit trip details".
 
 ## 5. New mock data

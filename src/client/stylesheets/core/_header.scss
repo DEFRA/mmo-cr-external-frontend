@@ -1,4 +1,4 @@
-@use "govuk-frontend" as *;
+@use 'govuk-frontend' as *;
 
 // Example namespaced custom element style CSS classes
 
@@ -9,5 +9,5 @@
 
 // Match the design: the GOV.UK logo's middle dot is white, not the default teal
 .app-header .govuk-logo-dot {
-  fill: govuk-colour("white");
+  fill: govuk-colour('white');
 }

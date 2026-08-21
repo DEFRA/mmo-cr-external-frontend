@@ -81,12 +81,11 @@ Use these references once as the complete visual evidence set for this task:
 Figma URL: https://www.figma.com/design/9Jve7RKNprYeeaNYsbTUH1/MMO-Catch-Records?node-id=48-24711&t=ffkmqdjC5IXaXW7u-0
 ```
 
-Guidance page 
+Guidance page
 ![Guidance page](./../screens/Guidance.png)
 
 Privacy notice
 ![Privacy notice](./../screens/PrivaciNotice.png)
-
 
 Replace the placeholders before starting.
 

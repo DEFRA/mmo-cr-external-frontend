@@ -91,10 +91,10 @@ Figma URL Create Draft record: https://www.figma.com/design/9Jve7RKNprYeeaNYsbTU
 Figma URL Select Vessel : https://www.figma.com/design/9Jve7RKNprYeeaNYsbTUH1/MMO-Catch-Records?node-id=48-24943&t=ffkmqdjC5IXaXW7u-0
 ```
 
-Create Draft Record 
+Create Draft Record
 ![CREATE_DRAFT_RECORD_PNG_PATH](./../screens/WhatToDoWithDraftRecord.png)
 
-Select Vessel 
+Select Vessel
 ![SELECT_VESSEL_PNG_PATH](./../screens/SelectYourVessel.png)
 
 Replace the placeholders before starting.

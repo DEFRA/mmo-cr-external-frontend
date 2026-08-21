@@ -127,7 +127,8 @@ describe('#editCatchRecordReviewController', () => {
     })
     const $ = load(result)
     const vesselRow = $('.govuk-summary-list__row').filter(
-      (_, el) => $(el).find('.govuk-summary-list__key').text().trim() === 'Vessel'
+      (_, el) =>
+        $(el).find('.govuk-summary-list__key').text().trim() === 'Vessel'
     )
 
     expect(vesselRow.find('a').length).toBe(0)

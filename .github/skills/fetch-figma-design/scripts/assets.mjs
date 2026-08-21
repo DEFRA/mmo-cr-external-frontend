@@ -19,33 +19,54 @@ const EXT_BY_TYPE = {
 
 // Fetches an asset URL (GET-only, https, host-checked) and returns its bytes in
 // memory. The caller decides the filename/extension and writes it once.
-async function fetchAsset (rawUrl, config) {
+async function fetchAsset(rawUrl, config) {
   assertAllowedHost(rawUrl, config.assetHostAllowlist)
   let res
   try {
     res = await fetch(rawUrl, { method: 'GET', redirect: 'follow' })
   } catch (err) {
-    throw new SafeError(`Asset download failed: ${redactString(String(err?.message ?? err))}`, { code: 'ERR_NETWORK' })
+    throw new SafeError(
+      `Asset download failed: ${redactString(String(err?.message ?? err))}`,
+      { code: 'ERR_NETWORK' }
+    )
   }
   if (!res.ok) return { ok: false, status: res.status }
   const buffer = Buffer.from(await res.arrayBuffer())
-  const contentType = (res.headers.get('content-type') ?? '').split(';')[0].trim().toLowerCase()
+  const contentType = (res.headers.get('content-type') ?? '')
+    .split(';')[0]
+    .trim()
+    .toLowerCase()
   return { ok: true, buffer, bytes: buffer.length, contentType }
 }
 
 // Renders the requested nodes in each configured format and downloads them.
-async function renderNodes (client, fileKey, nodes, assetsDir, config, manifest, warnings) {
+async function renderNodes(
+  client,
+  fileKey,
+  nodes,
+  assetsDir,
+  config,
+  manifest,
+  warnings
+) {
   const ids = nodes.map((n) => n.id)
   for (const format of config.imageFormats) {
     let result
     try {
-      result = await client.getImages(fileKey, ids, { format, scale: config.imageScale })
+      result = await client.getImages(fileKey, ids, {
+        format,
+        scale: config.imageScale
+      })
     } catch (err) {
-      warnings.push(`Render (${format}) failed: ${redactString(String(err?.message ?? err))}`)
+      warnings.push(
+        `Render (${format}) failed: ${redactString(String(err?.message ?? err))}`
+      )
       continue
     }
     if (result?.err) {
-      warnings.push(`Render (${format}) error: ${redactString(String(result.err))}`)
+      warnings.push(
+        `Render (${format}) error: ${redactString(String(result.err))}`
+      )
       continue
     }
     for (const node of nodes) {
@@ -56,24 +77,42 @@ async function renderNodes (client, fileKey, nodes, assetsDir, config, manifest,
       }
       const res = await fetchAsset(url, config)
       if (!res.ok) {
-        warnings.push(`Failed to download ${format} render for ${node.id} (status ${res.status}).`)
+        warnings.push(
+          `Failed to download ${format} render for ${node.id} (status ${res.status}).`
+        )
         continue
       }
       const file = `render-${sanitiseFileName(node.name)}-${nodeIdToFilePart(node.id)}.${format}`
       await writeFile(join(assetsDir, file), res.buffer)
-      manifest.renders.push({ nodeId: node.id, name: node.name, format, file, bytes: res.bytes })
+      manifest.renders.push({
+        nodeId: node.id,
+        name: node.name,
+        format,
+        file,
+        bytes: res.bytes
+      })
     }
   }
 }
 
 // Downloads the user-supplied image fills referenced in the tree.
-async function downloadImageFills (client, fileKey, imageRefs, assetsDir, config, manifest, warnings) {
+async function downloadImageFills(
+  client,
+  fileKey,
+  imageRefs,
+  assetsDir,
+  config,
+  manifest,
+  warnings
+) {
   if (imageRefs.length === 0) return
   let result
   try {
     result = await client.getImageFills(fileKey)
   } catch (err) {
-    warnings.push(`Image fills lookup failed: ${redactString(String(err?.message ?? err))}`)
+    warnings.push(
+      `Image fills lookup failed: ${redactString(String(err?.message ?? err))}`
+    )
     return
   }
   const map = result?.meta?.images ?? result?.images ?? {}
@@ -85,7 +124,9 @@ async function downloadImageFills (client, fileKey, imageRefs, assetsDir, config
     }
     const res = await fetchAsset(url, config)
     if (!res.ok) {
-      warnings.push(`Failed to download image fill ${ref} (status ${res.status}).`)
+      warnings.push(
+        `Failed to download image fill ${ref} (status ${res.status}).`
+      )
       continue
     }
     const ext = EXT_BY_TYPE[res.contentType] ?? 'bin'
@@ -97,25 +138,55 @@ async function downloadImageFills (client, fileKey, imageRefs, assetsDir, config
 
 // Writes the derived design tokens to <outDir>/assets/tokens.json (always, even
 // with --no-assets) and returns the relative path.
-export async function writeTokens (outDir, tokens) {
+export async function writeTokens(outDir, tokens) {
   const assetsDir = join(outDir, 'assets')
   await mkdir(assetsDir, { recursive: true })
-  await writeFile(join(assetsDir, 'tokens.json'), JSON.stringify(tokens, null, 2))
+  await writeFile(
+    join(assetsDir, 'tokens.json'),
+    JSON.stringify(tokens, null, 2)
+  )
   return 'assets/tokens.json'
 }
 
 // Orchestrates all downloads and returns a manifest describing what was written.
-export async function downloadAssets ({ client, fileKey, nodes, imageRefs, tokens, outDir, config }) {
+export async function downloadAssets({
+  client,
+  fileKey,
+  nodes,
+  imageRefs,
+  tokens,
+  outDir,
+  config
+}) {
   const assetsDir = join(outDir, 'assets')
   await mkdir(assetsDir, { recursive: true })
   const manifest = { renders: [], imageFills: [], tokensFile: null }
   const warnings = []
 
-  await renderNodes(client, fileKey, nodes, assetsDir, config, manifest, warnings)
-  await downloadImageFills(client, fileKey, imageRefs, assetsDir, config, manifest, warnings)
+  await renderNodes(
+    client,
+    fileKey,
+    nodes,
+    assetsDir,
+    config,
+    manifest,
+    warnings
+  )
+  await downloadImageFills(
+    client,
+    fileKey,
+    imageRefs,
+    assetsDir,
+    config,
+    manifest,
+    warnings
+  )
 
   if (tokens) manifest.tokensFile = await writeTokens(outDir, tokens)
 
-  await writeFile(join(assetsDir, 'manifest.json'), JSON.stringify(manifest, null, 2))
+  await writeFile(
+    join(assetsDir, 'manifest.json'),
+    JSON.stringify(manifest, null, 2)
+  )
   return { manifest, warnings, assetsDir }
 }

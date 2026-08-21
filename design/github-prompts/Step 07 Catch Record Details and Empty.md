@@ -86,9 +86,8 @@ https://www.figma.com/design/9Jve7RKNprYeeaNYsbTUH1/MMO-Catch-Records?node-id=48
 ```
 
 ### PNG screen reference
+
 ![Catch record details](./../screens/CatchRecordsForVessel.png)
-
-
 
 The attached PNG is the primary visual reference because the Figma connection may be unreliable.
 
