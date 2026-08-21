@@ -9,6 +9,33 @@
   }
 }
 
+// Sign out is a form (a state change), not a link — reset button chrome so its
+// submit button reuses the existing govuk-service-navigation__link styling.
+.app-sign-out-form {
+  display: inline;
+}
+
+.app-sign-out-form__button {
+  background: none;
+  border: 0;
+  margin: 0;
+  padding: 0;
+  font: inherit;
+  color: govuk-colour("white");
+  text-decoration: underline;
+  cursor: pointer;
+
+  &:hover {
+    color: govuk-colour("white");
+    background: none;
+    text-decoration-thickness: max(3px, 0.1875rem, 0.12em);
+  }
+
+  &:focus {
+    @include govuk-focused-text;
+  }
+}
+
 @include govuk-media-query($from: tablet) {
   // Outer band spans the full viewport width in brand blue
   .app-header-row {

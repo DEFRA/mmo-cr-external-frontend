@@ -1,3 +1,5 @@
+import { signIn } from '#/server/common/helpers/auth/session.js'
+
 /**
  * Sign In has no real authentication in this step — Continue simply starts the
  * signed-in journey at the records list.
@@ -12,7 +14,9 @@ export const signInController = {
 }
 
 export const signInSubmitController = {
-  handler(_request, h) {
+  handler(request, h) {
+    signIn(request)
+
     return h.redirect('/records').code(303)
   }
 }

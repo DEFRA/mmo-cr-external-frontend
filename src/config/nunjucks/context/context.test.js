@@ -34,7 +34,7 @@ describe('context and cache', () => {
   })
 
   describe('#context', () => {
-    const mockRequest = { path: '/' }
+    const mockRequest = { path: '/', yar: { get: () => false } }
 
     describe('When Vite manifest file read succeeds', () => {
       let contextImport
@@ -58,20 +58,7 @@ describe('context and cache', () => {
         expect(contextResult).toEqual({
           assetPath: '/public/assets',
           getAssetPath: expect.any(Function),
-          navigation: [
-            {
-              text: 'Home',
-              href: '#'
-            },
-            {
-              text: 'Your account',
-              href: '#'
-            },
-            {
-              text: 'Sign out',
-              href: '#'
-            }
-          ],
+          navigation: [],
           serviceName: 'Record your catch',
           serviceUrl: '/',
           feedbackUrl: '#',
@@ -122,7 +109,7 @@ describe('context and cache', () => {
   })
 
   describe('#context cache', () => {
-    const mockRequest = { path: '/' }
+    const mockRequest = { path: '/', yar: { get: () => false } }
     let contextResult
 
     describe('Vite manifest file cache', () => {
@@ -154,20 +141,7 @@ describe('context and cache', () => {
         expect(contextResult).toEqual({
           assetPath: '/public/assets',
           getAssetPath: expect.any(Function),
-          navigation: [
-            {
-              text: 'Home',
-              href: '#'
-            },
-            {
-              text: 'Your account',
-              href: '#'
-            },
-            {
-              text: 'Sign out',
-              href: '#'
-            }
-          ],
+          navigation: [],
           serviceName: 'Record your catch',
           serviceUrl: '/',
           feedbackUrl: '#',
