@@ -254,4 +254,32 @@ describe('#buildCheckAnswersViewModel', () => {
       expect(new Set(names).size).toBe(names.length)
     }
   })
+
+  test('Should use the provided buildChangeHref override for every row', () => {
+    const viewModel = buildCheckAnswersViewModel(fakeRequest(undefined), {
+      buildChangeHref: () => '/not-implemented?return=/records'
+    })
+
+    for (const section of viewModel.sections) {
+      for (const row of section.rows) {
+        expect(row.actions.items[0].href).toBe(
+          '/not-implemented?return=/records'
+        )
+      }
+    }
+  })
+
+  test('Should omit the Vessel row Change action when hideVesselChange is set', () => {
+    const viewModel = buildCheckAnswersViewModel(fakeRequest(undefined), {
+      hideVesselChange: true
+    })
+    const tripsRows = rowsFor(viewModel, 'Trips details')
+    const vesselRow = tripsRows.find((row) => row.key.text === 'Vessel')
+
+    expect(vesselRow.actions.items).toHaveLength(0)
+    expect(
+      tripsRows.find((row) => row.key.text === 'Departure date').actions
+        .items
+    ).toHaveLength(1)
+  })
 })

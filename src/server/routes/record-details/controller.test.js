@@ -56,9 +56,7 @@ describe('#recordDetailsController', () => {
     const editLink = $('a').filter(
       (i, el) => $(el).text().trim() === 'Edit catch record'
     )
-    expect(editLink.attr('href')).toBe(
-      '/not-implemented?return=/records/submitted-1'
-    )
+    expect(editLink.attr('href')).toBe('/records/submitted-1/edit-reason')
 
     const downloadButton = $('button').filter(
       (i, el) => $(el).text().trim() === 'Download PDF'
@@ -87,14 +85,13 @@ describe('#recordDetailsController', () => {
     expect(statusCode).toBe(statusCodes.ok)
   })
 
-  test('Should redirect an unsent record to the draft page', async () => {
-    const { statusCode, headers } = await server.inject({
+  test('Should render details for an unsent record', async () => {
+    const { statusCode } = await server.inject({
       method: 'GET',
       url: '/records/unsent-1'
     })
 
-    expect(statusCode).toBe(302)
-    expect(headers.location).toBe('/draft')
+    expect(statusCode).toBe(statusCodes.ok)
   })
 
   test('Should 404 for an unknown record', async () => {

@@ -100,14 +100,11 @@ The All Records page uses the selected mock record's status to determine the des
 
 - **Create a new catch record** leads to Create Draft Record.
 
-### Unsent record
-
-- Clicking the trip-end date for an **Unsent** record leads to Create Draft Record.
-
 ### Existing record details
 
-Clicking the trip-end date for any of these statuses leads to Catch Record Details for the selected mock record:
+Clicking the trip-end date for any existing mock record leads to Catch Record Details for that record, regardless of status:
 
+- **Unsent**;
 - **Submitted**;
 - **Amended**;
 - **Late**.
@@ -117,12 +114,8 @@ Clicking the trip-end date for any of these statuses leads to Catch Record Detai
 ```text
 if action is create-new:
     go to Create Draft Record
-else if selected record status is Unsent:
-    go to Create Draft Record
-else if selected record status is Submitted, Amended or Late:
-    go to Catch Record Details
 else:
-    go to Empty Page or use the project's safe fallback
+    go to Catch Record Details for the selected record
 ```
 
 The application must not infer the destination from table position, displayed date, or record creator. The selected record's mock status is the decision input.
@@ -154,8 +147,7 @@ Back behaviour:
 
 Both creation entry points use this page:
 
-- Create a new catch record;
-- selection of an Unsent record.
+- Create a new catch record.
 
 ## 10. Vessel navigation
 
@@ -324,7 +316,7 @@ The route and placeholder implementation is complete when the following can be d
 - Guidance to Sign In;
 - Sign In to All Records;
 - Create New to Create Draft Record;
-- Unsent date to Create Draft Record;
+- Unsent date to Catch Record Details;
 - Submitted date to Catch Record Details;
 - Amended date to Catch Record Details;
 - Late date to Catch Record Details;

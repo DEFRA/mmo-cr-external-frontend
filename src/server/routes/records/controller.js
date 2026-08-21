@@ -1,7 +1,6 @@
 import Joi from 'joi'
 
 import { getData } from '#/server/common/data/get-data.js'
-import { resolveRecordDestination } from '#/server/common/helpers/journey/records.js'
 import { getStatusDisplay } from '#/server/common/helpers/records/status-display.js'
 import { buildPagination } from '#/server/common/helpers/records/pagination.js'
 
@@ -17,10 +16,7 @@ function toRowViewModel(record) {
     createdBy: record.createdBy,
     statusText: statusDisplay.text,
     statusTagClasses: statusDisplay.tagClasses,
-    href:
-      resolveRecordDestination(record.status) === 'draft'
-        ? '/draft'
-        : `/records/${record.recordId}`
+    href: `/records/${record.recordId}`
   }
 }
 

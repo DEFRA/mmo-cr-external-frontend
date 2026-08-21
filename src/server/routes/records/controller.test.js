@@ -113,11 +113,13 @@ describe('#recordsController', () => {
       $ = load(result)
     })
 
-    test('Should link the unsent record to the draft page', () => {
-      expect($('a[href="/draft"]')).toHaveLength(2)
+    test('Should link the create action to the draft page only', () => {
+      expect($('a[href="/draft"]')).toHaveLength(1)
+      expect($('.govuk-button[href="/draft"]')).toHaveLength(1)
     })
 
-    test('Should link the submitted, amended and late records to their details pages', () => {
+    test('Should link every record, including unsent, to its details page', () => {
+      expect($('a[href="/records/unsent-1"]')).toHaveLength(1)
       expect($('a[href="/records/submitted-1"]')).toHaveLength(1)
       expect($('a[href="/records/amended-1"]')).toHaveLength(1)
       expect($('a[href="/records/late-1"]')).toHaveLength(1)

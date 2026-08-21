@@ -13,7 +13,7 @@ function joinWithAnd(items) {
   return `${items.slice(0, -1).join(', ')} and ${items[items.length - 1]}`
 }
 
-function tripsDetailsSection(journeyState, fallback) {
+function tripsDetailsSection(journeyState, fallback, buildChangeHref, hideVesselChange) {
   const ports = getData('ports')
   const isSameDayTrip = journeyState.tripSameDate !== false
   const departurePortName =
@@ -54,47 +54,52 @@ function tripsDetailsSection(journeyState, fallback) {
       {
         key: 'Vessel',
         value: getData('selectVessel').name,
-        changeHref: `/select-vessel${RETURN_TO_CHECK_ANSWERS}`
+        changeHref: hideVesselChange ? null : buildChangeHref('/select-vessel')
       },
       {
         key: 'Departure date',
         value: journeyState.departureDate ?? fallback.departureDate,
         isDate: true,
-        changeHref: `${dateChangeHref}${RETURN_TO_CHECK_ANSWERS}`
+        changeHref: buildChangeHref(dateChangeHref)
       },
       {
         key: 'Return date',
         value: journeyState.returnDate ?? fallback.returnDate,
         isDate: true,
-        changeHref: `${returnDateChangeHref}${RETURN_TO_CHECK_ANSWERS}`
+        changeHref: buildChangeHref(returnDateChangeHref)
       },
       {
         key: 'Departure port',
         value: departurePortName,
-        changeHref: `/departure-port${RETURN_TO_CHECK_ANSWERS}`
+        changeHref: buildChangeHref('/departure-port')
       },
       {
         key: 'Return port',
         value: returnPortName,
-        changeHref: `/return-port${RETURN_TO_CHECK_ANSWERS}`
+        changeHref: buildChangeHref('/return-port')
       },
       {
         key: 'Statistical sub area',
         value: statisticalSubArea,
-        changeHref: `${statisticalAreaChangeHref}${RETURN_TO_CHECK_ANSWERS}`
+        changeHref: buildChangeHref(statisticalAreaChangeHref)
       }
     ]
   }
 }
 
-function gearUsedSection(journeyState, fallback, meshSizeDefault) {
+function gearUsedSection(
+  journeyState,
+  fallback,
+  meshSizeDefault,
+  buildChangeHref
+) {
   const gearOptions = getData('gearSelection')
   const selectedGearIds = journeyState.selectedGearIds
   const hasSelection =
     Array.isArray(selectedGearIds) && selectedGearIds.length > 0
   const potsSelected = hasSelection ? selectedGearIds.includes('pots') : true
   const potsDetails = journeyState.potsDetails || {}
-  const changeHref = `/gear-selection${RETURN_TO_CHECK_ANSWERS}`
+  const changeHref = buildChangeHref('/gear-selection')
 
   const gearLabel = hasSelection
     ? joinWithAnd(
@@ -138,7 +143,7 @@ function gearUsedSection(journeyState, fallback, meshSizeDefault) {
   return { heading: 'Gear used', rows }
 }
 
-function speciesCaughtSection(journeyState, fallback) {
+function speciesCaughtSection(journeyState, fallback, buildChangeHref) {
   const selectedSpeciesIds = journeyState.selectedSpeciesIds
   const hasSession = Array.isArray(selectedSpeciesIds)
   const hasCod = hasSession ? selectedSpeciesIds.includes('cod') : true
@@ -158,7 +163,7 @@ function speciesCaughtSection(journeyState, fallback) {
   const speciesName = getData('speciesSelection')
     .find((species) => species.id === 'cod')
     .text.replace(SPECIES_CODE_SUFFIX, '')
-  const changeHref = `/species-selection${RETURN_TO_CHECK_ANSWERS}`
+  const changeHref = buildChangeHref('/species-selection')
 
   const rows = [
     { key: 'Species', value: speciesName, changeHref },
@@ -188,12 +193,12 @@ function speciesCaughtSection(journeyState, fallback) {
   return { heading: 'Species caught', rows }
 }
 
-function speciesNotLandedSection(journeyState, fallback) {
+function speciesNotLandedSection(journeyState, fallback, buildChangeHref) {
   const hasAnswer = typeof journeyState.catchNotLanded === 'boolean'
   const catchNotLanded = hasAnswer
     ? journeyState.catchNotLanded
     : fallback.catchNotLanded
-  const changeHref = `/catch-not-landed${RETURN_TO_CHECK_ANSWERS}`
+  const changeHref = buildChangeHref('/catch-not-landed')
 
   const rows = [
     { key: 'Not landed', value: catchNotLanded ? 'Yes' : 'No', changeHref }
@@ -219,33 +224,44 @@ function speciesNotLandedSection(journeyState, fallback) {
 
 // Converts a section's raw { key, value, changeHref, isDate } rows into the
 // GOV.UK summary-list row shape, applying date formatting and building the
-// uniquely-accessible Change action.
+// uniquely-accessible Change action. A falsy changeHref omits the action
+// (e.g. the amendment-mode Vessel row, which the design shows with no Change link).
 function toSummaryListRow({ key, value, changeHref, isDate }) {
   return {
     key: { text: key },
     value: { text: isDate ? formatDate(value, 'd MMMM yyyy') : `${value}` },
-    actions: {
-      items: [
-        {
-          href: changeHref,
-          text: 'Change',
-          visuallyHiddenText: key.toLowerCase()
+    actions: changeHref
+      ? {
+          items: [
+            {
+              href: changeHref,
+              text: 'Change',
+              visuallyHiddenText: key.toLowerCase()
+            }
+          ]
         }
-      ]
-    }
+      : { items: [] }
   }
 }
 
-export function buildCheckAnswersViewModel(request) {
+export function buildCheckAnswersViewModel(request, options = {}) {
+  const buildChangeHref =
+    options.buildChangeHref ??
+    ((wizardPath) => `${wizardPath}${RETURN_TO_CHECK_ANSWERS}`)
   const journeyState = getJourneyState(request)
   const fallback = getData('catchRecordDetails')
   const { potsMeshSize } = getData('checkAnswersDefaults')
 
   const sections = [
-    tripsDetailsSection(journeyState, fallback),
-    gearUsedSection(journeyState, fallback, potsMeshSize),
-    speciesCaughtSection(journeyState, fallback),
-    speciesNotLandedSection(journeyState, fallback)
+    tripsDetailsSection(
+      journeyState,
+      fallback,
+      buildChangeHref,
+      options.hideVesselChange
+    ),
+    gearUsedSection(journeyState, fallback, potsMeshSize, buildChangeHref),
+    speciesCaughtSection(journeyState, fallback, buildChangeHref),
+    speciesNotLandedSection(journeyState, fallback, buildChangeHref)
   ].filter(Boolean)
 
   return {

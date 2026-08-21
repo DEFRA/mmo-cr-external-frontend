@@ -4,8 +4,8 @@ import Boom from '@hapi/boom'
 import { getData } from '#/server/common/data/get-data.js'
 
 /**
- * Dispatches by record status: an unsent record has no details yet and
- * continues its draft; other statuses render a read-only placeholder.
+ * Dispatches by record status: all supported statuses (Unsent, Submitted,
+ * Amended, Late) render the same read-only details view.
  */
 export const recordDetailsController = {
   options: {
@@ -23,10 +23,6 @@ export const recordDetailsController = {
 
     if (!record) {
       throw Boom.notFound()
-    }
-
-    if (record.status === 'unsent') {
-      return h.redirect('/draft').code(302)
     }
 
     const details = getData('catchRecordDetails')

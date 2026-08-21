@@ -1,0 +1,8 @@
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+
+{% macro appCatchRecordSummarySections(sections) %}
+  {% for section in sections %}
+    <h2 class="govuk-heading-l">{{ section.heading }}</h2>
+    {{ govukSummaryList({ rows: section.rows }) }}
+  {% endfor %}
+{% endmacro %}

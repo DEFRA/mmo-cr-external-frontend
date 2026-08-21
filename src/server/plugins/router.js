@@ -8,6 +8,8 @@ import { signIn } from '../routes/sign-in/index.js'
 import { signOut } from '../routes/sign-out/index.js'
 import { records } from '../routes/records/index.js'
 import { recordDetails } from '../routes/record-details/index.js'
+import { editCatchRecordReason } from '../routes/edit-catch-record-reason/index.js'
+import { editCatchRecordReview } from '../routes/edit-catch-record-review/index.js'
 import { draft } from '../routes/draft/index.js'
 import { selectVessel } from '../routes/select-vessel/index.js'
 import { tripDate } from '../routes/trip-date/index.js'
@@ -45,6 +47,8 @@ export const router = {
         signOut,
         records,
         recordDetails,
+        editCatchRecordReason,
+        editCatchRecordReview,
         draft,
         selectVessel,
         tripDate,
