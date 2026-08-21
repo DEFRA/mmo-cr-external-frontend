@@ -112,7 +112,7 @@ export async function resolveHierarchy(rootKey, { client, config }) {
     // Only defined types (leaf/container) carry parent context; an undefined
     // root (e.g. Task/Sub-task) returns on its own with no parent or traversal.
     if (isRoot && (kind.isLeaf || kind.isContainer) && record.parent)
-      enqueue(record.parent.key, 0, false, 'parent')
+      {enqueue(record.parent.key, 0, false, 'parent')}
     // Only containers are expanded; leaves and excluded types stop here so
     // sub-tasks and tasks below them are never fetched.
     if (!expand || depth >= config.maxDepth || !kind.isContainer) continue
@@ -132,7 +132,7 @@ export async function resolveHierarchy(rootKey, { client, config }) {
       }
     }
     for (const ck of [...childKeys].sort((a, b) => a.localeCompare(b)))
-      enqueue(ck, depth + 1, true, 'child')
+      {enqueue(ck, depth + 1, true, 'child')}
     for (const link of [...record.links].sort((a, b) =>
       a.key.localeCompare(b.key)
     )) {

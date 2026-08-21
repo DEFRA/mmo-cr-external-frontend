@@ -90,9 +90,9 @@ function parseApiBase(raw) {
     })
   }
   if (url.protocol !== 'https:')
-    throw new SafeError('FIGMA_API_BASE must use https.', {
+    {throw new SafeError('FIGMA_API_BASE must use https.', {
       code: 'ERR_CONFIG_INVALID'
-    })
+    })}
   const path = url.pathname.replace(/\/+$/, '')
   return { apiBase: `${url.protocol}//${url.host}${path}`, host: url.host }
 }

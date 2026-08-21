@@ -31,13 +31,13 @@ export function assertAllowedHost(rawUrl, allowedHosts) {
     })
   }
   if (url.protocol !== 'https:')
-    throw new SafeError('Refusing non-https request.', { code: 'ERR_EGRESS' })
+    {throw new SafeError('Refusing non-https request.', { code: 'ERR_EGRESS' })}
   const host = url.host.toLowerCase()
   const allowed = allowedHosts.some((h) => host === h || host.endsWith(`.${h}`))
   if (!allowed)
-    throw new SafeError(`Refusing to contact disallowed host "${url.host}".`, {
+    {throw new SafeError(`Refusing to contact disallowed host "${url.host}".`, {
       code: 'ERR_EGRESS'
-    })
+    })}
   return url
 }
 

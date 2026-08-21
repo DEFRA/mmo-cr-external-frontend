@@ -73,7 +73,7 @@ function collectTypography(record) {
 export function extractTokens(record, figmaVariables) {
   const colours = []
   for (const entry of Object.values(record.nodes))
-    colours.push(...collectColours(entry.document, 200))
+    {colours.push(...collectColours(entry.document, 200))}
   const uniqueColours = [...new Set(colours)]
 
   return {

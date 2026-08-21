@@ -212,7 +212,7 @@ async function runFullPlain({ client, fileKey, nodeIds, opts, config }) {
     if (!entry.document) continue
     for (const frame of topFrames(entry.document)) {
       if (renderNodes.length < config.maxNodes)
-        renderNodes.push({ id: frame.id, name: frame.name ?? frame.id })
+        {renderNodes.push({ id: frame.id, name: frame.name ?? frame.id })}
     }
     for (const ref of collectImageRefs(entry.document)) imageRefs.add(ref)
   }
@@ -226,9 +226,9 @@ async function runFullPlain({ client, fileKey, nodeIds, opts, config }) {
     )
   }
   if (!figmaVariables)
-    built.warnings.push(
+    {built.warnings.push(
       'Figma variables endpoint returned no data (Enterprise plan/scope required); design tokens were derived from the node tree and named styles instead.'
-    )
+    )}
 
   const tokens = extractTokens(built, figmaVariables)
 
@@ -305,7 +305,7 @@ async function runSection({
   // Ordered list of frames to fetch: each section's frames, then any plain nodes.
   const frameList = []
   for (const s of sections)
-    for (const f of s.frames) frameList.push({ ...f, sectionId: s.sectionId })
+    {for (const f of s.frames) frameList.push({ ...f, sectionId: s.sectionId })}
   for (const id of plainIds) {
     const doc = discovery.nodes[id]?.document
     frameList.push({

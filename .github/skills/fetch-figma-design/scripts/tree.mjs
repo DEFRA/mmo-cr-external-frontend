@@ -57,7 +57,7 @@ export function collectImageRefs(document) {
   walk(document, (node) => {
     for (const fill of node.fills ?? []) {
       if (fill && fill.type === 'IMAGE' && typeof fill.imageRef === 'string')
-        refs.add(fill.imageRef)
+        {refs.add(fill.imageRef)}
     }
   })
   return [...refs]

@@ -37,7 +37,7 @@ export function parseTicketRef(input, { expectedHost } = {}) {
   }
   const selected = url.searchParams.get('selectedIssue')
   if (selected && KEY_RE.test(selected.toUpperCase()))
-    return selected.toUpperCase()
+    {return selected.toUpperCase()}
   const browse = url.pathname.match(/\/browse\/([A-Za-z][A-Za-z0-9]+-\d+)/)
   if (browse) return browse[1].toUpperCase()
   const segment = url.pathname
@@ -82,9 +82,9 @@ export function createJiraClient(config) {
   async function getIssue(key) {
     const validKey = safeKey(key)
     if (!validKey)
-      throw new SafeError('Refusing to fetch an invalid issue key.', {
+      {throw new SafeError('Refusing to fetch an invalid issue key.', {
         code: 'ERR_INPUT'
-      })
+      })}
     const url = `${config.baseUrl}/rest/api/3/issue/${encodeURIComponent(validKey)}?fields=${encodeURIComponent(fields)}&fieldsByKeys=false`
     const res = await guardedFetch(
       url,
@@ -95,9 +95,9 @@ export function createJiraClient(config) {
     authError(res.status)
     rateLimitError(res.status)
     if (!res.ok)
-      throw new SafeError(`Jira request failed (${res.status}).`, {
+      {throw new SafeError(`Jira request failed (${res.status}).`, {
         code: 'ERR_JIRA'
-      })
+      })}
     return res.json()
   }
 
@@ -125,9 +125,9 @@ export function createJiraClient(config) {
       rateLimitError(res.status)
       if (res.status === 400 || res.status === 404) return issues
       if (!res.ok)
-        throw new SafeError(`Jira child search failed (${res.status}).`, {
+        {throw new SafeError(`Jira child search failed (${res.status}).`, {
           code: 'ERR_JIRA'
-        })
+        })}
       const data = await res.json()
       if (Array.isArray(data.issues)) issues.push(...data.issues)
       nextPageToken = data.nextPageToken
