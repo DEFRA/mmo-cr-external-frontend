@@ -34,7 +34,7 @@ describe('context and cache', () => {
   })
 
   describe('#context', () => {
-    const mockRequest = { path: '/' }
+    const mockRequest = { path: '/', yar: { get: () => false } }
 
     describe('When Vite manifest file read succeeds', () => {
       let contextImport
@@ -57,22 +57,16 @@ describe('context and cache', () => {
       test('Should provide expected context', () => {
         expect(contextResult).toEqual({
           assetPath: '/public/assets',
-          breadcrumbs: [],
           getAssetPath: expect.any(Function),
-          navigation: [
-            {
-              current: true,
-              text: 'Home',
-              href: '/'
-            },
-            {
-              current: false,
-              text: 'About',
-              href: '/about'
-            }
-          ],
-          serviceName: 'mmo-cr-external-frontend',
-          serviceUrl: '/'
+          navigation: [],
+          serviceName: 'Record your catch',
+          serviceUrl: '/',
+          feedbackUrl: '#',
+          htmlLang: 'en',
+          languageToggle: {
+            current: 'en',
+            href: '/?lang=cy'
+          }
         })
       })
 
@@ -115,7 +109,7 @@ describe('context and cache', () => {
   })
 
   describe('#context cache', () => {
-    const mockRequest = { path: '/' }
+    const mockRequest = { path: '/', yar: { get: () => false } }
     let contextResult
 
     describe('Vite manifest file cache', () => {
@@ -146,22 +140,16 @@ describe('context and cache', () => {
       test('Should provide expected context', () => {
         expect(contextResult).toEqual({
           assetPath: '/public/assets',
-          breadcrumbs: [],
           getAssetPath: expect.any(Function),
-          navigation: [
-            {
-              current: true,
-              text: 'Home',
-              href: '/'
-            },
-            {
-              current: false,
-              text: 'About',
-              href: '/about'
-            }
-          ],
-          serviceName: 'mmo-cr-external-frontend',
-          serviceUrl: '/'
+          navigation: [],
+          serviceName: 'Record your catch',
+          serviceUrl: '/',
+          feedbackUrl: '#',
+          htmlLang: 'en',
+          languageToggle: {
+            current: 'en',
+            href: '/?lang=cy'
+          }
         })
       })
     })

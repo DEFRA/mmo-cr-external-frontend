@@ -1,0 +1,12 @@
+{% from "heading/macro.njk" import appHeading %}
+{% set defaultDescription = "The detailed " ~ params.heading ~ " page will be implemented in a later step." %}
+
+{{ appHeading({
+  text: params.heading
+}) }}
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    <p class="govuk-body" data-testid="app-placeholder-description">{{ params.description | default(defaultDescription) }}</p>
+  </div>
+</div>

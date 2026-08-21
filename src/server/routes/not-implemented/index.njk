@@ -1,0 +1,9 @@
+{% extends 'layouts/page.njk' %}
+{% from "placeholder-page/macro.njk" import appPlaceholderPage %}
+
+{% block pageContent %}
+  {{ appPlaceholderPage({
+    heading: heading,
+    description: "This feature is not included in this walkthrough."
+  }) }}
+{% endblock %}

@@ -44,7 +44,19 @@ export const config = convict({
   serviceName: {
     doc: 'Applications Service Name',
     format: String,
-    default: 'mmo-cr-external-frontend'
+    default: 'Record your catch'
+  },
+  feedbackUrl: {
+    doc: 'URL for the beta phase banner and footer feedback link',
+    format: String,
+    default: '#',
+    env: 'FEEDBACK_URL'
+  },
+  defaultLocale: {
+    doc: 'Default locale used for the <html lang> attribute and language selector',
+    format: String,
+    default: 'en',
+    env: 'DEFAULT_LOCALE'
   },
   root: {
     doc: 'Project root',

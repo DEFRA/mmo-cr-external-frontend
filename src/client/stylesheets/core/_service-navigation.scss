@@ -1,0 +1,93 @@
+@use 'govuk-frontend' as *;
+
+// Merge the inverse (blue) service navigation seamlessly with the header above it
+.app-service-navigation.govuk-service-navigation--inverse {
+  border-bottom: none;
+
+  .govuk-width-container {
+    border: none;
+  }
+}
+
+// Sign out is a form (a state change), not a link — reset button chrome so its
+// submit button reuses the existing govuk-service-navigation__link styling.
+.app-sign-out-form {
+  display: inline;
+}
+
+.app-sign-out-form__button {
+  background: none;
+  border: 0;
+  margin: 0;
+  padding: 0;
+  font: inherit;
+  color: govuk-colour('white');
+  text-decoration: underline;
+  cursor: pointer;
+
+  &:hover {
+    color: govuk-colour('white');
+    background: none;
+    text-decoration-thickness: max(3px, 0.1875rem, 0.12em);
+  }
+
+  &:focus {
+    @include govuk-focused-text;
+  }
+}
+
+@include govuk-media-query($from: tablet) {
+  // Outer band spans the full viewport width in brand blue
+  .app-header-row {
+    // Fill any height mismatch between the logo and the taller service name/menu
+    // block with the same brand blue, so no white band shows above/below either
+    background-color: govuk-functional-colour('brand');
+  }
+
+  // Inner width-container aligns the row's content with the rest of the page.
+  // Grid with equal flexible outer tracks centres the middle column on the full row
+  // width (logo + service block), not just the space left over beside the logo.
+  .app-header-row__inner {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+  }
+
+  .app-header-row__inner .govuk-header {
+    grid-column: 1;
+    justify-self: start;
+  }
+
+  .app-header-row__inner .app-service-navigation {
+    grid-column: 2;
+  }
+
+  // Stack the service name above the menu, both centred, within the logo's row height
+  .app-service-navigation .govuk-service-navigation__container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+  }
+
+  .app-service-navigation .govuk-service-navigation__service-name {
+    margin: 0;
+    line-height: 1.2;
+  }
+
+  .app-service-navigation .govuk-service-navigation__wrapper {
+    flex-grow: 0;
+    margin-top: 0;
+  }
+
+  .app-service-navigation .govuk-service-navigation__list {
+    justify-content: center;
+    margin-bottom: 0;
+  }
+
+  .app-service-navigation .govuk-service-navigation__item {
+    padding: 0;
+    line-height: 1.2;
+  }
+}

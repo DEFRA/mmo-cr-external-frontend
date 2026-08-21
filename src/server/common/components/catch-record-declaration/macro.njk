@@ -1,0 +1,43 @@
+{% from "govuk/components/warning-text/macro.njk" import govukWarningText %}
+{% from "govuk/components/checkboxes/macro.njk" import govukCheckboxes %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% macro appCatchRecordDeclaration(fieldErrors, showLegacyHeadingBeforeButton = false) %}
+  {{ govukWarningText({
+    text: "By submitting this record, you agree that the information you've given is complete and correct.",
+    iconFallbackText: "Warning"
+  }) }}
+
+  <p class="govuk-body">By submitting your catch record, you're confirming:</p>
+  <ul class="govuk-list govuk-list--bullet">
+    <li>The weight of fish you have landed is accurate</li>
+    <li>This is within permitted tolerance levels</li>
+    <li>Fishing authorities may take action in respect of inaccurate catch recording</li>
+  </ul>
+
+  <form method="post" novalidate>
+    {{ govukCheckboxes({
+      name: "confirmAccurate",
+      fieldset: {
+        legend: {
+          text: "Declaration",
+          classes: "govuk-visually-hidden"
+        }
+      },
+      errorMessage: { text: fieldErrors.confirmAccurate } if fieldErrors.confirmAccurate else false,
+      items: [
+        {
+          value: "true",
+          text: "I confirm the information is complete and accurate"
+        }
+      ]
+    }) }}
+
+    {# Reproduces a duplicate heading present in the create-mode design's PNG only #}
+    {% if showLegacyHeadingBeforeButton %}
+      <h2 class="govuk-heading-l">Trips details</h2>
+    {% endif %}
+
+    {{ govukButton({ text: "Accept and submit trip details" }) }}
+  </form>
+{% endmacro %}

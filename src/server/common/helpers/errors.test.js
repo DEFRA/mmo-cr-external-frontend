@@ -23,7 +23,7 @@ describe('#errors', () => {
     })
 
     expect(result).toEqual(
-      expect.stringContaining('Page not found | mmo-cr-external-frontend')
+      expect.stringContaining('Page not found | Record your catch')
     )
     expect(statusCode).toBe(statusCodes.notFound)
   })

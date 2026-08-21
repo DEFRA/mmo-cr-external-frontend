@@ -1,0 +1,50 @@
+{% extends 'layouts/page.njk' %}
+
+{% block pageContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <form method="post" novalidate>
+        <span class="govuk-caption-l">{{ caption }}</span>
+        <h1 class="govuk-heading-xl app-statistical-area-map__heading">{{ heading }}</h1>
+
+        {% for paragraph in bodyText %}
+          <p class="govuk-body govuk-!-margin-bottom-5">{{ paragraph }}</p>
+        {% endfor %}
+
+        <div class="govuk-form-group{{ ' govuk-form-group--error' if fieldErrors.statisticalArea }}">
+          {% if fieldErrors.statisticalArea %}
+            <p id="statisticalArea-error" class="govuk-error-message">
+              <span class="govuk-visually-hidden">Error:</span> {{ fieldErrors.statisticalArea }}
+            </p>
+          {% endif %}
+
+          <div id="statisticalArea" class="app-statistical-area-map" aria-describedby="statisticalArea-hint{% if fieldErrors.statisticalArea %} statisticalArea-error{% endif %}">
+            <p id="statisticalArea-hint" class="govuk-visually-hidden">Select one of the displayed area codes or choose Other.</p>
+
+            <div class="app-statistical-area-map__surface">
+              {% for area in mapAreas %}
+                <button
+                  class="app-statistical-area-map__zone app-statistical-area-map__zone--{{ area.id }}{{ ' app-statistical-area-map__zone--selected' if area.selected }}"
+                  type="submit"
+                  name="statisticalArea"
+                  value="{{ area.id }}"
+                >
+                  {{ area.code }}
+                </button>
+              {% endfor %}
+
+              <span class="app-statistical-area-map__marker app-statistical-area-map__marker--1" aria-hidden="true"></span>
+              <span class="app-statistical-area-map__marker app-statistical-area-map__marker--2" aria-hidden="true"></span>
+              <span class="app-statistical-area-map__marker app-statistical-area-map__marker--3" aria-hidden="true"></span>
+              <span class="app-statistical-area-map__marker app-statistical-area-map__marker--4" aria-hidden="true"></span>
+              <span class="app-statistical-area-map__marker app-statistical-area-map__marker--5" aria-hidden="true"></span>
+              <span class="app-statistical-area-map__marker app-statistical-area-map__marker--6" aria-hidden="true"></span>
+
+              <button class="app-statistical-area-map__other" type="submit" name="statisticalArea" value="other">Other</button>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,46 @@
+{% extends 'layouts/page.njk' %}
+{% from "govuk/components/date-input/macro.njk" import govukDateInput %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% block pageContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <form method="post" novalidate>
+        {{ govukDateInput({
+          id: "tripReturnDate",
+          namePrefix: "tripReturnDate",
+          fieldset: {
+            legend: {
+              html: '<span class="govuk-caption-l">' ~ caption ~ '</span>' ~ heading,
+              isPageHeading: true,
+              classes: "govuk-fieldset__legend--xl"
+            }
+          },
+          hint: {
+            text: hintText
+          },
+          errorMessage: { text: errorSummary.errorList[0].text } if errorSummary else false,
+          items: [
+            {
+              name: "day",
+              classes: "govuk-input--width-2" + (" govuk-input--error" if fieldErrors.day else ""),
+              value: values.day
+            },
+            {
+              name: "month",
+              classes: "govuk-input--width-2" + (" govuk-input--error" if fieldErrors.month else ""),
+              value: values.month
+            },
+            {
+              name: "year",
+              classes: "govuk-input--width-4" + (" govuk-input--error" if fieldErrors.year else ""),
+              value: values.year
+            }
+          ]
+        }) }}
+
+        {{ govukButton({ text: "Save and continue" }) }}
+      </form>
+    </div>
+  </div>
+{% endblock %}

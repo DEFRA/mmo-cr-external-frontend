@@ -1,0 +1,52 @@
+{% extends 'layouts/page.njk' %}
+{% from "govuk/components/inset-text/macro.njk" import govukInsetText %}
+
+{% block pageContent %}
+  {{ appHeading({
+    text: heading,
+    caption: "Guidance"
+  }) }}
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <p class="govuk-body">
+        A catch record includes details of the fish caught, including the
+        species, weight, date and location of the catch. You must create a
+        catch record for every fishing trip.
+      </p>
+
+      <p class="govuk-body">
+        From: Department for Environment, Food &amp; Rural Affairs and Marine
+        Management Organisation
+      </p>
+
+      {{ govukInsetText({
+        text: "Applies to England"
+      }) }}
+
+      <p class="govuk-body">Contents</p>
+      <nav aria-label="Contents">
+        <ul class="govuk-list">
+          <li><a class="govuk-link" data-testid="app-guidance-contents-link" href="#what-we-need-from-you">What we need from you</a></li>
+          <li><a class="govuk-link" data-testid="app-guidance-contents-link" href="#when-to-create-your-record">When to create your record</a></li>
+          <li><a class="govuk-link" data-testid="app-guidance-contents-link" href="#special-cases-ices-areas">Special cases</a></li>
+          <li><a class="govuk-link" data-testid="app-guidance-contents-link" href="#how-to-create-a-record">How to create a record</a></li>
+          <li><a class="govuk-link" data-testid="app-guidance-contents-link" href="#get-help-with-your-record">Get help</a></li>
+        </ul>
+      </nav>
+
+      {# Print behaviour is out of scope for this step — plain link, no JS print handler #}
+      <p class="govuk-body">
+        <a class="govuk-link" href="#">Print this page</a>
+      </p>
+
+      {% include "partials/how-to-record-a-catch.njk" %}
+    </div>
+  </div>
+
+  {# Temporary link while the Guidance design is corrected — remove once Privacy notice has a permanent placement #}
+  <p class="govuk-body">
+    <a class="govuk-link" href="/privacy-notice">Privacy notice</a>
+  </p>
+{% endblock %}
+

@@ -1,0 +1,16 @@
+{% extends 'layouts/page.njk' %}
+{% from "catch-record-summary-sections/macro.njk" import appCatchRecordSummarySections %}
+{% from "catch-record-declaration/macro.njk" import appCatchRecordDeclaration %}
+
+{% block pageContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <span class="govuk-caption-l" data-testid="app-edit-review-caption">{{ reference }}</span>
+      <h1 class="govuk-heading-xl" data-testid="app-heading-title">{{ heading }}</h1>
+
+      {{ appCatchRecordSummarySections(sections) }}
+
+      {{ appCatchRecordDeclaration(fieldErrors) }}
+    </div>
+  </div>
+{% endblock %}

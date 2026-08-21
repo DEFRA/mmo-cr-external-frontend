@@ -1,0 +1,45 @@
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/warning-text/macro.njk" import govukWarningText %}
+
+<h2 class="govuk-heading-m" id="what-we-need-from-you">What we need from you</h2>
+<p class="govuk-body">We need your trip details and the estimated live weight of your catch.</p>
+<p class="govuk-body">
+  We will ask if you caught species subject to catch limits (quota). If
+  you did, all sizes of fish must be recorded unless exemptions apply.
+</p>
+
+<h2 class="govuk-heading-m" id="when-to-create-your-record">When to create your record</h2>
+<p class="govuk-body">Create your record before you move your catch off the boat if:</p>
+<ul class="govuk-list govuk-list--bullet">
+  <li>You caught any species with catch limits (quota)</li>
+  <li>You crossed an ICES area boundary while fishing animal productivity</li>
+  <li>You caught only non-quota species.</li>
+</ul>
+
+{{ govukWarningText({
+  text: "You need to create a catch record within 24 hours of landing your catch.",
+  iconFallbackText: "Warning"
+}) }}
+
+<h2 class="govuk-heading-m" id="special-cases-ices-areas">Special cases: ICES areas</h2>
+<p class="govuk-body">
+  If you fished in or crossed ICES areas 4c, 7d or 7e, create a separate
+  catch record each time you cross a boundary. You must use the mobile
+  app for offline recording.
+</p>
+
+<h2 class="govuk-heading-m" id="how-to-create-a-record">How to create a record</h2>
+<p class="govuk-body">Use the web service or download the Android or Apple app.</p>
+
+{% if showStartButton %}
+  {{ govukButton({
+    text: "Start now",
+    href: "/sign-in",
+    isStartButton: true
+  }) }}
+{% endif %}
+
+<h2 class="govuk-heading-m" id="get-help-with-your-record">Get help with your record</h2>
+<p class="govuk-body">Call 0300 020 3788, Monday to Friday, 9am to 5pm.</p>
+<p class="govuk-body">(Calls to 03 numbers cost the same as 01 or 02 calls.)</p>
+<p class="govuk-body">Outside these hours, leave a catch record on our automated line.</p>

@@ -1,0 +1,25 @@
+{% extends 'layouts/page.njk' %}
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% block pageContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <form method="post" novalidate>
+        {{ govukRadios({
+          name: "vesselId",
+          fieldset: {
+            legend: {
+              html: '<span class="govuk-caption-l">' ~ caption ~ '</span>' ~ heading,
+              isPageHeading: true,
+              classes: "govuk-fieldset__legend--xl"
+            }
+          },
+          items: vesselOptions
+        }) }}
+
+        {{ govukButton({ text: "Save and continue" }) }}
+      </form>
+    </div>
+  </div>
+{% endblock %}

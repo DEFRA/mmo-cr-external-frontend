@@ -14,6 +14,17 @@ const manifestPath = path.join(
 
 let viteManifest
 
+// Non-functional integration point for a future localisation step: the Cymraeg link only
+// preserves the current path via ?lang=cy and does not perform real translation/switching.
+function buildLanguageToggle(request) {
+  const currentPath = request?.path ?? '/'
+
+  return {
+    current: config.get('defaultLocale'),
+    href: `${currentPath}?lang=cy`
+  }
+}
+
 export function context(request) {
   if (config.get('isProduction') && !viteManifest) {
     try {
@@ -27,7 +38,9 @@ export function context(request) {
     assetPath: `${assetPath}/assets`,
     serviceName: config.get('serviceName'),
     serviceUrl: '/',
-    breadcrumbs: [],
+    feedbackUrl: config.get('feedbackUrl'),
+    htmlLang: config.get('defaultLocale'),
+    languageToggle: buildLanguageToggle(request),
     navigation: buildNavigation(request),
     getAssetPath(asset) {
       if (!config.get('isProduction')) {

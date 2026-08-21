@@ -1,0 +1,31 @@
+{% extends 'layouts/page.njk' %}
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% block pageContent %}
+  {% set radioErrorMessage = { text: fieldErrors.tripSameDate } if fieldErrors.tripSameDate else false %}
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <form method="post" novalidate>
+        {{ govukRadios({
+          name: "tripSameDate",
+          fieldset: {
+            legend: {
+              html: '<span class="govuk-caption-l">' ~ caption ~ '</span>' ~ heading,
+              isPageHeading: true,
+              classes: "govuk-fieldset__legend--xl"
+            }
+          },
+          errorMessage: radioErrorMessage,
+          items: [
+            { value: "yes", text: "Yes" },
+            { value: "no", text: "No" }
+          ]
+        }) }}
+
+        {{ govukButton({ text: "Save and continue" }) }}
+      </form>
+    </div>
+  </div>
+{% endblock %}
