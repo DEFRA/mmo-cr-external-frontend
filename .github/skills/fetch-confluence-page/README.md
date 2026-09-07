@@ -45,12 +45,12 @@ JSON shape.
    low-privilege, read-only account.
 3. Fill in `.env`:
 
-   | Variable                     | Required | Default              | Purpose                                                        |
-   | ---------------------------- | :------: | -------------------- | -------------------------------------------------------------- |
-   | `CONFLUENCE_BASE_URL`        |    ✅    | —                    | Your Confluence Cloud site, e.g. `https://your-domain.atlassian.net/wiki` |
-   | `CONFLUENCE_EMAIL`           |    ✅    | —                    | Account email for Basic auth                                   |
-   | `CONFLUENCE_API_TOKEN`       |    ✅    | —                    | API token for Basic auth                                       |
-   | `CONFLUENCE_MAX_ATTACHMENTS` |    —     | `200`                | Max attachment descriptors collected for one page              |
+   | Variable                     | Required | Default | Purpose                                                                   |
+   | ---------------------------- | :------: | ------- | ------------------------------------------------------------------------- |
+   | `CONFLUENCE_BASE_URL`        |    ✅    | —       | Your Confluence Cloud site, e.g. `https://your-domain.atlassian.net/wiki` |
+   | `CONFLUENCE_EMAIL`           |    ✅    | —       | Account email for Basic auth                                              |
+   | `CONFLUENCE_API_TOKEN`       |    ✅    | —       | API token for Basic auth                                                  |
+   | `CONFLUENCE_MAX_ATTACHMENTS` |    —     | `200`   | Max attachment descriptors collected for one page                         |
 
 `.env` is git-ignored and must **never** be committed, read back, or printed —
 including by the agent, on any error.
@@ -80,9 +80,9 @@ use the full page URL or the numeric id.
 
 ### Output shape
 
-| Command             | Returns           | Contents                                                     |
-| ------------------- | ----------------- | ------------------------------------------------------------ |
-| `<url-or-id>`       | `confluence-page` | Full sanitised page: title, body, labels, attachments        |
+| Command       | Returns           | Contents                                              |
+| ------------- | ----------------- | ----------------------------------------------------- |
+| `<url-or-id>` | `confluence-page` | Full sanitised page: title, body, labels, attachments |
 
 Always check `truncated` (e.g. the attachment cap was hit) and
 `sanitisationWarnings` (e.g. a mention or email was redacted).

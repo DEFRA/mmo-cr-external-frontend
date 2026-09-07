@@ -17,8 +17,8 @@ The client makes only these read-only calls for the single requested page:
   status, `spaceId` and `parentId`.
 - `GET /wiki/api/v2/pages/{id}/attachments` — attachment **descriptors** only
   (id, title, media type, size). Skipped entirely with `--no-attachments`.
-No `include-versions`, `include-likes`, `include-operations` or any other
-identity-bearing expansion is ever requested.
+  No `include-versions`, `include-likes`, `include-operations` or any other
+  identity-bearing expansion is ever requested.
 
 ## Never requested / never emitted
 
