@@ -7,21 +7,19 @@ import {
 } from '#/server/common/helpers/journey/navigation.js'
 import { getData } from '#/server/common/data/get-data.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
+import { offlineMapSubrectangleCodes } from '#/server/common/data/offline-map-subrectangle-codes.js'
 
 const pageTitle = 'Where was most of your catch caught using pots?'
 const nearbyStatisticalAreas = getData('nearbyStatisticalAreas')
-const validAreaIds = [...nearbyStatisticalAreas.map((area) => area.id), 'other']
-
-function mapAreaItems(selectedValue) {
-  return nearbyStatisticalAreas.map((area) => ({
-    ...area,
-    selected: area.id === selectedValue
-  }))
-}
+const departurePorts = getData('ports')
+const validAreaIds = [...new Set([...nearbyStatisticalAreas.map((area) => area.id), ...offlineMapSubrectangleCodes, 'other'])]
 
 function viewContext(request, overrides = {}) {
-  const selectedStatisticalArea =
-    getJourneyState(request).selectedStatisticalArea
+  const journeyState = getJourneyState(request)
+  const selectedStatisticalArea = journeyState.selectedStatisticalArea
+  const departurePort = departurePorts.find(
+    (port) => port.code === journeyState.departurePort
+  )
 
   return {
     pageTitle,
@@ -35,7 +33,7 @@ function viewContext(request, overrides = {}) {
       href: '/gear-selection',
       text: 'Back'
     },
-    mapAreas: mapAreaItems(selectedStatisticalArea),
+    departurePortName: departurePort?.name || 'Hastings',
     selectedStatisticalArea,
     ...overrides
   }
@@ -67,7 +65,6 @@ export const statisticalAreaSubmitController = {
                 errorList: [{ text: errorText, href: '#statisticalArea' }]
               },
               fieldErrors: { statisticalArea: errorText },
-              mapAreas: mapAreaItems(request.payload.statisticalArea),
               selectedStatisticalArea: request.payload.statisticalArea
             })
           )

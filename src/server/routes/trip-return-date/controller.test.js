@@ -22,7 +22,7 @@ describe('#tripReturnDateController', () => {
     })
 
     expect(result).toEqual(
-      expect.stringContaining('When did you return from your trip? |')
+      expect.stringContaining('Which date did you return from your trip? |')
     )
     expect(statusCode).toBe(statusCodes.ok)
   })
@@ -35,12 +35,14 @@ describe('#tripReturnDateController', () => {
     const $ = load(result)
 
     expect($('head > title').text()).toEqual(
-      expect.stringContaining('When did you return from your trip? |')
+      expect.stringContaining('Which date did you return from your trip? |')
     )
-    expect($('h1').text()).toContain('When did you return from your trip?')
+    expect($('h1').text()).toContain(
+      'Which date did you return from your trip?'
+    )
     expect($('h1 .govuk-caption-l').text().trim()).toBe('New catch record')
     expect($('.govuk-hint').first().text().trim()).toBe(
-      'Enter the date you returned. For example, 31/03/2020'
+      'For example, 31/03/2020'
     )
     expect(
       $('[data-testid="app-page-navigation-back-link"]').attr('href')
@@ -54,9 +56,9 @@ describe('#tripReturnDateController', () => {
     })
     const $ = load(result)
 
-    expect($('#tripReturnDate-day').val()).toBeFalsy()
-    expect($('#tripReturnDate-month').val()).toBeFalsy()
-    expect($('#tripReturnDate-year').val()).toBeFalsy()
+    expect($('#tripReturnDate-day').val()).toBeUndefined()
+    expect($('#tripReturnDate-month').val()).toBeUndefined()
+    expect($('#tripReturnDate-year').val()).toBeUndefined()
   })
 })
 

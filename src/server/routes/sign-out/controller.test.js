@@ -80,10 +80,20 @@ describe('#signOutController', () => {
     })
     const signOutCookie = signOutResponse.headers['set-cookie'][0].split(';')[0]
 
+    const favouriteResponse = await server.inject({
+      method: 'POST',
+      url: '/departure-port',
+      payload: { departurePort: 'hastings' },
+      headers: { cookie: signOutCookie }
+    })
+    const favouriteCookie = favouriteResponse.headers['set-cookie'][0].split(
+      ';'
+    )[0]
+
     const { result } = await server.inject({
       method: 'GET',
       url: '/departure-port',
-      headers: { cookie: signOutCookie }
+      headers: { cookie: favouriteCookie }
     })
     const { load } = await import('cheerio')
     const $ = load(result)

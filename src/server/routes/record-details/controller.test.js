@@ -76,13 +76,22 @@ describe('#recordDetailsController', () => {
     expect(statusCode).toBe(statusCodes.ok)
   })
 
-  test('Should render details for a late record', async () => {
-    const { statusCode } = await server.inject({
+  test('Should render the Figma late record detail and edit action', async () => {
+    const { result, statusCode } = await server.inject({
       method: 'GET',
       url: '/records/late-1'
     })
+    const $ = cheerio.load(result)
 
     expect(statusCode).toBe(statusCodes.ok)
+    expect($('[data-testid="app-record-reference"]').text().trim()).toBe(
+      'CC-2026-123456'
+    )
+    expect($('[data-testid="app-heading-title"]').text().trim()).toBe(
+      'Catch record for ACHILLES'
+    )
+    expect($('body').text()).toContain('Record status:')
+    expect($('a').filter((_, element) => $(element).text().trim() === 'Edit catch record').attr('href')).toBe('/records/late-1/edit-reason')
   })
 
   test('Should render details for an unsent record', async () => {

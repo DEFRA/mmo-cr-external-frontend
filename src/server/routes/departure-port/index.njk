@@ -17,11 +17,13 @@
               classes: "govuk-fieldset__legend--xl"
             }
           },
+          hint: { text: hintText },
           errorMessage: radioErrorMessage,
           items: portOptions
         }) }}
 
         {{ govukButton({ text: "Save and continue" }) }}
+        {{ govukButton({ text: "Add port", href: addPortHref, classes: "govuk-button--secondary" }) }}
       </form>
     </div>
   </div>

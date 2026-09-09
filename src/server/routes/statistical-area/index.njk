@@ -21,26 +21,11 @@
           <div id="statisticalArea" class="app-statistical-area-map" aria-describedby="statisticalArea-hint{% if fieldErrors.statisticalArea %} statisticalArea-error{% endif %}">
             <p id="statisticalArea-hint" class="govuk-visually-hidden">Select one of the displayed area codes or choose Other.</p>
 
-            <div class="app-statistical-area-map__surface">
-              {% for area in mapAreas %}
-                <button
-                  class="app-statistical-area-map__zone app-statistical-area-map__zone--{{ area.id }}{{ ' app-statistical-area-map__zone--selected' if area.selected }}"
-                  type="submit"
-                  name="statisticalArea"
-                  value="{{ area.id }}"
-                >
-                  {{ area.code }}
-                </button>
-              {% endfor %}
-
-              <span class="app-statistical-area-map__marker app-statistical-area-map__marker--1" aria-hidden="true"></span>
-              <span class="app-statistical-area-map__marker app-statistical-area-map__marker--2" aria-hidden="true"></span>
-              <span class="app-statistical-area-map__marker app-statistical-area-map__marker--3" aria-hidden="true"></span>
-              <span class="app-statistical-area-map__marker app-statistical-area-map__marker--4" aria-hidden="true"></span>
-              <span class="app-statistical-area-map__marker app-statistical-area-map__marker--5" aria-hidden="true"></span>
-              <span class="app-statistical-area-map__marker app-statistical-area-map__marker--6" aria-hidden="true"></span>
-
-              <button class="app-statistical-area-map__other" type="submit" name="statisticalArea" value="other">Other</button>
+              <div class="app-offline-map" data-statistical-area-map data-selected-area="{{ selectedStatisticalArea or '' }}" data-departure-port="{{ departurePortName }}">
+              <canvas class="app-offline-map__canvas" aria-label="Statistical area map. Select an area on the map."></canvas>
+              <button class="app-offline-map__other" type="submit" name="statisticalArea" value="other">Other</button>
+              <input type="hidden" name="statisticalArea" value="" disabled data-statistical-area-map-input>
+              <p class="govuk-visually-hidden" aria-live="polite" data-statistical-area-map-status></p>
             </div>
           </div>
         </div>

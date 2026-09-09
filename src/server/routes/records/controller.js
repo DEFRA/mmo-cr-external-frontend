@@ -16,7 +16,7 @@ function toRowViewModel(record) {
     createdBy: record.createdBy,
     statusText: statusDisplay.text,
     statusTagClasses: statusDisplay.tagClasses,
-    href: `/records/${record.recordId}`
+    href: record.status === 'unsent' ? '/draft' : `/records/${record.recordId}`
   }
 }
 

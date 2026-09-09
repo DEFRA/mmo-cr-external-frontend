@@ -42,18 +42,16 @@ describe('#statisticalAreaController', () => {
     expect($('.govuk-caption-l').first().text().trim()).toBe('New catch record')
   })
 
-  test('Should render the graphical map buttons and the Other action', async () => {
+  test('Should render the offline map and the Other action', async () => {
     const { result } = await server.inject({
       method: 'GET',
       url: '/statistical-area'
     })
     const $ = load(result)
 
-    expect($('.app-statistical-area-map__zone')).toHaveLength(11)
-    expect($('.app-statistical-area-map__zone--38f02').text().trim()).toBe(
-      '38F02'
-    )
-    expect($('.app-statistical-area-map__other').text().trim()).toBe('Other')
+    expect($('.app-statistical-area-map__surface')).toHaveLength(0)
+    expect($('.app-offline-map').attr('data-departure-port')).toBe('Hastings')
+    expect($('.app-offline-map__other').text().trim()).toBe('Other')
   })
 
   test('Should render the Back link to the gear selection page', async () => {
@@ -83,9 +81,7 @@ describe('#statisticalAreaController', () => {
     })
     const $ = load(result)
 
-    expect($('.app-statistical-area-map__zone--38f02').attr('class')).toContain(
-      'app-statistical-area-map__zone--selected'
-    )
+    expect($('.app-offline-map').attr('data-selected-area')).toBe('38f02')
   })
 })
 
@@ -106,6 +102,17 @@ describe('#statisticalAreaSubmitController', () => {
       method: 'POST',
       url: '/statistical-area',
       payload: { statisticalArea: '38f02' }
+    })
+
+    expect(statusCode).toBe(303)
+    expect(headers.location).toBe('/species-selection')
+  })
+
+  test('Should accept a generated offline-map subrectangle code', async () => {
+    const { statusCode, headers } = await server.inject({
+      method: 'POST',
+      url: '/statistical-area',
+      payload: { statisticalArea: '27D86' }
     })
 
     expect(statusCode).toBe(303)

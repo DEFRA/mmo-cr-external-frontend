@@ -141,12 +141,19 @@ describe('#draftSubmitController', () => {
   })
 
   test('Should reject a missing draft action', async () => {
-    const { statusCode } = await server.inject({
+    const { statusCode, result } = await server.inject({
       method: 'POST',
       url: '/draft',
       payload: {}
     })
 
     expect(statusCode).toBe(statusCodes.badRequest)
+    const $ = load(result)
+    expect($('.govuk-error-summary').text()).toContain(
+      'Select what you want to do with this draft record'
+    )
+    expect($('.govuk-error-message').text()).toContain(
+      'Select what you want to do with this draft record'
+    )
   })
 })
