@@ -1,0 +1,15 @@
+{% extends 'layouts/page.njk' %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% block pageContent %}
+  <div class="govuk-grid-row"><div class="govuk-grid-column-two-thirds">
+    <form method="post" novalidate>
+      <h1 class="govuk-heading-xl">{{ heading }}</h1>
+      {{ govukInput({ id: "firstName", name: "firstName", label: { text: "First name" }, value: values.firstName, attributes: { "data-clear-input-error": "true" }, errorMessage: { text: fieldErrors.firstName } if fieldErrors.firstName }) }}
+      {{ govukInput({ id: "lastName", name: "lastName", label: { text: "Last name" }, value: values.lastName, attributes: { "data-clear-input-error": "true" }, errorMessage: { text: fieldErrors.lastName } if fieldErrors.lastName }) }}
+      {{ govukInput({ id: "email", name: "email", type: "email", label: { text: "Email address" }, hint: { text: "Use an email address that belongs only to this skipper and is not shared with other skippers." }, value: values.email, attributes: { "data-clear-input-error": "true" }, errorMessage: { text: fieldErrors.email } if fieldErrors.email }) }}
+      {{ govukButton({ text: "Save and continue" }) }}
+    </form>
+  </div></div>
+{% endblock %}
