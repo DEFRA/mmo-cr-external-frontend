@@ -17,6 +17,8 @@ import { tripDepartureDate } from '../routes/trip-departure-date/index.js'
 import { tripReturnDate } from '../routes/trip-return-date/index.js'
 import { departurePort } from '../routes/departure-port/index.js'
 import { returnPort } from '../routes/return-port/index.js'
+import { addPort } from '../routes/add-port/index.js'
+import { confirmSamePort } from '../routes/confirm-same-port/index.js'
 import { gearSelection } from '../routes/gear-selection/index.js'
 import { statisticalArea } from '../routes/statistical-area/index.js'
 import { statisticalAreaOther } from '../routes/statistical-area-other/index.js'
@@ -25,6 +27,10 @@ import { catchNotLanded } from '../routes/catch-not-landed/index.js'
 import { checkAnswers } from '../routes/check-answers/index.js'
 import { confirmation } from '../routes/confirmation/index.js'
 import { account } from '../routes/account/index.js'
+import { addSkipper } from '../routes/add-skipper/route.js'
+import { skipperDetails } from '../routes/skipper-details/route.js'
+import { skipperCheck } from '../routes/skipper-check/route.js'
+import { skipperConfirmation } from '../routes/skipper-confirmation/route.js'
 import { notImplemented } from '../routes/not-implemented/index.js'
 import { serveStaticFiles } from './serve-static-files.js'
 import { config } from '#/config/config.js'
@@ -56,6 +62,8 @@ export const router = {
         tripReturnDate,
         departurePort,
         returnPort,
+        addPort,
+        confirmSamePort,
         gearSelection,
         statisticalArea,
         statisticalAreaOther,
@@ -64,6 +72,10 @@ export const router = {
         checkAnswers,
         confirmation,
         account,
+        addSkipper,
+        skipperDetails,
+        skipperCheck,
+        skipperConfirmation,
         notImplemented
       ])
 

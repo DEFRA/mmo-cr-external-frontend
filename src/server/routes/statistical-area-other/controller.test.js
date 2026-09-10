@@ -23,27 +23,28 @@ describe('#statisticalAreaOtherController', () => {
 
     expect(result).toEqual(
       expect.stringContaining(
-        'Where was most of your catch caught using pots? |'
+        'Select the statistical sub area where the majority of your catch was caught using seine nets (mesh size 100mm)? |'
       )
     )
     expect(statusCode).toBe(statusCodes.ok)
   })
 
-  test('Should render the input label, hint and Back link', async () => {
+  test('Should render the manual entry input and Back link', async () => {
     const { result } = await server.inject({
       method: 'GET',
       url: '/statistical-area-other'
     })
     const $ = load(result)
 
-    expect($('input[type="radio"]')).toHaveLength(9)
-    expect($('input[value="other"]').prop('checked')).toBe(true)
     expect($('label[for="alternativeStatisticalArea"]').text().trim()).toBe(
-      'Statistical sub area'
+      'Statistical sub area - For example, 46E45'
     )
-    expect($('#alternativeStatisticalArea-hint').text().trim()).toBe(
-      'For example, 46E45'
+    expect($('#alternativeStatisticalArea').attr('placeholder')).toBe(
+      'Type to search (minimum 2 characters)'
     )
+    expect($('#statistical-area-results').attr('role')).toBe('listbox')
+    expect($('input[type="radio"]')).toHaveLength(10)
+    expect($('input[type="radio"]:checked')).toHaveLength(0)
     expect(
       $('[data-testid="app-page-navigation-back-link"]').attr('href')
     ).toBe('/statistical-area')
@@ -55,7 +56,7 @@ describe('#statisticalAreaOtherController', () => {
       url: '/statistical-area-other',
       payload: {
         statisticalArea: 'other',
-        alternativeStatisticalArea: '46E45'
+        alternativeStatisticalArea: '30F04'
       }
     })
     const cookie = setResponse.headers['set-cookie'][0].split(';')[0]
@@ -67,26 +68,7 @@ describe('#statisticalAreaOtherController', () => {
     })
     const $ = load(result)
 
-    expect($('#alternativeStatisticalArea').attr('value')).toBe('46E45')
-  })
-
-  test('Should restore a selected radio area on return to the page', async () => {
-    const setResponse = await server.inject({
-      method: 'POST',
-      url: '/statistical-area-other',
-      payload: { statisticalArea: '30f05', alternativeStatisticalArea: '' }
-    })
-    const cookie = setResponse.headers['set-cookie'][0].split(';')[0]
-
-    const { result } = await server.inject({
-      method: 'GET',
-      url: '/statistical-area-other',
-      headers: { cookie }
-    })
-    const $ = load(result)
-
-    expect($('input[value="30f05"]').prop('checked')).toBe(true)
-    expect($('#alternativeStatisticalArea')).toHaveLength(0)
+    expect($('#alternativeStatisticalArea').attr('value')).toBe('30F04')
   })
 })
 
@@ -102,35 +84,24 @@ describe('#statisticalAreaOtherSubmitController', () => {
     await server.stop({ timeout: 0 })
   })
 
-  test('Should redirect to the species selection page on a valid radio submission', async () => {
-    const { statusCode, headers } = await server.inject({
-      method: 'POST',
-      url: '/statistical-area-other',
-      payload: { statisticalArea: '30f02', alternativeStatisticalArea: '' }
-    })
-
-    expect(statusCode).toBe(303)
-    expect(headers.location).toBe('/species-selection')
-  })
-
-  test('Should redirect back to check your answers when a return query is supplied', async () => {
+  test('Should redirect back to check your answers when a valid area and return query are supplied', async () => {
     const { statusCode, headers } = await server.inject({
       method: 'POST',
       url: '/statistical-area-other?return=/check-answers',
-      payload: { statisticalArea: '30f02', alternativeStatisticalArea: '' }
+      payload: { statisticalArea: 'other', alternativeStatisticalArea: '30F02' }
     })
 
     expect(statusCode).toBe(303)
     expect(headers.location).toBe('/check-answers')
   })
 
-  test('Should redirect to the species selection page on a valid Other submission', async () => {
+  test('Should redirect to the species selection page on a valid reference-data submission', async () => {
     const { statusCode, headers } = await server.inject({
       method: 'POST',
       url: '/statistical-area-other',
       payload: {
         statisticalArea: 'other',
-        alternativeStatisticalArea: '46E45'
+        alternativeStatisticalArea: '30F04'
       }
     })
 
@@ -138,7 +109,58 @@ describe('#statisticalAreaOtherSubmitController', () => {
     expect(headers.location).toBe('/species-selection')
   })
 
-  test('Should re-render the page with an error summary when no area is selected', async () => {
+  test('Should re-render the page with an error summary when no area is entered', async () => {
+    const { statusCode, result } = await server.inject({
+      method: 'POST',
+      url: '/statistical-area-other',
+      payload: { statisticalArea: 'other' }
+    })
+    const $ = load(result)
+
+    expect(statusCode).toBe(statusCodes.badRequest)
+    expect($('.govuk-error-summary')).toHaveLength(1)
+    expect($('.govuk-error-summary').text()).toContain(
+      'Enter a valid statistical sub area code.'
+    )
+    expect($('.govuk-error-message')).toHaveLength(1)
+  })
+
+  test('Should re-render the page with a format error for an incorrectly formatted area', async () => {
+    const { statusCode, result } = await server.inject({
+      method: 'POST',
+      url: '/statistical-area-other',
+      payload: {
+        statisticalArea: 'other',
+        alternativeStatisticalArea: 'ABCDE'
+      }
+    })
+    const $ = load(result)
+
+    expect(statusCode).toBe(statusCodes.badRequest)
+    expect($('.govuk-error-summary')).toHaveLength(1)
+    expect($('.govuk-error-summary').text()).toContain(
+      'Enter a statistical subrectangle in the correct format, for example 38E84'
+    )
+  })
+
+  test('Should re-render the page with an invalid-code error for an unknown area', async () => {
+    const { statusCode, result } = await server.inject({
+      method: 'POST',
+      url: '/statistical-area-other',
+      payload: {
+        statisticalArea: 'other',
+        alternativeStatisticalArea: '99Z99'
+      }
+    })
+    const $ = load(result)
+
+    expect(statusCode).toBe(statusCodes.badRequest)
+    expect($('.govuk-error-summary').text()).toContain(
+      'Enter a valid statistical sub area code.'
+    )
+  })
+
+  test('Should show the selection error when no statistical subrectangle is selected', async () => {
     const { statusCode, result } = await server.inject({
       method: 'POST',
       url: '/statistical-area-other',
@@ -147,43 +169,11 @@ describe('#statisticalAreaOtherSubmitController', () => {
     const $ = load(result)
 
     expect(statusCode).toBe(statusCodes.badRequest)
-    expect($('.govuk-error-summary')).toHaveLength(1)
     expect($('.govuk-error-summary').text()).toContain(
-      'Select the area where most of your catch was caught'
+      'Select a statistical subrectangle'
     )
-    expect($('.govuk-error-message')).toHaveLength(1)
-  })
-
-  test('Should re-render the page with an error summary when Other is selected without a sub area', async () => {
-    const { statusCode, result } = await server.inject({
-      method: 'POST',
-      url: '/statistical-area-other',
-      payload: { statisticalArea: 'other', alternativeStatisticalArea: '' }
-    })
-    const $ = load(result)
-
-    expect(statusCode).toBe(statusCodes.badRequest)
-    expect($('.govuk-error-summary')).toHaveLength(1)
-    expect($('.govuk-error-summary').text()).toContain(
-      'Enter the statistical sub area in the correct format, like 46E45'
-    )
-  })
-
-  test('Should re-render the page with an error summary for an incorrectly-formatted value', async () => {
-    const { statusCode, result } = await server.inject({
-      method: 'POST',
-      url: '/statistical-area-other',
-      payload: {
-        statisticalArea: 'other',
-        alternativeStatisticalArea: 'abcdef'
-      }
-    })
-    const $ = load(result)
-
-    expect(statusCode).toBe(statusCodes.badRequest)
-    expect($('.govuk-error-summary')).toHaveLength(1)
-    expect($('.govuk-error-summary').text()).toContain(
-      'Enter the statistical sub area in the correct format, like 46E45'
+    expect($('#statisticalArea-error').text()).toContain(
+      'Select a statistical subrectangle'
     )
   })
 
@@ -193,11 +183,11 @@ describe('#statisticalAreaOtherSubmitController', () => {
       url: '/statistical-area-other',
       payload: {
         statisticalArea: 'other',
-        alternativeStatisticalArea: 'abcdef'
+        alternativeStatisticalArea: 'ABCDE'
       }
     })
     const $ = load(result)
 
-    expect($('#alternativeStatisticalArea').attr('value')).toBe('abcdef')
+    expect($('#alternativeStatisticalArea').attr('value')).toBe('ABCDE')
   })
 })

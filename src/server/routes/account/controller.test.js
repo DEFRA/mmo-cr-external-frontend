@@ -142,4 +142,16 @@ describe('#accountController', () => {
     expect($('.govuk-button').text().trim()).toBe('View all catch records')
     expect($('.govuk-button').attr('href')).toBe('/records')
   })
+
+  test('Should link Add skipper to the skipper journey', async () => {
+    const cookie = await signedInCookie()
+    const { result } = await server.inject({
+      method: 'GET',
+      url: '/account',
+      headers: { cookie }
+    })
+    const $ = load(result)
+
+    expect($('a[href="/add-skipper"]')).toHaveLength(1)
+  })
 })

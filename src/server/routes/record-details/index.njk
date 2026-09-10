@@ -8,6 +8,9 @@
       <span class="govuk-caption-l" data-testid="app-record-reference">{{ details.reference }}</span>
       <h1 class="govuk-heading-xl" data-testid="app-heading-title">{{ heading }}</h1>
 
+      <p class="govuk-body govuk-!-font-weight-bold govuk-!-margin-bottom-1">Record status:</p>
+      <strong class="govuk-tag govuk-tag--grey">{{ status | capitalize }}</strong>
+
       <h2 class="govuk-heading-l">Trips details</h2>
       {{ govukSummaryList({ rows: [
         { key: { text: "Vessel" }, value: { text: details.vesselName } },

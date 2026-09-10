@@ -15,6 +15,7 @@
               classes: "govuk-fieldset__legend--xl"
             }
           },
+          errorMessage: { text: fieldErrors.vesselId } if fieldErrors.vesselId else false,
           items: vesselOptions
         }) }}
 

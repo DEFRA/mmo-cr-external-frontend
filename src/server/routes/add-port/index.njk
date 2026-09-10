@@ -1,0 +1,39 @@
+{% extends 'layouts/page.njk' %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% block pageContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <form method="post" action="{{ formAction }}" novalidate>
+        <span class="govuk-caption-l">{{ caption }}</span>
+        <h1 class="govuk-heading-xl">{{ heading }}</h1>
+
+        <div class="app-statistical-area-search__control govuk-input--width-30">
+          {{ govukInput({
+            id: "port",
+            name: "port",
+            label: { text: heading, classes: "govuk-visually-hidden" },
+            classes: "app-statistical-area-search__input",
+            value: port,
+            errorMessage: { text: fieldErrors.port } if fieldErrors.port else false,
+            attributes: {
+              autocomplete: "off",
+              placeholder: "Type to search (minimum 2 characters)",
+              "aria-autocomplete": "list",
+              "aria-controls": "port-results",
+              "aria-expanded": "false",
+              "data-port-search": ""
+            }
+          }) }}
+        </div>
+
+        <ul id="port-results" class="govuk-list app-statistical-area-search__results govuk-input--width-30" role="listbox" hidden data-port-results></ul>
+
+        <script type="application/json" data-port-search-data>{{ portNames | dump | safe }}</script>
+
+        {{ govukButton({ text: "Save and continue" }) }}
+      </form>
+    </div>
+  </div>
+{% endblock %}

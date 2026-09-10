@@ -22,7 +22,7 @@ describe('#tripDepartureDateController', () => {
     })
 
     expect(result).toEqual(
-      expect.stringContaining('When did you leave for your trip? |')
+      expect.stringContaining('Which date did you set off on your trip? |')
     )
     expect(statusCode).toBe(statusCodes.ok)
   })
@@ -35,12 +35,12 @@ describe('#tripDepartureDateController', () => {
     const $ = load(result)
 
     expect($('head > title').text()).toEqual(
-      expect.stringContaining('When did you leave for your trip? |')
+      expect.stringContaining('Which date did you set off on your trip? |')
     )
-    expect($('h1').text()).toContain('When did you leave for your trip?')
+    expect($('h1').text()).toContain('Which date did you set off on your trip?')
     expect($('h1 .govuk-caption-l').text().trim()).toBe('New catch record')
     expect($('.govuk-hint').first().text().trim()).toBe(
-      'Enter the date you departed. For example, 31/03/2020'
+      'For example, 31/03/2020'
     )
     expect(
       $('[data-testid="app-page-navigation-back-link"]').attr('href')
@@ -54,9 +54,9 @@ describe('#tripDepartureDateController', () => {
     })
     const $ = load(result)
 
-    expect($('#tripDepartureDate-day').val()).toBeFalsy()
-    expect($('#tripDepartureDate-month').val()).toBeFalsy()
-    expect($('#tripDepartureDate-year').val()).toBeFalsy()
+    expect($('#tripDepartureDate-day').val()).toBeUndefined()
+    expect($('#tripDepartureDate-month').val()).toBeUndefined()
+    expect($('#tripDepartureDate-year').val()).toBeUndefined()
   })
 })
 
