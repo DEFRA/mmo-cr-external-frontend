@@ -101,7 +101,9 @@ export const removeSpeciesSubmitController = {
     setJourneyState(request, patch)
 
     if (remainingSpeciesIds.length === 0) {
-      return h.redirect('/add-species').code(303)
+      return h
+        .redirect('/add-species')
+        .code(statusCodes.seeOther)
     }
 
     return h
