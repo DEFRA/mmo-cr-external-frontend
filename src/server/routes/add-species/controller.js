@@ -93,6 +93,6 @@ export const addSpeciesSubmitController = {
       availableSpeciesIds: [...availableSpeciesIds, matchedSpecies.id]
     })
 
-    return h.redirect(resolveNextPath(request, '/species-selection')).code(303)
+    return h.redirect(resolveNextPath(request, '/species-selection')).code(statusCodes.seeOther)
   }
 }

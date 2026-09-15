@@ -104,6 +104,6 @@ export const removeSpeciesSubmitController = {
       return h.redirect('/add-species').code(303)
     }
 
-    return h.redirect(resolveNextPath(request, '/species-selection')).code(303)
+    return h.redirect(resolveNextPath(request, '/species-selection')).code(statusCodes.seeOther)
   }
 }
