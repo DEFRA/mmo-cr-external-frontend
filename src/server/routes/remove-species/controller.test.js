@@ -109,6 +109,38 @@ describe('#removeSpeciesSubmitController', () => {
     expect(headers.location).toBe('/species-selection')
   })
 
+  test('Should also drop a removed species from a previously-made species selection', async () => {
+    const selectionResponse = await server.inject({
+      method: 'POST',
+      url: '/species-selection',
+      payload: {
+        speciesIds: ['cod', 'had'],
+        speciesAction: 'continue',
+        'weightAboveMinimum-cod': '5',
+        'weightAboveMinimum-had': '5'
+      }
+    })
+    let cookie = selectionResponse.headers['set-cookie'][0].split(';')[0]
+
+    const removeResponse = await server.inject({
+      method: 'POST',
+      url: '/remove-species',
+      payload: { speciesIds: 'had' },
+      headers: { cookie }
+    })
+    cookie = removeResponse.headers['set-cookie'][0].split(';')[0]
+
+    const { result } = await server.inject({
+      method: 'GET',
+      url: '/species-selection',
+      headers: { cookie }
+    })
+    const $ = load(result)
+
+    expect($('input[value="had"]')).toHaveLength(0)
+    expect($('input[value="cod"]').prop('checked')).toBe(true)
+  })
+
   test('Should no longer show a removed species as a checkbox on species selection', async () => {
     const setResponse = await server.inject({
       method: 'POST',

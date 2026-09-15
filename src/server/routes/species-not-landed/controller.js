@@ -10,15 +10,17 @@ import {
   getSpeciesOptionsByIds
 } from '#/server/common/helpers/species/species-list.js'
 import { isValidWeight } from '#/server/common/helpers/species/weight-validation.js'
+import {
+  ERROR_SUMMARY_TITLE,
+  filterKnownSpeciesIds,
+  noSpeciesSelectedError,
+  normalizeSpeciesIds,
+  speciesNameAndId
+} from '#/server/common/helpers/species/species-form.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 
 const pageTitle =
   'Which species from this trip are you not landing straight away?'
-
-// Strips the trailing " (CODE)" suffix, e.g. "Atlantic cod (COD)" -> "Atlantic cod".
-function speciesNameOnly(text) {
-  return text.replace(/ \([^)]*\)$/, '')
-}
 
 function speciesCheckboxItems(
   selectedSpeciesIds,
@@ -33,14 +35,6 @@ function speciesCheckboxItems(
     weights: speciesWeights[species.id] || {},
     fieldErrors: fieldErrorsBySpecies[species.id] || {}
   }))
-}
-
-function normalizeSpeciesIds(rawValue) {
-  if (rawValue === undefined || rawValue === '') {
-    return []
-  }
-
-  return Array.isArray(rawValue) ? rawValue : [rawValue]
 }
 
 function viewContext(request, overrides = {}) {
@@ -75,6 +69,58 @@ function renderPage(request, h, overrides, code = statusCodes.ok) {
     .code(code)
 
   return code === statusCodes.ok ? response : response.takeover()
+}
+
+function buildSpeciesWeightsFromPayload(payload, speciesOptions) {
+  const speciesWeights = {}
+
+  speciesOptions.forEach((species) => {
+    speciesWeights[species.id] = {
+      weightAboveMinimum: payload[`weightAboveMinimum-${species.id}`]
+    }
+  })
+
+  return speciesWeights
+}
+
+function validateSpeciesNotLandedWeights(
+  speciesIds,
+  speciesOptions,
+  speciesWeights
+) {
+  const errorList = []
+  const fieldErrorsBySpecies = {}
+
+  speciesIds.forEach((speciesId) => {
+    const speciesOption = speciesOptions.find(
+      (option) => option.id === speciesId
+    )
+    const nameAndId = speciesNameAndId(speciesOption, speciesId)
+    const weights = speciesWeights[speciesId] || {}
+
+    if (!isValidWeight(weights.weightAboveMinimum)) {
+      const errorText = `Enter a weight for ${nameAndId}`
+      errorList.push({
+        text: errorText,
+        href: `#weightAboveMinimum-${speciesId}`
+      })
+      fieldErrorsBySpecies[speciesId] = { weightAboveMinimum: errorText }
+    }
+  })
+
+  return { errorList, fieldErrorsBySpecies }
+}
+
+function persistSpeciesNotLanded(request, speciesIds, speciesWeights) {
+  const persistedSpeciesNotLanded = {}
+
+  speciesIds.forEach((speciesId) => {
+    persistedSpeciesNotLanded[speciesId] = {
+      weightAboveMinimum: Number(speciesWeights[speciesId].weightAboveMinimum)
+    }
+  })
+
+  setJourneyState(request, { speciesNotLanded: persistedSpeciesNotLanded })
 }
 
 export const speciesNotLandedController = {
@@ -113,7 +159,7 @@ export const speciesNotLandedSubmitController = {
               {}
             ),
             errorSummary: {
-              titleText: 'There is a problem',
+              titleText: ERROR_SUMMARY_TITLE,
               errorList: [{ text: errorText, href: '#speciesIds' }]
             }
           },
@@ -123,18 +169,18 @@ export const speciesNotLandedSubmitController = {
     }
   },
   handler(request, h) {
-    const speciesIds = normalizeSpeciesIds(request.payload.speciesIds)
     const journeyState = getJourneyState(request)
     const speciesOptions = getSpeciesOptionsByIds(
       getAvailableSpeciesIds(journeyState)
     )
-    const speciesWeights = {}
-
-    speciesOptions.forEach((species) => {
-      speciesWeights[species.id] = {
-        weightAboveMinimum: request.payload[`weightAboveMinimum-${species.id}`]
-      }
-    })
+    const speciesIds = filterKnownSpeciesIds(
+      normalizeSpeciesIds(request.payload.speciesIds),
+      speciesOptions
+    )
+    const speciesWeights = buildSpeciesWeightsFromPayload(
+      request.payload,
+      speciesOptions
+    )
 
     function rerender(extraOverrides, code = statusCodes.ok) {
       return renderPage(
@@ -154,60 +200,29 @@ export const speciesNotLandedSubmitController = {
     }
 
     if (speciesIds.length === 0) {
-      const errorText = 'Select at least one species'
-
-      return rerender(
-        {
-          errorSummary: {
-            titleText: 'There is a problem',
-            errorList: [{ text: errorText, href: '#speciesIds' }]
-          },
-          fieldErrors: { speciesIds: errorText }
-        },
-        statusCodes.badRequest
-      )
+      return rerender(noSpeciesSelectedError(), statusCodes.badRequest)
     }
 
-    const errorList = []
-    const fieldErrorsBySpecies = {}
-
-    speciesIds.forEach((speciesId) => {
-      const speciesOption = speciesOptions.find(
-        (option) => option.id === speciesId
-      )
-      const nameAndId = `${speciesNameOnly(speciesOption.text).toLowerCase()} (${speciesId})`
-      const weights = speciesWeights[speciesId] || {}
-
-      if (!isValidWeight(weights.weightAboveMinimum)) {
-        const errorText = `Enter a weight for ${nameAndId}`
-        errorList.push({
-          text: errorText,
-          href: `#weightAboveMinimum-${speciesId}`
-        })
-        fieldErrorsBySpecies[speciesId] = { weightAboveMinimum: errorText }
-      }
-    })
+    const { errorList, fieldErrorsBySpecies } = validateSpeciesNotLandedWeights(
+      speciesIds,
+      speciesOptions,
+      speciesWeights
+    )
 
     if (errorList.length > 0) {
       return rerender(
         {
-          errorSummary: { titleText: 'There is a problem', errorList },
+          errorSummary: { titleText: ERROR_SUMMARY_TITLE, errorList },
           fieldErrorsBySpecies
         },
         statusCodes.badRequest
       )
     }
 
-    const persistedSpeciesNotLanded = {}
+    persistSpeciesNotLanded(request, speciesIds, speciesWeights)
 
-    speciesIds.forEach((speciesId) => {
-      persistedSpeciesNotLanded[speciesId] = {
-        weightAboveMinimum: Number(speciesWeights[speciesId].weightAboveMinimum)
-      }
-    })
-
-    setJourneyState(request, { speciesNotLanded: persistedSpeciesNotLanded })
-
-    return h.redirect(resolveNextPath(request, '/check-answers')).code(303)
+    return h
+      .redirect(resolveNextPath(request, '/check-answers'))
+      .code(statusCodes.seeOther)
   }
 }

@@ -98,6 +98,20 @@ describe('#speciesNotLandedSubmitController', () => {
     )
   })
 
+  test('Should re-render with a generic error when the payload fails schema validation', async () => {
+    const { statusCode, result } = await server.inject({
+      method: 'POST',
+      url: '/species-not-landed',
+      payload: { speciesIds: { notAValidShape: true } }
+    })
+    const $ = load(result)
+
+    expect(statusCode).toBe(statusCodes.badRequest)
+    expect($('.govuk-error-summary').text()).toContain(
+      'There was a problem with your submission'
+    )
+  })
+
   test('Should re-render with a named field error when the weight is missing', async () => {
     const { statusCode, result } = await server.inject({
       method: 'POST',
@@ -123,6 +137,20 @@ describe('#speciesNotLandedSubmitController', () => {
     expect(statusCode).toBe(statusCodes.badRequest)
     expect($('.govuk-error-summary').text()).toContain(
       'Enter a weight for atlantic cod (cod)'
+    )
+  })
+
+  test('Should ignore an unknown speciesId rather than error', async () => {
+    const { statusCode, result } = await server.inject({
+      method: 'POST',
+      url: '/species-not-landed',
+      payload: { speciesIds: 'mon' }
+    })
+    const $ = load(result)
+
+    expect(statusCode).toBe(statusCodes.badRequest)
+    expect($('.govuk-error-summary').text()).toContain(
+      'Select at least one species'
     )
   })
 

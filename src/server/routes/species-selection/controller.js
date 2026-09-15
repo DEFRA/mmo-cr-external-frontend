@@ -11,14 +11,16 @@ import {
   getSpeciesOptionsByIds
 } from '#/server/common/helpers/species/species-list.js'
 import { isValidWeight } from '#/server/common/helpers/species/weight-validation.js'
+import {
+  ERROR_SUMMARY_TITLE,
+  filterKnownSpeciesIds,
+  noSpeciesSelectedError,
+  normalizeSpeciesIds,
+  speciesNameAndId
+} from '#/server/common/helpers/species/species-form.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 
 const pageTitle = 'What species did you catch using pots?'
-
-// Strips the trailing " (CODE)" suffix, e.g. "Atlantic cod (COD)" -> "Atlantic cod".
-function speciesNameOnly(text) {
-  return text.replace(/ \([^)]*\)$/, '')
-}
 
 function speciesCheckboxItems(
   selectedSpeciesIds,
@@ -44,14 +46,6 @@ function speciesCheckboxItems(
       fieldErrors: fieldErrorsBySpecies[species.id] || {}
     }
   })
-}
-
-function normalizeSpeciesIds(rawValue) {
-  if (rawValue === undefined || rawValue === '') {
-    return []
-  }
-
-  return Array.isArray(rawValue) ? rawValue : [rawValue]
 }
 
 function viewContext(request, overrides = {}) {
@@ -125,7 +119,7 @@ export const speciesSelectionSubmitController = {
               {}
             ),
             errorSummary: {
-              titleText: 'There is a problem',
+              titleText: ERROR_SUMMARY_TITLE,
               errorList: [{ text: errorText, href: '#speciesIds' }]
             }
           },
@@ -135,10 +129,13 @@ export const speciesSelectionSubmitController = {
     }
   },
   handler(request, h) {
-    const speciesIds = normalizeSpeciesIds(request.payload.speciesIds)
     const journeyState = getJourneyState(request)
     const speciesOptions = getSpeciesOptionsByIds(
       getAvailableSpeciesIds(journeyState)
+    )
+    const speciesIds = filterKnownSpeciesIds(
+      normalizeSpeciesIds(request.payload.speciesIds),
+      speciesOptions
     )
     const speciesWeights = {}
 
@@ -168,18 +165,7 @@ export const speciesSelectionSubmitController = {
     }
 
     if (speciesIds.length === 0) {
-      const errorText = 'Select at least one species'
-
-      return rerender(
-        {
-          errorSummary: {
-            titleText: 'There is a problem',
-            errorList: [{ text: errorText, href: '#speciesIds' }]
-          },
-          fieldErrors: { speciesIds: errorText }
-        },
-        statusCodes.badRequest
-      )
+      return rerender(noSpeciesSelectedError(), statusCodes.badRequest)
     }
 
     const errorList = []
@@ -189,7 +175,7 @@ export const speciesSelectionSubmitController = {
       const speciesOption = speciesOptions.find(
         (option) => option.id === speciesId
       )
-      const nameAndId = `${speciesNameOnly(speciesOption.text).toLowerCase()} (${speciesId})`
+      const nameAndId = speciesNameAndId(speciesOption, speciesId)
       const weights = speciesWeights[speciesId] || {}
       const speciesFieldErrors = {}
 
@@ -231,7 +217,7 @@ export const speciesSelectionSubmitController = {
     if (errorList.length > 0) {
       return rerender(
         {
-          errorSummary: { titleText: 'There is a problem', errorList },
+          errorSummary: { titleText: ERROR_SUMMARY_TITLE, errorList },
           fieldErrorsBySpecies
         },
         statusCodes.badRequest
@@ -259,6 +245,8 @@ export const speciesSelectionSubmitController = {
       speciesWeights: persistedSpeciesWeights
     })
 
-    return h.redirect(resolveNextPath(request, '/catch-not-landed')).code(303)
+    return h
+      .redirect(resolveNextPath(request, '/catch-not-landed'))
+      .code(statusCodes.seeOther)
   }
 }

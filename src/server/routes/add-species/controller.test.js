@@ -92,6 +92,20 @@ describe('#addSpeciesSubmitController', () => {
     )
   })
 
+  test('Should re-render with an error when the payload fails schema validation', async () => {
+    const { statusCode, result } = await server.inject({
+      method: 'POST',
+      url: '/add-species',
+      payload: { species: { notAValidShape: true } }
+    })
+    const $ = load(result)
+
+    expect(statusCode).toBe(statusCodes.badRequest)
+    expect($('.govuk-error-summary').text()).toContain(
+      'Enter the species you want to add'
+    )
+  })
+
   test('Should re-render with an error when the entered species is not recognised', async () => {
     const { statusCode, result } = await server.inject({
       method: 'POST',

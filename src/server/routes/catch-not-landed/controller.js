@@ -64,6 +64,6 @@ export const catchNotLandedSubmitController = {
           ? resolveNextPath(request, '/check-answers')
           : resolveNextPath(request, '/species-not-landed')
       )
-      .code(303)
+      .code(statusCodes.seeOther)
   }
 }

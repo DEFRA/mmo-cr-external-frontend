@@ -277,6 +277,20 @@ describe('#speciesSelectionSubmitController', () => {
     expect($('.govuk-error-summary a').attr('href')).toBe('#speciesIds')
   })
 
+  test('Should ignore an unknown speciesId rather than error', async () => {
+    const { statusCode, result } = await server.inject({
+      method: 'POST',
+      url: '/species-selection',
+      payload: { speciesIds: 'mon', speciesAction: 'continue' }
+    })
+    const $ = load(result)
+
+    expect(statusCode).toBe(statusCodes.badRequest)
+    expect($('.govuk-error-summary').text()).toContain(
+      'Select at least one species'
+    )
+  })
+
   test('Should re-render with a named field error when cod is selected but the primary weight is missing', async () => {
     const { statusCode, result } = await server.inject({
       method: 'POST',
@@ -308,6 +322,25 @@ describe('#speciesSelectionSubmitController', () => {
     expect(statusCode).toBe(statusCodes.badRequest)
     expect($('.govuk-error-summary').text()).toContain(
       'Enter a weight below minimum size retained for atlantic cod (cod)'
+    )
+  })
+
+  test('Should re-render with a named field error when the legally-discarded weight has an invalid format', async () => {
+    const { statusCode, result } = await server.inject({
+      method: 'POST',
+      url: '/species-selection',
+      payload: {
+        speciesIds: 'cod',
+        speciesAction: 'continue',
+        'weightAboveMinimum-cod': '120.5',
+        'weightDiscarded-cod': '12.345'
+      }
+    })
+    const $ = load(result)
+
+    expect(statusCode).toBe(statusCodes.badRequest)
+    expect($('.govuk-error-summary').text()).toContain(
+      'Enter a weight legally discarded for atlantic cod (cod)'
     )
   })
 

@@ -109,6 +109,51 @@ describe('#buildCheckAnswersViewModel', () => {
     expect(rowValue(rows, 'Statistical sub area')).toBe('30F05')
   })
 
+  test('Should fall back to the illustrative sub area when the "direct" selection does not match a nearby area', () => {
+    const fallback = getData('catchRecordDetails')
+    const viewModel = buildCheckAnswersViewModel(
+      fakeRequest({
+        statAreaBranch: 'direct',
+        selectedStatisticalArea: 'not-a-real-area'
+      })
+    )
+    const rows = rowsFor(viewModel, 'Trips details')
+
+    expect(rowValue(rows, 'Statistical sub area')).toBe(
+      fallback.statisticalSubArea
+    )
+  })
+
+  test('Should fall back to the illustrative sub area for the "other, typed" branch when nothing was typed', () => {
+    const fallback = getData('catchRecordDetails')
+    const viewModel = buildCheckAnswersViewModel(
+      fakeRequest({
+        statAreaBranch: 'other',
+        selectedAlternativeAreaOption: 'other'
+      })
+    )
+    const rows = rowsFor(viewModel, 'Trips details')
+
+    expect(rowValue(rows, 'Statistical sub area')).toBe(
+      fallback.statisticalSubArea
+    )
+  })
+
+  test('Should fall back to the illustrative sub area for the "other, listed" branch when nothing matches', () => {
+    const fallback = getData('catchRecordDetails')
+    const viewModel = buildCheckAnswersViewModel(
+      fakeRequest({
+        statAreaBranch: 'other',
+        selectedAlternativeAreaOption: 'not-a-real-area'
+      })
+    )
+    const rows = rowsFor(viewModel, 'Trips details')
+
+    expect(rowValue(rows, 'Statistical sub area')).toBe(
+      fallback.statisticalSubArea
+    )
+  })
+
   test('Should render pots hauled/left-in-water and the mock mesh size when pots is selected', () => {
     const viewModel = buildCheckAnswersViewModel(
       fakeRequest({
