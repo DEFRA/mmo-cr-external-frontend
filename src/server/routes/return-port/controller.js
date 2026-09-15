@@ -71,6 +71,8 @@ export const returnPortSubmitController = {
 
     setJourneyState(request, { returnPort })
 
-    return h.redirect(resolveNextPath(request, '/gear-selection')).code(statusCodes.seeOther)
+    return h
+      .redirect(resolveNextPath(request, '/gear-selection'))
+      .code(statusCodes.seeOther)
   }
 }
