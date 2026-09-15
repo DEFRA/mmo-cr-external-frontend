@@ -1,6 +1,7 @@
 import Joi from 'joi'
 
 import { statusCodes } from '#/server/common/constants/status-codes.js'
+import { backForCheckAnswers } from '#/server/common/helpers/journey/navigation.js'
 import { buildCheckAnswersViewModel } from './view-model.js'
 
 const pageTitle = 'Check your catch record'
@@ -13,7 +14,7 @@ function viewContext(request, overrides = {}) {
     heading: pageTitle,
     caption: 'New catch record',
     backLink: {
-      href: '/catch-not-landed',
+      href: backForCheckAnswers(request),
       text: 'Back'
     },
     sections,

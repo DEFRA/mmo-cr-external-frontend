@@ -3,70 +3,6 @@
 {% from "govuk/components/button/macro.njk" import govukButton %}
 
 {% block pageContent %}
-  {% set codWeightFieldsHtml %}
-    {{ govukInput({
-      id: "weightAboveMinimum",
-      name: "weightAboveMinimum",
-      label: { text: "Weight above minimum size retained (kg)" },
-      classes: "govuk-input--width-5",
-      inputmode: "decimal",
-      value: weights.weightAboveMinimum,
-      errorMessage: { text: fieldErrors.weightAboveMinimum } if fieldErrors.weightAboveMinimum else false
-    }) }}
-
-    {% if weightFieldsVisible.belowMinimum %}
-      <input type="hidden" name="belowMinimumVisible" value="true">
-      {{ govukInput({
-        id: "weightBelowMinimum",
-        name: "weightBelowMinimum",
-        label: { text: "Weight below minimum size retained (kg)" },
-        classes: "govuk-input--width-5",
-        inputmode: "decimal",
-        value: weights.weightBelowMinimum,
-        errorMessage: { text: fieldErrors.weightBelowMinimum } if fieldErrors.weightBelowMinimum else false
-      }) }}
-      {{ govukButton({
-        text: "Remove weight below minimum size retained (kg)",
-        name: "speciesAction",
-        value: "remove-below-minimum",
-        classes: "govuk-button--secondary"
-      }) }}
-    {% else %}
-      {{ govukButton({
-        text: "Add weight below minimum size retained (kg)",
-        name: "speciesAction",
-        value: "add-below-minimum",
-        classes: "govuk-button--secondary"
-      }) }}
-    {% endif %}
-
-    {% if weightFieldsVisible.legallyDiscarded %}
-      <input type="hidden" name="legallyDiscardedVisible" value="true">
-      {{ govukInput({
-        id: "weightDiscarded",
-        name: "weightDiscarded",
-        label: { text: "Weight legally discarded (kg)" },
-        classes: "govuk-input--width-5",
-        inputmode: "decimal",
-        value: weights.weightDiscarded,
-        errorMessage: { text: fieldErrors.weightDiscarded } if fieldErrors.weightDiscarded else false
-      }) }}
-      {{ govukButton({
-        text: "Remove weight legally discarded (kg)",
-        name: "speciesAction",
-        value: "remove-legally-discarded",
-        classes: "govuk-button--secondary"
-      }) }}
-    {% else %}
-      {{ govukButton({
-        text: "Add weight legally discarded (kg)",
-        name: "speciesAction",
-        value: "add-legally-discarded",
-        classes: "govuk-button--secondary"
-      }) }}
-    {% endif %}
-  {% endset %}
-
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
       <form method="post" novalidate>
@@ -78,12 +14,18 @@
                 {{ heading }}
               </h1>
             </legend>
+            <p class="govuk-body">
+              Select all the species you caught, with or without catch limits.
+              Then enter estimated live weights. Landed weights can be
+              converted to live weights by multiplying them by a
+              <a class="govuk-link" href="/guidance">conversion factor</a>
+            </p>
             {% if fieldErrors.speciesIds %}
               <p id="speciesIds-error" class="govuk-error-message">
                 <span class="govuk-visually-hidden">Error:</span> {{ fieldErrors.speciesIds }}
               </p>
             {% endif %}
-            <div class="govuk-checkboxes" data-module="govuk-checkboxes">
+            <div class="govuk-checkboxes app-species-checkboxes" data-module="govuk-checkboxes">
               {% for item in speciesCheckboxItems %}
                 <div class="govuk-checkboxes__item">
                   <input
@@ -93,22 +35,58 @@
                     type="checkbox"
                     value="{{ item.value }}"
                     {{ 'checked' if item.checked }}
-                    {% if item.value == 'cod' %}data-aria-controls="speciesIds-conditional-{{ loop.index }}"{% endif %}
+                    data-aria-controls="speciesIds-conditional-{{ loop.index }}"
                   >
                   <label class="govuk-label govuk-checkboxes__label" for="speciesIds-{{ loop.index }}">{{ item.text }}</label>
                 </div>
-                {% if item.value == 'cod' %}
-                  <div class="govuk-checkboxes__conditional{{ '' if codSelected else ' govuk-checkboxes__conditional--hidden' }}" id="speciesIds-conditional-{{ loop.index }}">
-                    {{ codWeightFieldsHtml | safe }}
+                <div class="govuk-checkboxes__conditional{{ '' if item.checked else ' govuk-checkboxes__conditional--hidden' }}" id="speciesIds-conditional-{{ loop.index }}">
+                  {{ govukInput({
+                    id: "weightAboveMinimum-" + item.value,
+                    name: "weightAboveMinimum-" + item.value,
+                    label: { text: "Weight above minimum size retained (kg)" },
+                    classes: "govuk-!-width-one-half",
+                    inputmode: "decimal",
+                    value: item.weights.weightAboveMinimum,
+                    errorMessage: { text: item.fieldErrors.weightAboveMinimum } if item.fieldErrors.weightAboveMinimum else false
+                  }) }}
+
+                  <p class="govuk-body app-weight-toggle">
+                    <a href="#" class="govuk-link js-weight-toggle" data-target="weightBelowMinimum-{{ item.value }}-group" data-add-text="Add weight below minimum size retained (kg)" data-remove-text="Remove weight below minimum size retained (kg)">{{ 'Remove' if item.weightFieldsVisible.belowMinimum else 'Add' }} weight below minimum size retained (kg)</a>
+                  </p>
+                  <div class="{{ '' if item.weightFieldsVisible.belowMinimum else 'govuk-visually-hidden' }}" id="weightBelowMinimum-{{ item.value }}-group">
+                    {{ govukInput({
+                      id: "weightBelowMinimum-" + item.value,
+                      name: "weightBelowMinimum-" + item.value,
+                      label: { text: "Weight below minimum size retained (kg)" },
+                      classes: "govuk-!-width-one-half",
+                      inputmode: "decimal",
+                      value: item.weights.weightBelowMinimum,
+                      errorMessage: { text: item.fieldErrors.weightBelowMinimum } if item.fieldErrors.weightBelowMinimum else false
+                    }) }}
                   </div>
-                {% endif %}
+
+                  <p class="govuk-body app-weight-toggle">
+                    <a href="#" class="govuk-link js-weight-toggle" data-target="weightDiscarded-{{ item.value }}-group" data-add-text="Add weight legally discarded (kg)" data-remove-text="Remove weight legally discarded (kg)">{{ 'Remove' if item.weightFieldsVisible.legallyDiscarded else 'Add' }} weight legally discarded (kg)</a>
+                  </p>
+                  <div class="{{ '' if item.weightFieldsVisible.legallyDiscarded else 'govuk-visually-hidden' }}" id="weightDiscarded-{{ item.value }}-group">
+                    {{ govukInput({
+                      id: "weightDiscarded-" + item.value,
+                      name: "weightDiscarded-" + item.value,
+                      label: { text: "Weight legally discarded (kg)" },
+                      classes: "govuk-!-width-one-half",
+                      inputmode: "decimal",
+                      value: item.weights.weightDiscarded,
+                      errorMessage: { text: item.fieldErrors.weightDiscarded } if item.fieldErrors.weightDiscarded else false
+                    }) }}
+                  </div>
+                </div>
               {% endfor %}
             </div>
           </fieldset>
         </div>
 
-        <p class="govuk-body"><a class="govuk-link" href="/not-implemented?return=/species-selection">Add species</a></p>
-        <p class="govuk-body"><a class="govuk-link" href="/not-implemented?return=/species-selection">Remove species</a></p>
+        <p class="govuk-body"><a class="govuk-link" href="/add-species?return=/species-selection">Add species</a></p>
+        <p class="govuk-body"><a class="govuk-link" href="/remove-species?return=/species-selection">Remove species</a></p>
 
         {{ govukButton({
           text: "Save and continue",

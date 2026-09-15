@@ -94,7 +94,7 @@ describe('#checkAnswersController', () => {
         {
           speciesIds: 'cod',
           speciesAction: 'continue',
-          weightAboveMinimum: '3'
+          'weightAboveMinimum-cod': '3'
         }
       ],
       ['/catch-not-landed', { catchNotLanded: 'no' }]

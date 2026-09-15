@@ -1,0 +1,62 @@
+{% extends 'layouts/page.njk' %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% block pageContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <form method="post" novalidate>
+        <div class="govuk-form-group{{ ' govuk-form-group--error' if fieldErrors.speciesIds }}">
+          <fieldset class="govuk-fieldset">
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+              <h1 class="govuk-fieldset__heading">
+                <span class="govuk-caption-l">{{ caption }}</span>
+                {{ heading }}
+              </h1>
+            </legend>
+            <p class="govuk-body">
+              For example, keeping white fish onboard for bait or storing shellfish in keep pots.
+            </p>
+            {% if fieldErrors.speciesIds %}
+              <p id="speciesIds-error" class="govuk-error-message">
+                <span class="govuk-visually-hidden">Error:</span> {{ fieldErrors.speciesIds }}
+              </p>
+            {% endif %}
+            <div class="govuk-checkboxes app-species-checkboxes" data-module="govuk-checkboxes">
+              {% for item in speciesCheckboxItems %}
+                <div class="govuk-checkboxes__item">
+                  <input
+                    class="govuk-checkboxes__input"
+                    id="speciesIds-{{ loop.index }}"
+                    name="speciesIds"
+                    type="checkbox"
+                    value="{{ item.value }}"
+                    {{ 'checked' if item.checked }}
+                    data-aria-controls="speciesIds-conditional-{{ loop.index }}"
+                  >
+                  <label class="govuk-label govuk-checkboxes__label" for="speciesIds-{{ loop.index }}">{{ item.text }}</label>
+                </div>
+                <div class="govuk-checkboxes__conditional{{ '' if item.checked else ' govuk-checkboxes__conditional--hidden' }}" id="speciesIds-conditional-{{ loop.index }}">
+                  {{ govukInput({
+                    id: "weightAboveMinimum-" + item.value,
+                    name: "weightAboveMinimum-" + item.value,
+                    label: { text: "Weight above minimum size kept onboard or in keep pots (kg)" },
+                    classes: "govuk-!-width-one-half",
+                    inputmode: "decimal",
+                    value: item.weights.weightAboveMinimum,
+                    errorMessage: { text: item.fieldErrors.weightAboveMinimum } if item.fieldErrors.weightAboveMinimum else false
+                  }) }}
+                </div>
+              {% endfor %}
+            </div>
+          </fieldset>
+        </div>
+
+        {{ govukButton({
+          text: "Save and continue",
+          classes: "govuk-!-margin-top-6"
+        }) }}
+      </form>
+    </div>
+  </div>
+{% endblock %}
