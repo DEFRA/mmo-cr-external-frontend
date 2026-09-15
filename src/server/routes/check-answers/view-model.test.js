@@ -168,8 +168,7 @@ describe('#buildCheckAnswersViewModel', () => {
     const viewModel = buildCheckAnswersViewModel(
       fakeRequest({
         selectedSpeciesIds: ['cod'],
-        codWeights: { weightAboveMinimum: 12 },
-        weightFieldsVisible: { belowMinimum: false, legallyDiscarded: false }
+        speciesWeights: { cod: { weightAboveMinimum: 12 } }
       })
     )
     const rows = rowsFor(viewModel, 'Species caught')
@@ -188,12 +187,13 @@ describe('#buildCheckAnswersViewModel', () => {
     const viewModel = buildCheckAnswersViewModel(
       fakeRequest({
         selectedSpeciesIds: ['cod'],
-        codWeights: {
-          weightAboveMinimum: 15,
-          weightBelowMinimum: 10,
-          weightDiscarded: 5
-        },
-        weightFieldsVisible: { belowMinimum: true, legallyDiscarded: true }
+        speciesWeights: {
+          cod: {
+            weightAboveMinimum: 15,
+            weightBelowMinimum: 10,
+            weightDiscarded: 5
+          }
+        }
       })
     )
     const rows = rowsFor(viewModel, 'Species caught')
@@ -233,7 +233,7 @@ describe('#buildCheckAnswersViewModel', () => {
       fakeRequest({
         selectedGearIds: ['pots'],
         selectedSpeciesIds: ['cod'],
-        codWeights: { weightAboveMinimum: 10 }
+        speciesWeights: { cod: { weightAboveMinimum: 10 } }
       })
     )
 

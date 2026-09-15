@@ -157,13 +157,12 @@ function speciesCaughtSection(journeyState, fallback, buildChangeHref) {
     return null
   }
 
-  const codWeights = journeyState.codWeights || {}
-  const weightFieldsVisible = journeyState.weightFieldsVisible
+  const codWeights = journeyState.speciesWeights?.cod || {}
   const showBelowMinimum = hasSession
-    ? Boolean(weightFieldsVisible?.belowMinimum)
+    ? Boolean(codWeights.weightBelowMinimum)
     : true
   const showLegallyDiscarded = hasSession
-    ? Boolean(weightFieldsVisible?.legallyDiscarded)
+    ? Boolean(codWeights.weightDiscarded)
     : true
   const speciesName = getData('speciesSelection')
     .find((species) => species.id === 'cod')

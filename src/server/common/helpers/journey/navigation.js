@@ -19,6 +19,8 @@ const SAFE_RETURN_PATHS = [
   '/statistical-area',
   '/statistical-area-other',
   '/species-selection',
+  '/add-species',
+  '/remove-species',
   '/catch-not-landed',
   '/check-answers',
   '/confirmation',

@@ -1,0 +1,11 @@
+@use 'govuk-frontend' as *;
+
+// The default 4px conditional border reads too heavy against Figma's thin connector line.
+.app-species-checkboxes .govuk-checkboxes__conditional {
+  border-left-width: 1px;
+}
+
+.app-weight-toggle {
+  margin-top: govuk-spacing(3);
+}
+
