@@ -40,13 +40,14 @@ function pointIsInRing([longitude, latitude], ring) {
     const [currentLongitude, currentLatitude] = ring[index]
     const [previousLongitude, previousLatitude] = ring[previousIndex]
     const crossesLatitude =
-      (currentLatitude > latitude) !== (previousLatitude > latitude)
+      currentLatitude > latitude !== previousLatitude > latitude
     const intersectionLongitude =
       ((previousLongitude - currentLongitude) * (latitude - currentLatitude)) /
         (previousLatitude - currentLatitude) +
       currentLongitude
 
-    if (crossesLatitude && longitude < intersectionLongitude) isInside = !isInside
+    if (crossesLatitude && longitude < intersectionLongitude)
+      isInside = !isInside
   }
 
   return isInside
@@ -87,7 +88,8 @@ function viewportForCellGrid(
     for (let row = -(cells - 1); row <= 0; row++) {
       const blockLongitude =
         centreLongitude + (column + (cells - 1) / 2) * cellWidth
-      const blockLatitude = centreLatitude + (row + (cells - 1) / 2) * cellHeight
+      const blockLatitude =
+        centreLatitude + (row + (cells - 1) / 2) * cellHeight
       const distance =
         (blockLongitude - portCoordinate[0]) ** 2 +
         (blockLatitude - portCoordinate[1]) ** 2
@@ -130,9 +132,18 @@ function viewportForCellGrid(
 
   const viewport = block.reduce(
     (result, subrectangle) => ({
-      minLongitude: Math.min(result.minLongitude, subrectangle.bounds.minLongitude),
-      maxLongitude: Math.max(result.maxLongitude, subrectangle.bounds.maxLongitude),
-      minLatitude: Math.min(result.minLatitude, subrectangle.bounds.minLatitude),
+      minLongitude: Math.min(
+        result.minLongitude,
+        subrectangle.bounds.minLongitude
+      ),
+      maxLongitude: Math.max(
+        result.maxLongitude,
+        subrectangle.bounds.maxLongitude
+      ),
+      minLatitude: Math.min(
+        result.minLatitude,
+        subrectangle.bounds.minLatitude
+      ),
       maxLatitude: Math.max(result.maxLatitude, subrectangle.bounds.maxLatitude)
     }),
     {
@@ -174,11 +185,17 @@ function clampViewport(viewport, extent) {
   const latitudeCentre = (viewport.minLatitude + viewport.maxLatitude) / 2
   const minLongitude = Math.max(
     extent.minLongitude,
-    Math.min(extent.maxLongitude - longitudeSpan, longitudeCentre - longitudeSpan / 2)
+    Math.min(
+      extent.maxLongitude - longitudeSpan,
+      longitudeCentre - longitudeSpan / 2
+    )
   )
   const minLatitude = Math.max(
     extent.minLatitude,
-    Math.min(extent.maxLatitude - latitudeSpan, latitudeCentre - latitudeSpan / 2)
+    Math.min(
+      extent.maxLatitude - latitudeSpan,
+      latitudeCentre - latitudeSpan / 2
+    )
   )
 
   return {
@@ -201,8 +218,14 @@ function spanOf(viewport) {
 // `CameraZoomRange` enforcement rather than snapping between fixed steps.
 function zoomViewport(viewport, scale, anchor, minSpan, maxSpan, panExtent) {
   const span = spanOf(viewport)
-  const longitudeSpan = Math.min(Math.max(span.longitude * scale, minSpan.longitude), maxSpan.longitude)
-  const latitudeSpan = Math.min(Math.max(span.latitude * scale, minSpan.latitude), maxSpan.latitude)
+  const longitudeSpan = Math.min(
+    Math.max(span.longitude * scale, minSpan.longitude),
+    maxSpan.longitude
+  )
+  const latitudeSpan = Math.min(
+    Math.max(span.latitude * scale, minSpan.latitude),
+    maxSpan.latitude
+  )
   const longitudeRatio = (anchor[0] - viewport.minLongitude) / span.longitude
   const latitudeRatio = (anchor[1] - viewport.minLatitude) / span.latitude
   const minLongitude = anchor[0] - longitudeRatio * longitudeSpan
@@ -222,9 +245,11 @@ function zoomViewport(viewport, scale, anchor, minSpan, maxSpan, panExtent) {
 function toScreen([longitude, latitude], viewport, canvas) {
   return [
     ((longitude - viewport.minLongitude) /
-      (viewport.maxLongitude - viewport.minLongitude)) * canvas.width,
+      (viewport.maxLongitude - viewport.minLongitude)) *
+      canvas.width,
     ((viewport.maxLatitude - latitude) /
-      (viewport.maxLatitude - viewport.minLatitude)) * canvas.height
+      (viewport.maxLatitude - viewport.minLatitude)) *
+      canvas.height
   ]
 }
 
@@ -282,22 +307,32 @@ export async function initialiseStatisticalAreaMap() {
   const form = map.closest('form')
 
   try {
-    const [landResponse, subrectangleResponse, portResponse] = await Promise.all([
-      fetch('/public/offline-map/land.json'),
-      fetch('/public/offline-map/subrectangles.json'),
-      fetch('/public/offline-map/ports.json')
-    ])
-    if (![landResponse, subrectangleResponse, portResponse].every((response) => response.ok)) return
+    const [landResponse, subrectangleResponse, portResponse] =
+      await Promise.all([
+        fetch('/public/offline-map/land.json'),
+        fetch('/public/offline-map/subrectangles.json'),
+        fetch('/public/offline-map/ports.json')
+      ])
+    if (
+      ![landResponse, subrectangleResponse, portResponse].every(
+        (response) => response.ok
+      )
+    )
+      return
 
-    const [{ land }, { subrectangles: allSubrectangles }, { ports }] = await Promise.all([
-      landResponse.json(),
-      subrectangleResponse.json(),
-      portResponse.json()
-    ])
+    const [{ land }, { subrectangles: allSubrectangles }, { ports }] =
+      await Promise.all([
+        landResponse.json(),
+        subrectangleResponse.json(),
+        portResponse.json()
+      ])
     // A rectangle entirely on land has no fishing area and must never be shown, selectable or not.
-    const subrectangles = allSubrectangles.filter((subrectangle) => subrectangle.overlapsSea)
+    const subrectangles = allSubrectangles.filter(
+      (subrectangle) => subrectangle.overlapsSea
+    )
     const departurePort = ports.find(
-      (port) => port.name.toLowerCase() === map.dataset.departurePort.toLowerCase()
+      (port) =>
+        port.name.toLowerCase() === map.dataset.departurePort.toLowerCase()
     )
     if (!departurePort) return
 
@@ -343,7 +378,10 @@ export async function initialiseStatisticalAreaMap() {
     const clientPointToMap = (clientX, clientY) => {
       const bounds = canvas.getBoundingClientRect()
       return toCoordinate(
-        [(clientX - bounds.left) * (canvas.width / bounds.width), (clientY - bounds.top) * (canvas.height / bounds.height)],
+        [
+          (clientX - bounds.left) * (canvas.width / bounds.width),
+          (clientY - bounds.top) * (canvas.height / bounds.height)
+        ],
         viewport,
         canvas
       )
@@ -359,19 +397,29 @@ export async function initialiseStatisticalAreaMap() {
       // otherwise overlay it - land areas must stay clean, only the sea portion of a cell
       // should ever show its grid lines/fill. Intersecting (not just fully-contained) cells
       // are drawn so the grid still covers every edge of the viewport.
-      for (const subrectangle of subrectangles.filter((feature) => boundsIntersect(feature.bounds, viewport))) {
+      for (const subrectangle of subrectangles.filter((feature) =>
+        boundsIntersect(feature.bounds, viewport)
+      )) {
         const isSelected = subrectangle.subCode === selectedSubCode
-        context.fillStyle = isSelected ? 'rgba(232, 166, 58, 0.35)' : 'rgba(11, 107, 58, 0.06)'
+        context.fillStyle = isSelected
+          ? 'rgba(232, 166, 58, 0.35)'
+          : 'rgba(11, 107, 58, 0.06)'
         context.strokeStyle = isSelected ? '#E8A63A' : '#0B6B3A'
         context.lineWidth = isSelected ? 3 : 1
-        subrectangle.polygons.forEach((polygon) => drawPolygon(context, polygon, viewport, canvas))
+        subrectangle.polygons.forEach((polygon) =>
+          drawPolygon(context, polygon, viewport, canvas)
+        )
       }
 
-      for (const landFeature of land.filter((feature) => boundsIntersect(feature.bounds, viewport))) {
+      for (const landFeature of land.filter((feature) =>
+        boundsIntersect(feature.bounds, viewport)
+      )) {
         context.fillStyle = '#0B4143'
         context.strokeStyle = '#000000'
         context.lineWidth = 1
-        landFeature.polygons.forEach((polygon) => drawPolygon(context, polygon, viewport, canvas))
+        landFeature.polygons.forEach((polygon) =>
+          drawPolygon(context, polygon, viewport, canvas)
+        )
       }
 
       context.fillStyle = '#1d1d1d'
@@ -380,20 +428,42 @@ export async function initialiseStatisticalAreaMap() {
       // non-overlapping label - skip it rather than let its label spill into the visible neighbour.
       const minimumLabelSpan = 28
       subrectangles
-        .filter((subrectangle) => boundsIntersect(subrectangle.bounds, viewport))
+        .filter((subrectangle) =>
+          boundsIntersect(subrectangle.bounds, viewport)
+        )
         .forEach((subrectangle) => {
           // Clamped to the visible slice of this rectangle so the code stays on screen (and never
           // just vanishes) even once zooming/panning has cropped most of the rectangle out of view.
           const visible = intersectBounds(subrectangle.bounds, viewport)
-          const [leftX, topY] = toScreen([visible.minLongitude, visible.maxLatitude], viewport, canvas)
-          const [rightX, bottomY] = toScreen([visible.maxLongitude, visible.minLatitude], viewport, canvas)
-          if (rightX - leftX < minimumLabelSpan || bottomY - topY < minimumLabelSpan) return
+          const [leftX, topY] = toScreen(
+            [visible.minLongitude, visible.maxLatitude],
+            viewport,
+            canvas
+          )
+          const [rightX, bottomY] = toScreen(
+            [visible.maxLongitude, visible.minLatitude],
+            viewport,
+            canvas
+          )
+          if (
+            rightX - leftX < minimumLabelSpan ||
+            bottomY - topY < minimumLabelSpan
+          )
+            return
 
-          const [x, y] = toScreen(clampPointToBounds(subrectangle.labelCoordinate, visible), viewport, canvas)
+          const [x, y] = toScreen(
+            clampPointToBounds(subrectangle.labelCoordinate, visible),
+            viewport,
+            canvas
+          )
           context.fillText(subrectangle.subCode, x + 4, y - 4)
         })
 
-      const [portX, portY] = toScreen(departurePort.coordinate, viewport, canvas)
+      const [portX, portY] = toScreen(
+        departurePort.coordinate,
+        viewport,
+        canvas
+      )
       context.fillStyle = '#01FEE2'
       context.strokeStyle = '#000000'
       context.lineWidth = 1
@@ -418,7 +488,9 @@ export async function initialiseStatisticalAreaMap() {
       selectedSubCode = selected?.subCode
       input.value = selectedSubCode || ''
       input.disabled = !selected
-      status.textContent = selected ? `${selected.subCode} selected` : 'No statistical area selected'
+      status.textContent = selected
+        ? `${selected.subCode} selected`
+        : 'No statistical area selected'
       render()
       if (selected) form.requestSubmit()
     }
@@ -428,8 +500,12 @@ export async function initialiseStatisticalAreaMap() {
     // interaction only ever has one pointer, so it always takes the single-finger pan path.
     const activePointers = new Map()
     const pointFor = (event) => ({ x: event.clientX, y: event.clientY })
-    const pointDistance = (first, second) => Math.hypot(first.x - second.x, first.y - second.y)
-    const midpoint = (first, second) => [(first.x + second.x) / 2, (first.y + second.y) / 2]
+    const pointDistance = (first, second) =>
+      Math.hypot(first.x - second.x, first.y - second.y)
+    const midpoint = (first, second) => [
+      (first.x + second.x) / 2,
+      (first.y + second.y) / 2
+    ]
 
     let activeDragId
     let dragOrigin
@@ -469,20 +545,36 @@ export async function initialiseStatisticalAreaMap() {
         const [first, second] = [...activePointers.values()]
         const distance = pointDistance(first, second)
         if (distance === 0) return
-        viewport = zoomViewport(pinchStartViewport, pinchStartDistance / distance, pinchAnchor, minSpan, maxSpan, maximumZoomOutExtent)
+        viewport = zoomViewport(
+          pinchStartViewport,
+          pinchStartDistance / distance,
+          pinchAnchor,
+          minSpan,
+          maxSpan,
+          maximumZoomOutExtent
+        )
         render()
         return
       }
 
       if (event.pointerId !== activeDragId || !dragStart) return
-      const longitudeOffset = ((event.clientX - dragStart[0]) * (viewport.maxLongitude - viewport.minLongitude)) / canvas.width
-      const latitudeOffset = ((event.clientY - dragStart[1]) * (viewport.maxLatitude - viewport.minLatitude)) / canvas.height
-      viewport = clampViewport({
-        minLongitude: viewport.minLongitude - longitudeOffset,
-        maxLongitude: viewport.maxLongitude - longitudeOffset,
-        minLatitude: viewport.minLatitude + latitudeOffset,
-        maxLatitude: viewport.maxLatitude + latitudeOffset
-      }, maximumZoomOutExtent)
+      const longitudeOffset =
+        ((event.clientX - dragStart[0]) *
+          (viewport.maxLongitude - viewport.minLongitude)) /
+        canvas.width
+      const latitudeOffset =
+        ((event.clientY - dragStart[1]) *
+          (viewport.maxLatitude - viewport.minLatitude)) /
+        canvas.height
+      viewport = clampViewport(
+        {
+          minLongitude: viewport.minLongitude - longitudeOffset,
+          maxLongitude: viewport.maxLongitude - longitudeOffset,
+          minLatitude: viewport.minLatitude + latitudeOffset,
+          maxLatitude: viewport.maxLatitude + latitudeOffset
+        },
+        maximumZoomOutExtent
+      )
       dragStart = [event.clientX, event.clientY]
       render()
     })
@@ -499,7 +591,12 @@ export async function initialiseStatisticalAreaMap() {
       }
 
       if (activePointers.size === 0 && event.pointerId === activeDragId) {
-        const wasDrag = dragOrigin && Math.hypot(event.clientX - dragOrigin[0], event.clientY - dragOrigin[1]) > 5
+        const wasDrag =
+          dragOrigin &&
+          Math.hypot(
+            event.clientX - dragOrigin[0],
+            event.clientY - dragOrigin[1]
+          ) > 5
         activeDragId = undefined
         dragStart = undefined
         if (!wasDrag && !hadMultiTouch) select(event)
@@ -507,13 +604,24 @@ export async function initialiseStatisticalAreaMap() {
     }
     canvas.addEventListener('pointerup', endPointer)
     canvas.addEventListener('pointercancel', endPointer)
-    canvas.addEventListener('wheel', (event) => {
-      event.preventDefault()
-      const anchor = clientPointToMap(event.clientX, event.clientY)
-      const scale = event.deltaY > 0 ? zoomStep : 1 / zoomStep
-      viewport = zoomViewport(viewport, scale, anchor, minSpan, maxSpan, maximumZoomOutExtent)
-      render()
-    }, { passive: false })
+    canvas.addEventListener(
+      'wheel',
+      (event) => {
+        event.preventDefault()
+        const anchor = clientPointToMap(event.clientX, event.clientY)
+        const scale = event.deltaY > 0 ? zoomStep : 1 / zoomStep
+        viewport = zoomViewport(
+          viewport,
+          scale,
+          anchor,
+          minSpan,
+          maxSpan,
+          maximumZoomOutExtent
+        )
+        render()
+      },
+      { passive: false }
+    )
 
     render()
   } catch {

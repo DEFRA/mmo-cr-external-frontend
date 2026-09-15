@@ -13,7 +13,8 @@ import { getData } from '#/server/common/data/get-data.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 
 const pageTitle = 'Select the port you returned to'
-const hintText = 'Select the port name, or the nearest port to where you returned.'
+const hintText =
+  'Select the port name, or the nearest port to where you returned.'
 const ports = getData('ports')
 
 function favouritePorts(request) {

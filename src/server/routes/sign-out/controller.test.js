@@ -86,9 +86,8 @@ describe('#signOutController', () => {
       payload: { departurePort: 'hastings' },
       headers: { cookie: signOutCookie }
     })
-    const favouriteCookie = favouriteResponse.headers['set-cookie'][0].split(
-      ';'
-    )[0]
+    const favouriteCookie =
+      favouriteResponse.headers['set-cookie'][0].split(';')[0]
 
     const { result } = await server.inject({
       method: 'GET',

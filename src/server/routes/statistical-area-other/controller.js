@@ -94,7 +94,9 @@ export const statisticalAreaOtherSubmitController = {
       }),
       failAction(request, h) {
         const isManualEntry = request.payload.statisticalArea === 'other'
-        const errorText = isManualEntry ? subrectangleErrorText : selectionErrorText
+        const errorText = isManualEntry
+          ? subrectangleErrorText
+          : selectionErrorText
         const errorField = isManualEntry
           ? 'alternativeStatisticalArea'
           : 'statisticalArea'

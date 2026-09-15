@@ -91,7 +91,13 @@ describe('#recordDetailsController', () => {
       'Catch record for ACHILLES'
     )
     expect($('body').text()).toContain('Record status:')
-    expect($('a').filter((_, element) => $(element).text().trim() === 'Edit catch record').attr('href')).toBe('/records/late-1/edit-reason')
+    expect(
+      $('a')
+        .filter(
+          (_, element) => $(element).text().trim() === 'Edit catch record'
+        )
+        .attr('href')
+    ).toBe('/records/late-1/edit-reason')
   })
 
   test('Should render details for an unsent record', async () => {

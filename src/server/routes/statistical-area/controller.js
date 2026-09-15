@@ -12,7 +12,13 @@ import { offlineMapSubrectangleCodes } from '#/server/common/data/offline-map-su
 const pageTitle = 'Where was most of your catch caught using pots?'
 const nearbyStatisticalAreas = getData('nearbyStatisticalAreas')
 const departurePorts = getData('ports')
-const validAreaIds = [...new Set([...nearbyStatisticalAreas.map((area) => area.id), ...offlineMapSubrectangleCodes, 'other'])]
+const validAreaIds = [
+  ...new Set([
+    ...nearbyStatisticalAreas.map((area) => area.id),
+    ...offlineMapSubrectangleCodes,
+    'other'
+  ])
+]
 
 function viewContext(request, overrides = {}) {
   const journeyState = getJourneyState(request)

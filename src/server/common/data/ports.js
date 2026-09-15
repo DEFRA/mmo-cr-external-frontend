@@ -34,8 +34,9 @@ function loadPorts() {
     deduplicated.push({ code, name })
   }
 
-  return deduplicated.sort((first, second) => first.name.localeCompare(second.name))
+  return deduplicated.sort((first, second) =>
+    first.name.localeCompare(second.name)
+  )
 }
 
 export const ports = loadPorts()
-

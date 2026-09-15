@@ -1,7 +1,4 @@
-import {
-  addPortController,
-  addPortSubmitController
-} from './controller.js'
+import { addPortController, addPortSubmitController } from './controller.js'
 
 /**
  * Sets up the routes used in the add-port (type-to-search a favourite port) page.

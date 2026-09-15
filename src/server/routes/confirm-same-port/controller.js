@@ -1,6 +1,9 @@
 import Joi from 'joi'
 
-import { setJourneyState, resolveNextPath } from '#/server/common/helpers/journey/navigation.js'
+import {
+  setJourneyState,
+  resolveNextPath
+} from '#/server/common/helpers/journey/navigation.js'
 import { getData } from '#/server/common/data/get-data.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 

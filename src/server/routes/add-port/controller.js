@@ -104,15 +104,16 @@ export const addPortSubmitController = {
     addFavouritePortCode(request, matchedPort.code)
 
     if (isEntry(request)) {
-      return h
-        .redirect(`/confirm-same-port?port=${matchedPort.code}`)
-        .code(303)
+      return h.redirect(`/confirm-same-port?port=${matchedPort.code}`).code(303)
     }
 
     const phase = resolvePhase(request)
     return h
       .redirect(
-        resolveNextPath(request, phase === 'return' ? '/return-port' : '/departure-port')
+        resolveNextPath(
+          request,
+          phase === 'return' ? '/return-port' : '/departure-port'
+        )
       )
       .code(303)
   }

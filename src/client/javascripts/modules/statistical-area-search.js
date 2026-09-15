@@ -5,7 +5,9 @@ export async function initialiseStatisticalAreaSearch() {
   const input = document.querySelector('[data-statistical-area-search]')
   if (!input) return
 
-  const searchPanel = document.querySelector('[data-statistical-area-search-panel]')
+  const searchPanel = document.querySelector(
+    '[data-statistical-area-search-panel]'
+  )
   const radioOptions = document.querySelector('[data-statistical-area-options]')
   const results = document.querySelector('[data-statistical-area-results]')
 

@@ -226,4 +226,3 @@ describe('#returnPortSubmitController', () => {
     expect($('.govuk-error-summary')).toHaveLength(1)
   })
 })
-
