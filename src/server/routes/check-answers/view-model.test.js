@@ -228,6 +228,30 @@ describe('#buildCheckAnswersViewModel', () => {
     ).toBe('5')
   })
 
+  test('Should show the real captured species-not-landed weight over the fallback example', () => {
+    const viewModel = buildCheckAnswersViewModel(
+      fakeRequest({
+        catchNotLanded: true,
+        speciesNotLanded: { cod: { weightAboveMinimum: 8 } }
+      })
+    )
+    const rows = rowsFor(viewModel, 'Species not landed')
+
+    expect(rowValue(rows, 'Species')).toBe('Atlantic cod (COD)')
+    expect(
+      rowValue(
+        rows,
+        'Weight above minimum size kept onboard or in keep pots (kg)'
+      )
+    ).toBe('8')
+    expect(rowChangeHref(rows, 'Species')).toBe(
+      '/species-not-landed?return=/check-answers'
+    )
+    expect(rowChangeHref(rows, 'Not landed')).toBe(
+      '/catch-not-landed?return=/check-answers'
+    )
+  })
+
   test('Should never expose undefined, null or raw internal ids as a visible value', () => {
     const viewModel = buildCheckAnswersViewModel(
       fakeRequest({
