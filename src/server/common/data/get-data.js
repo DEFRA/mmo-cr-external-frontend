@@ -6,7 +6,7 @@ import { catchRecordDetails } from './catch-record-details.js'
 import { selectVessel } from './vessels.js'
 import { tripDates } from './trip-dates.js'
 import { ports } from './ports.js'
-import { gearSelection } from './gear.js'
+import { gearSelection, gearCatalogue } from './gear.js'
 import { potsDetails } from './pots-details.js'
 import {
   nearbyStatisticalAreas,
@@ -28,6 +28,7 @@ const dataByKey = {
   tripDates,
   ports,
   gearSelection,
+  gearCatalogue,
   potsDetails,
   nearbyStatisticalAreas,
   statisticalAreas,

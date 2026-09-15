@@ -24,7 +24,7 @@ export const gearSelection = [
   {
     id: 'handlines-pole-lines',
     label: 'Handlines and pole lines (hand operated)',
-    hint: null,
+    hint: 'Hint text',
     requiresPotsDetails: false,
     displayOrder: 4
   },
@@ -62,5 +62,32 @@ export const gearSelection = [
     hint: null,
     requiresPotsDetails: false,
     displayOrder: 9
+  }
+]
+
+// The full searchable gear catalogue for Add gear (CRAR-158) — a superset of
+// gearSelection, which remains the default favourites list for existing journeys.
+export const gearCatalogue = [
+  ...gearSelection,
+  {
+    id: 'set-net',
+    label: 'Set net',
+    hint: '90mm mesh',
+    requiresPotsDetails: false,
+    displayOrder: 10
+  },
+  {
+    id: 'long-line',
+    label: 'Long line',
+    hint: null,
+    requiresPotsDetails: false,
+    displayOrder: 11
+  },
+  {
+    id: 'tangle-net',
+    label: 'Tangle net',
+    hint: '100mm mesh',
+    requiresPotsDetails: false,
+    displayOrder: 12
   }
 ]
