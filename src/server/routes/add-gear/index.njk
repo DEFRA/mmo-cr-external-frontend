@@ -1,0 +1,43 @@
+{% extends 'layouts/page.njk' %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% block pageContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <span class="govuk-caption-l" data-testid="app-add-gear-caption">{{ caption }}</span>
+
+      <form method="post" novalidate>
+        <div class="govuk-form-group{{ ' govuk-form-group--error' if fieldErrors.gear }}">
+          <h1 class="govuk-label-wrapper">
+            <label class="govuk-label govuk-label--xl" for="gear">{{ heading }}</label>
+          </h1>
+          {% if fieldErrors.gear %}
+            <p id="gear-error" class="govuk-error-message">
+              <span class="govuk-visually-hidden">Error:</span> {{ fieldErrors.gear }}
+            </p>
+          {% endif %}
+          <div class="app-autocomplete">
+            <input
+              class="govuk-input app-autocomplete__input{{ ' govuk-input--error' if fieldErrors.gear }}"
+              id="gear"
+              name="gear"
+              type="text"
+              list="gear-options"
+              autocomplete="off"
+              placeholder="Start typing to display the list"
+              {% if fieldErrors.gear %}aria-describedby="gear-error"{% endif %}
+            >
+            <span class="app-autocomplete__arrow" aria-hidden="true"></span>
+          </div>
+          <datalist id="gear-options">
+            {% for label in gearOptionLabels %}
+              <option value="{{ label }}"></option>
+            {% endfor %}
+          </datalist>
+        </div>
+
+        {{ govukButton({ text: "Save and continue" }) }}
+      </form>
+    </div>
+  </div>
+{% endblock %}

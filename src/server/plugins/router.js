@@ -18,6 +18,8 @@ import { tripReturnDate } from '../routes/trip-return-date/index.js'
 import { departurePort } from '../routes/departure-port/index.js'
 import { returnPort } from '../routes/return-port/index.js'
 import { gearSelection } from '../routes/gear-selection/index.js'
+import { addGear } from '../routes/add-gear/index.js'
+import { removeGear } from '../routes/remove-gear/index.js'
 import { statisticalArea } from '../routes/statistical-area/index.js'
 import { statisticalAreaOther } from '../routes/statistical-area-other/index.js'
 import { speciesSelection } from '../routes/species-selection/index.js'
@@ -57,6 +59,8 @@ export const router = {
         departurePort,
         returnPort,
         gearSelection,
+        addGear,
+        removeGear,
         statisticalArea,
         statisticalAreaOther,
         speciesSelection,
