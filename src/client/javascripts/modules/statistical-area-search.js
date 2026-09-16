@@ -1,9 +1,12 @@
 const minimumSearchLength = 2
 const maximumResults = 10
+const collapsedState = 'false'
 
 export async function initialiseStatisticalAreaSearch() {
   const input = document.querySelector('[data-statistical-area-search]')
-  if (!input) return
+  if (!input) {
+    return
+  }
 
   const searchPanel = document.querySelector(
     '[data-statistical-area-search-panel]'
@@ -13,14 +16,16 @@ export async function initialiseStatisticalAreaSearch() {
 
   try {
     const response = await fetch('/public/offline-map/subrectangles.json')
-    if (!response.ok) return
+    if (!response.ok) {
+      return
+    }
 
     const { subrectangles } = await response.json()
     const selectSubrectangle = (subrectangle) => {
       input.value = subrectangle.subCode
       results.hidden = true
       results.replaceChildren()
-      input.setAttribute('aria-expanded', 'false')
+      input.setAttribute('aria-expanded', collapsedState)
     }
     const renderResults = () => {
       const query = input.value.trim().toUpperCase()
@@ -28,7 +33,7 @@ export async function initialiseStatisticalAreaSearch() {
 
       if (query.length < minimumSearchLength) {
         results.hidden = true
-        input.setAttribute('aria-expanded', 'false')
+        input.setAttribute('aria-expanded', collapsedState)
         return
       }
 
@@ -38,7 +43,7 @@ export async function initialiseStatisticalAreaSearch() {
 
       if (!matches.length) {
         results.hidden = true
-        input.setAttribute('aria-expanded', 'false')
+        input.setAttribute('aria-expanded', collapsedState)
         return
       }
 
@@ -48,7 +53,7 @@ export async function initialiseStatisticalAreaSearch() {
         button.type = 'button'
         button.className = 'app-statistical-area-search__option'
         button.role = 'option'
-        button.setAttribute('aria-selected', 'false')
+        button.setAttribute('aria-selected', collapsedState)
         button.textContent = subrectangle.subCode
         button.addEventListener('click', () => selectSubrectangle(subrectangle))
         item.append(button)
@@ -62,15 +67,17 @@ export async function initialiseStatisticalAreaSearch() {
     input.addEventListener('keydown', (event) => {
       if (event.key === 'Escape') {
         results.hidden = true
-        input.setAttribute('aria-expanded', 'false')
+        input.setAttribute('aria-expanded', collapsedState)
       }
     })
     radioOptions?.addEventListener('change', (event) => {
       const isOther = event.target.value === 'other'
       searchPanel.hidden = !isOther
       results.hidden = true
-      input.setAttribute('aria-expanded', 'false')
-      if (isOther) input.focus()
+      input.setAttribute('aria-expanded', collapsedState)
+      if (isOther) {
+        input.focus()
+      }
     })
   } catch {
     results.hidden = true

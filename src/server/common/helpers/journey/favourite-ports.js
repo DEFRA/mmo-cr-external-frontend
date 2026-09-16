@@ -9,7 +9,9 @@ export function getFavouritePortCodes(request) {
 
 export function addFavouritePortCode(request, code) {
   const existing = getFavouritePortCodes(request)
-  if (existing.includes(code)) return existing
+  if (existing.includes(code)) {
+    return existing
+  }
 
   const updated = [...existing, code]
   setJourneyState(request, { favouritePorts: updated })

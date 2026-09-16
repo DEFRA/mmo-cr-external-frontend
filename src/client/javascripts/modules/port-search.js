@@ -1,9 +1,12 @@
 const minimumSearchLength = 2
 const maximumResults = 10
+const collapsedState = 'false'
 
 export function initialisePortSearch() {
   const input = document.querySelector('[data-port-search]')
-  if (!input) return
+  if (!input) {
+    return
+  }
 
   const results = document.querySelector('[data-port-results]')
   const dataScript = document.querySelector('[data-port-search-data]')
@@ -19,7 +22,7 @@ export function initialisePortSearch() {
     input.value = name
     results.hidden = true
     results.replaceChildren()
-    input.setAttribute('aria-expanded', 'false')
+    input.setAttribute('aria-expanded', collapsedState)
   }
 
   const renderResults = () => {
@@ -28,7 +31,7 @@ export function initialisePortSearch() {
 
     if (query.length < minimumSearchLength) {
       results.hidden = true
-      input.setAttribute('aria-expanded', 'false')
+      input.setAttribute('aria-expanded', collapsedState)
       return
     }
 
@@ -38,7 +41,7 @@ export function initialisePortSearch() {
 
     if (!matches.length) {
       results.hidden = true
-      input.setAttribute('aria-expanded', 'false')
+      input.setAttribute('aria-expanded', collapsedState)
       return
     }
 
@@ -48,7 +51,7 @@ export function initialisePortSearch() {
       button.type = 'button'
       button.className = 'app-statistical-area-search__option'
       button.role = 'option'
-      button.setAttribute('aria-selected', 'false')
+      button.setAttribute('aria-selected', collapsedState)
       button.textContent = name
       button.addEventListener('click', () => selectPort(name))
       item.append(button)
@@ -62,7 +65,7 @@ export function initialisePortSearch() {
   input.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') {
       results.hidden = true
-      input.setAttribute('aria-expanded', 'false')
+      input.setAttribute('aria-expanded', collapsedState)
     }
   })
 }

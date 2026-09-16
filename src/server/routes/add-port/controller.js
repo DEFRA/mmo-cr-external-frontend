@@ -10,6 +10,7 @@ import { statusCodes } from '#/server/common/constants/status-codes.js'
 
 const ports = getData('ports')
 const selectionErrorText = 'Select a port from the list'
+const returnPhase = 'return'
 
 const headingByPhase = {
   departure: 'Enter the port or closest port you set off from',
@@ -17,7 +18,7 @@ const headingByPhase = {
 }
 
 function resolvePhase(request) {
-  return request.query.for === 'return' ? 'return' : 'departure'
+  return request.query.for === returnPhase ? returnPhase : 'departure'
 }
 
 function isEntry(request) {
@@ -27,10 +28,12 @@ function isEntry(request) {
 function backLink(request) {
   const phase = resolvePhase(request)
   if (!isEntry(request)) {
-    return phase === 'return' ? '/return-port' : '/departure-port'
+    return phase === returnPhase ? '/return-port' : '/departure-port'
   }
 
-  return phase === 'return' ? '/departure-port' : backForDeparturePort(request)
+  return phase === returnPhase
+    ? '/departure-port'
+    : backForDeparturePort(request)
 }
 
 function formAction(request) {
@@ -104,7 +107,9 @@ export const addPortSubmitController = {
     addFavouritePortCode(request, matchedPort.code)
 
     if (isEntry(request)) {
-      return h.redirect(`/confirm-same-port?port=${matchedPort.code}`).code(303)
+      return h
+        .redirect(`/confirm-same-port?port=${matchedPort.code}`)
+        .code(statusCodes.seeOther)
     }
 
     const phase = resolvePhase(request)
@@ -112,9 +117,9 @@ export const addPortSubmitController = {
       .redirect(
         resolveNextPath(
           request,
-          phase === 'return' ? '/return-port' : '/departure-port'
+          phase === returnPhase ? '/return-port' : '/departure-port'
         )
       )
-      .code(303)
+      .code(statusCodes.seeOther)
   }
 }

@@ -1,6 +1,11 @@
 const minimumRectangleCount = 4
 const defaultRectangleCount = 9
 const maximumRectangleCount = 16
+const selectedGridLineWidth = 3
+const minimumLabelFontSize = 12
+const fontSizeCanvasWidthDivisor = 90
+const portMarkerRadius = 5
+const dragThresholdPixels = 5
 
 function boundsIntersect(first, second) {
   return !(
@@ -35,7 +40,7 @@ function pointIsInRing([longitude, latitude], ring) {
   for (
     let index = 0, previousIndex = ring.length - 1;
     index < ring.length;
-    previousIndex = index++
+    previousIndex = index, index++
   ) {
     const [currentLongitude, currentLatitude] = ring[index]
     const [previousLongitude, previousLatitude] = ring[previousIndex]
@@ -62,25 +67,14 @@ function containsPoint(point, subrectangle) {
   )
 }
 
-// Builds the viewport from the real neighbouring rectangles so the grid edges match the source data exactly.
-function viewportForCellGrid(
-  subrectangles,
-  departureCell,
-  portCoordinate,
-  count,
-  canvas
+// Keeps the departure cell in the block while sitting as close to the port as the grid allows.
+function firstBlockOrigin(
+  cells,
+  cellWidth,
+  cellHeight,
+  centre,
+  portCoordinate
 ) {
-  const cells = Math.sqrt(count)
-  const cellWidth =
-    departureCell.bounds.maxLongitude - departureCell.bounds.minLongitude
-  const cellHeight =
-    departureCell.bounds.maxLatitude - departureCell.bounds.minLatitude
-  const centreLongitude =
-    (departureCell.bounds.minLongitude + departureCell.bounds.maxLongitude) / 2
-  const centreLatitude =
-    (departureCell.bounds.minLatitude + departureCell.bounds.maxLatitude) / 2
-
-  // Keeps the departure cell in the block while sitting as close to the port as the grid allows.
   let firstColumn = 0
   let firstRow = 0
   let closest = Infinity
@@ -88,9 +82,9 @@ function viewportForCellGrid(
   for (let column = -(cells - 1); column <= 0; column++) {
     for (let row = -(cells - 1); row <= 0; row++) {
       const blockLongitude =
-        centreLongitude + (column + (cells - 1) / 2) * cellWidth
+        centre.longitude + (column + (cells - 1) / 2) * cellWidth
       const blockLatitude =
-        centreLatitude + (row + (cells - 1) / 2) * cellHeight
+        centre.latitude + (row + (cells - 1) / 2) * cellHeight
       const distance =
         (blockLongitude - portCoordinate[0]) ** 2 +
         (blockLatitude - portCoordinate[1]) ** 2
@@ -103,13 +97,25 @@ function viewportForCellGrid(
     }
   }
 
+  return { firstColumn, firstRow }
+}
+
+function buildBlockCells(
+  subrectangles,
+  cells,
+  cellWidth,
+  cellHeight,
+  centre,
+  origin
+) {
   const block = []
 
   for (let column = 0; column < cells; column++) {
     for (let row = 0; row < cells; row++) {
       const targetLongitude =
-        centreLongitude + (firstColumn + column) * cellWidth
-      const targetLatitude = centreLatitude + (firstRow + row) * cellHeight
+        centre.longitude + (origin.firstColumn + column) * cellWidth
+      const targetLatitude =
+        centre.latitude + (origin.firstRow + row) * cellHeight
       const neighbour = subrectangles.find(
         (subrectangle) =>
           Math.abs(
@@ -127,11 +133,17 @@ function viewportForCellGrid(
           ) <
             cellHeight / 2
       )
-      if (neighbour) block.push(neighbour)
+      if (neighbour) {
+        block.push(neighbour)
+      }
     }
   }
 
-  const viewport = block.reduce(
+  return block
+}
+
+function boundsFromBlock(block) {
+  return block.reduce(
     (result, subrectangle) => ({
       minLongitude: Math.min(
         result.minLongitude,
@@ -154,7 +166,10 @@ function viewportForCellGrid(
       maxLatitude: -Infinity
     }
   )
-  const canvasRatio = canvas.width / canvas.height
+}
+
+// Expands the shorter axis so the viewport matches the canvas aspect ratio without distorting it.
+function fitViewportToCanvasRatio(viewport, canvasRatio) {
   const longitudeSpan = viewport.maxLongitude - viewport.minLongitude
   const latitudeSpan = viewport.maxLatitude - viewport.minLatitude
 
@@ -171,6 +186,47 @@ function viewportForCellGrid(
   }
 
   return viewport
+}
+
+// Builds the viewport from the real neighbouring rectangles so the grid edges match the source data exactly.
+function viewportForCellGrid(
+  subrectangles,
+  departureCell,
+  portCoordinate,
+  count,
+  canvas
+) {
+  const cells = Math.sqrt(count)
+  const cellWidth =
+    departureCell.bounds.maxLongitude - departureCell.bounds.minLongitude
+  const cellHeight =
+    departureCell.bounds.maxLatitude - departureCell.bounds.minLatitude
+  const centre = {
+    longitude:
+      (departureCell.bounds.minLongitude + departureCell.bounds.maxLongitude) /
+      2,
+    latitude:
+      (departureCell.bounds.minLatitude + departureCell.bounds.maxLatitude) / 2
+  }
+
+  const origin = firstBlockOrigin(
+    cells,
+    cellWidth,
+    cellHeight,
+    centre,
+    portCoordinate
+  )
+  const block = buildBlockCells(
+    subrectangles,
+    cells,
+    cellWidth,
+    cellHeight,
+    centre,
+    origin
+  )
+  const viewport = boundsFromBlock(block)
+
+  return fitViewportToCanvasRatio(viewport, canvas.width / canvas.height)
 }
 
 function clampViewport(viewport, extent) {
@@ -268,8 +324,11 @@ function drawPolygon(context, polygon, viewport, canvas) {
   for (const ring of [polygon.exterior, ...polygon.holes]) {
     ring.forEach((coordinate, index) => {
       const [x, y] = toScreen(coordinate, viewport, canvas)
-      if (index === 0) context.moveTo(x, y)
-      else context.lineTo(x, y)
+      if (index === 0) {
+        context.moveTo(x, y)
+      } else {
+        context.lineTo(x, y)
+      }
     })
     context.closePath()
   }
@@ -298,9 +357,429 @@ export function closestSubrectangles(subrectangles, portCoordinate, count) {
     .slice(0, count)
 }
 
+const zoomStep = 1.08
+const minimumLabelSpan = 28
+
+async function loadOfflineMapData() {
+  const [landResponse, subrectangleResponse, portResponse] = await Promise.all([
+    fetch('/public/offline-map/land.json'),
+    fetch('/public/offline-map/subrectangles.json'),
+    fetch('/public/offline-map/ports.json')
+  ])
+  if (
+    ![landResponse, subrectangleResponse, portResponse].every(
+      (response) => response.ok
+    )
+  ) {
+    return undefined
+  }
+
+  const [{ land }, { subrectangles: allSubrectangles }, { ports }] =
+    await Promise.all([
+      landResponse.json(),
+      subrectangleResponse.json(),
+      portResponse.json()
+    ])
+  // A rectangle entirely on land has no fishing area and must never be shown, selectable or not.
+  const subrectangles = allSubrectangles.filter(
+    (subrectangle) => subrectangle.overlapsSea
+  )
+
+  return { land, subrectangles, ports }
+}
+
+function findDeparturePort(ports, map) {
+  return ports.find(
+    (port) =>
+      port.name.toLowerCase() === map.dataset.departurePort.toLowerCase()
+  )
+}
+
+function findDepartureCell(subrectangles, departurePort) {
+  return subrectangles.find(
+    (subrectangle) =>
+      departurePort.coordinate[0] >= subrectangle.bounds.minLongitude &&
+      departurePort.coordinate[0] <= subrectangle.bounds.maxLongitude &&
+      departurePort.coordinate[1] >= subrectangle.bounds.minLatitude &&
+      departurePort.coordinate[1] <= subrectangle.bounds.maxLatitude
+  )
+}
+
+// Zoom is continuous between the 4-rectangle (most zoomed in) and 16-rectangle (most zoomed
+// out) grid blocks, opening on the 9-rectangle default - mirroring MapKit's `CameraZoomRange`.
+function computeZoomExtents(
+  subrectangles,
+  departureCell,
+  portCoordinate,
+  canvas
+) {
+  const maximumZoomOutExtent = viewportForCellGrid(
+    subrectangles,
+    departureCell,
+    portCoordinate,
+    maximumRectangleCount,
+    canvas
+  )
+  const defaultZoomExtent = viewportForCellGrid(
+    subrectangles,
+    departureCell,
+    portCoordinate,
+    defaultRectangleCount,
+    canvas
+  )
+  const maximumZoomInExtent = viewportForCellGrid(
+    subrectangles,
+    departureCell,
+    portCoordinate,
+    minimumRectangleCount,
+    canvas
+  )
+
+  return {
+    maximumZoomOutExtent,
+    defaultZoomExtent,
+    minSpan: spanOf(maximumZoomInExtent),
+    maxSpan: spanOf(maximumZoomOutExtent)
+  }
+}
+
+function drawSubrectangles(
+  context,
+  subrectangles,
+  viewport,
+  canvas,
+  selectedSubCode
+) {
+  // Grid drawn before land so the opaque land fill covers any rectangle that would
+  // otherwise overlay it - land areas must stay clean, only the sea portion of a cell
+  // should ever show its grid lines/fill. Intersecting (not just fully-contained) cells
+  // are drawn so the grid still covers every edge of the viewport.
+  for (const subrectangle of subrectangles.filter((feature) =>
+    boundsIntersect(feature.bounds, viewport)
+  )) {
+    const isSelected = subrectangle.subCode === selectedSubCode
+    context.fillStyle = isSelected
+      ? 'rgba(232, 166, 58, 0.35)'
+      : 'rgba(11, 107, 58, 0.06)'
+    context.strokeStyle = isSelected ? '#E8A63A' : '#0B6B3A'
+    context.lineWidth = isSelected ? selectedGridLineWidth : 1
+    subrectangle.polygons.forEach((polygon) =>
+      drawPolygon(context, polygon, viewport, canvas)
+    )
+  }
+}
+
+function drawLand(context, land, viewport, canvas) {
+  for (const landFeature of land.filter((feature) =>
+    boundsIntersect(feature.bounds, viewport)
+  )) {
+    context.fillStyle = '#0B4143'
+    context.strokeStyle = '#000000'
+    context.lineWidth = 1
+    landFeature.polygons.forEach((polygon) =>
+      drawPolygon(context, polygon, viewport, canvas)
+    )
+  }
+}
+
+function drawSubrectangleLabels(context, subrectangles, viewport, canvas) {
+  context.fillStyle = '#1d1d1d'
+  context.font = `${Math.max(minimumLabelFontSize, canvas.width / fontSizeCanvasWidthDivisor)}px sans-serif`
+  // A rectangle cropped down to a sliver by the viewport edge is too thin to own a legible,
+  // non-overlapping label - skip it rather than let its label spill into the visible neighbour.
+  subrectangles
+    .filter((subrectangle) => boundsIntersect(subrectangle.bounds, viewport))
+    .forEach((subrectangle) => {
+      // Clamped to the visible slice of this rectangle so the code stays on screen (and never
+      // just vanishes) even once zooming/panning has cropped most of the rectangle out of view.
+      const visible = intersectBounds(subrectangle.bounds, viewport)
+      const [leftX, topY] = toScreen(
+        [visible.minLongitude, visible.maxLatitude],
+        viewport,
+        canvas
+      )
+      const [rightX, bottomY] = toScreen(
+        [visible.maxLongitude, visible.minLatitude],
+        viewport,
+        canvas
+      )
+      if (
+        rightX - leftX < minimumLabelSpan ||
+        bottomY - topY < minimumLabelSpan
+      ) {
+        return
+      }
+
+      const [x, y] = toScreen(
+        clampPointToBounds(subrectangle.labelCoordinate, visible),
+        viewport,
+        canvas
+      )
+      context.fillText(subrectangle.subCode, x + 4, y - 4)
+    })
+}
+
+function drawDeparturePortMarker(context, departurePort, viewport, canvas) {
+  const [portX, portY] = toScreen(departurePort.coordinate, viewport, canvas)
+  context.fillStyle = '#01FEE2'
+  context.strokeStyle = '#000000'
+  context.lineWidth = 1
+  context.beginPath()
+  context.arc(portX, portY, portMarkerRadius, 0, Math.PI * 2)
+  context.fill()
+  context.stroke()
+}
+
+function createRender({ canvas, land, subrectangles, departurePort, state }) {
+  return () => {
+    const context = canvas.getContext('2d')
+    context.clearRect(0, 0, canvas.width, canvas.height)
+    context.fillStyle = '#ffffff'
+    context.fillRect(0, 0, canvas.width, canvas.height)
+
+    drawSubrectangles(
+      context,
+      subrectangles,
+      state.viewport,
+      canvas,
+      state.selectedSubCode
+    )
+    drawLand(context, land, state.viewport, canvas)
+    drawSubrectangleLabels(context, subrectangles, state.viewport, canvas)
+    drawDeparturePortMarker(context, departurePort, state.viewport, canvas)
+  }
+}
+
+function createClientPointToMap(canvas, state) {
+  return (clientX, clientY) => {
+    const bounds = canvas.getBoundingClientRect()
+    return toCoordinate(
+      [
+        (clientX - bounds.left) * (canvas.width / bounds.width),
+        (clientY - bounds.top) * (canvas.height / bounds.height)
+      ],
+      state.viewport,
+      canvas
+    )
+  }
+}
+
+function createSelect({
+  subrectangles,
+  input,
+  status,
+  form,
+  state,
+  clientPointToMap,
+  render
+}) {
+  return (event) => {
+    const point = clientPointToMap(event.clientX, event.clientY)
+    const selected = subrectangles.find(
+      (subrectangle) =>
+        boundsIntersect(subrectangle.bounds, {
+          minLongitude: point[0],
+          maxLongitude: point[0],
+          minLatitude: point[1],
+          maxLatitude: point[1]
+        }) && containsPoint(point, subrectangle)
+    )
+
+    state.selectedSubCode = selected?.subCode
+    input.value = state.selectedSubCode || ''
+    input.disabled = !selected
+    status.textContent = selected
+      ? `${selected.subCode} selected`
+      : 'No statistical area selected'
+    render()
+    if (selected) {
+      form.requestSubmit()
+    }
+  }
+}
+
+// Tracks every touch point currently down, keyed by pointerId, so a second finger switches
+// seamlessly from single-finger pan to two-finger pinch-zoom (and back again on lift) - mouse
+// interaction only ever has one pointer, so it always takes the single-finger pan path.
+function pointFor(event) {
+  return { x: event.clientX, y: event.clientY }
+}
+
+function pointDistance(first, second) {
+  return Math.hypot(first.x - second.x, first.y - second.y)
+}
+
+function midpoint(first, second) {
+  return [(first.x + second.x) / 2, (first.y + second.y) / 2]
+}
+
+function handlePointerDown(event, canvas, dragState, state, clientPointToMap) {
+  try {
+    canvas.setPointerCapture(event.pointerId)
+  } catch {
+    // Some browsers reject capture for a pointer that's already gone - safe to ignore.
+  }
+  dragState.activePointers.set(event.pointerId, pointFor(event))
+
+  if (dragState.activePointers.size === 1) {
+    dragState.hadMultiTouch = false
+    dragState.activeDragId = event.pointerId
+    dragState.dragOrigin = [event.clientX, event.clientY]
+    dragState.dragStart = dragState.dragOrigin
+  } else if (dragState.activePointers.size === 2) {
+    dragState.hadMultiTouch = true
+    dragState.activeDragId = undefined
+    const [first, second] = [...dragState.activePointers.values()]
+    dragState.pinchStartDistance = pointDistance(first, second)
+    dragState.pinchStartViewport = { ...state.viewport }
+    dragState.pinchAnchor = clientPointToMap(...midpoint(first, second))
+  } else {
+    // A third (or later) simultaneous pointer isn't supported - ignored, leaving the
+    // existing single-finger pan or two-finger pinch gesture (if any) unaffected.
+  }
+}
+
+function handlePinchMove(dragState, state, extents, render) {
+  const [first, second] = [...dragState.activePointers.values()]
+  const distance = pointDistance(first, second)
+  if (distance === 0) {
+    return
+  }
+  state.viewport = zoomViewport(
+    dragState.pinchStartViewport,
+    dragState.pinchStartDistance / distance,
+    dragState.pinchAnchor,
+    extents.minSpan,
+    extents.maxSpan,
+    extents.maximumZoomOutExtent
+  )
+  render()
+}
+
+function handlePanMove(event, canvas, dragState, state, extents, render) {
+  const longitudeOffset =
+    ((event.clientX - dragState.dragStart[0]) *
+      (state.viewport.maxLongitude - state.viewport.minLongitude)) /
+    canvas.width
+  const latitudeOffset =
+    ((event.clientY - dragState.dragStart[1]) *
+      (state.viewport.maxLatitude - state.viewport.minLatitude)) /
+    canvas.height
+  state.viewport = clampViewport(
+    {
+      minLongitude: state.viewport.minLongitude - longitudeOffset,
+      maxLongitude: state.viewport.maxLongitude - longitudeOffset,
+      minLatitude: state.viewport.minLatitude + latitudeOffset,
+      maxLatitude: state.viewport.maxLatitude + latitudeOffset
+    },
+    extents.maximumZoomOutExtent
+  )
+  dragState.dragStart = [event.clientX, event.clientY]
+  render()
+}
+
+function handlePointerMove(event, dragState, state, canvas, extents, render) {
+  if (!dragState.activePointers.has(event.pointerId) || event.buttons === 0) {
+    return
+  }
+  dragState.activePointers.set(event.pointerId, pointFor(event))
+
+  if (dragState.activePointers.size === 2 && dragState.pinchStartDistance) {
+    handlePinchMove(dragState, state, extents, render)
+    return
+  }
+
+  if (event.pointerId !== dragState.activeDragId || !dragState.dragStart) {
+    return
+  }
+  handlePanMove(event, canvas, dragState, state, extents, render)
+}
+
+function handlePointerEnd(event, dragState, select) {
+  dragState.activePointers.delete(event.pointerId)
+  dragState.pinchStartDistance = undefined
+
+  if (dragState.activePointers.size === 1) {
+    const [remainingId] = [...dragState.activePointers.keys()]
+    const remaining = dragState.activePointers.get(remainingId)
+    dragState.activeDragId = remainingId
+    dragState.dragStart = [remaining.x, remaining.y]
+    return
+  }
+
+  if (
+    dragState.activePointers.size === 0 &&
+    event.pointerId === dragState.activeDragId
+  ) {
+    const wasDrag =
+      dragState.dragOrigin &&
+      Math.hypot(
+        event.clientX - dragState.dragOrigin[0],
+        event.clientY - dragState.dragOrigin[1]
+      ) > dragThresholdPixels
+    dragState.activeDragId = undefined
+    dragState.dragStart = undefined
+    if (!wasDrag && !dragState.hadMultiTouch) {
+      select(event)
+    }
+  }
+}
+
+function handleWheel(event, extents, state, clientPointToMap, render) {
+  event.preventDefault()
+  const anchor = clientPointToMap(event.clientX, event.clientY)
+  const scale = event.deltaY > 0 ? zoomStep : 1 / zoomStep
+  state.viewport = zoomViewport(
+    state.viewport,
+    scale,
+    anchor,
+    extents.minSpan,
+    extents.maxSpan,
+    extents.maximumZoomOutExtent
+  )
+  render()
+}
+
+function attachPointerHandlers({
+  canvas,
+  state,
+  extents,
+  clientPointToMap,
+  render,
+  select
+}) {
+  const dragState = {
+    activePointers: new Map(),
+    activeDragId: undefined,
+    dragOrigin: undefined,
+    dragStart: undefined,
+    hadMultiTouch: false,
+    pinchStartDistance: undefined,
+    pinchStartViewport: undefined,
+    pinchAnchor: undefined
+  }
+
+  canvas.addEventListener('pointerdown', (event) =>
+    handlePointerDown(event, canvas, dragState, state, clientPointToMap)
+  )
+  canvas.addEventListener('pointermove', (event) =>
+    handlePointerMove(event, dragState, state, canvas, extents, render)
+  )
+  const endPointer = (event) => handlePointerEnd(event, dragState, select)
+  canvas.addEventListener('pointerup', endPointer)
+  canvas.addEventListener('pointercancel', endPointer)
+  canvas.addEventListener(
+    'wheel',
+    (event) => handleWheel(event, extents, state, clientPointToMap, render),
+    { passive: false }
+  )
+}
+
 export async function initialiseStatisticalAreaMap() {
   const map = document.querySelector('[data-statistical-area-map]')
-  if (!map) return
+  if (!map) {
+    return
+  }
 
   const canvas = map.querySelector('canvas')
   const input = map.querySelector('[data-statistical-area-map-input]')
@@ -308,323 +787,60 @@ export async function initialiseStatisticalAreaMap() {
   const form = map.closest('form')
 
   try {
-    const [landResponse, subrectangleResponse, portResponse] =
-      await Promise.all([
-        fetch('/public/offline-map/land.json'),
-        fetch('/public/offline-map/subrectangles.json'),
-        fetch('/public/offline-map/ports.json')
-      ])
-    if (
-      ![landResponse, subrectangleResponse, portResponse].every(
-        (response) => response.ok
-      )
-    ) {
+    const mapData = await loadOfflineMapData()
+    if (!mapData) {
+      return
+    }
+    const { land, subrectangles, ports } = mapData
+
+    const departurePort = findDeparturePort(ports, map)
+    if (!departurePort) {
       return
     }
 
-    const [{ land }, { subrectangles: allSubrectangles }, { ports }] =
-      await Promise.all([
-        landResponse.json(),
-        subrectangleResponse.json(),
-        portResponse.json()
-      ])
-    // A rectangle entirely on land has no fishing area and must never be shown, selectable or not.
-    const subrectangles = allSubrectangles.filter(
-      (subrectangle) => subrectangle.overlapsSea
-    )
-    const departurePort = ports.find(
-      (port) =>
-        port.name.toLowerCase() === map.dataset.departurePort.toLowerCase()
-    )
-    if (!departurePort) return
-
     resizeCanvas(canvas)
-    const departureCell = subrectangles.find(
-      (subrectangle) =>
-        departurePort.coordinate[0] >= subrectangle.bounds.minLongitude &&
-        departurePort.coordinate[0] <= subrectangle.bounds.maxLongitude &&
-        departurePort.coordinate[1] >= subrectangle.bounds.minLatitude &&
-        departurePort.coordinate[1] <= subrectangle.bounds.maxLatitude
-    )
-    if (!departureCell) return
+    const departureCell = findDepartureCell(subrectangles, departurePort)
+    if (!departureCell) {
+      return
+    }
 
-    const maximumZoomOutExtent = viewportForCellGrid(
+    const extents = computeZoomExtents(
       subrectangles,
       departureCell,
       departurePort.coordinate,
-      maximumRectangleCount,
       canvas
     )
-    const defaultZoomExtent = viewportForCellGrid(
+    const state = {
+      viewport: { ...extents.defaultZoomExtent },
+      selectedSubCode: map.dataset.selectedArea
+    }
+
+    const clientPointToMap = createClientPointToMap(canvas, state)
+    const render = createRender({
+      canvas,
+      land,
       subrectangles,
-      departureCell,
-      departurePort.coordinate,
-      defaultRectangleCount,
-      canvas
-    )
-    const maximumZoomInExtent = viewportForCellGrid(
-      subrectangles,
-      departureCell,
-      departurePort.coordinate,
-      minimumRectangleCount,
-      canvas
-    )
-    // Zoom is continuous between the 4-rectangle (most zoomed in) and 16-rectangle (most zoomed
-    // out) grid blocks, opening on the 9-rectangle default - mirroring MapKit's `CameraZoomRange`.
-    const minSpan = spanOf(maximumZoomInExtent)
-    const maxSpan = spanOf(maximumZoomOutExtent)
-    const zoomStep = 1.08
-    let viewport = { ...defaultZoomExtent }
-    let selectedSubCode = map.dataset.selectedArea
-
-    const clientPointToMap = (clientX, clientY) => {
-      const bounds = canvas.getBoundingClientRect()
-      return toCoordinate(
-        [
-          (clientX - bounds.left) * (canvas.width / bounds.width),
-          (clientY - bounds.top) * (canvas.height / bounds.height)
-        ],
-        viewport,
-        canvas
-      )
-    }
-
-    const render = () => {
-      const context = canvas.getContext('2d')
-      context.clearRect(0, 0, canvas.width, canvas.height)
-      context.fillStyle = '#ffffff'
-      context.fillRect(0, 0, canvas.width, canvas.height)
-
-      // Grid drawn before land so the opaque land fill covers any rectangle that would
-      // otherwise overlay it - land areas must stay clean, only the sea portion of a cell
-      // should ever show its grid lines/fill. Intersecting (not just fully-contained) cells
-      // are drawn so the grid still covers every edge of the viewport.
-      for (const subrectangle of subrectangles.filter((feature) =>
-        boundsIntersect(feature.bounds, viewport)
-      )) {
-        const isSelected = subrectangle.subCode === selectedSubCode
-        context.fillStyle = isSelected
-          ? 'rgba(232, 166, 58, 0.35)'
-          : 'rgba(11, 107, 58, 0.06)'
-        context.strokeStyle = isSelected ? '#E8A63A' : '#0B6B3A'
-        context.lineWidth = isSelected ? 3 : 1
-        subrectangle.polygons.forEach((polygon) =>
-          drawPolygon(context, polygon, viewport, canvas)
-        )
-      }
-
-      for (const landFeature of land.filter((feature) =>
-        boundsIntersect(feature.bounds, viewport)
-      )) {
-        context.fillStyle = '#0B4143'
-        context.strokeStyle = '#000000'
-        context.lineWidth = 1
-        landFeature.polygons.forEach((polygon) =>
-          drawPolygon(context, polygon, viewport, canvas)
-        )
-      }
-
-      context.fillStyle = '#1d1d1d'
-      context.font = `${Math.max(12, canvas.width / 90)}px sans-serif`
-      // A rectangle cropped down to a sliver by the viewport edge is too thin to own a legible,
-      // non-overlapping label - skip it rather than let its label spill into the visible neighbour.
-      const minimumLabelSpan = 28
-      subrectangles
-        .filter((subrectangle) =>
-          boundsIntersect(subrectangle.bounds, viewport)
-        )
-        .forEach((subrectangle) => {
-          // Clamped to the visible slice of this rectangle so the code stays on screen (and never
-          // just vanishes) even once zooming/panning has cropped most of the rectangle out of view.
-          const visible = intersectBounds(subrectangle.bounds, viewport)
-          const [leftX, topY] = toScreen(
-            [visible.minLongitude, visible.maxLatitude],
-            viewport,
-            canvas
-          )
-          const [rightX, bottomY] = toScreen(
-            [visible.maxLongitude, visible.minLatitude],
-            viewport,
-            canvas
-          )
-          if (
-            rightX - leftX < minimumLabelSpan ||
-            bottomY - topY < minimumLabelSpan
-          ) {
-            return
-          }
-
-          const [x, y] = toScreen(
-            clampPointToBounds(subrectangle.labelCoordinate, visible),
-            viewport,
-            canvas
-          )
-          context.fillText(subrectangle.subCode, x + 4, y - 4)
-        })
-
-      const [portX, portY] = toScreen(
-        departurePort.coordinate,
-        viewport,
-        canvas
-      )
-      context.fillStyle = '#01FEE2'
-      context.strokeStyle = '#000000'
-      context.lineWidth = 1
-      context.beginPath()
-      context.arc(portX, portY, 5, 0, Math.PI * 2)
-      context.fill()
-      context.stroke()
-    }
-
-    const select = (event) => {
-      const point = clientPointToMap(event.clientX, event.clientY)
-      const selected = subrectangles.find(
-        (subrectangle) =>
-          boundsIntersect(subrectangle.bounds, {
-            minLongitude: point[0],
-            maxLongitude: point[0],
-            minLatitude: point[1],
-            maxLatitude: point[1]
-          }) && containsPoint(point, subrectangle)
-      )
-
-      selectedSubCode = selected?.subCode
-      input.value = selectedSubCode || ''
-      input.disabled = !selected
-      status.textContent = selected
-        ? `${selected.subCode} selected`
-        : 'No statistical area selected'
-      render()
-      if (selected) form.requestSubmit()
-    }
-
-    // Tracks every touch point currently down, keyed by pointerId, so a second finger switches
-    // seamlessly from single-finger pan to two-finger pinch-zoom (and back again on lift) - mouse
-    // interaction only ever has one pointer, so it always takes the single-finger pan path.
-    const activePointers = new Map()
-    const pointFor = (event) => ({ x: event.clientX, y: event.clientY })
-    const pointDistance = (first, second) =>
-      Math.hypot(first.x - second.x, first.y - second.y)
-    const midpoint = (first, second) => [
-      (first.x + second.x) / 2,
-      (first.y + second.y) / 2
-    ]
-
-    let activeDragId
-    let dragOrigin
-    let dragStart
-    let hadMultiTouch = false
-    let pinchStartDistance
-    let pinchStartViewport
-    let pinchAnchor
-
-    canvas.addEventListener('pointerdown', (event) => {
-      try {
-        canvas.setPointerCapture(event.pointerId)
-      } catch {
-        // Some browsers reject capture for a pointer that's already gone - safe to ignore.
-      }
-      activePointers.set(event.pointerId, pointFor(event))
-
-      if (activePointers.size === 1) {
-        hadMultiTouch = false
-        activeDragId = event.pointerId
-        dragOrigin = [event.clientX, event.clientY]
-        dragStart = dragOrigin
-      } else if (activePointers.size === 2) {
-        hadMultiTouch = true
-        activeDragId = undefined
-        const [first, second] = [...activePointers.values()]
-        pinchStartDistance = pointDistance(first, second)
-        pinchStartViewport = { ...viewport }
-        pinchAnchor = clientPointToMap(...midpoint(first, second))
-      }
+      departurePort,
+      state
     })
-    canvas.addEventListener('pointermove', (event) => {
-      if (!activePointers.has(event.pointerId) || event.buttons === 0) return
-      activePointers.set(event.pointerId, pointFor(event))
-
-      if (activePointers.size === 2 && pinchStartDistance) {
-        const [first, second] = [...activePointers.values()]
-        const distance = pointDistance(first, second)
-        if (distance === 0) return
-        viewport = zoomViewport(
-          pinchStartViewport,
-          pinchStartDistance / distance,
-          pinchAnchor,
-          minSpan,
-          maxSpan,
-          maximumZoomOutExtent
-        )
-        render()
-        return
-      }
-
-      if (event.pointerId !== activeDragId || !dragStart) return
-      const longitudeOffset =
-        ((event.clientX - dragStart[0]) *
-          (viewport.maxLongitude - viewport.minLongitude)) /
-        canvas.width
-      const latitudeOffset =
-        ((event.clientY - dragStart[1]) *
-          (viewport.maxLatitude - viewport.minLatitude)) /
-        canvas.height
-      viewport = clampViewport(
-        {
-          minLongitude: viewport.minLongitude - longitudeOffset,
-          maxLongitude: viewport.maxLongitude - longitudeOffset,
-          minLatitude: viewport.minLatitude + latitudeOffset,
-          maxLatitude: viewport.maxLatitude + latitudeOffset
-        },
-        maximumZoomOutExtent
-      )
-      dragStart = [event.clientX, event.clientY]
-      render()
+    const select = createSelect({
+      subrectangles,
+      input,
+      status,
+      form,
+      state,
+      clientPointToMap,
+      render
     })
-    const endPointer = (event) => {
-      activePointers.delete(event.pointerId)
-      pinchStartDistance = undefined
 
-      if (activePointers.size === 1) {
-        const [remainingId] = [...activePointers.keys()]
-        const remaining = activePointers.get(remainingId)
-        activeDragId = remainingId
-        dragStart = [remaining.x, remaining.y]
-        return
-      }
-
-      if (activePointers.size === 0 && event.pointerId === activeDragId) {
-        const wasDrag =
-          dragOrigin &&
-          Math.hypot(
-            event.clientX - dragOrigin[0],
-            event.clientY - dragOrigin[1]
-          ) > 5
-        activeDragId = undefined
-        dragStart = undefined
-        if (!wasDrag && !hadMultiTouch) select(event)
-      }
-    }
-    canvas.addEventListener('pointerup', endPointer)
-    canvas.addEventListener('pointercancel', endPointer)
-    canvas.addEventListener(
-      'wheel',
-      (event) => {
-        event.preventDefault()
-        const anchor = clientPointToMap(event.clientX, event.clientY)
-        const scale = event.deltaY > 0 ? zoomStep : 1 / zoomStep
-        viewport = zoomViewport(
-          viewport,
-          scale,
-          anchor,
-          minSpan,
-          maxSpan,
-          maximumZoomOutExtent
-        )
-        render()
-      },
-      { passive: false }
-    )
+    attachPointerHandlers({
+      canvas,
+      state,
+      extents,
+      clientPointToMap,
+      render,
+      select
+    })
 
     render()
   } catch {

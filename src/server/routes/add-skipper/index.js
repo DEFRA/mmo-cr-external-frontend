@@ -3,6 +3,7 @@ import {
   getJourneyState,
   setJourneyState
 } from '#/server/common/helpers/journey/navigation.js'
+import { statusCodes } from '#/server/common/constants/status-codes.js'
 
 const viewContext = (request, overrides = {}) => ({
   pageTitle: 'Do you want to add a skipper for OLGA?',
@@ -35,7 +36,7 @@ export const addSkipperSubmitController = {
               fieldErrors: { wantsToAddSkipper: errorText }
             })
           )
-          .code(400)
+          .code(statusCodes.badRequest)
           .takeover()
       }
     }
@@ -45,6 +46,6 @@ export const addSkipperSubmitController = {
     setJourneyState(request, { wantsToAddSkipper })
     return h
       .redirect(wantsToAddSkipper === 'yes' ? '/skipper-details' : '/account')
-      .code(303)
+      .code(statusCodes.seeOther)
   }
 }

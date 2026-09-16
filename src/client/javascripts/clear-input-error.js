@@ -2,7 +2,9 @@ export function initialiseClearInputErrors() {
   document.querySelectorAll('[data-clear-input-error]').forEach((input) => {
     const clearError = () => {
       const group = input.closest('.govuk-form-group')
-      if (!group) return
+      if (!group) {
+        return
+      }
 
       group.classList.remove('govuk-form-group--error')
       group.querySelectorAll('.govuk-error-message').forEach((message) => {

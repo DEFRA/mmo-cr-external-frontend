@@ -54,6 +54,6 @@ export const draftSubmitController = {
           ? '/select-vessel'
           : '/not-implemented?return=/draft'
       )
-      .code(303)
+      .code(statusCodes.seeOther)
   }
 }

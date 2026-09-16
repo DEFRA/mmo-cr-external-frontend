@@ -49,7 +49,9 @@ function viewContext(request, overrides = {}) {
 export const departurePortController = {
   handler(request, h) {
     if (getFavouritePortCodes(request).length === 0) {
-      return h.redirect('/add-port?for=departure&entry=1').code(303)
+      return h
+        .redirect('/add-port?for=departure&entry=1')
+        .code(statusCodes.seeOther)
     }
 
     return h.view('departure-port/index', viewContext(request))
@@ -89,6 +91,8 @@ export const departurePortSubmitController = {
     addFavouritePortCode(request, departurePort)
     setJourneyState(request, { departurePort })
 
-    return h.redirect(resolveNextPath(request, '/return-port')).code(303)
+    return h
+      .redirect(resolveNextPath(request, '/return-port'))
+      .code(statusCodes.seeOther)
   }
 }

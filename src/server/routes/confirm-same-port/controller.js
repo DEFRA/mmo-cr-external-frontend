@@ -8,6 +8,7 @@ import { getData } from '#/server/common/data/get-data.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 
 const ports = getData('ports')
+const departurePortPath = '/departure-port'
 
 function resolvePort(request) {
   const code = request.query.port
@@ -18,7 +19,7 @@ function heading(portName) {
   return `Was ${portName} the port or the closest port you set off from and returned to?`
 }
 
-function viewContext(request, port, overrides = {}) {
+function viewContext(_request, port, overrides = {}) {
   return {
     pageTitle: heading(port.name),
     heading: heading(port.name),
@@ -36,7 +37,7 @@ export const confirmSamePortController = {
   handler(request, h) {
     const port = resolvePort(request)
     if (!port) {
-      return h.redirect('/departure-port').code(303)
+      return h.redirect(departurePortPath).code(statusCodes.seeOther)
     }
 
     return h.view('confirm-same-port/index', viewContext(request, port))
@@ -52,7 +53,10 @@ export const confirmSamePortSubmitController = {
       failAction(request, h) {
         const port = resolvePort(request)
         if (!port) {
-          return h.redirect('/departure-port').code(303).takeover()
+          return h
+            .redirect(departurePortPath)
+            .code(statusCodes.seeOther)
+            .takeover()
         }
 
         const errorText = `Select whether ${port.name} was the port you set off from and returned to`
@@ -76,7 +80,7 @@ export const confirmSamePortSubmitController = {
   handler(request, h) {
     const port = resolvePort(request)
     if (!port) {
-      return h.redirect('/departure-port').code(303)
+      return h.redirect(departurePortPath).code(statusCodes.seeOther)
     }
 
     if (request.payload.confirmSamePort === 'yes') {
@@ -85,9 +89,11 @@ export const confirmSamePortSubmitController = {
         returnPort: port.code
       })
 
-      return h.redirect(resolveNextPath(request, '/gear-selection')).code(303)
+      return h
+        .redirect(resolveNextPath(request, '/gear-selection'))
+        .code(statusCodes.seeOther)
     }
 
-    return h.redirect('/departure-port').code(303)
+    return h.redirect(departurePortPath).code(statusCodes.seeOther)
   }
 }

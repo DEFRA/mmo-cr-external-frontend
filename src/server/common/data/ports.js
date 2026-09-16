@@ -29,7 +29,9 @@ function loadPorts() {
 
   for (const { name } of realPorts) {
     const code = slugify(name)
-    if (seenCodes.has(code)) continue
+    if (seenCodes.has(code)) {
+      continue
+    }
     seenCodes.add(code)
     deduplicated.push({ code, name })
   }

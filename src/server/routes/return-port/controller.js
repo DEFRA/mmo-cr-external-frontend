@@ -49,7 +49,7 @@ function viewContext(request, overrides = {}) {
 export const returnPortController = {
   handler(request, h) {
     if (getFavouritePortCodes(request).length === 0) {
-      return h.redirect('/add-port?for=return').code(303)
+      return h.redirect('/add-port?for=return').code(statusCodes.seeOther)
     }
 
     return h.view('return-port/index', viewContext(request))
@@ -89,6 +89,8 @@ export const returnPortSubmitController = {
     addFavouritePortCode(request, returnPort)
     setJourneyState(request, { returnPort })
 
-    return h.redirect(resolveNextPath(request, '/gear-selection')).code(303)
+    return h
+      .redirect(resolveNextPath(request, '/gear-selection'))
+      .code(statusCodes.seeOther)
   }
 }
