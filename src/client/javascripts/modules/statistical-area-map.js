@@ -1,4 +1,3 @@
-import { closestSubrectangles } from './statistical-area-map-geometry.js'
 import {
   resizeCanvas,
   loadOfflineMapData,
@@ -13,7 +12,7 @@ import {
   attachPointerHandlers
 } from './statistical-area-map-gestures.js'
 
-export { closestSubrectangles }
+export { closestSubrectangles } from './statistical-area-map-geometry.js'
 
 export async function initialiseStatisticalAreaMap() {
   const map = document.querySelector('[data-statistical-area-map]')

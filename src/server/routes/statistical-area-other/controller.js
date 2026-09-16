@@ -82,6 +82,91 @@ export const statisticalAreaOtherController = {
   }
 }
 
+function handleKnownAreaSelection(request, h, statisticalArea) {
+  if (!offlineMapSubrectangles.has(statisticalArea)) {
+    return h.response().code(statusCodes.badRequest)
+  }
+
+  setJourneyState(request, {
+    statAreaBranch: 'other',
+    selectedAlternativeAreaOption: statisticalArea,
+    alternativeStatisticalArea: null,
+    alternativeStatisticalAreaCoordinates:
+      offlineMapSubrectangles.get(statisticalArea).coordinate
+  })
+
+  return h
+    .redirect(resolveNextPath(request, '/species-selection'))
+    .code(statusCodes.seeOther)
+}
+
+function handleManualAreaSubmission(request, h) {
+  const submitted = request.payload.alternativeStatisticalArea
+    .trim()
+    .toUpperCase()
+
+  if (!subrectangleFormat.test(submitted)) {
+    return h
+      .view(
+        'statistical-area-other/index',
+        viewContext(request, {
+          errorSummary: {
+            titleText: errorSummaryTitle,
+            errorList: [
+              {
+                text: subrectangleFormatErrorText,
+                href: alternativeStatisticalAreaHref
+              }
+            ]
+          },
+          fieldErrors: {
+            alternativeStatisticalArea: subrectangleFormatErrorText
+          },
+          alternativeStatisticalArea: submitted
+        })
+      )
+      .code(statusCodes.badRequest)
+      .takeover()
+  }
+
+  const selectedSubrectangle = offlineMapSubrectangles.get(submitted)
+
+  if (!selectedSubrectangle) {
+    return h
+      .view(
+        'statistical-area-other/index',
+        viewContext(request, {
+          errorSummary: {
+            titleText: errorSummaryTitle,
+            errorList: [
+              {
+                text: subrectangleErrorText,
+                href: alternativeStatisticalAreaHref
+              }
+            ]
+          },
+          fieldErrors: {
+            alternativeStatisticalArea: subrectangleErrorText
+          },
+          alternativeStatisticalArea: submitted
+        })
+      )
+      .code(statusCodes.badRequest)
+      .takeover()
+  }
+
+  setJourneyState(request, {
+    statAreaBranch: 'other',
+    selectedAlternativeAreaOption: 'other',
+    alternativeStatisticalArea: submitted,
+    alternativeStatisticalAreaCoordinates: selectedSubrectangle.coordinate
+  })
+
+  return h
+    .redirect(resolveNextPath(request, '/species-selection'))
+    .code(statusCodes.seeOther)
+}
+
 export const statisticalAreaOtherSubmitController = {
   options: {
     validate: {
@@ -129,86 +214,9 @@ export const statisticalAreaOtherSubmitController = {
   handler(request, h) {
     const { statisticalArea } = request.payload
     if (statisticalArea !== 'other') {
-      if (!offlineMapSubrectangles.has(statisticalArea)) {
-        return h.response().code(statusCodes.badRequest)
-      }
-
-      setJourneyState(request, {
-        statAreaBranch: 'other',
-        selectedAlternativeAreaOption: statisticalArea,
-        alternativeStatisticalArea: undefined,
-        alternativeStatisticalAreaCoordinates:
-          offlineMapSubrectangles.get(statisticalArea).coordinate
-      })
-
-      return h
-        .redirect(resolveNextPath(request, '/species-selection'))
-        .code(statusCodes.seeOther)
+      return handleKnownAreaSelection(request, h, statisticalArea)
     }
 
-    const submitted = request.payload.alternativeStatisticalArea
-      .trim()
-      .toUpperCase()
-
-    if (!subrectangleFormat.test(submitted)) {
-      return h
-        .view(
-          'statistical-area-other/index',
-          viewContext(request, {
-            errorSummary: {
-              titleText: errorSummaryTitle,
-              errorList: [
-                {
-                  text: subrectangleFormatErrorText,
-                  href: alternativeStatisticalAreaHref
-                }
-              ]
-            },
-            fieldErrors: {
-              alternativeStatisticalArea: subrectangleFormatErrorText
-            },
-            alternativeStatisticalArea: submitted
-          })
-        )
-        .code(statusCodes.badRequest)
-        .takeover()
-    }
-
-    const selectedSubrectangle = offlineMapSubrectangles.get(submitted)
-
-    if (!selectedSubrectangle) {
-      return h
-        .view(
-          'statistical-area-other/index',
-          viewContext(request, {
-            errorSummary: {
-              titleText: errorSummaryTitle,
-              errorList: [
-                {
-                  text: subrectangleErrorText,
-                  href: alternativeStatisticalAreaHref
-                }
-              ]
-            },
-            fieldErrors: {
-              alternativeStatisticalArea: subrectangleErrorText
-            },
-            alternativeStatisticalArea: submitted
-          })
-        )
-        .code(statusCodes.badRequest)
-        .takeover()
-    }
-
-    setJourneyState(request, {
-      statAreaBranch: 'other',
-      selectedAlternativeAreaOption: 'other',
-      alternativeStatisticalArea: submitted,
-      alternativeStatisticalAreaCoordinates: selectedSubrectangle.coordinate
-    })
-
-    return h
-      .redirect(resolveNextPath(request, '/species-selection'))
-      .code(statusCodes.seeOther)
+    return handleManualAreaSubmission(request, h)
   }
 }

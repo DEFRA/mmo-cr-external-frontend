@@ -3,6 +3,7 @@ import {
   getJourneyState,
   setJourneyState
 } from '#/server/common/helpers/journey/navigation.js'
+import { statusCodes } from '#/server/common/constants/status-codes.js'
 const context = (request, overrides = {}) => ({
   pageTitle: 'Check skipper details',
   heading: 'Check skipper details',
@@ -32,13 +33,13 @@ export const skipperCheckSubmitController = {
               fieldErrors: { confirmSkipper: errorText }
             })
           )
-          .code(400)
+          .code(statusCodes.badRequest)
           .takeover()
       }
     }
   },
   handler(request, h) {
     setJourneyState(request, { skipperConfirmed: true })
-    return h.redirect('/skipper-confirmation').code(303)
+    return h.redirect('/skipper-confirmation').code(statusCodes.seeOther)
   }
 }
