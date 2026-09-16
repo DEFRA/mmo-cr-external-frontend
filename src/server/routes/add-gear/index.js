@@ -1,7 +1,4 @@
-import {
-  addGearController,
-  addGearSubmitController
-} from './controller.js'
+import { addGearController, addGearSubmitController } from './controller.js'
 
 /**
  * Sets up the routes used in the add gear page.

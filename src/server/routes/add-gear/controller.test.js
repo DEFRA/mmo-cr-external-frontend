@@ -21,9 +21,7 @@ describe('#addGearController', () => {
       url: '/add-gear'
     })
 
-    expect(result).toEqual(
-      expect.stringContaining('What gear did you use? |')
-    )
+    expect(result).toEqual(expect.stringContaining('What gear did you use? |'))
     expect(statusCode).toBe(statusCodes.ok)
   })
 

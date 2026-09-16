@@ -63,7 +63,11 @@ export const addGearSubmitController = {
         gear: Joi.string().trim().min(1).required()
       }),
       failAction(request, h) {
-        return renderWithError(request, h, 'Enter the name of the gear you want to add')
+        return renderWithError(
+          request,
+          h,
+          'Enter the name of the gear you want to add'
+        )
       }
     }
   },

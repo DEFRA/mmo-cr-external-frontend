@@ -69,7 +69,10 @@ function renderWithErrors(
         errorSummary,
         fieldErrors,
         ...(selectedGearIds && {
-          gearCheckboxItems: gearCheckboxItems(selectedGearIds, favouriteOptions)
+          gearCheckboxItems: gearCheckboxItems(
+            selectedGearIds,
+            favouriteOptions
+          )
         }),
         ...(potsDetails && { potsDetails })
       })

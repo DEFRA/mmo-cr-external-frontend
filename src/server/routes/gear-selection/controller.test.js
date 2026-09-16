@@ -34,9 +34,7 @@ describe('#gearSelectionController', () => {
 
     expect($('h1').text()).toContain('What gear did you use?')
     expect($('h1 .govuk-caption-l').text().trim()).toBe('New catch record')
-    expect($('.govuk-hint').first().text().trim()).toBe(
-      'Select all that apply'
-    )
+    expect($('.govuk-hint').first().text().trim()).toBe('Select all that apply')
   })
 
   test('Should render 9 gear checkboxes with the stable ids', async () => {

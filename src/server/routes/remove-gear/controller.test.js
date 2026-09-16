@@ -46,9 +46,7 @@ describe('#removeGearController', () => {
     })
     const $ = load(result)
 
-    expect($('.govuk-hint').first().text().trim()).toBe(
-      'Select all that apply'
-    )
+    expect($('.govuk-hint').first().text().trim()).toBe('Select all that apply')
   })
 
   test('Should render the Back link to the gear selection page', async () => {
@@ -72,9 +70,7 @@ describe('#removeGearController', () => {
     const checkboxes = $('input[type="checkbox"][name="gearIds"]')
 
     expect(checkboxes).toHaveLength(9)
-    expect(checkboxes.filter((_, el) => $(el).prop('checked'))).toHaveLength(
-      0
-    )
+    expect(checkboxes.filter((_, el) => $(el).prop('checked'))).toHaveLength(0)
   })
 })
 
