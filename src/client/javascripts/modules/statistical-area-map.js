@@ -46,8 +46,9 @@ function pointIsInRing([longitude, latitude], ring) {
         (previousLatitude - currentLatitude) +
       currentLongitude
 
-    if (crossesLatitude && longitude < intersectionLongitude)
+    if (crossesLatitude && longitude < intersectionLongitude) {
       isInside = !isInside
+    }
   }
 
   return isInside
@@ -317,8 +318,9 @@ export async function initialiseStatisticalAreaMap() {
       ![landResponse, subrectangleResponse, portResponse].every(
         (response) => response.ok
       )
-    )
+    ) {
       return
+    }
 
     const [{ land }, { subrectangles: allSubrectangles }, { ports }] =
       await Promise.all([
@@ -448,8 +450,9 @@ export async function initialiseStatisticalAreaMap() {
           if (
             rightX - leftX < minimumLabelSpan ||
             bottomY - topY < minimumLabelSpan
-          )
+          ) {
             return
+          }
 
           const [x, y] = toScreen(
             clampPointToBounds(subrectangle.labelCoordinate, visible),

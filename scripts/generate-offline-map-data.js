@@ -54,8 +54,9 @@ export function coordinate(value) {
     latitude === undefined ||
     Math.abs(longitude) > webMercatorExtent ||
     Math.abs(latitude) > webMercatorExtent
-  )
+  ) {
     return undefined
+  }
   const projectedLongitude = (longitude / earthRadiusMetres) * (180 / Math.PI)
   const projectedLatitude =
     (2 * Math.atan(Math.exp(latitude / earthRadiusMetres)) - Math.PI / 2) *
@@ -141,8 +142,9 @@ function inRing([longitude, latitude], ring) {
         ((priorLongitude - currentLongitude) * (latitude - currentLatitude)) /
           (priorLatitude - currentLatitude) +
           currentLongitude
-    )
+    ) {
       inside = !inside
+    }
   }
   return inside
 }
@@ -184,8 +186,9 @@ async function collection(filename) {
   const result = JSON.parse(
     await readFile(path.join(sourceDirectory, filename), 'utf8')
   )
-  if (result.type !== 'FeatureCollection' || !Array.isArray(result.features))
+  if (result.type !== 'FeatureCollection' || !Array.isArray(result.features)) {
     throw new Error(`${filename} must be a FeatureCollection`)
+  }
   return result
 }
 
@@ -225,8 +228,9 @@ export async function generateOfflineMapData() {
     const featurePolygons = polygons(feature.geometry)
     const subCode = feature.properties?.sub_code
     if (!featurePolygons.length) return []
-    if (typeof subCode !== 'string' || !subCode || codes.has(subCode))
+    if (typeof subCode !== 'string' || !subCode || codes.has(subCode)) {
       throw new Error(`Invalid or duplicate sub_code: ${subCode}`)
+    }
     codes.add(subCode)
     const rectangle = bounds(featurePolygons)
     return [
@@ -253,8 +257,9 @@ export async function generateOfflineMapData() {
         (port) => typeof port.name === 'string' && port.portCode !== undefined
       )
   )
-  if (!land.length || !subrectangles.length || !ports.length)
+  if (!land.length || !subrectangles.length || !ports.length) {
     throw new Error('Offline map generation produced an empty layer')
+  }
   await mkdir(outputDirectory, { recursive: true })
   await Promise.all([
     writeIfChanged('land.json', JSON.stringify({ land })),

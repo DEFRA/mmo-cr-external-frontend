@@ -68,9 +68,9 @@ function parseSite(raw) {
     })
   }
   if (url.protocol !== 'https:')
-    throw new SafeError('CONFLUENCE_BASE_URL must use https.', {
+    {throw new SafeError('CONFLUENCE_BASE_URL must use https.', {
       code: 'ERR_CONFIG_INVALID'
-    })
+    })}
   const path = url.pathname.replace(/\/+$/, '')
   const wikiBase = /\/wiki$/.test(path)
     ? `${url.protocol}//${url.host}${path}`
