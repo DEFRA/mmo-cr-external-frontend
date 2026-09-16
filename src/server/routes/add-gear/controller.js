@@ -87,6 +87,8 @@ export const addGearSubmitController = {
       })
     }
 
-    return h.redirect(resolveNextPath(request, '/gear-selection')).code(statusCodes.seeOther)
+    return h
+      .redirect(resolveNextPath(request, '/gear-selection'))
+      .code(statusCodes.seeOther)
   }
 }
