@@ -23,7 +23,12 @@
     "confluencePage": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["schemaVersion", "pageId", "sourceConfluenceUrl", "provenance"],
+      "required": [
+        "schemaVersion",
+        "pageId",
+        "sourceConfluenceUrl",
+        "provenance"
+      ],
       "properties": {
         "schemaVersion": { "type": "string" },
         "kind": { "const": "confluence-page" },

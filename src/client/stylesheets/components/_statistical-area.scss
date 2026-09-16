@@ -59,7 +59,9 @@
   margin-bottom: 0;
 }
 
-.app-statistical-area-search__control:has(+ .app-statistical-area-search__results:not([hidden])) {
+.app-statistical-area-search__control:has(
+  + .app-statistical-area-search__results:not([hidden])
+) {
   margin-bottom: 0;
 }
 
@@ -82,7 +84,9 @@
   cursor: pointer;
 }
 
-.app-statistical-area-search__results li:last-child .app-statistical-area-search__option {
+.app-statistical-area-search__results
+  li:last-child
+  .app-statistical-area-search__option {
   border-bottom: 0;
 }
 

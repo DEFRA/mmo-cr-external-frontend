@@ -75,7 +75,7 @@ Requires Node.js 18+ (built-in `fetch`). No dependencies, no install.
    > trailing `/SKILL.md` removed). Do **not** use a path relative to the
    > terminal's current directory: the terminal may start anywhere, so a
    > relative `.github/skills/...` path can fail with `cd: No such file or
-   > directory`. Derive `<skill-dir>` from this file's known absolute path.
+directory`. Derive `<skill-dir>` from this file's known absolute path.
 
 2. Fetch the page (body + labels + attachment descriptors):
 
