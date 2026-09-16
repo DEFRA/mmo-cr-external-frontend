@@ -95,6 +95,6 @@ export const removeGearSubmitController = {
       ...(idsToRemove.includes('pots') && { potsDetails: undefined })
     })
 
-    return h.redirect(resolveNextPath(request, '/gear-selection')).code(303)
+    return h.redirect(resolveNextPath(request, '/gear-selection')).code(statusCodes.seeOther)
   }
 }
