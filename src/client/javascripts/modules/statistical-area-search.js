@@ -1,6 +1,7 @@
 const minimumSearchLength = 2
 const maximumResults = 10
 const collapsedState = 'false'
+const ariaExpandedAttribute = 'aria-expanded'
 
 export async function initialiseStatisticalAreaSearch() {
   const input = document.querySelector('[data-statistical-area-search]')
@@ -25,7 +26,7 @@ export async function initialiseStatisticalAreaSearch() {
       input.value = subrectangle.subCode
       results.hidden = true
       results.replaceChildren()
-      input.setAttribute('aria-expanded', collapsedState)
+      input.setAttribute(ariaExpandedAttribute, collapsedState)
     }
     const renderResults = () => {
       const query = input.value.trim().toUpperCase()
@@ -33,7 +34,7 @@ export async function initialiseStatisticalAreaSearch() {
 
       if (query.length < minimumSearchLength) {
         results.hidden = true
-        input.setAttribute('aria-expanded', collapsedState)
+        input.setAttribute(ariaExpandedAttribute, collapsedState)
         return
       }
 
@@ -43,7 +44,7 @@ export async function initialiseStatisticalAreaSearch() {
 
       if (!matches.length) {
         results.hidden = true
-        input.setAttribute('aria-expanded', collapsedState)
+        input.setAttribute(ariaExpandedAttribute, collapsedState)
         return
       }
 
@@ -60,21 +61,21 @@ export async function initialiseStatisticalAreaSearch() {
         results.append(item)
       })
       results.hidden = false
-      input.setAttribute('aria-expanded', 'true')
+      input.setAttribute(ariaExpandedAttribute, 'true')
     }
 
     input.addEventListener('input', renderResults)
     input.addEventListener('keydown', (event) => {
       if (event.key === 'Escape') {
         results.hidden = true
-        input.setAttribute('aria-expanded', collapsedState)
+        input.setAttribute(ariaExpandedAttribute, collapsedState)
       }
     })
     radioOptions?.addEventListener('change', (event) => {
       const isOther = event.target.value === 'other'
       searchPanel.hidden = !isOther
       results.hidden = true
-      input.setAttribute('aria-expanded', collapsedState)
+      input.setAttribute(ariaExpandedAttribute, collapsedState)
       if (isOther) {
         input.focus()
       }

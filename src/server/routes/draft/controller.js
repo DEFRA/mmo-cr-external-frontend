@@ -28,7 +28,7 @@ export const draftSubmitController = {
       payload: Joi.object({
         draftAction: Joi.string().valid('complete', 'delete').required()
       }),
-      failAction(request, h) {
+      failAction(_request, h) {
         return h
           .view(
             'draft/index',

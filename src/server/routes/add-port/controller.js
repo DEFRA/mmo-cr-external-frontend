@@ -11,6 +11,7 @@ import { statusCodes } from '#/server/common/constants/status-codes.js'
 const ports = getData('ports')
 const selectionErrorText = 'Select a port from the list'
 const returnPhase = 'return'
+const departurePortPath = '/departure-port'
 
 const headingByPhase = {
   departure: 'Enter the port or closest port you set off from',
@@ -28,11 +29,11 @@ function isEntry(request) {
 function backLink(request) {
   const phase = resolvePhase(request)
   if (!isEntry(request)) {
-    return phase === returnPhase ? '/return-port' : '/departure-port'
+    return phase === returnPhase ? '/return-port' : departurePortPath
   }
 
   return phase === returnPhase
-    ? '/departure-port'
+    ? departurePortPath
     : backForDeparturePort(request)
 }
 
@@ -117,7 +118,7 @@ export const addPortSubmitController = {
       .redirect(
         resolveNextPath(
           request,
-          phase === returnPhase ? '/return-port' : '/departure-port'
+          phase === returnPhase ? '/return-port' : departurePortPath
         )
       )
       .code(statusCodes.seeOther)

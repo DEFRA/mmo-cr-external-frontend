@@ -3,11 +3,13 @@ import {
   getJourneyState,
   setJourneyState
 } from '#/server/common/helpers/journey/navigation.js'
+import { statusCodes } from '#/server/common/constants/status-codes.js'
 
+const emailMaxLength = 254
 const schema = Joi.object({
   firstName: Joi.string().trim().max(100).required(),
   lastName: Joi.string().trim().max(100).required(),
-  email: Joi.string().trim().email().max(254).required()
+  email: Joi.string().trim().email().max(emailMaxLength).required()
 })
 const viewContext = (request, overrides = {}) => ({
   pageTitle: 'Enter skipper details',
@@ -35,6 +37,8 @@ export const skipperDetailsSubmitController = {
           errors.email = 'Enter the skipper’s email address'
         } else if (Joi.string().email().validate(request.payload.email).error) {
           errors.email = 'Enter an email address in the correct format'
+        } else {
+          // Email is present and valid - no error to record.
         }
         const firstError = errors.firstName || errors.lastName || errors.email
         return h
@@ -51,7 +55,7 @@ export const skipperDetailsSubmitController = {
               fieldErrors: errors
             })
           )
-          .code(400)
+          .code(statusCodes.badRequest)
           .takeover()
       }
     }
@@ -64,6 +68,6 @@ export const skipperDetailsSubmitController = {
         email: request.payload.email.trim()
       }
     })
-    return h.redirect('/skipper-check').code(303)
+    return h.redirect('/skipper-check').code(statusCodes.seeOther)
   }
 }

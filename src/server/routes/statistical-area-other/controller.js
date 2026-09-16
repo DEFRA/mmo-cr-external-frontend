@@ -17,6 +17,9 @@ const selectionErrorText = 'Select a statistical subrectangle'
 const subrectangleFormatErrorText =
   'Enter a statistical subrectangle in the correct format, for example 38E84'
 const subrectangleErrorText = 'Enter a valid statistical sub area code.'
+const errorSummaryTitle = 'There is a problem'
+const alternativeStatisticalAreaHref = '#alternativeStatisticalArea'
+const nearbyAreaCount = 9
 
 function closestSubareas(portCoordinate) {
   return [...offlineMapSubrectangles.entries()]
@@ -27,7 +30,7 @@ function closestSubareas(portCoordinate) {
         ((second.coordinate[0] - portCoordinate[0]) ** 2 +
           (second.coordinate[1] - portCoordinate[1]) ** 2)
     )
-    .slice(0, 9)
+    .slice(0, nearbyAreaCount)
     .map(([code]) => code)
 }
 
@@ -101,7 +104,7 @@ export const statisticalAreaOtherSubmitController = {
           ? 'alternativeStatisticalArea'
           : 'statisticalArea'
         const errorHref = isManualEntry
-          ? '#alternativeStatisticalArea'
+          ? alternativeStatisticalAreaHref
           : '#statisticalArea'
 
         return h
@@ -109,7 +112,7 @@ export const statisticalAreaOtherSubmitController = {
             'statistical-area-other/index',
             viewContext(request, {
               errorSummary: {
-                titleText: 'There is a problem',
+                titleText: errorSummaryTitle,
                 errorList: [{ text: errorText, href: errorHref }]
               },
               fieldErrors: { [errorField]: errorText },
@@ -140,7 +143,7 @@ export const statisticalAreaOtherSubmitController = {
 
       return h
         .redirect(resolveNextPath(request, '/species-selection'))
-        .code(303)
+        .code(statusCodes.seeOther)
     }
 
     const submitted = request.payload.alternativeStatisticalArea
@@ -153,11 +156,11 @@ export const statisticalAreaOtherSubmitController = {
           'statistical-area-other/index',
           viewContext(request, {
             errorSummary: {
-              titleText: 'There is a problem',
+              titleText: errorSummaryTitle,
               errorList: [
                 {
                   text: subrectangleFormatErrorText,
-                  href: '#alternativeStatisticalArea'
+                  href: alternativeStatisticalAreaHref
                 }
               ]
             },
@@ -179,11 +182,11 @@ export const statisticalAreaOtherSubmitController = {
           'statistical-area-other/index',
           viewContext(request, {
             errorSummary: {
-              titleText: 'There is a problem',
+              titleText: errorSummaryTitle,
               errorList: [
                 {
                   text: subrectangleErrorText,
-                  href: '#alternativeStatisticalArea'
+                  href: alternativeStatisticalAreaHref
                 }
               ]
             },
@@ -204,6 +207,8 @@ export const statisticalAreaOtherSubmitController = {
       alternativeStatisticalAreaCoordinates: selectedSubrectangle.coordinate
     })
 
-    return h.redirect(resolveNextPath(request, '/species-selection')).code(303)
+    return h
+      .redirect(resolveNextPath(request, '/species-selection'))
+      .code(statusCodes.seeOther)
   }
 }

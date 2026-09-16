@@ -1,6 +1,7 @@
 const minimumSearchLength = 2
 const maximumResults = 10
 const collapsedState = 'false'
+const ariaExpandedAttribute = 'aria-expanded'
 
 export function initialisePortSearch() {
   const input = document.querySelector('[data-port-search]')
@@ -22,7 +23,7 @@ export function initialisePortSearch() {
     input.value = name
     results.hidden = true
     results.replaceChildren()
-    input.setAttribute('aria-expanded', collapsedState)
+    input.setAttribute(ariaExpandedAttribute, collapsedState)
   }
 
   const renderResults = () => {
@@ -31,7 +32,7 @@ export function initialisePortSearch() {
 
     if (query.length < minimumSearchLength) {
       results.hidden = true
-      input.setAttribute('aria-expanded', collapsedState)
+      input.setAttribute(ariaExpandedAttribute, collapsedState)
       return
     }
 
@@ -41,7 +42,7 @@ export function initialisePortSearch() {
 
     if (!matches.length) {
       results.hidden = true
-      input.setAttribute('aria-expanded', collapsedState)
+      input.setAttribute(ariaExpandedAttribute, collapsedState)
       return
     }
 
@@ -58,14 +59,14 @@ export function initialisePortSearch() {
       results.append(item)
     })
     results.hidden = false
-    input.setAttribute('aria-expanded', 'true')
+    input.setAttribute(ariaExpandedAttribute, 'true')
   }
 
   input.addEventListener('input', renderResults)
   input.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') {
       results.hidden = true
-      input.setAttribute('aria-expanded', collapsedState)
+      input.setAttribute(ariaExpandedAttribute, collapsedState)
     }
   })
 }

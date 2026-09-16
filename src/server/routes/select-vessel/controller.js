@@ -9,8 +9,8 @@ const errorText = 'Select your vessel'
 
 function viewContext(overrides = {}) {
   return {
-    pageTitle: 'Select your vessel',
-    heading: 'Select your vessel',
+    pageTitle: errorText,
+    heading: errorText,
     caption: 'New catch record',
     backLink: {
       href: '/draft',
@@ -37,7 +37,7 @@ export const selectVesselSubmitController = {
       payload: Joi.object({
         vesselId: Joi.string().valid(vesselId).required()
       }),
-      failAction(request, h) {
+      failAction(_request, h) {
         return h
           .view(
             'select-vessel/index',
@@ -55,6 +55,8 @@ export const selectVesselSubmitController = {
     }
   },
   handler(request, h) {
-    return h.redirect(resolveNextPath(request, '/trip-date')).code(303)
+    return h
+      .redirect(resolveNextPath(request, '/trip-date'))
+      .code(statusCodes.seeOther)
   }
 }
