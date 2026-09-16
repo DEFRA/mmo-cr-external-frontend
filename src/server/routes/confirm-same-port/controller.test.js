@@ -110,4 +110,26 @@ describe('#confirmSamePortSubmitController', () => {
       'Select whether Hastings was the port you set off from and returned to'
     )
   })
+
+  test('Should redirect to departure-port from failAction when no port query is supplied', async () => {
+    const { statusCode, headers } = await server.inject({
+      method: 'POST',
+      url: '/confirm-same-port',
+      payload: {}
+    })
+
+    expect(statusCode).toBe(303)
+    expect(headers.location).toBe('/departure-port')
+  })
+
+  test('Should redirect to departure-port from the submit handler when no port query is supplied', async () => {
+    const { statusCode, headers } = await server.inject({
+      method: 'POST',
+      url: '/confirm-same-port',
+      payload: { confirmSamePort: 'yes' }
+    })
+
+    expect(statusCode).toBe(303)
+    expect(headers.location).toBe('/departure-port')
+  })
 })

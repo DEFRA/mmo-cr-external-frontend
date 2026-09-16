@@ -105,10 +105,11 @@ export function createConfluenceClient(config) {
 
   async function getPage(id) {
     const validId = safePageId(id)
-    if (!validId)
-      {throw new SafeError('Refusing to fetch an invalid page id.', {
+    if (!validId) {
+      throw new SafeError('Refusing to fetch an invalid page id.', {
         code: 'ERR_INPUT'
-      })}
+      })
+    }
     const url = `${config.apiBase}/pages/${encodeURIComponent(validId)}?body-format=atlas_doc_format&include-labels=true`
     const options = { headers }
     assertGet(options)
@@ -118,10 +119,11 @@ export function createConfluenceClient(config) {
     if (res.status === 404) return null
     authError(res.status)
     rateLimitError(res.status)
-    if (!res.ok)
-      {throw new SafeError(`Confluence request failed (${res.status}).`, {
+    if (!res.ok) {
+      throw new SafeError(`Confluence request failed (${res.status}).`, {
         code: 'ERR_CONFLUENCE'
-      })}
+      })
+    }
     return res.json()
   }
 
@@ -143,11 +145,12 @@ export function createConfluenceClient(config) {
       if (res.status === 400 || res.status === 404) break
       authError(res.status)
       rateLimitError(res.status)
-      if (!res.ok)
-        {throw new SafeError(
+      if (!res.ok) {
+        throw new SafeError(
           `Confluence attachment request failed (${res.status}).`,
           { code: 'ERR_CONFLUENCE' }
-        )}
+        )
+      }
       const data = await res.json()
       if (Array.isArray(data.results)) attachments.push(...data.results)
       if (attachments.length >= config.maxAttachments) {

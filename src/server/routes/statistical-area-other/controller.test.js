@@ -190,4 +190,25 @@ describe('#statisticalAreaOtherSubmitController', () => {
 
     expect($('#alternativeStatisticalArea').attr('value')).toBe('ABCDE')
   })
+
+  test('Should redirect to species-selection when a valid reference-data subrectangle code is selected', async () => {
+    const { statusCode, headers } = await server.inject({
+      method: 'POST',
+      url: '/statistical-area-other',
+      payload: { statisticalArea: '30F04' }
+    })
+
+    expect(statusCode).toBe(303)
+    expect(headers.location).toBe('/species-selection')
+  })
+
+  test('Should return a bad request when an unknown reference-data subrectangle code is selected', async () => {
+    const { statusCode } = await server.inject({
+      method: 'POST',
+      url: '/statistical-area-other',
+      payload: { statisticalArea: '99Z99' }
+    })
+
+    expect(statusCode).toBe(statusCodes.badRequest)
+  })
 })

@@ -154,4 +154,34 @@ describe('#accountController', () => {
 
     expect($('a[href="/add-skipper"]')).toHaveLength(1)
   })
+
+  test('Should show the named, escaped skipper once one has been added', async () => {
+    const signInCookie = await signedInCookie()
+    const skipperResponse = await server.inject({
+      method: 'POST',
+      url: '/skipper-details',
+      headers: { cookie: signInCookie },
+      payload: {
+        firstName: 'Jane <script>',
+        lastName: "O'Doe",
+        email: 'jane.doe@example.com'
+      }
+    })
+    const cookie = skipperResponse.headers['set-cookie'][0].split(';')[0]
+
+    const { result } = await server.inject({
+      method: 'GET',
+      url: '/account',
+      headers: { cookie }
+    })
+    const $ = load(result)
+    const skippersRow = $('.govuk-summary-list__row').filter(
+      (_, row) => $(row).find('dt').text().trim() === 'Skippers'
+    )
+
+    expect(result).toContain('Jane &lt;script&gt; O&#39;Doe')
+    expect(skippersRow.find('.govuk-summary-list__value').text().trim()).toBe(
+      "Jane <script> O'Doe"
+    )
+  })
 })
