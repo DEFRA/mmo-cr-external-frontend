@@ -24,6 +24,38 @@ export function createClientPointToMap(canvas, state) {
   }
 }
 
+// Buttons zoom around the current viewport centre, unlike wheel/pinch which zoom around the pointer.
+function zoomByStep(scale, state, extents, render) {
+  const anchor = [
+    (state.viewport.minLongitude + state.viewport.maxLongitude) / 2,
+    (state.viewport.minLatitude + state.viewport.maxLatitude) / 2
+  ]
+  state.viewport = zoomViewport(
+    state.viewport,
+    scale,
+    anchor,
+    extents.minSpan,
+    extents.maxSpan,
+    extents.maximumZoomOutExtent
+  )
+  render()
+}
+
+export function attachZoomButtonHandlers({
+  zoomInButton,
+  zoomOutButton,
+  state,
+  extents,
+  render
+}) {
+  zoomInButton?.addEventListener('click', () =>
+    zoomByStep(1 / zoomStep, state, extents, render)
+  )
+  zoomOutButton?.addEventListener('click', () =>
+    zoomByStep(zoomStep, state, extents, render)
+  )
+}
+
 export function createSelect({
   subrectangles,
   input,

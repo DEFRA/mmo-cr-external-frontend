@@ -37,6 +37,50 @@
   border: 1px solid #b1b4b6;
 }
 
+.app-offline-map__error {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 1;
+  width: calc(100% - 4rem);
+  max-width: 40rem;
+  padding: 1.5rem;
+  color: #d4351c;
+  text-align: center;
+  background: #ffffff;
+  border: 1px solid #b1b4b6;
+  transform: translate(-50%, -50%);
+}
+
+.app-offline-map__retry {
+  display: block;
+  margin: 1rem auto 0;
+}
+
+.app-offline-map__zoom {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-offline-map__zoom-button {
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: #1d1d1d;
+  background: #ffffff;
+  border: 1px solid #b1b4b6;
+}
+
+.app-offline-map__zoom-button:first-child {
+  border-bottom: 0;
+}
+
 .app-statistical-area-search__results {
   box-sizing: border-box;
   width: 100%;

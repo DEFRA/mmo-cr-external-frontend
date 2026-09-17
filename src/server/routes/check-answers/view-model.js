@@ -1,6 +1,7 @@
 import { getData } from '#/server/common/data/get-data.js'
 import { getJourneyState } from '#/server/common/helpers/journey/navigation.js'
 import { formatDate } from '#/config/nunjucks/filters/format-date.js'
+import { offlineMapSubrectangleCodes } from '#/server/common/data/offline-map-subrectangle-codes.js'
 
 const RETURN_TO_CHECK_ANSWERS = '?return=/check-answers'
 const MESH_HINT_PATTERN = /mm mesh/i
@@ -30,10 +31,14 @@ function tripsDetailsSection(
 
   let statisticalSubArea = fallback.statisticalSubArea
   if (journeyState.statAreaBranch === 'direct') {
-    statisticalSubArea =
-      getData('nearbyStatisticalAreas').find(
-        (area) => area.id === journeyState.selectedStatisticalArea
-      )?.code ?? fallback.statisticalSubArea
+    // Map selections save the real ICES code directly; only legacy sessions need the id lookup.
+    statisticalSubArea = offlineMapSubrectangleCodes.has(
+      journeyState.selectedStatisticalArea
+    )
+      ? journeyState.selectedStatisticalArea
+      : (getData('nearbyStatisticalAreas').find(
+          (area) => area.id === journeyState.selectedStatisticalArea
+        )?.code ?? fallback.statisticalSubArea)
   } else if (journeyState.statAreaBranch === 'other') {
     statisticalSubArea =
       journeyState.selectedAlternativeAreaOption === 'other'

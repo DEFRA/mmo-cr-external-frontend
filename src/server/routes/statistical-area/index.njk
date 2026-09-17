@@ -23,6 +23,14 @@
 
               <div class="app-offline-map" data-statistical-area-map data-selected-area="{{ selectedStatisticalArea or '' }}" data-departure-port="{{ departurePortName }}">
               <canvas class="app-offline-map__canvas" aria-label="Statistical area map. Select an area on the map."></canvas>
+              <div class="app-offline-map__error" data-statistical-area-map-error hidden>
+                <span class="govuk-visually-hidden">Error:</span> The map could not be loaded. Check your connection and try again.
+                <button class="govuk-button govuk-button--secondary app-offline-map__retry" type="button" data-statistical-area-map-retry>Retry</button>
+              </div>
+              <div class="app-offline-map__zoom">
+                <button class="app-offline-map__zoom-button" type="button" data-statistical-area-map-zoom-in aria-label="Zoom in">+</button>
+                <button class="app-offline-map__zoom-button" type="button" data-statistical-area-map-zoom-out aria-label="Zoom out">&minus;</button>
+              </div>
               <button class="app-offline-map__other" type="submit" name="statisticalArea" value="other">Other</button>
               <input type="hidden" name="statisticalArea" value="" disabled data-statistical-area-map-input>
               <p class="govuk-visually-hidden" aria-live="polite" data-statistical-area-map-status></p>
