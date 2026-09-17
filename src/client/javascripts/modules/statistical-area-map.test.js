@@ -68,6 +68,13 @@ function setupMapDom({ departurePort = 'Hastings', selectedArea = '' } = {}) {
     <form>
       <div data-statistical-area-map data-departure-port="${departurePort}" data-selected-area="${selectedArea}">
         <canvas></canvas>
+        <div data-statistical-area-map-error hidden>
+          <button type="button" data-statistical-area-map-retry>Retry</button>
+        </div>
+        <div>
+          <button type="button" data-statistical-area-map-zoom-in>+</button>
+          <button type="button" data-statistical-area-map-zoom-out>-</button>
+        </div>
         <input data-statistical-area-map-input />
         <p data-statistical-area-map-status></p>
       </div>
@@ -78,6 +85,12 @@ function setupMapDom({ departurePort = 'Hastings', selectedArea = '' } = {}) {
   const canvas = map.querySelector('canvas')
   const input = map.querySelector('[data-statistical-area-map-input]')
   const status = map.querySelector('[data-statistical-area-map-status]')
+  const errorElement = map.querySelector('[data-statistical-area-map-error]')
+  const retryButton = map.querySelector('[data-statistical-area-map-retry]')
+  const zoomInButton = map.querySelector('[data-statistical-area-map-zoom-in]')
+  const zoomOutButton = map.querySelector(
+    '[data-statistical-area-map-zoom-out]'
+  )
   const form = map.closest('form')
   const context = fakeContext()
 
@@ -90,7 +103,18 @@ function setupMapDom({ departurePort = 'Hastings', selectedArea = '' } = {}) {
   })
   form.requestSubmit = vi.fn()
 
-  return { map, canvas, input, status, form, context }
+  return {
+    map,
+    canvas,
+    input,
+    status,
+    errorElement,
+    retryButton,
+    zoomInButton,
+    zoomOutButton,
+    form,
+    context
+  }
 }
 
 function mockFetchWith({ land, subrectangles, ports }) {
@@ -145,8 +169,8 @@ describe('#initialiseStatisticalAreaMap', () => {
     await expect(initialiseStatisticalAreaMap()).resolves.toBeUndefined()
   })
 
-  test('Should not render when any offline data request fails', async () => {
-    const { context } = setupMapDom()
+  test('Should show an error and hide the canvas when any offline data request fails', async () => {
+    const { context, canvas, errorElement } = setupMapDom()
     vi.stubGlobal(
       'fetch',
       vi.fn().mockResolvedValue({ ok: false, json: () => Promise.resolve({}) })
@@ -155,19 +179,46 @@ describe('#initialiseStatisticalAreaMap', () => {
     await initialiseStatisticalAreaMap()
 
     expect(context.fillRect).not.toHaveBeenCalled()
+    expect(canvas.hidden).toBe(true)
+    expect(errorElement.hidden).toBe(false)
   })
 
-  test('Should hide the map when loading the offline data throws', async () => {
-    const { map } = setupMapDom()
+  test('Should show an error when loading the offline data throws', async () => {
+    const { canvas, errorElement } = setupMapDom()
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('network')))
 
     await initialiseStatisticalAreaMap()
 
-    expect(map.hidden).toBe(true)
+    expect(canvas.hidden).toBe(true)
+    expect(errorElement.hidden).toBe(false)
   })
 
-  test('Should not render when the departure port cannot be found', async () => {
-    const { context } = setupMapDom({ departurePort: 'Unknown Port' })
+  test('Should retry loading the map data when the retry button is clicked', async () => {
+    const { context, canvas, errorElement, retryButton } = setupMapDom()
+    canvas.setPointerCapture = vi.fn()
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('network')))
+
+    await initialiseStatisticalAreaMap()
+
+    expect(canvas.hidden).toBe(true)
+    expect(errorElement.hidden).toBe(false)
+
+    mockFetchWith({
+      land: [landFeature],
+      subrectangles: [subrectangle],
+      ports: [port]
+    })
+    retryButton.click()
+    await vi.waitFor(() => expect(context.fillRect).toHaveBeenCalled())
+
+    expect(canvas.hidden).toBe(false)
+    expect(errorElement.hidden).toBe(true)
+  })
+
+  test('Should show an error when the departure port cannot be found', async () => {
+    const { context, canvas, errorElement } = setupMapDom({
+      departurePort: 'Unknown Port'
+    })
     mockFetchWith({
       land: [landFeature],
       subrectangles: [subrectangle],
@@ -177,10 +228,12 @@ describe('#initialiseStatisticalAreaMap', () => {
     await initialiseStatisticalAreaMap()
 
     expect(context.fillRect).not.toHaveBeenCalled()
+    expect(canvas.hidden).toBe(true)
+    expect(errorElement.hidden).toBe(false)
   })
 
-  test('Should not render when the departure cell cannot be found', async () => {
-    const { context } = setupMapDom()
+  test('Should show an error when the departure cell cannot be found', async () => {
+    const { context, canvas, errorElement } = setupMapDom()
     mockFetchWith({
       land: [landFeature],
       subrectangles: [],
@@ -190,6 +243,8 @@ describe('#initialiseStatisticalAreaMap', () => {
     await initialiseStatisticalAreaMap()
 
     expect(context.fillRect).not.toHaveBeenCalled()
+    expect(canvas.hidden).toBe(true)
+    expect(errorElement.hidden).toBe(false)
   })
 
   test('Should render the grid, land and departure port marker on a successful load', async () => {
@@ -406,5 +461,44 @@ describe('#initialiseStatisticalAreaMap', () => {
     )
 
     expect(context.fillRect).toHaveBeenCalled()
+  })
+
+  test('Should zoom in and out on button clicks', async () => {
+    const { context, zoomInButton, zoomOutButton } = setupMapDom()
+    mockFetchWith({
+      land: [landFeature],
+      subrectangles: [subrectangle],
+      ports: [port]
+    })
+
+    await initialiseStatisticalAreaMap()
+    context.fillRect.mockClear()
+
+    zoomInButton.click()
+    expect(context.fillRect).toHaveBeenCalled()
+
+    context.fillRect.mockClear()
+    zoomOutButton.click()
+    expect(context.fillRect).toHaveBeenCalled()
+  })
+
+  test('Should not throw when repeatedly zooming past the minimum or maximum extent', async () => {
+    const { zoomInButton, zoomOutButton } = setupMapDom()
+    mockFetchWith({
+      land: [landFeature],
+      subrectangles: [subrectangle],
+      ports: [port]
+    })
+
+    await initialiseStatisticalAreaMap()
+
+    expect(() => {
+      for (let i = 0; i < 50; i++) {
+        zoomInButton.click()
+      }
+      for (let i = 0; i < 50; i++) {
+        zoomOutButton.click()
+      }
+    }).not.toThrow()
   })
 })

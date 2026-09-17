@@ -39,7 +39,7 @@ function viewContext(request, overrides = {}) {
       href: '/gear-selection',
       text: 'Back'
     },
-    departurePortName: departurePort?.name || 'Hastings',
+    departurePortName: departurePort?.name || '',
     selectedStatisticalArea,
     ...overrides
   }
@@ -47,6 +47,10 @@ function viewContext(request, overrides = {}) {
 
 export const statisticalAreaController = {
   handler(request, h) {
+    if (!getJourneyState(request).departurePort) {
+      return h.redirect('/departure-port').code(statusCodes.seeOther)
+    }
+
     return h.view('statistical-area/index', viewContext(request))
   }
 }

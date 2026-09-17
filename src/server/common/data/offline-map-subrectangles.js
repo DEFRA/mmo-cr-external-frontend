@@ -1361,13 +1361,6 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '27E89',
-    {
-      coordinate: [-1.166666666587448, 49.10232025331307],
-      icesRectangle: '27E8'
-    }
-  ],
-  [
     '27E82',
     {
       coordinate: [-1.8333333335938455, 49.24999999998717],
@@ -1382,23 +1375,9 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '27E88',
-    {
-      coordinate: [-1.166666666587448, 49.24999999998717],
-      icesRectangle: '27E8'
-    }
-  ],
-  [
     '27E81',
     {
       coordinate: [-1.8333333335938455, 49.416666666729824],
-      icesRectangle: '27E8'
-    }
-  ],
-  [
-    '27E84',
-    {
-      coordinate: [-1.5000000000906466, 49.416666666729824],
       icesRectangle: '27E8'
     }
   ],
@@ -1488,34 +1467,6 @@ export const offlineMapSubrectangles = new Map([
     {
       coordinate: [-1.166666666587448, 50.08333333341182],
       icesRectangle: '29E8'
-    }
-  ],
-  [
-    '27E93',
-    {
-      coordinate: [-0.8333333335334143, 49.10232025331307],
-      icesRectangle: '27E9'
-    }
-  ],
-  [
-    '27E96',
-    {
-      coordinate: [-0.5000000000302155, 49.10232025331307],
-      icesRectangle: '27E9'
-    }
-  ],
-  [
-    '27E99',
-    {
-      coordinate: [-0.16666666652701675, 49.10232025331307],
-      icesRectangle: '27E9'
-    }
-  ],
-  [
-    '27E92',
-    {
-      coordinate: [-0.8333333335334143, 49.24999999998717],
-      icesRectangle: '27E9'
     }
   ],
   [
@@ -1638,44 +1589,9 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '27F03',
-    {
-      coordinate: [0.16666666652701675, 49.10232025331307],
-      icesRectangle: '27F0'
-    }
-  ],
-  [
-    '27F06',
-    {
-      coordinate: [0.5000000000302155, 49.10232025331307],
-      icesRectangle: '27F0'
-    }
-  ],
-  [
-    '27F09',
-    {
-      coordinate: [0.8333333335334143, 49.10232025331307],
-      icesRectangle: '27F0'
-    }
-  ],
-  [
     '27F02',
     {
       coordinate: [0.16666666652701675, 49.24999999998717],
-      icesRectangle: '27F0'
-    }
-  ],
-  [
-    '27F05',
-    {
-      coordinate: [0.5000000000302155, 49.24999999998717],
-      icesRectangle: '27F0'
-    }
-  ],
-  [
-    '27F08',
-    {
-      coordinate: [0.8333333335334143, 49.24999999998717],
       icesRectangle: '27F0'
     }
   ],
@@ -1694,26 +1610,11 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '27F07',
-    {
-      coordinate: [0.8333333335334143, 49.416666666729824],
-      icesRectangle: '27F0'
-    }
-  ],
-  [
     '28F03',
     {
       coordinate: [0.16666666652701675, 49.583333333169],
       icesRectangle: '28F0'
     }
-  ],
-  [
-    '28F06',
-    { coordinate: [0.5000000000302155, 49.583333333169], icesRectangle: '28F0' }
-  ],
-  [
-    '28F09',
-    { coordinate: [0.8333333335334143, 49.583333333169], icesRectangle: '28F0' }
   ],
   [
     '28F02',
@@ -1726,13 +1627,6 @@ export const offlineMapSubrectangles = new Map([
     '28F05',
     {
       coordinate: [0.5000000000302155, 49.74999999995107],
-      icesRectangle: '28F0'
-    }
-  ],
-  [
-    '28F08',
-    {
-      coordinate: [0.8333333335334143, 49.74999999995107],
       icesRectangle: '28F0'
     }
   ],
@@ -1779,119 +1673,9 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '27F13',
-    {
-      coordinate: [1.166666666587448, 49.10232025331307],
-      icesRectangle: '27F1'
-    }
-  ],
-  [
-    '27F16',
-    {
-      coordinate: [1.5000000000906466, 49.10232025331307],
-      icesRectangle: '27F1'
-    }
-  ],
-  [
-    '27F19',
-    {
-      coordinate: [1.8333333335938455, 49.10232025331307],
-      icesRectangle: '27F1'
-    }
-  ],
-  [
-    '27F12',
-    {
-      coordinate: [1.166666666587448, 49.24999999998717],
-      icesRectangle: '27F1'
-    }
-  ],
-  [
-    '27F15',
-    {
-      coordinate: [1.5000000000906466, 49.24999999998717],
-      icesRectangle: '27F1'
-    }
-  ],
-  [
-    '27F18',
-    {
-      coordinate: [1.8333333335938455, 49.24999999998717],
-      icesRectangle: '27F1'
-    }
-  ],
-  [
-    '27F11',
-    {
-      coordinate: [1.166666666587448, 49.416666666729824],
-      icesRectangle: '27F1'
-    }
-  ],
-  [
-    '27F14',
-    {
-      coordinate: [1.5000000000906466, 49.416666666729824],
-      icesRectangle: '27F1'
-    }
-  ],
-  [
-    '27F17',
-    {
-      coordinate: [1.8333333335938455, 49.416666666729824],
-      icesRectangle: '27F1'
-    }
-  ],
-  [
-    '28F13',
-    { coordinate: [1.166666666587448, 49.583333333169], icesRectangle: '28F1' }
-  ],
-  [
-    '28F16',
-    { coordinate: [1.5000000000906466, 49.583333333169], icesRectangle: '28F1' }
-  ],
-  [
-    '28F19',
-    { coordinate: [1.8333333335938455, 49.583333333169], icesRectangle: '28F1' }
-  ],
-  [
-    '28F12',
-    {
-      coordinate: [1.166666666587448, 49.74999999995107],
-      icesRectangle: '28F1'
-    }
-  ],
-  [
-    '28F15',
-    {
-      coordinate: [1.5000000000906466, 49.74999999995107],
-      icesRectangle: '28F1'
-    }
-  ],
-  [
-    '28F18',
-    {
-      coordinate: [1.8333333335938455, 49.74999999995107],
-      icesRectangle: '28F1'
-    }
-  ],
-  [
     '28F11',
     {
       coordinate: [1.166666666587448, 49.91666666667005],
-      icesRectangle: '28F1'
-    }
-  ],
-  [
-    '28F14',
-    {
-      coordinate: [1.5000000000906466, 49.91666666667005],
-      icesRectangle: '28F1'
-    }
-  ],
-  [
-    '28F17',
-    {
-      coordinate: [1.8333333335938455, 49.91666666667005],
       icesRectangle: '28F1'
     }
   ],
@@ -1907,151 +1691,6 @@ export const offlineMapSubrectangles = new Map([
     {
       coordinate: [1.5000000000906466, 50.08333333341182],
       icesRectangle: '29F1'
-    }
-  ],
-  [
-    '29F19',
-    {
-      coordinate: [1.8333333335938455, 50.08333333341182],
-      icesRectangle: '29F1'
-    }
-  ],
-  [
-    '27F23',
-    {
-      coordinate: [2.1666666666478793, 49.10232025331307],
-      icesRectangle: '27F2'
-    }
-  ],
-  [
-    '27F26',
-    {
-      coordinate: [2.4999999997019127, 49.10232025331307],
-      icesRectangle: '27F2'
-    }
-  ],
-  [
-    '27F29',
-    {
-      coordinate: [2.8333333332050943, 49.10232025331307],
-      icesRectangle: '27F2'
-    }
-  ],
-  [
-    '27F22',
-    {
-      coordinate: [2.1666666666478793, 49.24999999998717],
-      icesRectangle: '27F2'
-    }
-  ],
-  [
-    '27F25',
-    {
-      coordinate: [2.4999999997019127, 49.24999999998717],
-      icesRectangle: '27F2'
-    }
-  ],
-  [
-    '27F28',
-    {
-      coordinate: [2.8333333332050943, 49.24999999998717],
-      icesRectangle: '27F2'
-    }
-  ],
-  [
-    '27F21',
-    {
-      coordinate: [2.1666666666478793, 49.416666666729824],
-      icesRectangle: '27F2'
-    }
-  ],
-  [
-    '27F24',
-    {
-      coordinate: [2.4999999997019127, 49.416666666729824],
-      icesRectangle: '27F2'
-    }
-  ],
-  [
-    '27F27',
-    {
-      coordinate: [2.8333333332050943, 49.416666666729824],
-      icesRectangle: '27F2'
-    }
-  ],
-  [
-    '28F23',
-    { coordinate: [2.1666666666478793, 49.583333333169], icesRectangle: '28F2' }
-  ],
-  [
-    '28F26',
-    { coordinate: [2.4999999997019127, 49.583333333169], icesRectangle: '28F2' }
-  ],
-  [
-    '28F29',
-    { coordinate: [2.8333333332050943, 49.583333333169], icesRectangle: '28F2' }
-  ],
-  [
-    '28F22',
-    {
-      coordinate: [2.1666666666478793, 49.74999999995107],
-      icesRectangle: '28F2'
-    }
-  ],
-  [
-    '28F25',
-    {
-      coordinate: [2.4999999997019127, 49.74999999995107],
-      icesRectangle: '28F2'
-    }
-  ],
-  [
-    '28F28',
-    {
-      coordinate: [2.8333333332050943, 49.74999999995107],
-      icesRectangle: '28F2'
-    }
-  ],
-  [
-    '28F21',
-    {
-      coordinate: [2.1666666666478793, 49.91666666667005],
-      icesRectangle: '28F2'
-    }
-  ],
-  [
-    '28F24',
-    {
-      coordinate: [2.4999999997019127, 49.91666666667005],
-      icesRectangle: '28F2'
-    }
-  ],
-  [
-    '28F27',
-    {
-      coordinate: [2.8333333332050943, 49.91666666667005],
-      icesRectangle: '28F2'
-    }
-  ],
-  [
-    '29F23',
-    {
-      coordinate: [2.1666666666478793, 50.08333333341182],
-      icesRectangle: '29F2'
-    }
-  ],
-  [
-    '29F26',
-    {
-      coordinate: [2.4999999997019127, 50.08333333341182],
-      icesRectangle: '29F2'
-    }
-  ],
-  [
-    '29F29',
-    {
-      coordinate: [2.8333333332050943, 50.08333333341182],
-      icesRectangle: '29F2'
     }
   ],
   [
@@ -2721,13 +2360,6 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '32E08',
-    {
-      coordinate: [-9.16666666662168, 51.74999999993001],
-      icesRectangle: '32E0'
-    }
-  ],
-  [
     '32E01',
     {
       coordinate: [-9.833333333178913, 51.91666666659033],
@@ -2742,30 +2374,9 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '32E07',
-    {
-      coordinate: [-9.16666666662168, 51.91666666659033],
-      icesRectangle: '32E0'
-    }
-  ],
-  [
     '33E03',
     {
       coordinate: [-9.833333333178913, 52.08333333333702],
-      icesRectangle: '33E0'
-    }
-  ],
-  [
-    '33E06',
-    {
-      coordinate: [-9.500000000124864, 52.08333333333702],
-      icesRectangle: '33E0'
-    }
-  ],
-  [
-    '33E09',
-    {
-      coordinate: [-9.16666666662168, 52.08333333333702],
       icesRectangle: '33E0'
     }
   ],
@@ -2944,10 +2555,6 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '32E12',
-    { coordinate: [-8.8333333331185, 51.74999999993001], icesRectangle: '32E1' }
-  ],
-  [
     '32E15',
     {
       coordinate: [-8.500000000064464, 51.74999999993001],
@@ -2962,10 +2569,6 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '32E11',
-    { coordinate: [-8.8333333331185, 51.91666666659033], icesRectangle: '32E1' }
-  ],
-  [
     '32E14',
     {
       coordinate: [-8.500000000064464, 51.91666666659033],
@@ -2977,24 +2580,6 @@ export const offlineMapSubrectangles = new Map([
     {
       coordinate: [-8.166666666561266, 51.91666666659033],
       icesRectangle: '32E1'
-    }
-  ],
-  [
-    '33E13',
-    { coordinate: [-8.8333333331185, 52.08333333333702], icesRectangle: '33E1' }
-  ],
-  [
-    '33E16',
-    {
-      coordinate: [-8.500000000064464, 52.08333333333702],
-      icesRectangle: '33E1'
-    }
-  ],
-  [
-    '33E19',
-    {
-      coordinate: [-8.166666666561266, 52.08333333333702],
-      icesRectangle: '33E1'
     }
   ],
   [
@@ -3226,13 +2811,6 @@ export const offlineMapSubrectangles = new Map([
     {
       coordinate: [-7.166666666950001, 51.91666666659033],
       icesRectangle: '32E2'
-    }
-  ],
-  [
-    '33E23',
-    {
-      coordinate: [-7.833333333058068, 52.08333333333702],
-      icesRectangle: '33E2'
     }
   ],
   [
@@ -3775,13 +3353,6 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '29E51',
-    {
-      coordinate: [-4.833333333325941, 50.416666666672775],
-      icesRectangle: '29E5'
-    }
-  ],
-  [
     '29E54',
     {
       coordinate: [-4.499999999822741, 50.416666666672775],
@@ -3803,20 +3374,6 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '30E56',
-    {
-      coordinate: [-4.499999999822741, 50.583333333115185],
-      icesRectangle: '30E5'
-    }
-  ],
-  [
-    '30E59',
-    {
-      coordinate: [-4.166666666768707, 50.583333333115185],
-      icesRectangle: '30E5'
-    }
-  ],
-  [
     '30E52',
     {
       coordinate: [-4.833333333325941, 50.75000000001267],
@@ -3827,13 +3384,6 @@ export const offlineMapSubrectangles = new Map([
     '30E55',
     {
       coordinate: [-4.499999999822741, 50.75000000001267],
-      icesRectangle: '30E5'
-    }
-  ],
-  [
-    '30E58',
-    {
-      coordinate: [-4.166666666768707, 50.75000000001267],
       icesRectangle: '30E5'
     }
   ],
@@ -3964,27 +3514,6 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '32E51',
-    {
-      coordinate: [-4.833333333325941, 51.91666666659033],
-      icesRectangle: '32E5'
-    }
-  ],
-  [
-    '32E54',
-    {
-      coordinate: [-4.499999999822741, 51.91666666659033],
-      icesRectangle: '32E5'
-    }
-  ],
-  [
-    '32E57',
-    {
-      coordinate: [-4.166666666768707, 51.91666666659033],
-      icesRectangle: '32E5'
-    }
-  ],
-  [
     '33E53',
     {
       coordinate: [-4.833333333325941, 52.08333333333702],
@@ -3995,13 +3524,6 @@ export const offlineMapSubrectangles = new Map([
     '33E56',
     {
       coordinate: [-4.499999999822741, 52.08333333333702],
-      icesRectangle: '33E5'
-    }
-  ],
-  [
-    '33E59',
-    {
-      coordinate: [-4.166666666768707, 52.08333333333702],
       icesRectangle: '33E5'
     }
   ],
@@ -4027,13 +3549,6 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '29E61',
-    {
-      coordinate: [-3.833333333265526, 50.416666666672775],
-      icesRectangle: '29E6'
-    }
-  ],
-  [
     '29E64',
     {
       coordinate: [-3.499999999762344, 50.416666666672775],
@@ -4045,13 +3560,6 @@ export const offlineMapSubrectangles = new Map([
     {
       coordinate: [-3.166666666708293, 50.416666666672775],
       icesRectangle: '29E6'
-    }
-  ],
-  [
-    '30E63',
-    {
-      coordinate: [-3.833333333265526, 50.583333333115185],
-      icesRectangle: '30E6'
     }
   ],
   [
@@ -4069,66 +3577,10 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '30E62',
-    {
-      coordinate: [-3.833333333265526, 50.75000000001267],
-      icesRectangle: '30E6'
-    }
-  ],
-  [
-    '30E65',
-    {
-      coordinate: [-3.499999999762344, 50.75000000001267],
-      icesRectangle: '30E6'
-    }
-  ],
-  [
     '30E68',
     {
       coordinate: [-3.166666666708293, 50.75000000001267],
       icesRectangle: '30E6'
-    }
-  ],
-  [
-    '30E61',
-    {
-      coordinate: [-3.833333333265526, 50.91666666667558],
-      icesRectangle: '30E6'
-    }
-  ],
-  [
-    '30E64',
-    {
-      coordinate: [-3.499999999762344, 50.91666666667558],
-      icesRectangle: '30E6'
-    }
-  ],
-  [
-    '30E67',
-    {
-      coordinate: [-3.166666666708293, 50.91666666667558],
-      icesRectangle: '30E6'
-    }
-  ],
-  [
-    '31E63',
-    {
-      coordinate: [-3.833333333265526, 51.08333333321902],
-      icesRectangle: '31E6'
-    }
-  ],
-  [
-    '31E66',
-    {
-      coordinate: [-3.499999999762344, 51.08333333321902],
-      icesRectangle: '31E6'
-    }
-  ],
-  [
-    '31E69',
-    {
-      coordinate: [-3.166666666708293, 51.08333333321902],
-      icesRectangle: '31E6'
     }
   ],
   [
@@ -4181,80 +3633,10 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '32E66',
-    {
-      coordinate: [-3.499999999762344, 51.58333333328915],
-      icesRectangle: '32E6'
-    }
-  ],
-  [
     '32E69',
     {
       coordinate: [-3.166666666708293, 51.58333333328915],
       icesRectangle: '32E6'
-    }
-  ],
-  [
-    '32E62',
-    {
-      coordinate: [-3.833333333265526, 51.74999999993001],
-      icesRectangle: '32E6'
-    }
-  ],
-  [
-    '32E65',
-    {
-      coordinate: [-3.499999999762344, 51.74999999993001],
-      icesRectangle: '32E6'
-    }
-  ],
-  [
-    '32E68',
-    {
-      coordinate: [-3.166666666708293, 51.74999999993001],
-      icesRectangle: '32E6'
-    }
-  ],
-  [
-    '32E61',
-    {
-      coordinate: [-3.833333333265526, 51.91666666659033],
-      icesRectangle: '32E6'
-    }
-  ],
-  [
-    '32E64',
-    {
-      coordinate: [-3.499999999762344, 51.91666666659033],
-      icesRectangle: '32E6'
-    }
-  ],
-  [
-    '32E67',
-    {
-      coordinate: [-3.166666666708293, 51.91666666659033],
-      icesRectangle: '32E6'
-    }
-  ],
-  [
-    '33E63',
-    {
-      coordinate: [-3.833333333265526, 52.08333333333702],
-      icesRectangle: '33E6'
-    }
-  ],
-  [
-    '33E66',
-    {
-      coordinate: [-3.499999999762344, 52.08333333333702],
-      icesRectangle: '33E6'
-    }
-  ],
-  [
-    '33E69',
-    {
-      coordinate: [-3.166666666708293, 52.08333333333702],
-      icesRectangle: '33E6'
     }
   ],
   [
@@ -4342,48 +3724,6 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '30E71',
-    {
-      coordinate: [-2.8333333332050943, 50.91666666667558],
-      icesRectangle: '30E7'
-    }
-  ],
-  [
-    '30E74',
-    {
-      coordinate: [-2.4999999997019127, 50.91666666667558],
-      icesRectangle: '30E7'
-    }
-  ],
-  [
-    '30E77',
-    {
-      coordinate: [-2.1666666666478793, 50.91666666667558],
-      icesRectangle: '30E7'
-    }
-  ],
-  [
-    '31E73',
-    {
-      coordinate: [-2.8333333332050943, 51.08333333321902],
-      icesRectangle: '31E7'
-    }
-  ],
-  [
-    '31E76',
-    {
-      coordinate: [-2.4999999997019127, 51.08333333321902],
-      icesRectangle: '31E7'
-    }
-  ],
-  [
-    '31E79',
-    {
-      coordinate: [-2.1666666666478793, 51.08333333321902],
-      icesRectangle: '31E7'
-    }
-  ],
-  [
     '31E72',
     {
       coordinate: [-2.8333333332050943, 51.249999999916994],
@@ -4391,37 +3731,9 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '31E75',
-    {
-      coordinate: [-2.4999999997019127, 51.249999999916994],
-      icesRectangle: '31E7'
-    }
-  ],
-  [
-    '31E78',
-    {
-      coordinate: [-2.1666666666478793, 51.249999999916994],
-      icesRectangle: '31E7'
-    }
-  ],
-  [
     '31E71',
     {
       coordinate: [-2.8333333332050943, 51.416666666526446],
-      icesRectangle: '31E7'
-    }
-  ],
-  [
-    '31E74',
-    {
-      coordinate: [-2.4999999997019127, 51.416666666526446],
-      icesRectangle: '31E7'
-    }
-  ],
-  [
-    '31E77',
-    {
-      coordinate: [-2.1666666666478793, 51.416666666526446],
       icesRectangle: '31E7'
     }
   ],
@@ -4440,73 +3752,10 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '32E79',
-    {
-      coordinate: [-2.1666666666478793, 51.58333333328915],
-      icesRectangle: '32E7'
-    }
-  ],
-  [
-    '32E72',
-    {
-      coordinate: [-2.8333333332050943, 51.74999999993001],
-      icesRectangle: '32E7'
-    }
-  ],
-  [
     '32E75',
     {
       coordinate: [-2.4999999997019127, 51.74999999993001],
       icesRectangle: '32E7'
-    }
-  ],
-  [
-    '32E78',
-    {
-      coordinate: [-2.1666666666478793, 51.74999999993001],
-      icesRectangle: '32E7'
-    }
-  ],
-  [
-    '32E71',
-    {
-      coordinate: [-2.8333333332050943, 51.91666666659033],
-      icesRectangle: '32E7'
-    }
-  ],
-  [
-    '32E74',
-    {
-      coordinate: [-2.4999999997019127, 51.91666666659033],
-      icesRectangle: '32E7'
-    }
-  ],
-  [
-    '32E77',
-    {
-      coordinate: [-2.1666666666478793, 51.91666666659033],
-      icesRectangle: '32E7'
-    }
-  ],
-  [
-    '33E73',
-    {
-      coordinate: [-2.8333333332050943, 52.08333333333702],
-      icesRectangle: '33E7'
-    }
-  ],
-  [
-    '33E76',
-    {
-      coordinate: [-2.4999999997019127, 52.08333333333702],
-      icesRectangle: '33E7'
-    }
-  ],
-  [
-    '33E79',
-    {
-      coordinate: [-2.1666666666478793, 52.08333333333702],
-      icesRectangle: '33E7'
     }
   ],
   [
@@ -4594,13 +3843,6 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '30E81',
-    {
-      coordinate: [-1.8333333335938455, 50.91666666667558],
-      icesRectangle: '30E8'
-    }
-  ],
-  [
     '30E84',
     {
       coordinate: [-1.5000000000906466, 50.91666666667558],
@@ -4612,153 +3854,6 @@ export const offlineMapSubrectangles = new Map([
     {
       coordinate: [-1.166666666587448, 50.91666666667558],
       icesRectangle: '30E8'
-    }
-  ],
-  [
-    '31E83',
-    {
-      coordinate: [-1.8333333335938455, 51.08333333321902],
-      icesRectangle: '31E8'
-    }
-  ],
-  [
-    '31E86',
-    {
-      coordinate: [-1.5000000000906466, 51.08333333321902],
-      icesRectangle: '31E8'
-    }
-  ],
-  [
-    '31E89',
-    {
-      coordinate: [-1.166666666587448, 51.08333333321902],
-      icesRectangle: '31E8'
-    }
-  ],
-  [
-    '31E82',
-    {
-      coordinate: [-1.8333333335938455, 51.249999999916994],
-      icesRectangle: '31E8'
-    }
-  ],
-  [
-    '31E85',
-    {
-      coordinate: [-1.5000000000906466, 51.249999999916994],
-      icesRectangle: '31E8'
-    }
-  ],
-  [
-    '31E88',
-    {
-      coordinate: [-1.166666666587448, 51.249999999916994],
-      icesRectangle: '31E8'
-    }
-  ],
-  [
-    '31E81',
-    {
-      coordinate: [-1.8333333335938455, 51.416666666526446],
-      icesRectangle: '31E8'
-    }
-  ],
-  [
-    '31E84',
-    {
-      coordinate: [-1.5000000000906466, 51.416666666526446],
-      icesRectangle: '31E8'
-    }
-  ],
-  [
-    '31E87',
-    {
-      coordinate: [-1.166666666587448, 51.416666666526446],
-      icesRectangle: '31E8'
-    }
-  ],
-  [
-    '32E83',
-    {
-      coordinate: [-1.8333333335938455, 51.58333333328915],
-      icesRectangle: '32E8'
-    }
-  ],
-  [
-    '32E86',
-    {
-      coordinate: [-1.5000000000906466, 51.58333333328915],
-      icesRectangle: '32E8'
-    }
-  ],
-  [
-    '32E89',
-    {
-      coordinate: [-1.166666666587448, 51.58333333328915],
-      icesRectangle: '32E8'
-    }
-  ],
-  [
-    '32E82',
-    {
-      coordinate: [-1.8333333335938455, 51.74999999993001],
-      icesRectangle: '32E8'
-    }
-  ],
-  [
-    '32E85',
-    {
-      coordinate: [-1.5000000000906466, 51.74999999993001],
-      icesRectangle: '32E8'
-    }
-  ],
-  [
-    '32E88',
-    {
-      coordinate: [-1.166666666587448, 51.74999999993001],
-      icesRectangle: '32E8'
-    }
-  ],
-  [
-    '32E81',
-    {
-      coordinate: [-1.8333333335938455, 51.91666666659033],
-      icesRectangle: '32E8'
-    }
-  ],
-  [
-    '32E84',
-    {
-      coordinate: [-1.5000000000906466, 51.91666666659033],
-      icesRectangle: '32E8'
-    }
-  ],
-  [
-    '32E87',
-    {
-      coordinate: [-1.166666666587448, 51.91666666659033],
-      icesRectangle: '32E8'
-    }
-  ],
-  [
-    '33E83',
-    {
-      coordinate: [-1.8333333335938455, 52.08333333333702],
-      icesRectangle: '33E8'
-    }
-  ],
-  [
-    '33E86',
-    {
-      coordinate: [-1.5000000000906466, 52.08333333333702],
-      icesRectangle: '33E8'
-    }
-  ],
-  [
-    '33E89',
-    {
-      coordinate: [-1.166666666587448, 52.08333333333702],
-      icesRectangle: '33E8'
     }
   ],
   [
@@ -4853,167 +3948,6 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '30E94',
-    {
-      coordinate: [-0.5000000000302155, 50.91666666667558],
-      icesRectangle: '30E9'
-    }
-  ],
-  [
-    '30E97',
-    {
-      coordinate: [-0.16666666652701675, 50.91666666667558],
-      icesRectangle: '30E9'
-    }
-  ],
-  [
-    '31E93',
-    {
-      coordinate: [-0.8333333335334143, 51.08333333321902],
-      icesRectangle: '31E9'
-    }
-  ],
-  [
-    '31E96',
-    {
-      coordinate: [-0.5000000000302155, 51.08333333321902],
-      icesRectangle: '31E9'
-    }
-  ],
-  [
-    '31E99',
-    {
-      coordinate: [-0.16666666652701675, 51.08333333321902],
-      icesRectangle: '31E9'
-    }
-  ],
-  [
-    '31E92',
-    {
-      coordinate: [-0.8333333335334143, 51.249999999916994],
-      icesRectangle: '31E9'
-    }
-  ],
-  [
-    '31E95',
-    {
-      coordinate: [-0.5000000000302155, 51.249999999916994],
-      icesRectangle: '31E9'
-    }
-  ],
-  [
-    '31E98',
-    {
-      coordinate: [-0.16666666652701675, 51.249999999916994],
-      icesRectangle: '31E9'
-    }
-  ],
-  [
-    '31E91',
-    {
-      coordinate: [-0.8333333335334143, 51.416666666526446],
-      icesRectangle: '31E9'
-    }
-  ],
-  [
-    '31E94',
-    {
-      coordinate: [-0.5000000000302155, 51.416666666526446],
-      icesRectangle: '31E9'
-    }
-  ],
-  [
-    '31E97',
-    {
-      coordinate: [-0.16666666652701675, 51.416666666526446],
-      icesRectangle: '31E9'
-    }
-  ],
-  [
-    '32E93',
-    {
-      coordinate: [-0.8333333335334143, 51.58333333328915],
-      icesRectangle: '32E9'
-    }
-  ],
-  [
-    '32E96',
-    {
-      coordinate: [-0.5000000000302155, 51.58333333328915],
-      icesRectangle: '32E9'
-    }
-  ],
-  [
-    '32E99',
-    {
-      coordinate: [-0.16666666652701675, 51.58333333328915],
-      icesRectangle: '32E9'
-    }
-  ],
-  [
-    '32E92',
-    {
-      coordinate: [-0.8333333335334143, 51.74999999993001],
-      icesRectangle: '32E9'
-    }
-  ],
-  [
-    '32E95',
-    {
-      coordinate: [-0.5000000000302155, 51.74999999993001],
-      icesRectangle: '32E9'
-    }
-  ],
-  [
-    '32E98',
-    {
-      coordinate: [-0.16666666652701675, 51.74999999993001],
-      icesRectangle: '32E9'
-    }
-  ],
-  [
-    '32E91',
-    {
-      coordinate: [-0.8333333335334143, 51.91666666659033],
-      icesRectangle: '32E9'
-    }
-  ],
-  [
-    '32E94',
-    {
-      coordinate: [-0.5000000000302155, 51.91666666659033],
-      icesRectangle: '32E9'
-    }
-  ],
-  [
-    '32E97',
-    {
-      coordinate: [-0.16666666652701675, 51.91666666659033],
-      icesRectangle: '32E9'
-    }
-  ],
-  [
-    '33E93',
-    {
-      coordinate: [-0.8333333335334143, 52.08333333333702],
-      icesRectangle: '33E9'
-    }
-  ],
-  [
-    '33E96',
-    {
-      coordinate: [-0.5000000000302155, 52.08333333333702],
-      icesRectangle: '33E9'
-    }
-  ],
-  [
-    '33E99',
-    {
-      coordinate: [-0.16666666652701675, 52.08333333333702],
-      icesRectangle: '33E9'
-    }
-  ],
-  [
     '29F02',
     {
       coordinate: [0.16666666652701675, 50.2500000002425],
@@ -5098,13 +4032,6 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '30F01',
-    {
-      coordinate: [0.16666666652701675, 50.91666666667558],
-      icesRectangle: '30F0'
-    }
-  ],
-  [
     '30F04',
     {
       coordinate: [0.5000000000302155, 50.91666666667558],
@@ -5119,51 +4046,9 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '31F03',
-    {
-      coordinate: [0.16666666652701675, 51.08333333321902],
-      icesRectangle: '31F0'
-    }
-  ],
-  [
-    '31F06',
-    {
-      coordinate: [0.5000000000302155, 51.08333333321902],
-      icesRectangle: '31F0'
-    }
-  ],
-  [
     '31F09',
     {
       coordinate: [0.8333333335334143, 51.08333333321902],
-      icesRectangle: '31F0'
-    }
-  ],
-  [
-    '31F02',
-    {
-      coordinate: [0.16666666652701675, 51.249999999916994],
-      icesRectangle: '31F0'
-    }
-  ],
-  [
-    '31F05',
-    {
-      coordinate: [0.5000000000302155, 51.249999999916994],
-      icesRectangle: '31F0'
-    }
-  ],
-  [
-    '31F08',
-    {
-      coordinate: [0.8333333335334143, 51.249999999916994],
-      icesRectangle: '31F0'
-    }
-  ],
-  [
-    '31F01',
-    {
-      coordinate: [0.16666666652701675, 51.416666666526446],
       icesRectangle: '31F0'
     }
   ],
@@ -5182,13 +4067,6 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '32F03',
-    {
-      coordinate: [0.16666666652701675, 51.58333333328915],
-      icesRectangle: '32F0'
-    }
-  ],
-  [
     '32F06',
     {
       coordinate: [0.5000000000302155, 51.58333333328915],
@@ -5203,66 +4081,10 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '32F02',
-    {
-      coordinate: [0.16666666652701675, 51.74999999993001],
-      icesRectangle: '32F0'
-    }
-  ],
-  [
-    '32F05',
-    {
-      coordinate: [0.5000000000302155, 51.74999999993001],
-      icesRectangle: '32F0'
-    }
-  ],
-  [
     '32F08',
     {
       coordinate: [0.8333333335334143, 51.74999999993001],
       icesRectangle: '32F0'
-    }
-  ],
-  [
-    '32F01',
-    {
-      coordinate: [0.16666666652701675, 51.91666666659033],
-      icesRectangle: '32F0'
-    }
-  ],
-  [
-    '32F04',
-    {
-      coordinate: [0.5000000000302155, 51.91666666659033],
-      icesRectangle: '32F0'
-    }
-  ],
-  [
-    '32F07',
-    {
-      coordinate: [0.8333333335334143, 51.91666666659033],
-      icesRectangle: '32F0'
-    }
-  ],
-  [
-    '33F03',
-    {
-      coordinate: [0.16666666652701675, 52.08333333333702],
-      icesRectangle: '33F0'
-    }
-  ],
-  [
-    '33F06',
-    {
-      coordinate: [0.5000000000302155, 52.08333333333702],
-      icesRectangle: '33F0'
-    }
-  ],
-  [
-    '33F09',
-    {
-      coordinate: [0.8333333335334143, 52.08333333333702],
-      icesRectangle: '33F0'
     }
   ],
   [
@@ -5273,13 +4095,6 @@ export const offlineMapSubrectangles = new Map([
     '29F15',
     {
       coordinate: [1.5000000000906466, 50.2500000002425],
-      icesRectangle: '29F1'
-    }
-  ],
-  [
-    '29F18',
-    {
-      coordinate: [1.8333333335938455, 50.2500000002425],
       icesRectangle: '29F1'
     }
   ],
@@ -5298,13 +4113,6 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '29F17',
-    {
-      coordinate: [1.8333333335938455, 50.416666666672775],
-      icesRectangle: '29F1'
-    }
-  ],
-  [
     '30F13',
     {
       coordinate: [1.166666666587448, 50.583333333115185],
@@ -5319,13 +4127,6 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '30F19',
-    {
-      coordinate: [1.8333333335938455, 50.583333333115185],
-      icesRectangle: '30F1'
-    }
-  ],
-  [
     '30F12',
     {
       coordinate: [1.166666666587448, 50.75000000001267],
@@ -5336,13 +4137,6 @@ export const offlineMapSubrectangles = new Map([
     '30F15',
     {
       coordinate: [1.5000000000906466, 50.75000000001267],
-      icesRectangle: '30F1'
-    }
-  ],
-  [
-    '30F18',
-    {
-      coordinate: [1.8333333335938455, 50.75000000001267],
       icesRectangle: '30F1'
     }
   ],
@@ -5385,13 +4179,6 @@ export const offlineMapSubrectangles = new Map([
     '31F19',
     {
       coordinate: [1.8333333335938455, 51.08333333321902],
-      icesRectangle: '31F1'
-    }
-  ],
-  [
-    '31F12',
-    {
-      coordinate: [1.166666666587448, 51.249999999916994],
       icesRectangle: '31F1'
     }
   ],
@@ -5494,13 +4281,6 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '33F13',
-    {
-      coordinate: [1.166666666587448, 52.08333333333702],
-      icesRectangle: '33F1'
-    }
-  ],
-  [
     '33F16',
     {
       coordinate: [1.5000000000906466, 52.08333333333702],
@@ -5512,111 +4292,6 @@ export const offlineMapSubrectangles = new Map([
     {
       coordinate: [1.8333333335938455, 52.08333333333702],
       icesRectangle: '33F1'
-    }
-  ],
-  [
-    '29F22',
-    {
-      coordinate: [2.1666666666478793, 50.2500000002425],
-      icesRectangle: '29F2'
-    }
-  ],
-  [
-    '29F25',
-    {
-      coordinate: [2.4999999997019127, 50.2500000002425],
-      icesRectangle: '29F2'
-    }
-  ],
-  [
-    '29F28',
-    {
-      coordinate: [2.8333333332050943, 50.2500000002425],
-      icesRectangle: '29F2'
-    }
-  ],
-  [
-    '29F21',
-    {
-      coordinate: [2.1666666666478793, 50.416666666672775],
-      icesRectangle: '29F2'
-    }
-  ],
-  [
-    '29F24',
-    {
-      coordinate: [2.4999999997019127, 50.416666666672775],
-      icesRectangle: '29F2'
-    }
-  ],
-  [
-    '29F27',
-    {
-      coordinate: [2.8333333332050943, 50.416666666672775],
-      icesRectangle: '29F2'
-    }
-  ],
-  [
-    '30F23',
-    {
-      coordinate: [2.1666666666478793, 50.583333333115185],
-      icesRectangle: '30F2'
-    }
-  ],
-  [
-    '30F26',
-    {
-      coordinate: [2.4999999997019127, 50.583333333115185],
-      icesRectangle: '30F2'
-    }
-  ],
-  [
-    '30F29',
-    {
-      coordinate: [2.8333333332050943, 50.583333333115185],
-      icesRectangle: '30F2'
-    }
-  ],
-  [
-    '30F22',
-    {
-      coordinate: [2.1666666666478793, 50.75000000001267],
-      icesRectangle: '30F2'
-    }
-  ],
-  [
-    '30F25',
-    {
-      coordinate: [2.4999999997019127, 50.75000000001267],
-      icesRectangle: '30F2'
-    }
-  ],
-  [
-    '30F28',
-    {
-      coordinate: [2.8333333332050943, 50.75000000001267],
-      icesRectangle: '30F2'
-    }
-  ],
-  [
-    '30F21',
-    {
-      coordinate: [2.1666666666478793, 50.91666666667558],
-      icesRectangle: '30F2'
-    }
-  ],
-  [
-    '30F24',
-    {
-      coordinate: [2.4999999997019127, 50.91666666667558],
-      icesRectangle: '30F2'
-    }
-  ],
-  [
-    '30F27',
-    {
-      coordinate: [2.8333333332050943, 50.91666666667558],
-      icesRectangle: '30F2'
     }
   ],
   [
@@ -6275,37 +4950,9 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '33E05',
-    {
-      coordinate: [-9.500000000124864, 52.24999999992123],
-      icesRectangle: '33E0'
-    }
-  ],
-  [
-    '33E08',
-    {
-      coordinate: [-9.16666666662168, 52.24999999992123],
-      icesRectangle: '33E0'
-    }
-  ],
-  [
     '33E01',
     {
       coordinate: [-9.833333333178913, 52.416666666614674],
-      icesRectangle: '33E0'
-    }
-  ],
-  [
-    '33E04',
-    {
-      coordinate: [-9.500000000124864, 52.416666666614674],
-      icesRectangle: '33E0'
-    }
-  ],
-  [
-    '33E07',
-    {
-      coordinate: [-9.16666666662168, 52.416666666614674],
       icesRectangle: '33E0'
     }
   ],
@@ -6366,13 +5013,6 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '34E07',
-    {
-      coordinate: [-9.16666666662168, 52.91666666667711],
-      icesRectangle: '34E0'
-    }
-  ],
-  [
     '35E03',
     {
       coordinate: [-9.833333333178913, 53.08333333330431],
@@ -6429,30 +5069,9 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '35E07',
-    {
-      coordinate: [-9.16666666662168, 53.41666666659076],
-      icesRectangle: '35E0'
-    }
-  ],
-  [
     '36E03',
     {
       coordinate: [-9.833333333178913, 53.58333333341645],
-      icesRectangle: '36E0'
-    }
-  ],
-  [
-    '36E06',
-    {
-      coordinate: [-9.500000000124864, 53.58333333341645],
-      icesRectangle: '36E0'
-    }
-  ],
-  [
-    '36E09',
-    {
-      coordinate: [-9.16666666662168, 53.58333333341645],
       icesRectangle: '36E0'
     }
   ],
@@ -6471,13 +5090,6 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '36E08',
-    {
-      coordinate: [-9.16666666662168, 53.750000000038554],
-      icesRectangle: '36E0'
-    }
-  ],
-  [
     '36E01',
     {
       coordinate: [-9.833333333178913, 53.9166666666741],
@@ -6492,10 +5104,6 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '36E07',
-    { coordinate: [-9.16666666662168, 53.9166666666741], icesRectangle: '36E0' }
-  ],
-  [
     '37E03',
     {
       coordinate: [-9.833333333178913, 54.08333333341384],
@@ -6503,76 +5111,9 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '37E06',
-    {
-      coordinate: [-9.500000000124864, 54.08333333341384],
-      icesRectangle: '37E0'
-    }
-  ],
-  [
-    '37E09',
-    {
-      coordinate: [-9.16666666662168, 54.08333333341384],
-      icesRectangle: '37E0'
-    }
-  ],
-  [
-    '33E12',
-    { coordinate: [-8.8333333331185, 52.24999999992123], icesRectangle: '33E1' }
-  ],
-  [
-    '33E15',
-    {
-      coordinate: [-8.500000000064464, 52.24999999992123],
-      icesRectangle: '33E1'
-    }
-  ],
-  [
-    '33E18',
-    {
-      coordinate: [-8.166666666561266, 52.24999999992123],
-      icesRectangle: '33E1'
-    }
-  ],
-  [
-    '33E11',
-    {
-      coordinate: [-8.8333333331185, 52.416666666614674],
-      icesRectangle: '33E1'
-    }
-  ],
-  [
-    '33E14',
-    {
-      coordinate: [-8.500000000064464, 52.416666666614674],
-      icesRectangle: '33E1'
-    }
-  ],
-  [
-    '33E17',
-    {
-      coordinate: [-8.166666666561266, 52.416666666614674],
-      icesRectangle: '33E1'
-    }
-  ],
-  [
     '34E13',
     {
       coordinate: [-8.8333333331185, 52.583333333358745],
-      icesRectangle: '34E1'
-    }
-  ],
-  [
-    '34E16',
-    {
-      coordinate: [-8.500000000064464, 52.583333333358745],
-      icesRectangle: '34E1'
-    }
-  ],
-  [
-    '34E19',
-    {
-      coordinate: [-8.166666666561266, 52.583333333358745],
       icesRectangle: '34E1'
     }
   ],
@@ -6584,56 +5125,6 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '34E15',
-    {
-      coordinate: [-8.500000000064464, 52.749999999985235],
-      icesRectangle: '34E1'
-    }
-  ],
-  [
-    '34E18',
-    {
-      coordinate: [-8.166666666561266, 52.749999999985235],
-      icesRectangle: '34E1'
-    }
-  ],
-  [
-    '34E11',
-    { coordinate: [-8.8333333331185, 52.91666666667711], icesRectangle: '34E1' }
-  ],
-  [
-    '34E14',
-    {
-      coordinate: [-8.500000000064464, 52.91666666667711],
-      icesRectangle: '34E1'
-    }
-  ],
-  [
-    '34E17',
-    {
-      coordinate: [-8.166666666561266, 52.91666666667711],
-      icesRectangle: '34E1'
-    }
-  ],
-  [
-    '35E13',
-    { coordinate: [-8.8333333331185, 53.08333333330431], icesRectangle: '35E1' }
-  ],
-  [
-    '35E16',
-    {
-      coordinate: [-8.500000000064464, 53.08333333330431],
-      icesRectangle: '35E1'
-    }
-  ],
-  [
-    '35E19',
-    {
-      coordinate: [-8.166666666561266, 53.08333333330431],
-      icesRectangle: '35E1'
-    }
-  ],
-  [
     '35E12',
     {
       coordinate: [-8.8333333331185, 53.249999999815586],
@@ -6641,362 +5132,10 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '35E15',
-    {
-      coordinate: [-8.500000000064464, 53.249999999815586],
-      icesRectangle: '35E1'
-    }
-  ],
-  [
-    '35E18',
-    {
-      coordinate: [-8.166666666561266, 53.249999999815586],
-      icesRectangle: '35E1'
-    }
-  ],
-  [
-    '35E11',
-    { coordinate: [-8.8333333331185, 53.41666666659076], icesRectangle: '35E1' }
-  ],
-  [
-    '35E14',
-    {
-      coordinate: [-8.500000000064464, 53.41666666659076],
-      icesRectangle: '35E1'
-    }
-  ],
-  [
-    '35E17',
-    {
-      coordinate: [-8.166666666561266, 53.41666666659076],
-      icesRectangle: '35E1'
-    }
-  ],
-  [
-    '36E13',
-    { coordinate: [-8.8333333331185, 53.58333333341645], icesRectangle: '36E1' }
-  ],
-  [
-    '36E16',
-    {
-      coordinate: [-8.500000000064464, 53.58333333341645],
-      icesRectangle: '36E1'
-    }
-  ],
-  [
-    '36E19',
-    {
-      coordinate: [-8.166666666561266, 53.58333333341645],
-      icesRectangle: '36E1'
-    }
-  ],
-  [
-    '36E12',
-    {
-      coordinate: [-8.8333333331185, 53.750000000038554],
-      icesRectangle: '36E1'
-    }
-  ],
-  [
-    '36E15',
-    {
-      coordinate: [-8.500000000064464, 53.750000000038554],
-      icesRectangle: '36E1'
-    }
-  ],
-  [
-    '36E18',
-    {
-      coordinate: [-8.166666666561266, 53.750000000038554],
-      icesRectangle: '36E1'
-    }
-  ],
-  [
-    '36E11',
-    { coordinate: [-8.8333333331185, 53.9166666666741], icesRectangle: '36E1' }
-  ],
-  [
-    '36E14',
-    {
-      coordinate: [-8.500000000064464, 53.9166666666741],
-      icesRectangle: '36E1'
-    }
-  ],
-  [
-    '36E17',
-    {
-      coordinate: [-8.166666666561266, 53.9166666666741],
-      icesRectangle: '36E1'
-    }
-  ],
-  [
-    '37E13',
-    { coordinate: [-8.8333333331185, 54.08333333341384], icesRectangle: '37E1' }
-  ],
-  [
-    '37E16',
-    {
-      coordinate: [-8.500000000064464, 54.08333333341384],
-      icesRectangle: '37E1'
-    }
-  ],
-  [
-    '37E19',
-    {
-      coordinate: [-8.166666666561266, 54.08333333341384],
-      icesRectangle: '37E1'
-    }
-  ],
-  [
-    '33E22',
-    {
-      coordinate: [-7.833333333058068, 52.24999999992123],
-      icesRectangle: '33E2'
-    }
-  ],
-  [
-    '33E25',
-    {
-      coordinate: [-7.500000000004035, 52.24999999992123],
-      icesRectangle: '33E2'
-    }
-  ],
-  [
     '33E28',
     {
       coordinate: [-7.166666666950001, 52.24999999992123],
       icesRectangle: '33E2'
-    }
-  ],
-  [
-    '33E21',
-    {
-      coordinate: [-7.833333333058068, 52.416666666614674],
-      icesRectangle: '33E2'
-    }
-  ],
-  [
-    '33E24',
-    {
-      coordinate: [-7.500000000004035, 52.416666666614674],
-      icesRectangle: '33E2'
-    }
-  ],
-  [
-    '33E27',
-    {
-      coordinate: [-7.166666666950001, 52.416666666614674],
-      icesRectangle: '33E2'
-    }
-  ],
-  [
-    '34E23',
-    {
-      coordinate: [-7.833333333058068, 52.583333333358745],
-      icesRectangle: '34E2'
-    }
-  ],
-  [
-    '34E26',
-    {
-      coordinate: [-7.500000000004035, 52.583333333358745],
-      icesRectangle: '34E2'
-    }
-  ],
-  [
-    '34E29',
-    {
-      coordinate: [-7.166666666950001, 52.583333333358745],
-      icesRectangle: '34E2'
-    }
-  ],
-  [
-    '34E22',
-    {
-      coordinate: [-7.833333333058068, 52.749999999985235],
-      icesRectangle: '34E2'
-    }
-  ],
-  [
-    '34E25',
-    {
-      coordinate: [-7.500000000004035, 52.749999999985235],
-      icesRectangle: '34E2'
-    }
-  ],
-  [
-    '34E28',
-    {
-      coordinate: [-7.166666666950001, 52.749999999985235],
-      icesRectangle: '34E2'
-    }
-  ],
-  [
-    '34E21',
-    {
-      coordinate: [-7.833333333058068, 52.91666666667711],
-      icesRectangle: '34E2'
-    }
-  ],
-  [
-    '34E24',
-    {
-      coordinate: [-7.500000000004035, 52.91666666667711],
-      icesRectangle: '34E2'
-    }
-  ],
-  [
-    '34E27',
-    {
-      coordinate: [-7.166666666950001, 52.91666666667711],
-      icesRectangle: '34E2'
-    }
-  ],
-  [
-    '35E23',
-    {
-      coordinate: [-7.833333333058068, 53.08333333330431],
-      icesRectangle: '35E2'
-    }
-  ],
-  [
-    '35E26',
-    {
-      coordinate: [-7.500000000004035, 53.08333333330431],
-      icesRectangle: '35E2'
-    }
-  ],
-  [
-    '35E29',
-    {
-      coordinate: [-7.166666666950001, 53.08333333330431],
-      icesRectangle: '35E2'
-    }
-  ],
-  [
-    '35E22',
-    {
-      coordinate: [-7.833333333058068, 53.249999999815586],
-      icesRectangle: '35E2'
-    }
-  ],
-  [
-    '35E25',
-    {
-      coordinate: [-7.500000000004035, 53.249999999815586],
-      icesRectangle: '35E2'
-    }
-  ],
-  [
-    '35E28',
-    {
-      coordinate: [-7.166666666950001, 53.249999999815586],
-      icesRectangle: '35E2'
-    }
-  ],
-  [
-    '35E21',
-    {
-      coordinate: [-7.833333333058068, 53.41666666659076],
-      icesRectangle: '35E2'
-    }
-  ],
-  [
-    '35E24',
-    {
-      coordinate: [-7.500000000004035, 53.41666666659076],
-      icesRectangle: '35E2'
-    }
-  ],
-  [
-    '35E27',
-    {
-      coordinate: [-7.166666666950001, 53.41666666659076],
-      icesRectangle: '35E2'
-    }
-  ],
-  [
-    '36E23',
-    {
-      coordinate: [-7.833333333058068, 53.58333333341645],
-      icesRectangle: '36E2'
-    }
-  ],
-  [
-    '36E26',
-    {
-      coordinate: [-7.500000000004035, 53.58333333341645],
-      icesRectangle: '36E2'
-    }
-  ],
-  [
-    '36E29',
-    {
-      coordinate: [-7.166666666950001, 53.58333333341645],
-      icesRectangle: '36E2'
-    }
-  ],
-  [
-    '36E22',
-    {
-      coordinate: [-7.833333333058068, 53.750000000038554],
-      icesRectangle: '36E2'
-    }
-  ],
-  [
-    '36E25',
-    {
-      coordinate: [-7.500000000004035, 53.750000000038554],
-      icesRectangle: '36E2'
-    }
-  ],
-  [
-    '36E28',
-    {
-      coordinate: [-7.166666666950001, 53.750000000038554],
-      icesRectangle: '36E2'
-    }
-  ],
-  [
-    '36E21',
-    {
-      coordinate: [-7.833333333058068, 53.9166666666741],
-      icesRectangle: '36E2'
-    }
-  ],
-  [
-    '36E24',
-    {
-      coordinate: [-7.500000000004035, 53.9166666666741],
-      icesRectangle: '36E2'
-    }
-  ],
-  [
-    '36E27',
-    {
-      coordinate: [-7.166666666950001, 53.9166666666741],
-      icesRectangle: '36E2'
-    }
-  ],
-  [
-    '37E23',
-    {
-      coordinate: [-7.833333333058068, 54.08333333341384],
-      icesRectangle: '37E2'
-    }
-  ],
-  [
-    '37E26',
-    {
-      coordinate: [-7.500000000004035, 54.08333333341384],
-      icesRectangle: '37E2'
-    }
-  ],
-  [
-    '37E29',
-    {
-      coordinate: [-7.166666666950001, 54.08333333341384],
-      icesRectangle: '37E2'
     }
   ],
   [
@@ -7021,13 +5160,6 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '33E31',
-    {
-      coordinate: [-6.833333333446802, 52.416666666614674],
-      icesRectangle: '33E3'
-    }
-  ],
-  [
     '33E34',
     {
       coordinate: [-6.4999999999436024, 52.416666666614674],
@@ -7042,37 +5174,9 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '34E33',
-    {
-      coordinate: [-6.833333333446802, 52.583333333358745],
-      icesRectangle: '34E3'
-    }
-  ],
-  [
-    '34E36',
-    {
-      coordinate: [-6.4999999999436024, 52.583333333358745],
-      icesRectangle: '34E3'
-    }
-  ],
-  [
     '34E39',
     {
       coordinate: [-6.1666666668895695, 52.583333333358745],
-      icesRectangle: '34E3'
-    }
-  ],
-  [
-    '34E32',
-    {
-      coordinate: [-6.833333333446802, 52.749999999985235],
-      icesRectangle: '34E3'
-    }
-  ],
-  [
-    '34E35',
-    {
-      coordinate: [-6.4999999999436024, 52.749999999985235],
       icesRectangle: '34E3'
     }
   ],
@@ -7084,20 +5188,6 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '34E31',
-    {
-      coordinate: [-6.833333333446802, 52.91666666667711],
-      icesRectangle: '34E3'
-    }
-  ],
-  [
-    '34E34',
-    {
-      coordinate: [-6.4999999999436024, 52.91666666667711],
-      icesRectangle: '34E3'
-    }
-  ],
-  [
     '34E37',
     {
       coordinate: [-6.1666666668895695, 52.91666666667711],
@@ -7105,37 +5195,9 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '35E33',
-    {
-      coordinate: [-6.833333333446802, 53.08333333330431],
-      icesRectangle: '35E3'
-    }
-  ],
-  [
-    '35E36',
-    {
-      coordinate: [-6.4999999999436024, 53.08333333330431],
-      icesRectangle: '35E3'
-    }
-  ],
-  [
     '35E39',
     {
       coordinate: [-6.1666666668895695, 53.08333333330431],
-      icesRectangle: '35E3'
-    }
-  ],
-  [
-    '35E32',
-    {
-      coordinate: [-6.833333333446802, 53.249999999815586],
-      icesRectangle: '35E3'
-    }
-  ],
-  [
-    '35E35',
-    {
-      coordinate: [-6.4999999999436024, 53.249999999815586],
       icesRectangle: '35E3'
     }
   ],
@@ -7147,38 +5209,10 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '35E31',
-    {
-      coordinate: [-6.833333333446802, 53.41666666659076],
-      icesRectangle: '35E3'
-    }
-  ],
-  [
-    '35E34',
-    {
-      coordinate: [-6.4999999999436024, 53.41666666659076],
-      icesRectangle: '35E3'
-    }
-  ],
-  [
     '35E37',
     {
       coordinate: [-6.1666666668895695, 53.41666666659076],
       icesRectangle: '35E3'
-    }
-  ],
-  [
-    '36E33',
-    {
-      coordinate: [-6.833333333446802, 53.58333333341645],
-      icesRectangle: '36E3'
-    }
-  ],
-  [
-    '36E36',
-    {
-      coordinate: [-6.4999999999436024, 53.58333333341645],
-      icesRectangle: '36E3'
     }
   ],
   [
@@ -7189,30 +5223,9 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '36E32',
-    {
-      coordinate: [-6.833333333446802, 53.750000000038554],
-      icesRectangle: '36E3'
-    }
-  ],
-  [
-    '36E35',
-    {
-      coordinate: [-6.4999999999436024, 53.750000000038554],
-      icesRectangle: '36E3'
-    }
-  ],
-  [
     '36E38',
     {
       coordinate: [-6.1666666668895695, 53.750000000038554],
-      icesRectangle: '36E3'
-    }
-  ],
-  [
-    '36E31',
-    {
-      coordinate: [-6.833333333446802, 53.9166666666741],
       icesRectangle: '36E3'
     }
   ],
@@ -7228,13 +5241,6 @@ export const offlineMapSubrectangles = new Map([
     {
       coordinate: [-6.1666666668895695, 53.9166666666741],
       icesRectangle: '36E3'
-    }
-  ],
-  [
-    '37E33',
-    {
-      coordinate: [-6.833333333446802, 54.08333333341384],
-      icesRectangle: '37E3'
     }
   ],
   [
@@ -7756,129 +5762,10 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '33E62',
-    {
-      coordinate: [-3.833333333265526, 52.24999999992123],
-      icesRectangle: '33E6'
-    }
-  ],
-  [
-    '33E65',
-    {
-      coordinate: [-3.499999999762344, 52.24999999992123],
-      icesRectangle: '33E6'
-    }
-  ],
-  [
-    '33E68',
-    {
-      coordinate: [-3.166666666708293, 52.24999999992123],
-      icesRectangle: '33E6'
-    }
-  ],
-  [
-    '33E61',
-    {
-      coordinate: [-3.833333333265526, 52.416666666614674],
-      icesRectangle: '33E6'
-    }
-  ],
-  [
-    '33E64',
-    {
-      coordinate: [-3.499999999762344, 52.416666666614674],
-      icesRectangle: '33E6'
-    }
-  ],
-  [
-    '33E67',
-    {
-      coordinate: [-3.166666666708293, 52.416666666614674],
-      icesRectangle: '33E6'
-    }
-  ],
-  [
     '34E63',
     {
       coordinate: [-3.833333333265526, 52.583333333358745],
       icesRectangle: '34E6'
-    }
-  ],
-  [
-    '34E66',
-    {
-      coordinate: [-3.499999999762344, 52.583333333358745],
-      icesRectangle: '34E6'
-    }
-  ],
-  [
-    '34E69',
-    {
-      coordinate: [-3.166666666708293, 52.583333333358745],
-      icesRectangle: '34E6'
-    }
-  ],
-  [
-    '34E62',
-    {
-      coordinate: [-3.833333333265526, 52.749999999985235],
-      icesRectangle: '34E6'
-    }
-  ],
-  [
-    '34E65',
-    {
-      coordinate: [-3.499999999762344, 52.749999999985235],
-      icesRectangle: '34E6'
-    }
-  ],
-  [
-    '34E68',
-    {
-      coordinate: [-3.166666666708293, 52.749999999985235],
-      icesRectangle: '34E6'
-    }
-  ],
-  [
-    '34E61',
-    {
-      coordinate: [-3.833333333265526, 52.91666666667711],
-      icesRectangle: '34E6'
-    }
-  ],
-  [
-    '34E64',
-    {
-      coordinate: [-3.499999999762344, 52.91666666667711],
-      icesRectangle: '34E6'
-    }
-  ],
-  [
-    '34E67',
-    {
-      coordinate: [-3.166666666708293, 52.91666666667711],
-      icesRectangle: '34E6'
-    }
-  ],
-  [
-    '35E63',
-    {
-      coordinate: [-3.833333333265526, 53.08333333330431],
-      icesRectangle: '35E6'
-    }
-  ],
-  [
-    '35E66',
-    {
-      coordinate: [-3.499999999762344, 53.08333333330431],
-      icesRectangle: '35E6'
-    }
-  ],
-  [
-    '35E69',
-    {
-      coordinate: [-3.166666666708293, 53.08333333330431],
-      icesRectangle: '35E6'
     }
   ],
   [
@@ -8008,149 +5895,9 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '33E72',
-    {
-      coordinate: [-2.8333333332050943, 52.24999999992123],
-      icesRectangle: '33E7'
-    }
-  ],
-  [
-    '33E75',
-    {
-      coordinate: [-2.4999999997019127, 52.24999999992123],
-      icesRectangle: '33E7'
-    }
-  ],
-  [
-    '33E78',
-    {
-      coordinate: [-2.1666666666478793, 52.24999999992123],
-      icesRectangle: '33E7'
-    }
-  ],
-  [
-    '33E71',
-    {
-      coordinate: [-2.8333333332050943, 52.416666666614674],
-      icesRectangle: '33E7'
-    }
-  ],
-  [
-    '33E74',
-    {
-      coordinate: [-2.4999999997019127, 52.416666666614674],
-      icesRectangle: '33E7'
-    }
-  ],
-  [
-    '33E77',
-    {
-      coordinate: [-2.1666666666478793, 52.416666666614674],
-      icesRectangle: '33E7'
-    }
-  ],
-  [
-    '34E73',
-    {
-      coordinate: [-2.8333333332050943, 52.583333333358745],
-      icesRectangle: '34E7'
-    }
-  ],
-  [
-    '34E76',
-    {
-      coordinate: [-2.4999999997019127, 52.583333333358745],
-      icesRectangle: '34E7'
-    }
-  ],
-  [
-    '34E79',
-    {
-      coordinate: [-2.1666666666478793, 52.583333333358745],
-      icesRectangle: '34E7'
-    }
-  ],
-  [
-    '34E72',
-    {
-      coordinate: [-2.8333333332050943, 52.749999999985235],
-      icesRectangle: '34E7'
-    }
-  ],
-  [
-    '34E75',
-    {
-      coordinate: [-2.4999999997019127, 52.749999999985235],
-      icesRectangle: '34E7'
-    }
-  ],
-  [
-    '34E78',
-    {
-      coordinate: [-2.1666666666478793, 52.749999999985235],
-      icesRectangle: '34E7'
-    }
-  ],
-  [
-    '34E71',
-    {
-      coordinate: [-2.8333333332050943, 52.91666666667711],
-      icesRectangle: '34E7'
-    }
-  ],
-  [
-    '34E74',
-    {
-      coordinate: [-2.4999999997019127, 52.91666666667711],
-      icesRectangle: '34E7'
-    }
-  ],
-  [
-    '34E77',
-    {
-      coordinate: [-2.1666666666478793, 52.91666666667711],
-      icesRectangle: '34E7'
-    }
-  ],
-  [
-    '35E73',
-    {
-      coordinate: [-2.8333333332050943, 53.08333333330431],
-      icesRectangle: '35E7'
-    }
-  ],
-  [
-    '35E76',
-    {
-      coordinate: [-2.4999999997019127, 53.08333333330431],
-      icesRectangle: '35E7'
-    }
-  ],
-  [
-    '35E79',
-    {
-      coordinate: [-2.1666666666478793, 53.08333333330431],
-      icesRectangle: '35E7'
-    }
-  ],
-  [
     '35E72',
     {
       coordinate: [-2.8333333332050943, 53.249999999815586],
-      icesRectangle: '35E7'
-    }
-  ],
-  [
-    '35E75',
-    {
-      coordinate: [-2.4999999997019127, 53.249999999815586],
-      icesRectangle: '35E7'
-    }
-  ],
-  [
-    '35E78',
-    {
-      coordinate: [-2.1666666666478793, 53.249999999815586],
       icesRectangle: '35E7'
     }
   ],
@@ -8162,58 +5909,9 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '35E74',
-    {
-      coordinate: [-2.4999999997019127, 53.41666666659076],
-      icesRectangle: '35E7'
-    }
-  ],
-  [
-    '35E77',
-    {
-      coordinate: [-2.1666666666478793, 53.41666666659076],
-      icesRectangle: '35E7'
-    }
-  ],
-  [
-    '36E73',
-    {
-      coordinate: [-2.8333333332050943, 53.58333333341645],
-      icesRectangle: '36E7'
-    }
-  ],
-  [
-    '36E76',
-    {
-      coordinate: [-2.4999999997019127, 53.58333333341645],
-      icesRectangle: '36E7'
-    }
-  ],
-  [
-    '36E79',
-    {
-      coordinate: [-2.1666666666478793, 53.58333333341645],
-      icesRectangle: '36E7'
-    }
-  ],
-  [
     '36E72',
     {
       coordinate: [-2.8333333332050943, 53.750000000038554],
-      icesRectangle: '36E7'
-    }
-  ],
-  [
-    '36E75',
-    {
-      coordinate: [-2.4999999997019127, 53.750000000038554],
-      icesRectangle: '36E7'
-    }
-  ],
-  [
-    '36E78',
-    {
-      coordinate: [-2.1666666666478793, 53.750000000038554],
       icesRectangle: '36E7'
     }
   ],
@@ -8225,472 +5923,10 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '36E74',
-    {
-      coordinate: [-2.4999999997019127, 53.9166666666741],
-      icesRectangle: '36E7'
-    }
-  ],
-  [
-    '36E77',
-    {
-      coordinate: [-2.1666666666478793, 53.9166666666741],
-      icesRectangle: '36E7'
-    }
-  ],
-  [
     '37E73',
     {
       coordinate: [-2.8333333332050943, 54.08333333341384],
       icesRectangle: '37E7'
-    }
-  ],
-  [
-    '37E76',
-    {
-      coordinate: [-2.4999999997019127, 54.08333333341384],
-      icesRectangle: '37E7'
-    }
-  ],
-  [
-    '37E79',
-    {
-      coordinate: [-2.1666666666478793, 54.08333333341384],
-      icesRectangle: '37E7'
-    }
-  ],
-  [
-    '33E82',
-    {
-      coordinate: [-1.8333333335938455, 52.24999999992123],
-      icesRectangle: '33E8'
-    }
-  ],
-  [
-    '33E85',
-    {
-      coordinate: [-1.5000000000906466, 52.24999999992123],
-      icesRectangle: '33E8'
-    }
-  ],
-  [
-    '33E88',
-    {
-      coordinate: [-1.166666666587448, 52.24999999992123],
-      icesRectangle: '33E8'
-    }
-  ],
-  [
-    '33E81',
-    {
-      coordinate: [-1.8333333335938455, 52.416666666614674],
-      icesRectangle: '33E8'
-    }
-  ],
-  [
-    '33E84',
-    {
-      coordinate: [-1.5000000000906466, 52.416666666614674],
-      icesRectangle: '33E8'
-    }
-  ],
-  [
-    '33E87',
-    {
-      coordinate: [-1.166666666587448, 52.416666666614674],
-      icesRectangle: '33E8'
-    }
-  ],
-  [
-    '34E83',
-    {
-      coordinate: [-1.8333333335938455, 52.583333333358745],
-      icesRectangle: '34E8'
-    }
-  ],
-  [
-    '34E86',
-    {
-      coordinate: [-1.5000000000906466, 52.583333333358745],
-      icesRectangle: '34E8'
-    }
-  ],
-  [
-    '34E89',
-    {
-      coordinate: [-1.166666666587448, 52.583333333358745],
-      icesRectangle: '34E8'
-    }
-  ],
-  [
-    '34E82',
-    {
-      coordinate: [-1.8333333335938455, 52.749999999985235],
-      icesRectangle: '34E8'
-    }
-  ],
-  [
-    '34E85',
-    {
-      coordinate: [-1.5000000000906466, 52.749999999985235],
-      icesRectangle: '34E8'
-    }
-  ],
-  [
-    '34E88',
-    {
-      coordinate: [-1.166666666587448, 52.749999999985235],
-      icesRectangle: '34E8'
-    }
-  ],
-  [
-    '34E81',
-    {
-      coordinate: [-1.8333333335938455, 52.91666666667711],
-      icesRectangle: '34E8'
-    }
-  ],
-  [
-    '34E84',
-    {
-      coordinate: [-1.5000000000906466, 52.91666666667711],
-      icesRectangle: '34E8'
-    }
-  ],
-  [
-    '34E87',
-    {
-      coordinate: [-1.166666666587448, 52.91666666667711],
-      icesRectangle: '34E8'
-    }
-  ],
-  [
-    '35E83',
-    {
-      coordinate: [-1.8333333335938455, 53.08333333330431],
-      icesRectangle: '35E8'
-    }
-  ],
-  [
-    '35E86',
-    {
-      coordinate: [-1.5000000000906466, 53.08333333330431],
-      icesRectangle: '35E8'
-    }
-  ],
-  [
-    '35E89',
-    {
-      coordinate: [-1.166666666587448, 53.08333333330431],
-      icesRectangle: '35E8'
-    }
-  ],
-  [
-    '35E82',
-    {
-      coordinate: [-1.8333333335938455, 53.249999999815586],
-      icesRectangle: '35E8'
-    }
-  ],
-  [
-    '35E85',
-    {
-      coordinate: [-1.5000000000906466, 53.249999999815586],
-      icesRectangle: '35E8'
-    }
-  ],
-  [
-    '35E88',
-    {
-      coordinate: [-1.166666666587448, 53.249999999815586],
-      icesRectangle: '35E8'
-    }
-  ],
-  [
-    '35E81',
-    {
-      coordinate: [-1.8333333335938455, 53.41666666659076],
-      icesRectangle: '35E8'
-    }
-  ],
-  [
-    '35E84',
-    {
-      coordinate: [-1.5000000000906466, 53.41666666659076],
-      icesRectangle: '35E8'
-    }
-  ],
-  [
-    '35E87',
-    {
-      coordinate: [-1.166666666587448, 53.41666666659076],
-      icesRectangle: '35E8'
-    }
-  ],
-  [
-    '36E83',
-    {
-      coordinate: [-1.8333333335938455, 53.58333333341645],
-      icesRectangle: '36E8'
-    }
-  ],
-  [
-    '36E86',
-    {
-      coordinate: [-1.5000000000906466, 53.58333333341645],
-      icesRectangle: '36E8'
-    }
-  ],
-  [
-    '36E89',
-    {
-      coordinate: [-1.166666666587448, 53.58333333341645],
-      icesRectangle: '36E8'
-    }
-  ],
-  [
-    '36E82',
-    {
-      coordinate: [-1.8333333335938455, 53.750000000038554],
-      icesRectangle: '36E8'
-    }
-  ],
-  [
-    '36E85',
-    {
-      coordinate: [-1.5000000000906466, 53.750000000038554],
-      icesRectangle: '36E8'
-    }
-  ],
-  [
-    '36E88',
-    {
-      coordinate: [-1.166666666587448, 53.750000000038554],
-      icesRectangle: '36E8'
-    }
-  ],
-  [
-    '36E81',
-    {
-      coordinate: [-1.8333333335938455, 53.9166666666741],
-      icesRectangle: '36E8'
-    }
-  ],
-  [
-    '36E84',
-    {
-      coordinate: [-1.5000000000906466, 53.9166666666741],
-      icesRectangle: '36E8'
-    }
-  ],
-  [
-    '36E87',
-    {
-      coordinate: [-1.166666666587448, 53.9166666666741],
-      icesRectangle: '36E8'
-    }
-  ],
-  [
-    '37E83',
-    {
-      coordinate: [-1.8333333335938455, 54.08333333341384],
-      icesRectangle: '37E8'
-    }
-  ],
-  [
-    '37E86',
-    {
-      coordinate: [-1.5000000000906466, 54.08333333341384],
-      icesRectangle: '37E8'
-    }
-  ],
-  [
-    '37E89',
-    {
-      coordinate: [-1.166666666587448, 54.08333333341384],
-      icesRectangle: '37E8'
-    }
-  ],
-  [
-    '33E92',
-    {
-      coordinate: [-0.8333333335334143, 52.24999999992123],
-      icesRectangle: '33E9'
-    }
-  ],
-  [
-    '33E95',
-    {
-      coordinate: [-0.5000000000302155, 52.24999999992123],
-      icesRectangle: '33E9'
-    }
-  ],
-  [
-    '33E98',
-    {
-      coordinate: [-0.16666666652701675, 52.24999999992123],
-      icesRectangle: '33E9'
-    }
-  ],
-  [
-    '33E91',
-    {
-      coordinate: [-0.8333333335334143, 52.416666666614674],
-      icesRectangle: '33E9'
-    }
-  ],
-  [
-    '33E94',
-    {
-      coordinate: [-0.5000000000302155, 52.416666666614674],
-      icesRectangle: '33E9'
-    }
-  ],
-  [
-    '33E97',
-    {
-      coordinate: [-0.16666666652701675, 52.416666666614674],
-      icesRectangle: '33E9'
-    }
-  ],
-  [
-    '34E93',
-    {
-      coordinate: [-0.8333333335334143, 52.583333333358745],
-      icesRectangle: '34E9'
-    }
-  ],
-  [
-    '34E96',
-    {
-      coordinate: [-0.5000000000302155, 52.583333333358745],
-      icesRectangle: '34E9'
-    }
-  ],
-  [
-    '34E99',
-    {
-      coordinate: [-0.16666666652701675, 52.583333333358745],
-      icesRectangle: '34E9'
-    }
-  ],
-  [
-    '34E92',
-    {
-      coordinate: [-0.8333333335334143, 52.749999999985235],
-      icesRectangle: '34E9'
-    }
-  ],
-  [
-    '34E95',
-    {
-      coordinate: [-0.5000000000302155, 52.749999999985235],
-      icesRectangle: '34E9'
-    }
-  ],
-  [
-    '34E98',
-    {
-      coordinate: [-0.16666666652701675, 52.749999999985235],
-      icesRectangle: '34E9'
-    }
-  ],
-  [
-    '34E91',
-    {
-      coordinate: [-0.8333333335334143, 52.91666666667711],
-      icesRectangle: '34E9'
-    }
-  ],
-  [
-    '34E94',
-    {
-      coordinate: [-0.5000000000302155, 52.91666666667711],
-      icesRectangle: '34E9'
-    }
-  ],
-  [
-    '34E97',
-    {
-      coordinate: [-0.16666666652701675, 52.91666666667711],
-      icesRectangle: '34E9'
-    }
-  ],
-  [
-    '35E93',
-    {
-      coordinate: [-0.8333333335334143, 53.08333333330431],
-      icesRectangle: '35E9'
-    }
-  ],
-  [
-    '35E96',
-    {
-      coordinate: [-0.5000000000302155, 53.08333333330431],
-      icesRectangle: '35E9'
-    }
-  ],
-  [
-    '35E99',
-    {
-      coordinate: [-0.16666666652701675, 53.08333333330431],
-      icesRectangle: '35E9'
-    }
-  ],
-  [
-    '35E92',
-    {
-      coordinate: [-0.8333333335334143, 53.249999999815586],
-      icesRectangle: '35E9'
-    }
-  ],
-  [
-    '35E95',
-    {
-      coordinate: [-0.5000000000302155, 53.249999999815586],
-      icesRectangle: '35E9'
-    }
-  ],
-  [
-    '35E98',
-    {
-      coordinate: [-0.16666666652701675, 53.249999999815586],
-      icesRectangle: '35E9'
-    }
-  ],
-  [
-    '35E91',
-    {
-      coordinate: [-0.8333333335334143, 53.41666666659076],
-      icesRectangle: '35E9'
-    }
-  ],
-  [
-    '35E94',
-    {
-      coordinate: [-0.5000000000302155, 53.41666666659076],
-      icesRectangle: '35E9'
-    }
-  ],
-  [
-    '35E97',
-    {
-      coordinate: [-0.16666666652701675, 53.41666666659076],
-      icesRectangle: '35E9'
-    }
-  ],
-  [
-    '36E93',
-    {
-      coordinate: [-0.8333333335334143, 53.58333333341645],
-      icesRectangle: '36E9'
-    }
-  ],
-  [
-    '36E96',
-    {
-      coordinate: [-0.5000000000302155, 53.58333333341645],
-      icesRectangle: '36E9'
     }
   ],
   [
@@ -8722,20 +5958,6 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '36E91',
-    {
-      coordinate: [-0.8333333335334143, 53.9166666666741],
-      icesRectangle: '36E9'
-    }
-  ],
-  [
-    '36E94',
-    {
-      coordinate: [-0.5000000000302155, 53.9166666666741],
-      icesRectangle: '36E9'
-    }
-  ],
-  [
     '36E97',
     {
       coordinate: [-0.16666666652701675, 53.9166666666741],
@@ -8743,87 +5965,10 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '37E93',
-    {
-      coordinate: [-0.8333333335334143, 54.08333333341384],
-      icesRectangle: '37E9'
-    }
-  ],
-  [
-    '37E96',
-    {
-      coordinate: [-0.5000000000302155, 54.08333333341384],
-      icesRectangle: '37E9'
-    }
-  ],
-  [
     '37E99',
     {
       coordinate: [-0.16666666652701675, 54.08333333341384],
       icesRectangle: '37E9'
-    }
-  ],
-  [
-    '33F02',
-    {
-      coordinate: [0.16666666652701675, 52.24999999992123],
-      icesRectangle: '33F0'
-    }
-  ],
-  [
-    '33F05',
-    {
-      coordinate: [0.5000000000302155, 52.24999999992123],
-      icesRectangle: '33F0'
-    }
-  ],
-  [
-    '33F08',
-    {
-      coordinate: [0.8333333335334143, 52.24999999992123],
-      icesRectangle: '33F0'
-    }
-  ],
-  [
-    '33F01',
-    {
-      coordinate: [0.16666666652701675, 52.416666666614674],
-      icesRectangle: '33F0'
-    }
-  ],
-  [
-    '33F04',
-    {
-      coordinate: [0.5000000000302155, 52.416666666614674],
-      icesRectangle: '33F0'
-    }
-  ],
-  [
-    '33F07',
-    {
-      coordinate: [0.8333333335334143, 52.416666666614674],
-      icesRectangle: '33F0'
-    }
-  ],
-  [
-    '34F03',
-    {
-      coordinate: [0.16666666652701675, 52.583333333358745],
-      icesRectangle: '34F0'
-    }
-  ],
-  [
-    '34F06',
-    {
-      coordinate: [0.5000000000302155, 52.583333333358745],
-      icesRectangle: '34F0'
-    }
-  ],
-  [
-    '34F09',
-    {
-      coordinate: [0.8333333335334143, 52.583333333358745],
-      icesRectangle: '34F0'
     }
   ],
   [
@@ -8837,13 +5982,6 @@ export const offlineMapSubrectangles = new Map([
     '34F05',
     {
       coordinate: [0.5000000000302155, 52.749999999985235],
-      icesRectangle: '34F0'
-    }
-  ],
-  [
-    '34F08',
-    {
-      coordinate: [0.8333333335334143, 52.749999999985235],
       icesRectangle: '34F0'
     }
   ],
@@ -9016,13 +6154,6 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '33F12',
-    {
-      coordinate: [1.166666666587448, 52.24999999992123],
-      icesRectangle: '33F1'
-    }
-  ],
-  [
     '33F15',
     {
       coordinate: [1.5000000000906466, 52.24999999992123],
@@ -9037,20 +6168,6 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '33F11',
-    {
-      coordinate: [1.166666666587448, 52.416666666614674],
-      icesRectangle: '33F1'
-    }
-  ],
-  [
-    '33F14',
-    {
-      coordinate: [1.5000000000906466, 52.416666666614674],
-      icesRectangle: '33F1'
-    }
-  ],
-  [
     '33F17',
     {
       coordinate: [1.8333333335938455, 52.416666666614674],
@@ -9058,30 +6175,9 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '34F13',
-    {
-      coordinate: [1.166666666587448, 52.583333333358745],
-      icesRectangle: '34F1'
-    }
-  ],
-  [
-    '34F16',
-    {
-      coordinate: [1.5000000000906466, 52.583333333358745],
-      icesRectangle: '34F1'
-    }
-  ],
-  [
     '34F19',
     {
       coordinate: [1.8333333335938455, 52.583333333358745],
-      icesRectangle: '34F1'
-    }
-  ],
-  [
-    '34F12',
-    {
-      coordinate: [1.166666666587448, 52.749999999985235],
       icesRectangle: '34F1'
     }
   ],
@@ -10278,13 +7374,6 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '37E18',
-    {
-      coordinate: [-8.166666666561266, 54.25000000012875],
-      icesRectangle: '37E1'
-    }
-  ],
-  [
     '37E11',
     {
       coordinate: [-8.8333333331185, 54.416666666598786],
@@ -10498,90 +7587,6 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '37E22',
-    {
-      coordinate: [-7.833333333058068, 54.25000000012875],
-      icesRectangle: '37E2'
-    }
-  ],
-  [
-    '37E25',
-    {
-      coordinate: [-7.500000000004035, 54.25000000012875],
-      icesRectangle: '37E2'
-    }
-  ],
-  [
-    '37E28',
-    {
-      coordinate: [-7.166666666950001, 54.25000000012875],
-      icesRectangle: '37E2'
-    }
-  ],
-  [
-    '37E21',
-    {
-      coordinate: [-7.833333333058068, 54.416666666598786],
-      icesRectangle: '37E2'
-    }
-  ],
-  [
-    '37E24',
-    {
-      coordinate: [-7.500000000004035, 54.416666666598786],
-      icesRectangle: '37E2'
-    }
-  ],
-  [
-    '37E27',
-    {
-      coordinate: [-7.166666666950001, 54.416666666598786],
-      icesRectangle: '37E2'
-    }
-  ],
-  [
-    '38E23',
-    {
-      coordinate: [-7.833333333058068, 54.58333333312169],
-      icesRectangle: '38E2'
-    }
-  ],
-  [
-    '38E26',
-    {
-      coordinate: [-7.500000000004035, 54.58333333312169],
-      icesRectangle: '38E2'
-    }
-  ],
-  [
-    '38E29',
-    {
-      coordinate: [-7.166666666950001, 54.58333333312169],
-      icesRectangle: '38E2'
-    }
-  ],
-  [
-    '38E22',
-    {
-      coordinate: [-7.833333333058068, 54.750000000030106],
-      icesRectangle: '38E2'
-    }
-  ],
-  [
-    '38E25',
-    {
-      coordinate: [-7.500000000004035, 54.750000000030106],
-      icesRectangle: '38E2'
-    }
-  ],
-  [
-    '38E28',
-    {
-      coordinate: [-7.166666666950001, 54.750000000030106],
-      icesRectangle: '38E2'
-    }
-  ],
-  [
     '38E21',
     {
       coordinate: [-7.833333333058068, 54.91666666691792],
@@ -10593,20 +7598,6 @@ export const offlineMapSubrectangles = new Map([
     {
       coordinate: [-7.500000000004035, 54.91666666691792],
       icesRectangle: '38E2'
-    }
-  ],
-  [
-    '38E27',
-    {
-      coordinate: [-7.166666666950001, 54.91666666691792],
-      icesRectangle: '38E2'
-    }
-  ],
-  [
-    '39E23',
-    {
-      coordinate: [-7.833333333058068, 55.083333333384566],
-      icesRectangle: '39E2'
     }
   ],
   [
@@ -10750,121 +7741,9 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '37E32',
-    {
-      coordinate: [-6.833333333446802, 54.25000000012875],
-      icesRectangle: '37E3'
-    }
-  ],
-  [
-    '37E35',
-    {
-      coordinate: [-6.4999999999436024, 54.25000000012875],
-      icesRectangle: '37E3'
-    }
-  ],
-  [
-    '37E38',
-    {
-      coordinate: [-6.1666666668895695, 54.25000000012875],
-      icesRectangle: '37E3'
-    }
-  ],
-  [
-    '37E31',
-    {
-      coordinate: [-6.833333333446802, 54.416666666598786],
-      icesRectangle: '37E3'
-    }
-  ],
-  [
-    '37E34',
-    {
-      coordinate: [-6.4999999999436024, 54.416666666598786],
-      icesRectangle: '37E3'
-    }
-  ],
-  [
-    '37E37',
-    {
-      coordinate: [-6.1666666668895695, 54.416666666598786],
-      icesRectangle: '37E3'
-    }
-  ],
-  [
-    '38E33',
-    {
-      coordinate: [-6.833333333446802, 54.58333333312169],
-      icesRectangle: '38E3'
-    }
-  ],
-  [
-    '38E36',
-    {
-      coordinate: [-6.4999999999436024, 54.58333333312169],
-      icesRectangle: '38E3'
-    }
-  ],
-  [
-    '38E39',
-    {
-      coordinate: [-6.1666666668895695, 54.58333333312169],
-      icesRectangle: '38E3'
-    }
-  ],
-  [
-    '38E32',
-    {
-      coordinate: [-6.833333333446802, 54.750000000030106],
-      icesRectangle: '38E3'
-    }
-  ],
-  [
-    '38E35',
-    {
-      coordinate: [-6.4999999999436024, 54.750000000030106],
-      icesRectangle: '38E3'
-    }
-  ],
-  [
-    '38E38',
-    {
-      coordinate: [-6.1666666668895695, 54.750000000030106],
-      icesRectangle: '38E3'
-    }
-  ],
-  [
-    '38E31',
-    {
-      coordinate: [-6.833333333446802, 54.91666666691792],
-      icesRectangle: '38E3'
-    }
-  ],
-  [
-    '38E34',
-    {
-      coordinate: [-6.4999999999436024, 54.91666666691792],
-      icesRectangle: '38E3'
-    }
-  ],
-  [
-    '38E37',
-    {
-      coordinate: [-6.1666666668895695, 54.91666666691792],
-      icesRectangle: '38E3'
-    }
-  ],
-  [
     '39E33',
     {
       coordinate: [-6.833333333446802, 55.083333333384566],
-      icesRectangle: '39E3'
-    }
-  ],
-  [
-    '39E36',
-    {
-      coordinate: [-6.4999999999436024, 55.083333333384566],
       icesRectangle: '39E3'
     }
   ],
@@ -11366,37 +8245,9 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '39E56',
-    {
-      coordinate: [-4.499999999822741, 55.083333333384566],
-      icesRectangle: '39E5'
-    }
-  ],
-  [
-    '39E59',
-    {
-      coordinate: [-4.166666666768707, 55.083333333384566],
-      icesRectangle: '39E5'
-    }
-  ],
-  [
     '39E52',
     {
       coordinate: [-4.833333333325941, 55.24999999997688],
-      icesRectangle: '39E5'
-    }
-  ],
-  [
-    '39E55',
-    {
-      coordinate: [-4.499999999822741, 55.24999999997688],
-      icesRectangle: '39E5'
-    }
-  ],
-  [
-    '39E58',
-    {
-      coordinate: [-4.166666666768707, 55.24999999997688],
       icesRectangle: '39E5'
     }
   ],
@@ -11415,13 +8266,6 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '39E57',
-    {
-      coordinate: [-4.166666666768707, 55.4166666667698],
-      icesRectangle: '39E5'
-    }
-  ],
-  [
     '40E53',
     {
       coordinate: [-4.833333333325941, 55.58333333344995],
@@ -11436,30 +8280,9 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '40E59',
-    {
-      coordinate: [-4.166666666768707, 55.58333333344995],
-      icesRectangle: '40E5'
-    }
-  ],
-  [
     '40E52',
     {
       coordinate: [-4.833333333325941, 55.750000000119684],
-      icesRectangle: '40E5'
-    }
-  ],
-  [
-    '40E55',
-    {
-      coordinate: [-4.499999999822741, 55.750000000119684],
-      icesRectangle: '40E5'
-    }
-  ],
-  [
-    '40E58',
-    {
-      coordinate: [-4.166666666768707, 55.750000000119684],
       icesRectangle: '40E5'
     }
   ],
@@ -11478,30 +8301,9 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '40E57',
-    {
-      coordinate: [-4.166666666768707, 55.91666666676721],
-      icesRectangle: '40E5'
-    }
-  ],
-  [
     '41E53',
     {
       coordinate: [-4.833333333325941, 56.083333333455165],
-      icesRectangle: '41E5'
-    }
-  ],
-  [
-    '41E56',
-    {
-      coordinate: [-4.499999999822741, 56.083333333455165],
-      icesRectangle: '41E5'
-    }
-  ],
-  [
-    '41E59',
-    {
-      coordinate: [-4.166666666768707, 56.083333333455165],
       icesRectangle: '41E5'
     }
   ],
@@ -11541,13 +8343,6 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '37E67',
-    {
-      coordinate: [-3.166666666708293, 54.416666666598786],
-      icesRectangle: '37E6'
-    }
-  ],
-  [
     '38E63',
     {
       coordinate: [-3.833333333265526, 54.58333333312169],
@@ -11562,13 +8357,6 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '38E69',
-    {
-      coordinate: [-3.166666666708293, 54.58333333312169],
-      icesRectangle: '38E6'
-    }
-  ],
-  [
     '38E62',
     {
       coordinate: [-3.833333333265526, 54.750000000030106],
@@ -11579,13 +8367,6 @@ export const offlineMapSubrectangles = new Map([
     '38E65',
     {
       coordinate: [-3.499999999762344, 54.750000000030106],
-      icesRectangle: '38E6'
-    }
-  ],
-  [
-    '38E68',
-    {
-      coordinate: [-3.166666666708293, 54.750000000030106],
       icesRectangle: '38E6'
     }
   ],
@@ -11608,118 +8389,6 @@ export const offlineMapSubrectangles = new Map([
     {
       coordinate: [-3.166666666708293, 54.91666666691792],
       icesRectangle: '38E6'
-    }
-  ],
-  [
-    '39E63',
-    {
-      coordinate: [-3.833333333265526, 55.083333333384566],
-      icesRectangle: '39E6'
-    }
-  ],
-  [
-    '39E66',
-    {
-      coordinate: [-3.499999999762344, 55.083333333384566],
-      icesRectangle: '39E6'
-    }
-  ],
-  [
-    '39E69',
-    {
-      coordinate: [-3.166666666708293, 55.083333333384566],
-      icesRectangle: '39E6'
-    }
-  ],
-  [
-    '39E62',
-    {
-      coordinate: [-3.833333333265526, 55.24999999997688],
-      icesRectangle: '39E6'
-    }
-  ],
-  [
-    '39E65',
-    {
-      coordinate: [-3.499999999762344, 55.24999999997688],
-      icesRectangle: '39E6'
-    }
-  ],
-  [
-    '39E68',
-    {
-      coordinate: [-3.166666666708293, 55.24999999997688],
-      icesRectangle: '39E6'
-    }
-  ],
-  [
-    '39E61',
-    {
-      coordinate: [-3.833333333265526, 55.4166666667698],
-      icesRectangle: '39E6'
-    }
-  ],
-  [
-    '39E64',
-    {
-      coordinate: [-3.499999999762344, 55.4166666667698],
-      icesRectangle: '39E6'
-    }
-  ],
-  [
-    '39E67',
-    {
-      coordinate: [-3.166666666708293, 55.4166666667698],
-      icesRectangle: '39E6'
-    }
-  ],
-  [
-    '40E63',
-    {
-      coordinate: [-3.833333333265526, 55.58333333344995],
-      icesRectangle: '40E6'
-    }
-  ],
-  [
-    '40E66',
-    {
-      coordinate: [-3.499999999762344, 55.58333333344995],
-      icesRectangle: '40E6'
-    }
-  ],
-  [
-    '40E69',
-    {
-      coordinate: [-3.166666666708293, 55.58333333344995],
-      icesRectangle: '40E6'
-    }
-  ],
-  [
-    '40E62',
-    {
-      coordinate: [-3.833333333265526, 55.750000000119684],
-      icesRectangle: '40E6'
-    }
-  ],
-  [
-    '40E65',
-    {
-      coordinate: [-3.499999999762344, 55.750000000119684],
-      icesRectangle: '40E6'
-    }
-  ],
-  [
-    '40E68',
-    {
-      coordinate: [-3.166666666708293, 55.750000000119684],
-      icesRectangle: '40E6'
-    }
-  ],
-  [
-    '40E61',
-    {
-      coordinate: [-3.833333333265526, 55.91666666676721],
-      icesRectangle: '40E6'
     }
   ],
   [
@@ -11762,202 +8431,6 @@ export const offlineMapSubrectangles = new Map([
     {
       coordinate: [-2.8333333332050943, 54.25000000012875],
       icesRectangle: '37E7'
-    }
-  ],
-  [
-    '37E75',
-    {
-      coordinate: [-2.4999999997019127, 54.25000000012875],
-      icesRectangle: '37E7'
-    }
-  ],
-  [
-    '37E78',
-    {
-      coordinate: [-2.1666666666478793, 54.25000000012875],
-      icesRectangle: '37E7'
-    }
-  ],
-  [
-    '37E71',
-    {
-      coordinate: [-2.8333333332050943, 54.416666666598786],
-      icesRectangle: '37E7'
-    }
-  ],
-  [
-    '37E74',
-    {
-      coordinate: [-2.4999999997019127, 54.416666666598786],
-      icesRectangle: '37E7'
-    }
-  ],
-  [
-    '37E77',
-    {
-      coordinate: [-2.1666666666478793, 54.416666666598786],
-      icesRectangle: '37E7'
-    }
-  ],
-  [
-    '38E73',
-    {
-      coordinate: [-2.8333333332050943, 54.58333333312169],
-      icesRectangle: '38E7'
-    }
-  ],
-  [
-    '38E76',
-    {
-      coordinate: [-2.4999999997019127, 54.58333333312169],
-      icesRectangle: '38E7'
-    }
-  ],
-  [
-    '38E79',
-    {
-      coordinate: [-2.1666666666478793, 54.58333333312169],
-      icesRectangle: '38E7'
-    }
-  ],
-  [
-    '38E72',
-    {
-      coordinate: [-2.8333333332050943, 54.750000000030106],
-      icesRectangle: '38E7'
-    }
-  ],
-  [
-    '38E75',
-    {
-      coordinate: [-2.4999999997019127, 54.750000000030106],
-      icesRectangle: '38E7'
-    }
-  ],
-  [
-    '38E78',
-    {
-      coordinate: [-2.1666666666478793, 54.750000000030106],
-      icesRectangle: '38E7'
-    }
-  ],
-  [
-    '38E71',
-    {
-      coordinate: [-2.8333333332050943, 54.91666666691792],
-      icesRectangle: '38E7'
-    }
-  ],
-  [
-    '38E74',
-    {
-      coordinate: [-2.4999999997019127, 54.91666666691792],
-      icesRectangle: '38E7'
-    }
-  ],
-  [
-    '38E77',
-    {
-      coordinate: [-2.1666666666478793, 54.91666666691792],
-      icesRectangle: '38E7'
-    }
-  ],
-  [
-    '39E73',
-    {
-      coordinate: [-2.8333333332050943, 55.083333333384566],
-      icesRectangle: '39E7'
-    }
-  ],
-  [
-    '39E76',
-    {
-      coordinate: [-2.4999999997019127, 55.083333333384566],
-      icesRectangle: '39E7'
-    }
-  ],
-  [
-    '39E79',
-    {
-      coordinate: [-2.1666666666478793, 55.083333333384566],
-      icesRectangle: '39E7'
-    }
-  ],
-  [
-    '39E72',
-    {
-      coordinate: [-2.8333333332050943, 55.24999999997688],
-      icesRectangle: '39E7'
-    }
-  ],
-  [
-    '39E75',
-    {
-      coordinate: [-2.4999999997019127, 55.24999999997688],
-      icesRectangle: '39E7'
-    }
-  ],
-  [
-    '39E78',
-    {
-      coordinate: [-2.1666666666478793, 55.24999999997688],
-      icesRectangle: '39E7'
-    }
-  ],
-  [
-    '39E71',
-    {
-      coordinate: [-2.8333333332050943, 55.4166666667698],
-      icesRectangle: '39E7'
-    }
-  ],
-  [
-    '39E74',
-    {
-      coordinate: [-2.4999999997019127, 55.4166666667698],
-      icesRectangle: '39E7'
-    }
-  ],
-  [
-    '39E77',
-    {
-      coordinate: [-2.1666666666478793, 55.4166666667698],
-      icesRectangle: '39E7'
-    }
-  ],
-  [
-    '40E73',
-    {
-      coordinate: [-2.8333333332050943, 55.58333333344995],
-      icesRectangle: '40E7'
-    }
-  ],
-  [
-    '40E76',
-    {
-      coordinate: [-2.4999999997019127, 55.58333333344995],
-      icesRectangle: '40E7'
-    }
-  ],
-  [
-    '40E79',
-    {
-      coordinate: [-2.1666666666478793, 55.58333333344995],
-      icesRectangle: '40E7'
-    }
-  ],
-  [
-    '40E72',
-    {
-      coordinate: [-2.8333333332050943, 55.750000000119684],
-      icesRectangle: '40E7'
-    }
-  ],
-  [
-    '40E75',
-    {
-      coordinate: [-2.4999999997019127, 55.750000000119684],
-      icesRectangle: '40E7'
     }
   ],
   [
@@ -12010,62 +8483,6 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '37E82',
-    {
-      coordinate: [-1.8333333335938455, 54.25000000012875],
-      icesRectangle: '37E8'
-    }
-  ],
-  [
-    '37E85',
-    {
-      coordinate: [-1.5000000000906466, 54.25000000012875],
-      icesRectangle: '37E8'
-    }
-  ],
-  [
-    '37E88',
-    {
-      coordinate: [-1.166666666587448, 54.25000000012875],
-      icesRectangle: '37E8'
-    }
-  ],
-  [
-    '37E81',
-    {
-      coordinate: [-1.8333333335938455, 54.416666666598786],
-      icesRectangle: '37E8'
-    }
-  ],
-  [
-    '37E84',
-    {
-      coordinate: [-1.5000000000906466, 54.416666666598786],
-      icesRectangle: '37E8'
-    }
-  ],
-  [
-    '37E87',
-    {
-      coordinate: [-1.166666666587448, 54.416666666598786],
-      icesRectangle: '37E8'
-    }
-  ],
-  [
-    '38E83',
-    {
-      coordinate: [-1.8333333335938455, 54.58333333312169],
-      icesRectangle: '38E8'
-    }
-  ],
-  [
-    '38E86',
-    {
-      coordinate: [-1.5000000000906466, 54.58333333312169],
-      icesRectangle: '38E8'
-    }
-  ],
-  [
     '38E89',
     {
       coordinate: [-1.166666666587448, 54.58333333312169],
@@ -12073,30 +8490,9 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '38E82',
-    {
-      coordinate: [-1.8333333335938455, 54.750000000030106],
-      icesRectangle: '38E8'
-    }
-  ],
-  [
-    '38E85',
-    {
-      coordinate: [-1.5000000000906466, 54.750000000030106],
-      icesRectangle: '38E8'
-    }
-  ],
-  [
     '38E88',
     {
       coordinate: [-1.166666666587448, 54.750000000030106],
-      icesRectangle: '38E8'
-    }
-  ],
-  [
-    '38E81',
-    {
-      coordinate: [-1.8333333335938455, 54.91666666691792],
       icesRectangle: '38E8'
     }
   ],
@@ -12115,13 +8511,6 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '39E83',
-    {
-      coordinate: [-1.8333333335938455, 55.083333333384566],
-      icesRectangle: '39E8'
-    }
-  ],
-  [
     '39E86',
     {
       coordinate: [-1.5000000000906466, 55.083333333384566],
@@ -12136,13 +8525,6 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '39E82',
-    {
-      coordinate: [-1.8333333335938455, 55.24999999997688],
-      icesRectangle: '39E8'
-    }
-  ],
-  [
     '39E85',
     {
       coordinate: [-1.5000000000906466, 55.24999999997688],
@@ -12153,13 +8535,6 @@ export const offlineMapSubrectangles = new Map([
     '39E88',
     {
       coordinate: [-1.166666666587448, 55.24999999997688],
-      icesRectangle: '39E8'
-    }
-  ],
-  [
-    '39E81',
-    {
-      coordinate: [-1.8333333335938455, 55.4166666667698],
       icesRectangle: '39E8'
     }
   ],
@@ -12262,13 +8637,6 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '37E92',
-    {
-      coordinate: [-0.8333333335334143, 54.25000000012875],
-      icesRectangle: '37E9'
-    }
-  ],
-  [
     '37E95',
     {
       coordinate: [-0.5000000000302155, 54.25000000012875],
@@ -12279,13 +8647,6 @@ export const offlineMapSubrectangles = new Map([
     '37E98',
     {
       coordinate: [-0.16666666652701675, 54.25000000012875],
-      icesRectangle: '37E9'
-    }
-  ],
-  [
-    '37E91',
-    {
-      coordinate: [-0.8333333335334143, 54.416666666598786],
       icesRectangle: '37E9'
     }
   ],
@@ -14724,13 +11085,6 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '41E48',
-    {
-      coordinate: [-5.166666666829139, 56.24999999995442],
-      icesRectangle: '41E4'
-    }
-  ],
-  [
     '41E41',
     {
       coordinate: [-5.833333333386371, 56.41666666657401],
@@ -14808,13 +11162,6 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '42E47',
-    {
-      coordinate: [-5.166666666829139, 56.91666666656227],
-      icesRectangle: '42E4'
-    }
-  ],
-  [
     '43E43',
     {
       coordinate: [-5.833333333386371, 57.083333333369545],
@@ -14825,13 +11172,6 @@ export const offlineMapSubrectangles = new Map([
     '43E46',
     {
       coordinate: [-5.499999999883173, 57.083333333369545],
-      icesRectangle: '43E4'
-    }
-  ],
-  [
-    '43E49',
-    {
-      coordinate: [-5.166666666829139, 57.083333333369545],
       icesRectangle: '43E4'
     }
   ],
@@ -14850,13 +11190,6 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '43E48',
-    {
-      coordinate: [-5.166666666829139, 57.2499999999569],
-      icesRectangle: '43E4'
-    }
-  ],
-  [
     '43E41',
     {
       coordinate: [-5.833333333386371, 57.416666666699186],
@@ -14867,13 +11200,6 @@ export const offlineMapSubrectangles = new Map([
     '43E44',
     {
       coordinate: [-5.499999999883173, 57.416666666699186],
-      icesRectangle: '43E4'
-    }
-  ],
-  [
-    '43E47',
-    {
-      coordinate: [-5.166666666829139, 57.416666666699186],
       icesRectangle: '43E4'
     }
   ],
@@ -14892,13 +11218,6 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '44E49',
-    {
-      coordinate: [-5.166666666829139, 57.5833333334961],
-      icesRectangle: '44E4'
-    }
-  ],
-  [
     '44E42',
     {
       coordinate: [-5.833333333386371, 57.750000000111875],
@@ -14909,13 +11228,6 @@ export const offlineMapSubrectangles = new Map([
     '44E45',
     {
       coordinate: [-5.499999999883173, 57.750000000111875],
-      icesRectangle: '44E4'
-    }
-  ],
-  [
-    '44E48',
-    {
-      coordinate: [-5.166666666829139, 57.750000000111875],
       icesRectangle: '44E4'
     }
   ],
@@ -14960,174 +11272,6 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '41E55',
-    {
-      coordinate: [-4.499999999822741, 56.24999999995442],
-      icesRectangle: '41E5'
-    }
-  ],
-  [
-    '41E58',
-    {
-      coordinate: [-4.166666666768707, 56.24999999995442],
-      icesRectangle: '41E5'
-    }
-  ],
-  [
-    '41E51',
-    {
-      coordinate: [-4.833333333325941, 56.41666666657401],
-      icesRectangle: '41E5'
-    }
-  ],
-  [
-    '41E54',
-    {
-      coordinate: [-4.499999999822741, 56.41666666657401],
-      icesRectangle: '41E5'
-    }
-  ],
-  [
-    '41E57',
-    {
-      coordinate: [-4.166666666768707, 56.41666666657401],
-      icesRectangle: '41E5'
-    }
-  ],
-  [
-    '42E53',
-    {
-      coordinate: [-4.833333333325941, 56.58333333344163],
-      icesRectangle: '42E5'
-    }
-  ],
-  [
-    '42E56',
-    {
-      coordinate: [-4.499999999822741, 56.58333333344163],
-      icesRectangle: '42E5'
-    }
-  ],
-  [
-    '42E59',
-    {
-      coordinate: [-4.166666666768707, 56.58333333344163],
-      icesRectangle: '42E5'
-    }
-  ],
-  [
-    '42E52',
-    {
-      coordinate: [-4.833333333325941, 56.7499999999809],
-      icesRectangle: '42E5'
-    }
-  ],
-  [
-    '42E55',
-    {
-      coordinate: [-4.499999999822741, 56.7499999999809],
-      icesRectangle: '42E5'
-    }
-  ],
-  [
-    '42E58',
-    {
-      coordinate: [-4.166666666768707, 56.7499999999809],
-      icesRectangle: '42E5'
-    }
-  ],
-  [
-    '42E51',
-    {
-      coordinate: [-4.833333333325941, 56.91666666656227],
-      icesRectangle: '42E5'
-    }
-  ],
-  [
-    '42E54',
-    {
-      coordinate: [-4.499999999822741, 56.91666666656227],
-      icesRectangle: '42E5'
-    }
-  ],
-  [
-    '42E57',
-    {
-      coordinate: [-4.166666666768707, 56.91666666656227],
-      icesRectangle: '42E5'
-    }
-  ],
-  [
-    '43E53',
-    {
-      coordinate: [-4.833333333325941, 57.083333333369545],
-      icesRectangle: '43E5'
-    }
-  ],
-  [
-    '43E56',
-    {
-      coordinate: [-4.499999999822741, 57.083333333369545],
-      icesRectangle: '43E5'
-    }
-  ],
-  [
-    '43E59',
-    {
-      coordinate: [-4.166666666768707, 57.083333333369545],
-      icesRectangle: '43E5'
-    }
-  ],
-  [
-    '43E52',
-    {
-      coordinate: [-4.833333333325941, 57.2499999999569],
-      icesRectangle: '43E5'
-    }
-  ],
-  [
-    '43E55',
-    {
-      coordinate: [-4.499999999822741, 57.2499999999569],
-      icesRectangle: '43E5'
-    }
-  ],
-  [
-    '43E58',
-    {
-      coordinate: [-4.166666666768707, 57.2499999999569],
-      icesRectangle: '43E5'
-    }
-  ],
-  [
-    '43E51',
-    {
-      coordinate: [-4.833333333325941, 57.416666666699186],
-      icesRectangle: '43E5'
-    }
-  ],
-  [
-    '43E54',
-    {
-      coordinate: [-4.499999999822741, 57.416666666699186],
-      icesRectangle: '43E5'
-    }
-  ],
-  [
-    '43E57',
-    {
-      coordinate: [-4.166666666768707, 57.416666666699186],
-      icesRectangle: '43E5'
-    }
-  ],
-  [
-    '44E53',
-    {
-      coordinate: [-4.833333333325941, 57.5833333334961],
-      icesRectangle: '44E5'
-    }
-  ],
-  [
     '44E56',
     {
       coordinate: [-4.499999999822741, 57.5833333334961],
@@ -15142,30 +11286,9 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '44E52',
-    {
-      coordinate: [-4.833333333325941, 57.750000000111875],
-      icesRectangle: '44E5'
-    }
-  ],
-  [
-    '44E55',
-    {
-      coordinate: [-4.499999999822741, 57.750000000111875],
-      icesRectangle: '44E5'
-    }
-  ],
-  [
     '44E58',
     {
       coordinate: [-4.166666666768707, 57.750000000111875],
-      icesRectangle: '44E5'
-    }
-  ],
-  [
-    '44E51',
-    {
-      coordinate: [-4.833333333325941, 57.91666666669573],
       icesRectangle: '44E5'
     }
   ],
@@ -15184,49 +11307,9 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '45E53',
-    { coordinate: [-4.833333333325941, 58.083333333257], icesRectangle: '45E5' }
-  ],
-  [
-    '45E56',
-    { coordinate: [-4.499999999822741, 58.083333333257], icesRectangle: '45E5' }
-  ],
-  [
-    '45E59',
-    { coordinate: [-4.166666666768707, 58.083333333257], icesRectangle: '45E5' }
-  ],
-  [
-    '41E62',
-    {
-      coordinate: [-3.833333333265526, 56.24999999995442],
-      icesRectangle: '41E6'
-    }
-  ],
-  [
-    '41E65',
-    {
-      coordinate: [-3.499999999762344, 56.24999999995442],
-      icesRectangle: '41E6'
-    }
-  ],
-  [
     '41E68',
     {
       coordinate: [-3.166666666708293, 56.24999999995442],
-      icesRectangle: '41E6'
-    }
-  ],
-  [
-    '41E61',
-    {
-      coordinate: [-3.833333333265526, 56.41666666657401],
-      icesRectangle: '41E6'
-    }
-  ],
-  [
-    '41E64',
-    {
-      coordinate: [-3.499999999762344, 56.41666666657401],
       icesRectangle: '41E6'
     }
   ],
@@ -15235,132 +11318,6 @@ export const offlineMapSubrectangles = new Map([
     {
       coordinate: [-3.166666666708293, 56.41666666657401],
       icesRectangle: '41E6'
-    }
-  ],
-  [
-    '42E63',
-    {
-      coordinate: [-3.833333333265526, 56.58333333344163],
-      icesRectangle: '42E6'
-    }
-  ],
-  [
-    '42E66',
-    {
-      coordinate: [-3.499999999762344, 56.58333333344163],
-      icesRectangle: '42E6'
-    }
-  ],
-  [
-    '42E69',
-    {
-      coordinate: [-3.166666666708293, 56.58333333344163],
-      icesRectangle: '42E6'
-    }
-  ],
-  [
-    '42E62',
-    {
-      coordinate: [-3.833333333265526, 56.7499999999809],
-      icesRectangle: '42E6'
-    }
-  ],
-  [
-    '42E65',
-    {
-      coordinate: [-3.499999999762344, 56.7499999999809],
-      icesRectangle: '42E6'
-    }
-  ],
-  [
-    '42E68',
-    {
-      coordinate: [-3.166666666708293, 56.7499999999809],
-      icesRectangle: '42E6'
-    }
-  ],
-  [
-    '42E61',
-    {
-      coordinate: [-3.833333333265526, 56.91666666656227],
-      icesRectangle: '42E6'
-    }
-  ],
-  [
-    '42E64',
-    {
-      coordinate: [-3.499999999762344, 56.91666666656227],
-      icesRectangle: '42E6'
-    }
-  ],
-  [
-    '42E67',
-    {
-      coordinate: [-3.166666666708293, 56.91666666656227],
-      icesRectangle: '42E6'
-    }
-  ],
-  [
-    '43E63',
-    {
-      coordinate: [-3.833333333265526, 57.083333333369545],
-      icesRectangle: '43E6'
-    }
-  ],
-  [
-    '43E66',
-    {
-      coordinate: [-3.499999999762344, 57.083333333369545],
-      icesRectangle: '43E6'
-    }
-  ],
-  [
-    '43E69',
-    {
-      coordinate: [-3.166666666708293, 57.083333333369545],
-      icesRectangle: '43E6'
-    }
-  ],
-  [
-    '43E62',
-    {
-      coordinate: [-3.833333333265526, 57.2499999999569],
-      icesRectangle: '43E6'
-    }
-  ],
-  [
-    '43E65',
-    {
-      coordinate: [-3.499999999762344, 57.2499999999569],
-      icesRectangle: '43E6'
-    }
-  ],
-  [
-    '43E68',
-    {
-      coordinate: [-3.166666666708293, 57.2499999999569],
-      icesRectangle: '43E6'
-    }
-  ],
-  [
-    '43E61',
-    {
-      coordinate: [-3.833333333265526, 57.416666666699186],
-      icesRectangle: '43E6'
-    }
-  ],
-  [
-    '43E64',
-    {
-      coordinate: [-3.499999999762344, 57.416666666699186],
-      icesRectangle: '43E6'
-    }
-  ],
-  [
-    '43E67',
-    {
-      coordinate: [-3.166666666708293, 57.416666666699186],
-      icesRectangle: '43E6'
     }
   ],
   [
@@ -15374,13 +11331,6 @@ export const offlineMapSubrectangles = new Map([
     '44E66',
     {
       coordinate: [-3.499999999762344, 57.5833333334961],
-      icesRectangle: '44E6'
-    }
-  ],
-  [
-    '44E69',
-    {
-      coordinate: [-3.166666666708293, 57.5833333334961],
       icesRectangle: '44E6'
     }
   ],
@@ -15502,13 +11452,6 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '42E72',
-    {
-      coordinate: [-2.8333333332050943, 56.7499999999809],
-      icesRectangle: '42E7'
-    }
-  ],
-  [
     '42E75',
     {
       coordinate: [-2.4999999997019127, 56.7499999999809],
@@ -15523,38 +11466,10 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '42E71',
-    {
-      coordinate: [-2.8333333332050943, 56.91666666656227],
-      icesRectangle: '42E7'
-    }
-  ],
-  [
-    '42E74',
-    {
-      coordinate: [-2.4999999997019127, 56.91666666656227],
-      icesRectangle: '42E7'
-    }
-  ],
-  [
     '42E77',
     {
       coordinate: [-2.1666666666478793, 56.91666666656227],
       icesRectangle: '42E7'
-    }
-  ],
-  [
-    '43E73',
-    {
-      coordinate: [-2.8333333332050943, 57.083333333369545],
-      icesRectangle: '43E7'
-    }
-  ],
-  [
-    '43E76',
-    {
-      coordinate: [-2.4999999997019127, 57.083333333369545],
-      icesRectangle: '43E7'
     }
   ],
   [
@@ -15565,66 +11480,10 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '43E72',
-    {
-      coordinate: [-2.8333333332050943, 57.2499999999569],
-      icesRectangle: '43E7'
-    }
-  ],
-  [
-    '43E75',
-    {
-      coordinate: [-2.4999999997019127, 57.2499999999569],
-      icesRectangle: '43E7'
-    }
-  ],
-  [
     '43E78',
     {
       coordinate: [-2.1666666666478793, 57.2499999999569],
       icesRectangle: '43E7'
-    }
-  ],
-  [
-    '43E71',
-    {
-      coordinate: [-2.8333333332050943, 57.416666666699186],
-      icesRectangle: '43E7'
-    }
-  ],
-  [
-    '43E74',
-    {
-      coordinate: [-2.4999999997019127, 57.416666666699186],
-      icesRectangle: '43E7'
-    }
-  ],
-  [
-    '43E77',
-    {
-      coordinate: [-2.1666666666478793, 57.416666666699186],
-      icesRectangle: '43E7'
-    }
-  ],
-  [
-    '44E73',
-    {
-      coordinate: [-2.8333333332050943, 57.5833333334961],
-      icesRectangle: '44E7'
-    }
-  ],
-  [
-    '44E76',
-    {
-      coordinate: [-2.4999999997019127, 57.5833333334961],
-      icesRectangle: '44E7'
-    }
-  ],
-  [
-    '44E79',
-    {
-      coordinate: [-2.1666666666478793, 57.5833333334961],
-      icesRectangle: '44E7'
     }
   ],
   [
@@ -18641,37 +14500,9 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '45E55',
-    {
-      coordinate: [-4.499999999822741, 58.250000000040885],
-      icesRectangle: '45E5'
-    }
-  ],
-  [
-    '45E58',
-    {
-      coordinate: [-4.166666666768707, 58.250000000040885],
-      icesRectangle: '45E5'
-    }
-  ],
-  [
     '45E51',
     {
       coordinate: [-4.833333333325941, 58.41666666664167],
-      icesRectangle: '45E5'
-    }
-  ],
-  [
-    '45E54',
-    {
-      coordinate: [-4.499999999822741, 58.41666666664167],
-      icesRectangle: '45E5'
-    }
-  ],
-  [
-    '45E57',
-    {
-      coordinate: [-4.166666666768707, 58.41666666664167],
       icesRectangle: '45E5'
     }
   ],
@@ -18886,13 +14717,6 @@ export const offlineMapSubrectangles = new Map([
     }
   ],
   [
-    '45E62',
-    {
-      coordinate: [-3.833333333265526, 58.250000000040885],
-      icesRectangle: '45E6'
-    }
-  ],
-  [
     '45E65',
     {
       coordinate: [-3.499999999762344, 58.250000000040885],
@@ -18903,20 +14727,6 @@ export const offlineMapSubrectangles = new Map([
     '45E68',
     {
       coordinate: [-3.166666666708293, 58.250000000040885],
-      icesRectangle: '45E6'
-    }
-  ],
-  [
-    '45E61',
-    {
-      coordinate: [-3.833333333265526, 58.41666666664167],
-      icesRectangle: '45E6'
-    }
-  ],
-  [
-    '45E64',
-    {
-      coordinate: [-3.499999999762344, 58.41666666664167],
       icesRectangle: '45E6'
     }
   ],
