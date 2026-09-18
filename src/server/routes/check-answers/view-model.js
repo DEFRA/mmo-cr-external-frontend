@@ -14,6 +14,30 @@ function joinWithAnd(items) {
   return `${items.slice(0, -1).join(', ')} and ${items[items.length - 1]}`
 }
 
+function resolvePortName(ports, code, fallbackName) {
+  return ports.find((port) => port.code === code)?.name ?? fallbackName
+}
+
+function resolveStatisticalSubArea(journeyState, fallback) {
+  if (journeyState.statAreaBranch === 'direct') {
+    // Map selections save the real ICES code directly; only legacy sessions need the id lookup.
+    return offlineMapSubrectangleCodes.has(journeyState.selectedStatisticalArea)
+      ? journeyState.selectedStatisticalArea
+      : (getData('nearbyStatisticalAreas').find(
+          (area) => area.id === journeyState.selectedStatisticalArea
+        )?.code ?? fallback.statisticalSubArea)
+  }
+  if (journeyState.statAreaBranch === 'other') {
+    return journeyState.selectedAlternativeAreaOption === 'other'
+      ? (journeyState.alternativeStatisticalArea ??
+          fallback.statisticalSubArea)
+      : (getData('statisticalAreas').find(
+          (area) => area.id === journeyState.selectedAlternativeAreaOption
+        )?.code ?? fallback.statisticalSubArea)
+  }
+  return fallback.statisticalSubArea
+}
+
 function tripsDetailsSection(
   journeyState,
   fallback,
@@ -22,32 +46,17 @@ function tripsDetailsSection(
 ) {
   const ports = getData('ports')
   const isSameDayTrip = journeyState.tripSameDate !== false
-  const departurePortName =
-    ports.find((port) => port.code === journeyState.departurePort)?.name ??
+  const departurePortName = resolvePortName(
+    ports,
+    journeyState.departurePort,
     fallback.departurePort
-  const returnPortName =
-    ports.find((port) => port.code === journeyState.returnPort)?.name ??
+  )
+  const returnPortName = resolvePortName(
+    ports,
+    journeyState.returnPort,
     fallback.returnPort
-
-  let statisticalSubArea = fallback.statisticalSubArea
-  if (journeyState.statAreaBranch === 'direct') {
-    // Map selections save the real ICES code directly; only legacy sessions need the id lookup.
-    statisticalSubArea = offlineMapSubrectangleCodes.has(
-      journeyState.selectedStatisticalArea
-    )
-      ? journeyState.selectedStatisticalArea
-      : (getData('nearbyStatisticalAreas').find(
-          (area) => area.id === journeyState.selectedStatisticalArea
-        )?.code ?? fallback.statisticalSubArea)
-  } else if (journeyState.statAreaBranch === 'other') {
-    statisticalSubArea =
-      journeyState.selectedAlternativeAreaOption === 'other'
-        ? (journeyState.alternativeStatisticalArea ??
-          fallback.statisticalSubArea)
-        : (getData('statisticalAreas').find(
-            (area) => area.id === journeyState.selectedAlternativeAreaOption
-          )?.code ?? fallback.statisticalSubArea)
-  }
+  )
+  const statisticalSubArea = resolveStatisticalSubArea(journeyState, fallback)
 
   const dateChangeHref = isSameDayTrip ? '/trip-date' : '/trip-departure-date'
   const returnDateChangeHref = isSameDayTrip
