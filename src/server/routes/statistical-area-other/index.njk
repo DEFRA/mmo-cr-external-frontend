@@ -25,6 +25,10 @@
           attributes: { "data-statistical-area-options": "" }
         }) }}
 
+        <p class="app-statistical-area-search__coordinates govuk-body"{% if not selectedAreaCoordinatesText %} hidden{% endif %} aria-live="polite" data-statistical-area-coordinates>
+          Coordinates: <span data-statistical-area-coordinates-value>{{ selectedAreaCoordinatesText }}</span>
+        </p>
+
         <div{% if selectedArea != 'other' %} hidden{% endif %} data-statistical-area-search-panel>
           <div class="app-statistical-area-search__control govuk-input--width-30">
             {{ govukInput({

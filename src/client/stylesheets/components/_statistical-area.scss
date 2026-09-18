@@ -141,3 +141,15 @@
   outline: 3px solid #ffdd00;
   outline-offset: -3px;
 }
+
+.app-statistical-area-search__option-detail {
+  margin-left: 0.5rem;
+  color: #505a5f;
+}
+
+.app-statistical-area-search__option:hover
+  .app-statistical-area-search__option-detail,
+.app-statistical-area-search__option:focus
+  .app-statistical-area-search__option-detail {
+  color: #ffffff;
+}
