@@ -67,6 +67,18 @@ describe('#buildCheckAnswersViewModel', () => {
     )
   })
 
+  test('Should resolve the statistical sub area for a map-selected code on the "direct" branch', () => {
+    const viewModel = buildCheckAnswersViewModel(
+      fakeRequest({
+        statAreaBranch: 'direct',
+        selectedStatisticalArea: '27D86'
+      })
+    )
+    const rows = rowsFor(viewModel, 'Trips details')
+
+    expect(rowValue(rows, 'Statistical sub area')).toBe('27D86')
+  })
+
   test('Should point date Change links to trip-date for a same-day trip', () => {
     const viewModel = buildCheckAnswersViewModel(
       fakeRequest({ tripSameDate: true })

@@ -6,7 +6,8 @@ import { setAmendmentState } from '#/server/common/helpers/journey/amendment.js'
 import { formatDate } from '#/config/nunjucks/filters/format-date.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 
-const pageTitle = 'Why are you editing this catch record?'
+const defaultPageTitle = 'Why are you editing this catch record?'
+const lateRecordPageTitle = 'Why are you editing this record?'
 
 function findRecord(recordId) {
   const record = getData('allRecords').find(
@@ -21,16 +22,21 @@ function findRecord(recordId) {
 }
 
 function viewContext(recordId, overrides = {}) {
-  const details = getData('catchRecordDetails')
+  const record = findRecord(recordId)
+  const details = record.details || getData('catchRecordDetails')
+  const isLateRecord = record.recordId === 'late-1'
+  const pageTitle = isLateRecord ? lateRecordPageTitle : defaultPageTitle
 
   return {
     pageTitle,
     heading: pageTitle,
     reference: details.reference,
-    notification: {
-      titleText: 'Important',
-      text: `This catch record was submitted for a trip that ended on ${formatDate(details.returnDate, 'd MMMM yyyy')}.`
-    },
+    notification: isLateRecord
+      ? undefined
+      : {
+          titleText: 'Important',
+          text: `This catch record was submitted for a trip that ended on ${formatDate(details.returnDate, 'd MMMM yyyy')}.`
+        },
     backLink: {
       href: `/records/${recordId}`,
       text: 'Back'

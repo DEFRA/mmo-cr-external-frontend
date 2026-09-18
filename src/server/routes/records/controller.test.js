@@ -113,16 +113,19 @@ describe('#recordsController', () => {
       $ = load(result)
     })
 
-    test('Should link the create action to the draft page only', () => {
-      expect($('a[href="/draft"]')).toHaveLength(1)
+    test('Should link the create action button to the draft page', () => {
       expect($('.govuk-button[href="/draft"]')).toHaveLength(1)
     })
 
-    test('Should link every record, including unsent, to its details page', () => {
-      expect($('a[href="/records/unsent-1"]')).toHaveLength(1)
+    test('Should link a draft (unsent) record to the draft action page', () => {
+      expect($('a[href="/draft"]')).toHaveLength(2)
+    })
+
+    test('Should link every other record to its details page', () => {
       expect($('a[href="/records/submitted-1"]')).toHaveLength(1)
       expect($('a[href="/records/amended-1"]')).toHaveLength(1)
       expect($('a[href="/records/late-1"]')).toHaveLength(1)
+      expect($('a[href="/records/unsent-1"]')).toHaveLength(0)
     })
 
     test('Should render a Create a new catch record button linking to draft', () => {

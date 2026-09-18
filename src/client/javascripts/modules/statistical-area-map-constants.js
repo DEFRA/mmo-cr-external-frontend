@@ -1,0 +1,10 @@
+export const minimumRectangleCount = 4
+export const defaultRectangleCount = 9
+export const maximumRectangleCount = 16
+export const selectedGridLineWidth = 3
+export const minimumLabelFontSize = 12
+export const fontSizeCanvasWidthDivisor = 90
+export const portMarkerRadius = 5
+export const dragThresholdPixels = 5
+export const zoomStep = 1.08
+export const minimumLabelSpan = 28

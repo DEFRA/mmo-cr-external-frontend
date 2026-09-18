@@ -1,5 +1,6 @@
 import { getData } from '#/server/common/data/get-data.js'
 import { isSignedIn } from '#/server/common/helpers/auth/session.js'
+import { getJourneyState } from '#/server/common/helpers/journey/navigation.js'
 
 const NOT_IMPLEMENTED_HREF = '/not-implemented?return=/account'
 
@@ -23,6 +24,15 @@ function joinLines(items) {
   return items.join('<br>')
 }
 
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;')
+}
+
 function buildPersonalDetailsSection(account, vesselLabel) {
   return {
     heading: 'Personal details',
@@ -42,7 +52,48 @@ function buildPersonalDetailsSection(account, vesselLabel) {
   }
 }
 
-function buildVesselDetailsSection(account, vesselLabel, speciesCaught) {
+function skippersRow(account, skipper) {
+  return {
+    key: { text: 'Skippers' },
+    value: {
+      html: skipper
+        ? `${escapeHtml(skipper.firstName)} ${escapeHtml(skipper.lastName)}`
+        : account.skippers
+    },
+    actions: {
+      items: [
+        {
+          href: '/add-skipper',
+          text: 'Add skipper',
+          visuallyHiddenText: 'skipper'
+        }
+      ]
+    }
+  }
+}
+
+function portsUsedRow(account) {
+  return {
+    key: { text: 'Ports used' },
+    value: { html: joinLines(account.portsUsed) },
+    actions: {
+      items: [
+        {
+          href: NOT_IMPLEMENTED_HREF,
+          text: 'Add port',
+          visuallyHiddenText: 'port'
+        },
+        {
+          href: NOT_IMPLEMENTED_HREF,
+          text: 'Remove port',
+          visuallyHiddenText: 'port'
+        }
+      ]
+    }
+  }
+}
+
+function gearOnboardRow(account) {
   const gearOnboardLines = account.gearOnboard.flatMap((gear) =>
     gear.hint
       ? [
@@ -53,76 +104,60 @@ function buildVesselDetailsSection(account, vesselLabel, speciesCaught) {
   )
 
   return {
+    key: { text: 'Gear onboard' },
+    value: { html: joinLines(gearOnboardLines) },
+    actions: {
+      items: [
+        {
+          href: NOT_IMPLEMENTED_HREF,
+          text: 'Add gear',
+          visuallyHiddenText: 'gear'
+        },
+        {
+          href: NOT_IMPLEMENTED_HREF,
+          text: 'Remove gear',
+          visuallyHiddenText: 'gear'
+        }
+      ]
+    }
+  }
+}
+
+function speciesCaughtRow(speciesCaught) {
+  return {
+    key: { text: 'Species caught' },
+    value: { html: joinLines(speciesCaught) },
+    actions: {
+      items: [
+        {
+          href: NOT_IMPLEMENTED_HREF,
+          text: 'Add species',
+          visuallyHiddenText: 'species'
+        },
+        {
+          href: NOT_IMPLEMENTED_HREF,
+          text: 'Remove species',
+          visuallyHiddenText: 'species'
+        }
+      ]
+    }
+  }
+}
+
+function buildVesselDetailsSection(
+  account,
+  vesselLabel,
+  speciesCaught,
+  skipper
+) {
+  return {
     heading: 'Vessel details',
     vesselLabel,
     rows: [
-      {
-        key: { text: 'Skippers' },
-        value: { html: account.skippers },
-        actions: {
-          items: [
-            {
-              href: NOT_IMPLEMENTED_HREF,
-              text: 'Add skipper',
-              visuallyHiddenText: 'skipper'
-            }
-          ]
-        }
-      },
-      {
-        key: { text: 'Ports used' },
-        value: { html: joinLines(account.portsUsed) },
-        actions: {
-          items: [
-            {
-              href: NOT_IMPLEMENTED_HREF,
-              text: 'Add port',
-              visuallyHiddenText: 'port'
-            },
-            {
-              href: NOT_IMPLEMENTED_HREF,
-              text: 'Remove port',
-              visuallyHiddenText: 'port'
-            }
-          ]
-        }
-      },
-      {
-        key: { text: 'Gear onboard' },
-        value: { html: joinLines(gearOnboardLines) },
-        actions: {
-          items: [
-            {
-              href: NOT_IMPLEMENTED_HREF,
-              text: 'Add gear',
-              visuallyHiddenText: 'gear'
-            },
-            {
-              href: NOT_IMPLEMENTED_HREF,
-              text: 'Remove gear',
-              visuallyHiddenText: 'gear'
-            }
-          ]
-        }
-      },
-      {
-        key: { text: 'Species caught' },
-        value: { html: joinLines(speciesCaught) },
-        actions: {
-          items: [
-            {
-              href: NOT_IMPLEMENTED_HREF,
-              text: 'Add species',
-              visuallyHiddenText: 'species'
-            },
-            {
-              href: NOT_IMPLEMENTED_HREF,
-              text: 'Remove species',
-              visuallyHiddenText: 'species'
-            }
-          ]
-        }
-      }
+      skippersRow(account, skipper),
+      portsUsedRow(account),
+      gearOnboardRow(account),
+      speciesCaughtRow(speciesCaught)
     ]
   }
 }
@@ -139,6 +174,7 @@ export const accountController = {
       (species) => species.text
     )
     const vesselLabel = `${vessel.name} (${vessel.registration})`
+    const skipper = getJourneyState(request).skipper
 
     return h.view('account/index', {
       pageTitle: 'Your account',
@@ -149,7 +185,7 @@ export const accountController = {
       },
       sections: [
         buildPersonalDetailsSection(account, vesselLabel),
-        buildVesselDetailsSection(account, vesselLabel, speciesCaught)
+        buildVesselDetailsSection(account, vesselLabel, speciesCaught, skipper)
       ]
     })
   }

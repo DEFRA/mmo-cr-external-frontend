@@ -7,28 +7,55 @@ import {
 } from '#/server/common/helpers/journey/navigation.js'
 import { getData } from '#/server/common/data/get-data.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
+import { offlineMapSubrectangles } from '#/server/common/data/offline-map-subrectangles.js'
+import { offlineMapPorts } from '#/server/common/data/offline-map-ports.js'
 
-const pageTitle = 'Where was most of your catch caught using pots?'
-const AREA_FORMAT = /^\d{2}[A-Z]\d{2}$/i
-const statisticalAreas = getData('statisticalAreas').sort(
-  (a, b) => a.displayOrder - b.displayOrder
-)
-const validAreaIds = [...statisticalAreas.map((area) => area.id), 'other']
+const pageTitle =
+  'Select the statistical sub area where the majority of your catch was caught using seine nets (mesh size 100mm)?'
+const subrectangleFormat = /^\d{2}[A-Z]\d{2}$/i
+const selectionErrorText = 'Select a statistical subrectangle'
+const subrectangleFormatErrorText =
+  'Enter a statistical subrectangle in the correct format, for example 38E84'
+const subrectangleErrorText = 'Enter a valid statistical sub area code.'
+const errorSummaryTitle = 'There is a problem'
+const alternativeStatisticalAreaHref = '#alternativeStatisticalArea'
+const nearbyAreaCount = 9
 
-function areaRadioItems(selectedValue) {
+function closestSubareas(portCoordinate) {
+  return [...offlineMapSubrectangles.entries()]
+    .toSorted(
+      ([, first], [, second]) =>
+        (first.coordinate[0] - portCoordinate[0]) ** 2 +
+        (first.coordinate[1] - portCoordinate[1]) ** 2 -
+        ((second.coordinate[0] - portCoordinate[0]) ** 2 +
+          (second.coordinate[1] - portCoordinate[1]) ** 2)
+    )
+    .slice(0, nearbyAreaCount)
+    .map(([code]) => code)
+}
+
+function areaRadioItems(codes, selectedArea) {
   return [
-    ...statisticalAreas.map((area) => ({
-      value: area.id,
-      text: area.code,
-      checked: area.id === selectedValue
+    ...codes.map((code) => ({
+      value: code,
+      text: code,
+      checked: code === selectedArea
     })),
-    { value: 'other', text: 'Other', checked: selectedValue === 'other' }
+    { value: 'other', text: 'Other', checked: selectedArea === 'other' }
   ]
 }
 
 function viewContext(request, overrides = {}) {
   const journeyState = getJourneyState(request)
-  const selectedArea = journeyState.selectedAlternativeAreaOption || 'other'
+  const alternativeStatisticalArea =
+    journeyState.alternativeStatisticalArea || ''
+  const departurePort = getData('ports').find(
+    (port) => port.code === journeyState.departurePort
+  )
+  const nearbyAreaCodes = closestSubareas(
+    offlineMapPorts.get((departurePort?.name || 'Hastings').toLowerCase())
+  )
+  const selectedArea = journeyState.selectedAlternativeAreaOption
 
   return {
     pageTitle,
@@ -42,10 +69,9 @@ function viewContext(request, overrides = {}) {
       href: '/statistical-area',
       text: 'Back'
     },
-    areaOptions: areaRadioItems(selectedArea),
+    areaOptions: areaRadioItems(nearbyAreaCodes, selectedArea),
     selectedArea,
-    showAlternativeInput: selectedArea === 'other',
-    alternativeStatisticalArea: journeyState.alternativeStatisticalArea || '',
+    alternativeStatisticalArea,
     ...overrides
   }
 }
@@ -56,30 +82,126 @@ export const statisticalAreaOtherController = {
   }
 }
 
+function handleKnownAreaSelection(request, h, statisticalArea) {
+  if (!offlineMapSubrectangles.has(statisticalArea)) {
+    return h.response().code(statusCodes.badRequest)
+  }
+
+  setJourneyState(request, {
+    statAreaBranch: 'other',
+    selectedAlternativeAreaOption: statisticalArea,
+    alternativeStatisticalArea: null,
+    alternativeStatisticalAreaCoordinates:
+      offlineMapSubrectangles.get(statisticalArea).coordinate
+  })
+
+  return h
+    .redirect(resolveNextPath(request, '/species-selection'))
+    .code(statusCodes.seeOther)
+}
+
+function handleManualAreaSubmission(request, h) {
+  const submitted = request.payload.alternativeStatisticalArea
+    .trim()
+    .toUpperCase()
+
+  if (!subrectangleFormat.test(submitted)) {
+    return h
+      .view(
+        'statistical-area-other/index',
+        viewContext(request, {
+          errorSummary: {
+            titleText: errorSummaryTitle,
+            errorList: [
+              {
+                text: subrectangleFormatErrorText,
+                href: alternativeStatisticalAreaHref
+              }
+            ]
+          },
+          fieldErrors: {
+            alternativeStatisticalArea: subrectangleFormatErrorText
+          },
+          alternativeStatisticalArea: submitted
+        })
+      )
+      .code(statusCodes.badRequest)
+      .takeover()
+  }
+
+  const selectedSubrectangle = offlineMapSubrectangles.get(submitted)
+
+  if (!selectedSubrectangle) {
+    return h
+      .view(
+        'statistical-area-other/index',
+        viewContext(request, {
+          errorSummary: {
+            titleText: errorSummaryTitle,
+            errorList: [
+              {
+                text: subrectangleErrorText,
+                href: alternativeStatisticalAreaHref
+              }
+            ]
+          },
+          fieldErrors: {
+            alternativeStatisticalArea: subrectangleErrorText
+          },
+          alternativeStatisticalArea: submitted
+        })
+      )
+      .code(statusCodes.badRequest)
+      .takeover()
+  }
+
+  setJourneyState(request, {
+    statAreaBranch: 'other',
+    selectedAlternativeAreaOption: 'other',
+    alternativeStatisticalArea: submitted,
+    alternativeStatisticalAreaCoordinates: selectedSubrectangle.coordinate
+  })
+
+  return h
+    .redirect(resolveNextPath(request, '/species-selection'))
+    .code(statusCodes.seeOther)
+}
+
 export const statisticalAreaOtherSubmitController = {
   options: {
     validate: {
       payload: Joi.object({
-        statisticalArea: Joi.string()
-          .valid(...validAreaIds)
-          .required(),
-        alternativeStatisticalArea: Joi.string().trim().allow('')
+        statisticalArea: Joi.string().required(),
+        alternativeStatisticalArea: Joi.string()
+          .trim()
+          .when('statisticalArea', {
+            is: 'other',
+            then: Joi.required(),
+            otherwise: Joi.allow('')
+          })
       }),
       failAction(request, h) {
-        const errorText = 'Select the area where most of your catch was caught'
+        const isManualEntry = request.payload.statisticalArea === 'other'
+        const errorText = isManualEntry
+          ? subrectangleErrorText
+          : selectionErrorText
+        const errorField = isManualEntry
+          ? 'alternativeStatisticalArea'
+          : 'statisticalArea'
+        const errorHref = isManualEntry
+          ? alternativeStatisticalAreaHref
+          : '#statisticalArea'
 
         return h
           .view(
             'statistical-area-other/index',
             viewContext(request, {
               errorSummary: {
-                titleText: 'There is a problem',
-                errorList: [{ text: errorText, href: '#statisticalArea' }]
+                titleText: errorSummaryTitle,
+                errorList: [{ text: errorText, href: errorHref }]
               },
-              fieldErrors: { statisticalArea: errorText },
-              areaOptions: areaRadioItems(request.payload.statisticalArea),
+              fieldErrors: { [errorField]: errorText },
               selectedArea: request.payload.statisticalArea,
-              showAlternativeInput: request.payload.statisticalArea === 'other',
               alternativeStatisticalArea:
                 request.payload.alternativeStatisticalArea
             })
@@ -90,56 +212,11 @@ export const statisticalAreaOtherSubmitController = {
     }
   },
   handler(request, h) {
-    const { statisticalArea, alternativeStatisticalArea } = request.payload
-
+    const { statisticalArea } = request.payload
     if (statisticalArea !== 'other') {
-      setJourneyState(request, {
-        statAreaBranch: 'other',
-        selectedAlternativeAreaOption: statisticalArea,
-        alternativeStatisticalArea: undefined
-      })
-
-      return h
-        .redirect(resolveNextPath(request, '/species-selection'))
-        .code(303)
+      return handleKnownAreaSelection(request, h, statisticalArea)
     }
 
-    const submitted = alternativeStatisticalArea
-
-    if (!AREA_FORMAT.test(submitted)) {
-      return h
-        .view(
-          'statistical-area-other/index',
-          viewContext(request, {
-            errorSummary: {
-              titleText: 'There is a problem',
-              errorList: [
-                {
-                  text: 'Enter the statistical sub area in the correct format, like 46E45',
-                  href: '#alternativeStatisticalArea'
-                }
-              ]
-            },
-            fieldErrors: {
-              alternativeStatisticalArea:
-                'Enter the statistical sub area in the correct format, like 46E45'
-            },
-            areaOptions: areaRadioItems('other'),
-            selectedArea: 'other',
-            showAlternativeInput: true,
-            alternativeStatisticalArea: submitted
-          })
-        )
-        .code(statusCodes.badRequest)
-        .takeover()
-    }
-
-    setJourneyState(request, {
-      statAreaBranch: 'other',
-      selectedAlternativeAreaOption: 'other',
-      alternativeStatisticalArea: submitted.trim().toUpperCase()
-    })
-
-    return h.redirect(resolveNextPath(request, '/species-selection')).code(303)
+    return handleManualAreaSubmission(request, h)
   }
 }
