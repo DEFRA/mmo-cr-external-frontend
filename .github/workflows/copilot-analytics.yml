@@ -2,7 +2,6 @@ name: Copilot Analytics
 
 # Runs independently of the build and publish workflows so it can never block,
 # cancel or interfere with them.
-
 on:
   pull_request:
     branches:
