@@ -29,8 +29,7 @@ function resolveStatisticalSubArea(journeyState, fallback) {
   }
   if (journeyState.statAreaBranch === 'other') {
     return journeyState.selectedAlternativeAreaOption === 'other'
-      ? (journeyState.alternativeStatisticalArea ??
-          fallback.statisticalSubArea)
+      ? (journeyState.alternativeStatisticalArea ?? fallback.statisticalSubArea)
       : (getData('statisticalAreas').find(
           (area) => area.id === journeyState.selectedAlternativeAreaOption
         )?.code ?? fallback.statisticalSubArea)
