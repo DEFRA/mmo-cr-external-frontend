@@ -70,6 +70,64 @@ describe('#statisticalAreaOtherController', () => {
 
     expect($('#alternativeStatisticalArea').attr('value')).toBe('30F04')
   })
+
+  test('Should render coordinates for a previously-saved manual entry without JavaScript', async () => {
+    const setResponse = await server.inject({
+      method: 'POST',
+      url: '/statistical-area-other',
+      payload: {
+        statisticalArea: 'other',
+        alternativeStatisticalArea: '30F04'
+      }
+    })
+    const cookie = setResponse.headers['set-cookie'][0].split(';')[0]
+
+    const { result } = await server.inject({
+      method: 'GET',
+      url: '/statistical-area-other',
+      headers: { cookie }
+    })
+    const $ = load(result)
+
+    const coordinates = $('[data-statistical-area-coordinates]')
+    expect(coordinates.attr('hidden')).toBeUndefined()
+    expect(
+      $('[data-statistical-area-coordinates-value]').text().trim()
+    ).toMatch(/^-?\d+\.\d{4}, -?\d+\.\d{4}$/)
+  })
+
+  test('Should render coordinates for a previously-selected known area without JavaScript', async () => {
+    const { result: initialResult } = await server.inject({
+      method: 'GET',
+      url: '/statistical-area-other'
+    })
+    const knownAreaCode = load(initialResult)('input[type="radio"]')
+      .filter((_, element) => element.attribs.value !== 'other')
+      .first()
+      .attr('value')
+
+    const setResponse = await server.inject({
+      method: 'POST',
+      url: '/statistical-area-other',
+      payload: { statisticalArea: knownAreaCode }
+    })
+    const cookie = setResponse.headers['set-cookie'][0].split(';')[0]
+
+    const { result } = await server.inject({
+      method: 'GET',
+      url: '/statistical-area-other',
+      headers: { cookie }
+    })
+    const $ = load(result)
+
+    expect($(`input[value="${knownAreaCode}"]`).attr('checked')).toBe('checked')
+    expect(
+      $('[data-statistical-area-coordinates]').attr('hidden')
+    ).toBeUndefined()
+    expect(
+      $('[data-statistical-area-coordinates-value]').text().trim()
+    ).toMatch(/^-?\d+\.\d{4}, -?\d+\.\d{4}$/)
+  })
 })
 
 describe('#statisticalAreaOtherSubmitController', () => {

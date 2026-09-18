@@ -45,6 +45,27 @@ function areaRadioItems(codes, selectedArea) {
   ]
 }
 
+function formatCoordinate([longitude, latitude]) {
+  return `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`
+}
+
+function resolveSelectedAreaCoordinatesText(
+  selectedArea,
+  alternativeStatisticalArea
+) {
+  const code =
+    selectedArea === 'other'
+      ? alternativeStatisticalArea?.toUpperCase()
+      : selectedArea
+
+  if (!code) {
+    return undefined
+  }
+
+  const subrectangle = offlineMapSubrectangles.get(code)
+  return subrectangle ? formatCoordinate(subrectangle.coordinate) : undefined
+}
+
 function viewContext(request, overrides = {}) {
   const journeyState = getJourneyState(request)
   const alternativeStatisticalArea =
@@ -72,6 +93,10 @@ function viewContext(request, overrides = {}) {
     areaOptions: areaRadioItems(nearbyAreaCodes, selectedArea),
     selectedArea,
     alternativeStatisticalArea,
+    selectedAreaCoordinatesText: resolveSelectedAreaCoordinatesText(
+      selectedArea,
+      alternativeStatisticalArea
+    ),
     ...overrides
   }
 }
