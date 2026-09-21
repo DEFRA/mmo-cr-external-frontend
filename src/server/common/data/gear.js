@@ -1,10 +1,13 @@
 // Walkthrough-only mock data — fictional, not persisted.
+// `measurement` (FR3/CRAR-181) is the single mandatory whole-number figure captured
+// when a gear type is added to favourites; null means no measurement is required.
 export const gearSelection = [
   {
     id: 'beam-trawl',
     label: 'Beam trawl',
     hint: null,
     requiresPotsDetails: false,
+    measurement: { id: 'numberOfTrawlNets', label: 'Number of trawl nets' },
     displayOrder: 1
   },
   {
@@ -12,6 +15,7 @@ export const gearSelection = [
     label: 'Bottom otter trawl',
     hint: '80mm mesh',
     requiresPotsDetails: false,
+    measurement: { id: 'meshSize', label: 'Mesh size (mm)' },
     displayOrder: 2
   },
   {
@@ -19,6 +23,7 @@ export const gearSelection = [
     label: 'Dredge',
     hint: '2 dredges',
     requiresPotsDetails: false,
+    measurement: { id: 'numberOfDredges', label: 'Number of dredges' },
     displayOrder: 3
   },
   {
@@ -26,6 +31,7 @@ export const gearSelection = [
     label: 'Handlines and pole lines (hand operated)',
     hint: 'Hint text',
     requiresPotsDetails: false,
+    measurement: { id: 'numberOfHooks', label: 'Number of hooks' },
     displayOrder: 4
   },
   {
@@ -33,6 +39,7 @@ export const gearSelection = [
     label: 'Miscellaneous gear (diving)',
     hint: null,
     requiresPotsDetails: false,
+    measurement: null,
     displayOrder: 5
   },
   {
@@ -40,6 +47,7 @@ export const gearSelection = [
     label: 'Pots',
     hint: null,
     requiresPotsDetails: true,
+    measurement: { id: 'numberOfPots', label: 'Number of pots' },
     displayOrder: 6
   },
   {
@@ -47,6 +55,7 @@ export const gearSelection = [
     label: 'Seine nets (not specified)',
     hint: '100mm mesh',
     requiresPotsDetails: false,
+    measurement: { id: 'meshSize', label: 'Mesh size (mm)' },
     displayOrder: 7
   },
   {
@@ -54,6 +63,7 @@ export const gearSelection = [
     label: 'Trammel net',
     hint: '80mm mesh',
     requiresPotsDetails: false,
+    measurement: { id: 'meshSize', label: 'Mesh size (mm)' },
     displayOrder: 8
   },
   {
@@ -61,6 +71,7 @@ export const gearSelection = [
     label: 'Traps',
     hint: null,
     requiresPotsDetails: false,
+    measurement: { id: 'numberOfTraps', label: 'Number of traps' },
     displayOrder: 9
   }
 ]
@@ -74,6 +85,7 @@ export const gearCatalogue = [
     label: 'Set net',
     hint: '90mm mesh',
     requiresPotsDetails: false,
+    measurement: { id: 'meshSize', label: 'Mesh size (mm)' },
     displayOrder: 10
   },
   {
@@ -81,6 +93,7 @@ export const gearCatalogue = [
     label: 'Long line',
     hint: null,
     requiresPotsDetails: false,
+    measurement: { id: 'numberOfHooks', label: 'Number of hooks' },
     displayOrder: 11
   },
   {
@@ -88,6 +101,7 @@ export const gearCatalogue = [
     label: 'Tangle net',
     hint: '100mm mesh',
     requiresPotsDetails: false,
+    measurement: { id: 'totalNetLength', label: 'Total net length (m)' },
     displayOrder: 12
   }
 ]
