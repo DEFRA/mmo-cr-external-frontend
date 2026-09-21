@@ -170,13 +170,12 @@ function speciesCaughtSection(journeyState, fallback, buildChangeHref) {
     return null
   }
 
-  const codWeights = journeyState.codWeights || {}
-  const weightFieldsVisible = journeyState.weightFieldsVisible
+  const codWeights = journeyState.speciesWeights?.cod || {}
   const showBelowMinimum = hasSession
-    ? Boolean(weightFieldsVisible?.belowMinimum)
+    ? Boolean(codWeights.weightBelowMinimum)
     : true
   const showLegallyDiscarded = hasSession
-    ? Boolean(weightFieldsVisible?.legallyDiscarded)
+    ? Boolean(codWeights.weightDiscarded)
     : true
   const speciesName = getData('speciesSelection')
     .find((species) => species.id === 'cod')
@@ -216,26 +215,35 @@ function speciesNotLandedSection(journeyState, fallback, buildChangeHref) {
   const catchNotLanded = hasAnswer
     ? journeyState.catchNotLanded
     : fallback.catchNotLanded
-  const changeHref = buildChangeHref('/catch-not-landed')
+  const notLandedChangeHref = buildChangeHref('/catch-not-landed')
 
   const rows = [
-    { key: 'Not landed', value: catchNotLanded ? 'Yes' : 'No', changeHref }
+    {
+      key: 'Not landed',
+      value: catchNotLanded ? 'Yes' : 'No',
+      changeHref: notLandedChangeHref
+    }
   ]
 
-  // The catch-not-landed "Yes" capture flow is out of scope, so these two
-  // rows are only reachable via the illustrative fallback example for now.
-  if (catchNotLanded) {
-    rows.push({
-      key: 'Species',
-      value: fallback.notLandedSpecies,
-      changeHref
-    })
-    rows.push({
-      key: 'Weight above minimum size kept onboard or in keep pots (kg)',
-      value: fallback.notLandedWeightAboveMinimumKept,
-      changeHref
-    })
+  if (!catchNotLanded) {
+    return { heading: 'Species not landed', rows }
   }
+
+  const changeHref = buildChangeHref('/species-not-landed')
+  const codNotLanded = journeyState.speciesNotLanded?.cod
+  const speciesName = codNotLanded
+    ? getData('speciesSelection').find((species) => species.id === 'cod').text
+    : fallback.notLandedSpecies
+  const weightAboveMinimum = codNotLanded
+    ? codNotLanded.weightAboveMinimum
+    : fallback.notLandedWeightAboveMinimumKept
+
+  rows.push({ key: 'Species', value: speciesName, changeHref })
+  rows.push({
+    key: 'Weight above minimum size kept onboard or in keep pots (kg)',
+    value: weightAboveMinimum,
+    changeHref
+  })
 
   return { heading: 'Species not landed', rows }
 }

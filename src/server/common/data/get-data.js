@@ -13,7 +13,7 @@ import {
   statisticalAreas,
   alternativeStatisticalAreaExample
 } from './statistical-areas.js'
-import { speciesSelection } from './species.js'
+import { speciesSelection, speciesCatalogue } from './species.js'
 import { speciesWeights } from './species-weights.js'
 import { catchNotLanded } from './catch-not-landed.js'
 import { confirmation } from './confirmation.js'
@@ -33,6 +33,7 @@ const dataByKey = {
   statisticalAreas,
   alternativeStatisticalAreaExample,
   speciesSelection,
+  speciesCatalogue,
   speciesWeights,
   catchNotLanded,
   confirmation,
