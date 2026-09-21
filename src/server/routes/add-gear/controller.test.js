@@ -3,6 +3,11 @@ import { load } from 'cheerio'
 import { createServer } from '#/server/server.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 
+function nextCookie(response, previousCookie) {
+  const setCookie = response.headers['set-cookie']
+  return setCookie ? setCookie[0].split(';')[0] : previousCookie
+}
+
 describe('#addGearController', () => {
   let server
 
@@ -143,14 +148,22 @@ describe('#addGearSubmitController', () => {
     const first = await server.inject({
       method: 'POST',
       url: '/add-gear',
-      payload: { gear: 'long line' }
+      payload: { gear: 'set net' }
     })
-    const cookie = first.headers['set-cookie'][0].split(';')[0]
+    let cookie = nextCookie(first)
+
+    const confirm = await server.inject({
+      method: 'POST',
+      url: '/add-gear',
+      payload: {},
+      headers: { cookie }
+    })
+    cookie = nextCookie(confirm, cookie)
 
     await server.inject({
       method: 'POST',
       url: '/add-gear',
-      payload: { gear: 'Long line' },
+      payload: { gear: 'Set net' },
       headers: { cookie }
     })
 
@@ -161,7 +174,7 @@ describe('#addGearSubmitController', () => {
     })
     const $ = load(result)
 
-    expect($('input[value="long-line"]')).toHaveLength(1)
+    expect($('input[value="set-net"]')).toHaveLength(1)
   })
 
   test('Should redirect back to check your answers when a return query is supplied', async () => {
@@ -173,5 +186,144 @@ describe('#addGearSubmitController', () => {
 
     expect(statusCode).toBe(303)
     expect(headers.location).toBe('/check-answers')
+  })
+
+  test('Should show the measurement page for gear that requires measurements', async () => {
+    const addResponse = await server.inject({
+      method: 'POST',
+      url: '/add-gear',
+      payload: { gear: 'Dredge' }
+    })
+
+    expect(addResponse.statusCode).toBe(303)
+    expect(addResponse.headers.location).toBe('/add-gear')
+
+    const cookie = nextCookie(addResponse)
+    const { result } = await server.inject({
+      method: 'GET',
+      url: '/add-gear',
+      headers: { cookie }
+    })
+    const $ = load(result)
+
+    expect($('h1').text().trim()).toBe('Enter the measurements for dredge')
+    expect($('#numberOfDredges')).toHaveLength(1)
+    expect($('#numberOfTimesShot')).toHaveLength(1)
+  })
+
+  test('Should show "no details required" for gear with no measurements and save it on confirm', async () => {
+    const addResponse = await server.inject({
+      method: 'POST',
+      url: '/add-gear',
+      payload: { gear: 'Miscellaneous gear (diving)' }
+    })
+    let cookie = nextCookie(addResponse)
+
+    const { result } = await server.inject({
+      method: 'GET',
+      url: '/add-gear',
+      headers: { cookie }
+    })
+    const $ = load(result)
+
+    expect($('[data-testid="app-no-measurements-needed"]').text()).toBe(
+      'No details required for this type of gear.'
+    )
+
+    const confirmResponse = await server.inject({
+      method: 'POST',
+      url: '/add-gear',
+      payload: {},
+      headers: { cookie }
+    })
+    cookie = nextCookie(confirmResponse, cookie)
+
+    expect(confirmResponse.statusCode).toBe(303)
+    expect(confirmResponse.headers.location).toBe('/gear-selection')
+
+    const gearSelectionResponse = await server.inject({
+      method: 'GET',
+      url: '/gear-selection',
+      headers: { cookie }
+    })
+    expect(
+      load(gearSelectionResponse.result)(
+        'input[value="miscellaneous-gear-diving"]'
+      )
+    ).toHaveLength(1)
+  })
+
+  test('Should re-render with an error and not save when a required measurement is missing or invalid', async () => {
+    const addResponse = await server.inject({
+      method: 'POST',
+      url: '/add-gear',
+      payload: { gear: 'Handlines and pole lines (hand operated)' }
+    })
+    const cookie = nextCookie(addResponse)
+
+    const { statusCode, result } = await server.inject({
+      method: 'POST',
+      url: '/add-gear',
+      payload: { rodsAndLines: '-2' },
+      headers: { cookie }
+    })
+    const $ = load(result)
+
+    expect(statusCode).toBe(statusCodes.badRequest)
+    expect($('.govuk-error-summary').text()).toContain(
+      'Enter the number of rods and lines'
+    )
+  })
+
+  test('Should save all measurements and redirect to gear selection once confirmed', async () => {
+    const addResponse = await server.inject({
+      method: 'POST',
+      url: '/add-gear',
+      payload: { gear: 'Bottom otter trawl' }
+    })
+    let cookie = nextCookie(addResponse)
+
+    const confirmResponse = await server.inject({
+      method: 'POST',
+      url: '/add-gear',
+      payload: { numberOfTrawlNets: '2', meshSize: '80' },
+      headers: { cookie }
+    })
+    cookie = nextCookie(confirmResponse, cookie)
+
+    expect(confirmResponse.statusCode).toBe(303)
+    expect(confirmResponse.headers.location).toBe('/gear-selection')
+
+    const { result } = await server.inject({
+      method: 'GET',
+      url: '/gear-selection',
+      headers: { cookie }
+    })
+    const $ = load(result)
+
+    expect($('input[value="bottom-otter-trawl"]')).toHaveLength(1)
+  })
+
+  test('Should preserve a return query across the measurement step', async () => {
+    const addResponse = await server.inject({
+      method: 'POST',
+      url: '/add-gear?return=/check-answers',
+      payload: { gear: 'Dredge' }
+    })
+    const cookie = nextCookie(addResponse)
+
+    expect(addResponse.headers.location).toBe(
+      '/add-gear?return=%2Fcheck-answers'
+    )
+
+    const confirmResponse = await server.inject({
+      method: 'POST',
+      url: '/add-gear?return=/check-answers',
+      payload: { numberOfDredges: '2', numberOfTimesShot: '3' },
+      headers: { cookie }
+    })
+
+    expect(confirmResponse.statusCode).toBe(303)
+    expect(confirmResponse.headers.location).toBe('/check-answers')
   })
 })

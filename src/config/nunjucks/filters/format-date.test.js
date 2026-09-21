@@ -3,7 +3,13 @@ import { vi } from 'vitest'
 import { formatDate } from './format-date.js'
 
 describe('#formatDate', () => {
+  let originalTz
+
   beforeAll(() => {
+    // formatDate renders in the machine's local timezone - pin to UTC so the
+    // time-based assertions below don't depend on where the tests are run.
+    originalTz = process.env.TZ
+    process.env.TZ = 'UTC'
     vi.useFakeTimers({
       now: new Date('2023-02-01')
     })
@@ -11,6 +17,7 @@ describe('#formatDate', () => {
 
   afterAll(() => {
     vi.useRealTimers()
+    process.env.TZ = originalTz
   })
 
   describe('With defaults', () => {

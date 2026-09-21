@@ -30,3 +30,11 @@ export function findGearOptionByLabel(label) {
   const normalized = label.trim().toLowerCase()
   return catalogue.find((option) => option.label.toLowerCase() === normalized)
 }
+
+export function getGearOptionById(id) {
+  return catalogueById.get(id)
+}
+
+export function getFavouriteGearMeasurements(journeyState) {
+  return journeyState.favouriteGearMeasurements || {}
+}

@@ -149,7 +149,7 @@ export const gearSelectionSubmitController = {
         }
 
         if (!inWater.valid) {
-          const errorText = 'Enter the total pots or traps left in the water'
+          const errorText = 'Enter the total pots or traps left in water'
           errorList.push({ text: errorText, href: '#potsInWater' })
           fieldErrors.potsInWater = errorText
         }

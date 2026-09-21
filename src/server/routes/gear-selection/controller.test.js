@@ -269,7 +269,7 @@ describe('#gearSelectionSubmitController', () => {
       'Enter the total pots or traps hauled'
     )
     expect($('.govuk-error-summary').text()).toContain(
-      'Enter the total pots or traps left in the water'
+      'Enter the total pots or traps left in water'
     )
     expect($('.govuk-error-summary a[href="#potsHauled"]')).toHaveLength(1)
     expect($('.govuk-error-summary a[href="#potsInWater"]')).toHaveLength(1)
@@ -288,7 +288,7 @@ describe('#gearSelectionSubmitController', () => {
       'Enter the total pots or traps hauled'
     )
     expect($('.govuk-error-summary').text()).toContain(
-      'Enter the total pots or traps left in the water'
+      'Enter the total pots or traps left in water'
     )
   })
 

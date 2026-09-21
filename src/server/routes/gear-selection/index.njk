@@ -8,7 +8,7 @@
       id: "potsHauled",
       name: "potsHauled",
       label: { text: "Total pots or traps hauled" },
-      classes: "govuk-input--width-5",
+      classes: "govuk-input--width-10",
       inputmode: "numeric",
       value: potsDetails.potsHauled,
       errorMessage: { text: fieldErrors.potsHauled } if fieldErrors.potsHauled else false
@@ -16,8 +16,8 @@
     {{ govukInput({
       id: "potsInWater",
       name: "potsInWater",
-      label: { text: "Total pots or traps left in the water" },
-      classes: "govuk-input--width-5",
+      label: { text: "Total pots or traps left in water" },
+      classes: "govuk-input--width-10",
       inputmode: "numeric",
       value: potsDetails.potsInWater,
       errorMessage: { text: fieldErrors.potsInWater } if fieldErrors.potsInWater else false
