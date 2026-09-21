@@ -15,6 +15,8 @@ const SAFE_RETURN_PATHS = [
   '/trip-return-date',
   '/departure-port',
   '/return-port',
+  '/add-port',
+  '/confirm-same-port',
   '/gear-selection',
   '/statistical-area',
   '/statistical-area-other',

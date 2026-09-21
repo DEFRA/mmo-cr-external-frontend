@@ -62,6 +62,20 @@ describe('#editCatchRecordReasonController', () => {
     ).toBe('/records/submitted-1')
   })
 
+  test('Should render the Figma edit-reason content for a late record', async () => {
+    const { result } = await server.inject({
+      method: 'GET',
+      url: '/records/late-1/edit-reason'
+    })
+    const $ = load(result)
+
+    expect($('[data-testid="app-edit-reason-caption"]').text().trim()).toBe(
+      'CC-2026-123456'
+    )
+    expect($('h1').text().trim()).toBe('Why are you editing this record?')
+    expect($('.govuk-notification-banner')).toHaveLength(0)
+  })
+
   test('Should 404 for an unknown record', async () => {
     const { statusCode } = await server.inject({
       method: 'GET',

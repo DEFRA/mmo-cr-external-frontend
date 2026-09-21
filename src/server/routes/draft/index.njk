@@ -15,6 +15,7 @@
               classes: "govuk-fieldset__legend--xl"
             }
           },
+            errorMessage: { text: fieldErrors.draftAction } if fieldErrors.draftAction else false,
           items: [
             { value: "complete", text: "Complete catch record" },
             { value: "delete", text: "Delete catch record" }

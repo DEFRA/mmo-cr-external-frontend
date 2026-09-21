@@ -1,6 +1,5 @@
 {% extends 'layouts/page.njk' %}
 {% from "govuk/components/textarea/macro.njk" import govukTextarea %}
-{% from "govuk/components/warning-text/macro.njk" import govukWarningText %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
 
 {% block pageContent %}
@@ -22,11 +21,6 @@
           },
           value: values.editReason if values else "",
           errorMessage: { text: fieldErrors.editReason } if fieldErrors.editReason else false
-        }) }}
-
-        {{ govukWarningText({
-          text: "You must have a valid reason for editing this catch record. Editing a catch record without a valid reason may be an offence and could result in enforcement action.",
-          iconFallbackText: "Warning"
         }) }}
 
         {{ govukButton({ text: "Save and continue" }) }}
