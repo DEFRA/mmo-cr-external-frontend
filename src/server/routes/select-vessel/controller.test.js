@@ -142,12 +142,15 @@ describe('#selectVesselSubmitController', () => {
   })
 
   test('Should reject a missing vessel id', async () => {
-    const { statusCode } = await server.inject({
+    const { statusCode, result } = await server.inject({
       method: 'POST',
       url: '/select-vessel',
       payload: {}
     })
 
     expect(statusCode).toBe(statusCodes.badRequest)
+    const $ = load(result)
+    expect($('.govuk-error-summary').text()).toContain('Select your vessel')
+    expect($('.govuk-error-message').text()).toContain('Select your vessel')
   })
 })

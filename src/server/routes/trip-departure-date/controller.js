@@ -5,8 +5,8 @@ import {
 } from '#/server/common/helpers/journey/navigation.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 
-const pageTitle = 'When did you leave for your trip?'
-const hintText = 'Enter the date you departed. For example, 31/03/2020'
+const pageTitle = 'Which date did you set off on your trip?'
+const hintText = 'For example, 31/03/2020'
 
 function viewContext(overrides = {}) {
   return {
@@ -14,6 +14,7 @@ function viewContext(overrides = {}) {
     heading: pageTitle,
     caption: 'New catch record',
     hintText,
+    values: {},
     backLink: {
       href: '/trip-date',
       text: 'Back'

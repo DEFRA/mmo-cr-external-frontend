@@ -25,7 +25,7 @@ export const recordDetailsController = {
       throw Boom.notFound()
     }
 
-    const details = getData('catchRecordDetails')
+    const details = record.details || getData('catchRecordDetails')
 
     return h.view('record-details/index', {
       pageTitle: `Catch record for ${details.vesselName}`,
@@ -35,6 +35,7 @@ export const recordDetailsController = {
         text: 'Back'
       },
       details,
+      status: record.status,
       recordId
     })
   }

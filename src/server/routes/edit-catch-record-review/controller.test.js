@@ -71,6 +71,23 @@ describe('#editCatchRecordReviewController', () => {
     expect($('h1').text().trim()).toBe('Catch record for OLGA')
   })
 
+  test('Should render the Figma edit-review heading for a late record', async () => {
+    const cookie = await cookieWithReasonSubmitted('late-1')
+
+    const { result, statusCode } = await server.inject({
+      method: 'GET',
+      url: '/records/late-1/edit-review',
+      headers: { cookie }
+    })
+    const $ = load(result)
+
+    expect(statusCode).toBe(statusCodes.ok)
+    expect($('[data-testid="app-edit-review-caption"]').text().trim()).toBe(
+      'CC-2026-123456'
+    )
+    expect($('h1').text().trim()).toBe('Edit the record for ACHILLES')
+  })
+
   test('Should reuse the same summary sections and data as Check Your Answers', async () => {
     const cookie = await cookieWithReasonSubmitted('submitted-1')
 

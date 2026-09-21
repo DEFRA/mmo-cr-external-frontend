@@ -54,14 +54,16 @@ export function buildDesignMarkdown(record, { manifest, tokens } = {}) {
     }
 
     const colours = collectColours(document)
-    if (colours.length)
-      {lines.push('### Colours (solid fills)', '', colours.join(' · '), '')}
+    if (colours.length) {
+      lines.push('### Colours (solid fills)', '', colours.join(' · '), '')
+    }
 
     const text = collectText(document)
     if (text.length) {
       lines.push('### Text content', '')
-      for (const t of text)
-        {lines.push(`- **${t.name}:** ${t.text.replace(/\n+/g, ' / ')}`)}
+      for (const t of text) {
+        lines.push(`- **${t.name}:** ${t.text.replace(/\n+/g, ' / ')}`)
+      }
       lines.push('')
     }
   }
@@ -103,14 +105,16 @@ export function buildDesignMarkdown(record, { manifest, tokens } = {}) {
     lines.push('## Assets', '')
     if (manifest.renders?.length) {
       lines.push('### Rendered images', '')
-      for (const r of manifest.renders)
-        {lines.push(`- \`assets/${r.file}\` — ${r.name} (${r.format})`)}
+      for (const r of manifest.renders) {
+        lines.push(`- \`assets/${r.file}\` — ${r.name} (${r.format})`)
+      }
       lines.push('')
     }
     if (manifest.imageFills?.length) {
       lines.push('### Image fills', '')
-      for (const f of manifest.imageFills)
-        {lines.push(`- \`assets/${f.file}\` — imageRef \`${f.imageRef}\``)}
+      for (const f of manifest.imageFills) {
+        lines.push(`- \`assets/${f.file}\` — imageRef \`${f.imageRef}\``)
+      }
       lines.push('')
     }
   }

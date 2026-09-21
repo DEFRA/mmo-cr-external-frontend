@@ -3,6 +3,15 @@ import { load } from 'cheerio'
 import { createServer } from '#/server/server.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 
+async function withDeparturePort(server, code) {
+  const response = await server.inject({
+    method: 'POST',
+    url: '/departure-port',
+    payload: { departurePort: code }
+  })
+  return response.headers['set-cookie'][0].split(';')[0]
+}
+
 describe('#statisticalAreaController', () => {
   let server
 
@@ -15,10 +24,23 @@ describe('#statisticalAreaController', () => {
     await server.stop({ timeout: 0 })
   })
 
-  test('Should provide expected response', async () => {
-    const { result, statusCode } = await server.inject({
+  test('Should redirect to the departure port page when no departure port has been selected', async () => {
+    const { statusCode, headers } = await server.inject({
       method: 'GET',
       url: '/statistical-area'
+    })
+
+    expect(statusCode).toBe(statusCodes.seeOther)
+    expect(headers.location).toBe('/departure-port')
+  })
+
+  test('Should provide expected response', async () => {
+    const cookie = await withDeparturePort(server, 'hastings')
+
+    const { result, statusCode } = await server.inject({
+      method: 'GET',
+      url: '/statistical-area',
+      headers: { cookie }
     })
 
     expect(result).toEqual(
@@ -30,9 +52,12 @@ describe('#statisticalAreaController', () => {
   })
 
   test('Should render the question as the page heading with caption', async () => {
+    const cookie = await withDeparturePort(server, 'hastings')
+
     const { result } = await server.inject({
       method: 'GET',
-      url: '/statistical-area'
+      url: '/statistical-area',
+      headers: { cookie }
     })
     const $ = load(result)
 
@@ -42,24 +67,28 @@ describe('#statisticalAreaController', () => {
     expect($('.govuk-caption-l').first().text().trim()).toBe('New catch record')
   })
 
-  test('Should render the graphical map buttons and the Other action', async () => {
+  test('Should render the offline map and the Other action', async () => {
+    const cookie = await withDeparturePort(server, 'hastings')
+
     const { result } = await server.inject({
       method: 'GET',
-      url: '/statistical-area'
+      url: '/statistical-area',
+      headers: { cookie }
     })
     const $ = load(result)
 
-    expect($('.app-statistical-area-map__zone')).toHaveLength(11)
-    expect($('.app-statistical-area-map__zone--38f02').text().trim()).toBe(
-      '38F02'
-    )
-    expect($('.app-statistical-area-map__other').text().trim()).toBe('Other')
+    expect($('.app-statistical-area-map__surface')).toHaveLength(0)
+    expect($('.app-offline-map').attr('data-departure-port')).toBe('Hastings')
+    expect($('.app-offline-map__other').text().trim()).toBe('Other')
   })
 
   test('Should render the Back link to the gear selection page', async () => {
+    const cookie = await withDeparturePort(server, 'hastings')
+
     const { result } = await server.inject({
       method: 'GET',
-      url: '/statistical-area'
+      url: '/statistical-area',
+      headers: { cookie }
     })
     const $ = load(result)
 
@@ -69,23 +98,25 @@ describe('#statisticalAreaController', () => {
   })
 
   test('Should restore a previously-saved statistical area selection', async () => {
+    const cookie = await withDeparturePort(server, 'hastings')
+
     const setResponse = await server.inject({
       method: 'POST',
       url: '/statistical-area',
+      headers: { cookie },
       payload: { statisticalArea: '38f02' }
     })
-    const cookie = setResponse.headers['set-cookie'][0].split(';')[0]
+    const updatedCookie =
+      setResponse.headers['set-cookie']?.[0]?.split(';')[0] || cookie
 
     const { result } = await server.inject({
       method: 'GET',
       url: '/statistical-area',
-      headers: { cookie }
+      headers: { cookie: updatedCookie }
     })
     const $ = load(result)
 
-    expect($('.app-statistical-area-map__zone--38f02').attr('class')).toContain(
-      'app-statistical-area-map__zone--selected'
-    )
+    expect($('.app-offline-map').attr('data-selected-area')).toBe('38f02')
   })
 })
 
@@ -106,6 +137,17 @@ describe('#statisticalAreaSubmitController', () => {
       method: 'POST',
       url: '/statistical-area',
       payload: { statisticalArea: '38f02' }
+    })
+
+    expect(statusCode).toBe(303)
+    expect(headers.location).toBe('/species-selection')
+  })
+
+  test('Should accept a generated offline-map subrectangle code', async () => {
+    const { statusCode, headers } = await server.inject({
+      method: 'POST',
+      url: '/statistical-area',
+      payload: { statisticalArea: '27D86' }
     })
 
     expect(statusCode).toBe(303)

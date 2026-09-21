@@ -4,38 +4,49 @@
 {% from "govuk/components/button/macro.njk" import govukButton %}
 
 {% block pageContent %}
-  {% set radioErrorMessage = { text: fieldErrors.statisticalArea } if fieldErrors.statisticalArea else false %}
-
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
       <form method="post" novalidate>
+        <span class="govuk-caption-l">{{ caption }}</span>
+        <h1 class="govuk-heading-xl">{{ heading }}</h1>
+        <p class="govuk-body">{{ bodyText[0] }}</p>
+        <p class="govuk-body">{{ bodyText[1] }}</p>
+
         {{ govukRadios({
           name: "statisticalArea",
           fieldset: {
             legend: {
-              html: '<span class="govuk-caption-l">' ~ caption ~ '</span>' ~ heading,
-              isPageHeading: true,
-              classes: "govuk-fieldset__legend--xl"
+              text: "Select a statistical sub area",
+              classes: "govuk-visually-hidden"
             }
           },
-          hint: {
-            html: '<p class="govuk-body">' ~ bodyText[0] ~ '</p><p class="govuk-body">' ~ bodyText[1] ~ '</p>'
-          },
-          errorMessage: radioErrorMessage,
-          items: areaOptions
+          items: areaOptions,
+          errorMessage: { text: fieldErrors.statisticalArea } if fieldErrors.statisticalArea else false,
+          attributes: { "data-statistical-area-options": "" }
         }) }}
 
-        {% if showAlternativeInput %}
-          {{ govukInput({
-            id: "alternativeStatisticalArea",
-            name: "alternativeStatisticalArea",
-            label: { text: "Statistical sub area" },
-            hint: { text: "For example, 46E45" },
-            classes: "govuk-input--width-10",
-            value: alternativeStatisticalArea,
-            errorMessage: { text: fieldErrors.alternativeStatisticalArea } if fieldErrors.alternativeStatisticalArea else false
-          }) }}
-        {% endif %}
+        <div{% if selectedArea != 'other' %} hidden{% endif %} data-statistical-area-search-panel>
+          <div class="app-statistical-area-search__control govuk-input--width-30">
+            {{ govukInput({
+              id: "alternativeStatisticalArea",
+              name: "alternativeStatisticalArea",
+              label: { text: "Statistical sub area - For example, 46E45" },
+              classes: "app-statistical-area-search__input",
+              value: alternativeStatisticalArea,
+              errorMessage: { text: fieldErrors.alternativeStatisticalArea } if fieldErrors.alternativeStatisticalArea else false,
+              attributes: {
+                autocomplete: "off",
+                 placeholder: "Type to search (minimum 2 characters)",
+                "aria-autocomplete": "list",
+                "aria-controls": "statistical-area-results",
+                 "aria-expanded": "false",
+                "data-statistical-area-search": ""
+              }
+            }) }}
+          </div>
+
+        <ul id="statistical-area-results" class="govuk-list app-statistical-area-search__results govuk-input--width-30" role="listbox" hidden data-statistical-area-results></ul>
+        </div>
 
         {{ govukButton({ text: "Save and continue" }) }}
       </form>

@@ -1,0 +1,20 @@
+{% extends 'layouts/page.njk' %}
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% block pageContent %}
+  <div class="govuk-grid-row"><div class="govuk-grid-column-two-thirds">
+    <h1 class="govuk-heading-xl">{{ heading }}</h1>
+    {{ govukSummaryList({ rows: [
+      { key: { text: "First name" }, value: { text: skipper.firstName }, actions: { items: [{ href: "/skipper-details#firstName", text: "Change", visuallyHiddenText: "first name" }] } },
+      { key: { text: "Last name" }, value: { text: skipper.lastName }, actions: { items: [{ href: "/skipper-details#lastName", text: "Change", visuallyHiddenText: "last name" }] } },
+      { key: { text: "Email address" }, value: { text: skipper.email }, actions: { items: [{ href: "/skipper-details#email", text: "Change", visuallyHiddenText: "email address" }] } }
+    ] }) }}
+    <p class="govuk-body">By submitting this information, you confirm that it is complete and correct.</p>
+    <form method="post" novalidate>
+      {{ govukRadios({ name: "confirmSkipper", fieldset: { legend: { text: "Confirm skipper details", classes: "govuk-visually-hidden" } }, errorMessage: { text: fieldErrors.confirmSkipper } if fieldErrors.confirmSkipper, items: [{ value: "true", text: "I confirm the information is complete and correct" }] }) }}
+      {{ govukButton({ text: "Submit" }) }}
+    </form>
+  </div></div>
+{% endblock %}
