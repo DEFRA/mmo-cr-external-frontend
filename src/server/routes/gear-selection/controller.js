@@ -5,17 +5,18 @@ import {
   resolveNextPath,
   setJourneyState
 } from '#/server/common/helpers/journey/navigation.js'
-import { getData } from '#/server/common/data/get-data.js'
+import {
+  getFavouriteGearIds,
+  getFavouriteGearOptions,
+  getGearCatalogue
+} from '#/server/common/helpers/gear/favourite-gear.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 
 const pageTitle = 'What gear did you use?'
-const gearOptions = getData('gearSelection').sort(
-  (a, b) => a.displayOrder - b.displayOrder
-)
-const validGearIds = gearOptions.map((option) => option.id)
+const validGearIds = getGearCatalogue().map((option) => option.id)
 
-function gearCheckboxItems(selectedGearIds) {
-  return gearOptions.map((option) => ({
+function gearCheckboxItems(selectedGearIds, favouriteOptions) {
+  return favouriteOptions.map((option) => ({
     value: option.id,
     text: option.label,
     hint: option.hint,
@@ -26,15 +27,19 @@ function gearCheckboxItems(selectedGearIds) {
 function viewContext(request, overrides = {}) {
   const journeyState = getJourneyState(request)
   const selectedGearIds = journeyState.selectedGearIds || []
+  const favouriteOptions = getFavouriteGearOptions(
+    getFavouriteGearIds(journeyState)
+  )
 
   return {
     pageTitle,
     heading: pageTitle,
+    caption: 'New catch record',
     backLink: {
       href: '/return-port',
       text: 'Back'
     },
-    gearCheckboxItems: gearCheckboxItems(selectedGearIds),
+    gearCheckboxItems: gearCheckboxItems(selectedGearIds, favouriteOptions),
     potsDetails: journeyState.potsDetails || {},
     ...overrides
   }
@@ -53,6 +58,10 @@ function renderWithErrors(
   h,
   { errorSummary, fieldErrors, selectedGearIds, potsDetails }
 ) {
+  const favouriteOptions = getFavouriteGearOptions(
+    getFavouriteGearIds(getJourneyState(request))
+  )
+
   return h
     .view(
       'gear-selection/index',
@@ -60,7 +69,10 @@ function renderWithErrors(
         errorSummary,
         fieldErrors,
         ...(selectedGearIds && {
-          gearCheckboxItems: gearCheckboxItems(selectedGearIds)
+          gearCheckboxItems: gearCheckboxItems(
+            selectedGearIds,
+            favouriteOptions
+          )
         }),
         ...(potsDetails && { potsDetails })
       })
@@ -137,7 +149,7 @@ export const gearSelectionSubmitController = {
         }
 
         if (!inWater.valid) {
-          const errorText = 'Enter the total pots or traps left in the water'
+          const errorText = 'Enter the total pots or traps left in water'
           errorList.push({ text: errorText, href: '#potsInWater' })
           fieldErrors.potsInWater = errorText
         }

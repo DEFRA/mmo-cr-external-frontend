@@ -1,4 +1,4 @@
-import { startServer } from '#/server/common/helpers/start-server.js'
+import { createServer } from '#/server/server.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 
 describe('#serveStaticFiles', () => {
@@ -6,7 +6,12 @@ describe('#serveStaticFiles', () => {
 
   describe('When secure context is disabled', () => {
     beforeEach(async () => {
-      server = await startServer()
+      // Use initialize() rather than start() - this test only needs
+      // server.inject() and doesn't need a real network bind, which avoids
+      // EADDRINUSE clashes with a locally running dev server (or other
+      // processes) on the default port.
+      server = await createServer()
+      await server.initialize()
     })
 
     afterEach(async () => {

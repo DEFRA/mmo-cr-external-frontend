@@ -1,0 +1,30 @@
+.app-autocomplete {
+  position: relative;
+}
+
+.app-autocomplete__input {
+  width: 100%;
+  padding-right: 2.75rem;
+}
+
+.app-autocomplete__arrow {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  bottom: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  pointer-events: none;
+  border-left: 1px solid #b1b4b6;
+}
+
+.app-autocomplete__arrow::before {
+  width: 0.5rem;
+  height: 0.5rem;
+  content: '';
+  border-right: 2px solid #505a5f;
+  border-bottom: 2px solid #505a5f;
+  transform: rotate(45deg) translate(-1px, -2px);
+}
