@@ -18,6 +18,8 @@ const SAFE_RETURN_PATHS = [
   '/add-port',
   '/confirm-same-port',
   '/gear-selection',
+  '/add-gear',
+  '/remove-gear',
   '/statistical-area',
   '/statistical-area-other',
   '/species-selection',
