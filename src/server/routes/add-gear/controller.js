@@ -17,6 +17,8 @@ import { statusCodes } from '#/server/common/constants/status-codes.js'
 
 const pageTitle = 'What gear did you use?'
 const { reference } = getData('confirmation')
+const addGearViewName = 'add-gear/index'
+const gearSelectionPath = '/gear-selection'
 
 // Every measurement field id used across the gear catalogue's `measurements`
 // arrays — declared explicitly so Joi only accepts known field names.
@@ -35,7 +37,7 @@ const measurementFieldIds = [
 // Keeps the "return" query param across the page's own add/measurement redirects
 // so "Save and continue" still honours it once the measurement step is done.
 function addGearPath(request) {
-  const candidate = request.query && request.query.return
+  const candidate = request.query?.return
   return candidate
     ? `/add-gear?return=${encodeURIComponent(candidate)}`
     : '/add-gear'
@@ -43,7 +45,7 @@ function addGearPath(request) {
 
 function normalizeMeasurementValue(rawValue) {
   if (rawValue === undefined || rawValue === null || rawValue === '') {
-    return { value: undefined, valid: false }
+    return { value: null, valid: false }
   }
 
   const numericValue = Number(rawValue)
@@ -67,7 +69,7 @@ function viewContext(request, overrides = {}) {
       : pageTitle,
     caption: reference,
     backLink: {
-      href: '/gear-selection',
+      href: gearSelectionPath,
       text: 'Back'
     },
     pendingOption,
@@ -81,7 +83,7 @@ function viewContext(request, overrides = {}) {
 function renderSearchError(request, h, errorText) {
   return h
     .view(
-      'add-gear/index',
+      addGearViewName,
       viewContext(request, {
         errorSummary: {
           titleText: 'There is a problem',
@@ -97,7 +99,7 @@ function renderSearchError(request, h, errorText) {
 function renderMeasurementErrors(request, h, errorList, fieldErrors) {
   return h
     .view(
-      'add-gear/index',
+      addGearViewName,
       viewContext(request, {
         errorSummary: { titleText: 'There is a problem', errorList },
         fieldErrors
@@ -109,8 +111,90 @@ function renderMeasurementErrors(request, h, errorList, fieldErrors) {
 
 export const addGearController = {
   handler(request, h) {
-    return h.view('add-gear/index', viewContext(request))
+    return h.view(addGearViewName, viewContext(request))
   }
+}
+
+function handlePendingMeasurementSubmission(
+  request,
+  h,
+  journeyState,
+  pendingOption
+) {
+  const errorList = []
+  const fieldErrors = {}
+  const values = {}
+
+  for (const measurement of pendingOption.measurements) {
+    const { value, valid } = normalizeMeasurementValue(
+      request.payload[measurement.id]
+    )
+
+    if (!valid) {
+      const errorText = `Enter the ${measurement.label.toLowerCase()}`
+      errorList.push({ text: errorText, href: `#${measurement.id}` })
+      fieldErrors[measurement.id] = errorText
+    } else {
+      values[measurement.id] = value
+    }
+  }
+
+  if (errorList.length) {
+    return renderMeasurementErrors(request, h, errorList, fieldErrors)
+  }
+
+  const favouriteGearIds = getFavouriteGearIds(journeyState)
+  const favouriteGearMeasurements = getFavouriteGearMeasurements(journeyState)
+
+  setJourneyState(request, {
+    favouriteGearIds: favouriteGearIds.includes(pendingOption.id)
+      ? favouriteGearIds
+      : [...favouriteGearIds, pendingOption.id],
+    favouriteGearMeasurements: {
+      ...favouriteGearMeasurements,
+      [pendingOption.id]: values
+    },
+    addGearPendingId: null
+  })
+
+  return h
+    .redirect(resolveNextPath(request, gearSelectionPath))
+    .code(statusCodes.seeOther)
+}
+
+function handleGearSearchSubmission(request, h, journeyState) {
+  const gearLabel = (request.payload.gear || '').trim()
+
+  if (!gearLabel) {
+    return renderSearchError(
+      request,
+      h,
+      'Enter the name of the gear you want to add'
+    )
+  }
+
+  const matchedOption = findGearOptionByLabel(gearLabel)
+
+  if (!matchedOption) {
+    return renderSearchError(request, h, 'Select a gear type from the list')
+  }
+
+  if (matchedOption.measurements) {
+    setJourneyState(request, { addGearPendingId: matchedOption.id })
+    return h.redirect(addGearPath(request)).code(statusCodes.seeOther)
+  }
+
+  const favouriteGearIds = getFavouriteGearIds(journeyState)
+
+  if (!favouriteGearIds.includes(matchedOption.id)) {
+    setJourneyState(request, {
+      favouriteGearIds: [...favouriteGearIds, matchedOption.id]
+    })
+  }
+
+  return h
+    .redirect(resolveNextPath(request, gearSelectionPath))
+    .code(statusCodes.seeOther)
 }
 
 export const addGearSubmitController = {
@@ -136,80 +220,13 @@ export const addGearSubmitController = {
     const pendingGearId = journeyState.addGearPendingId
     const pendingOption = pendingGearId && getGearOptionById(pendingGearId)
 
-    if (pendingOption) {
-      const errorList = []
-      const fieldErrors = {}
-      const values = {}
-
-      for (const measurement of pendingOption.measurements) {
-        const { value, valid } = normalizeMeasurementValue(
-          request.payload[measurement.id]
+    return pendingOption
+      ? handlePendingMeasurementSubmission(
+          request,
+          h,
+          journeyState,
+          pendingOption
         )
-
-        if (!valid) {
-          const errorText = `Enter the ${measurement.label.toLowerCase()}`
-          errorList.push({ text: errorText, href: `#${measurement.id}` })
-          fieldErrors[measurement.id] = errorText
-        } else {
-          values[measurement.id] = value
-        }
-      }
-
-      if (errorList.length) {
-        return renderMeasurementErrors(request, h, errorList, fieldErrors)
-      }
-
-      const favouriteGearIds = getFavouriteGearIds(journeyState)
-      const favouriteGearMeasurements =
-        getFavouriteGearMeasurements(journeyState)
-
-      setJourneyState(request, {
-        favouriteGearIds: favouriteGearIds.includes(pendingOption.id)
-          ? favouriteGearIds
-          : [...favouriteGearIds, pendingOption.id],
-        favouriteGearMeasurements: {
-          ...favouriteGearMeasurements,
-          [pendingOption.id]: values
-        },
-        addGearPendingId: undefined
-      })
-
-      return h
-        .redirect(resolveNextPath(request, '/gear-selection'))
-        .code(statusCodes.seeOther)
-    }
-
-    const gearLabel = (request.payload.gear || '').trim()
-
-    if (!gearLabel) {
-      return renderSearchError(
-        request,
-        h,
-        'Enter the name of the gear you want to add'
-      )
-    }
-
-    const matchedOption = findGearOptionByLabel(gearLabel)
-
-    if (!matchedOption) {
-      return renderSearchError(request, h, 'Select a gear type from the list')
-    }
-
-    if (matchedOption.measurements) {
-      setJourneyState(request, { addGearPendingId: matchedOption.id })
-      return h.redirect(addGearPath(request)).code(statusCodes.seeOther)
-    }
-
-    const favouriteGearIds = getFavouriteGearIds(journeyState)
-
-    if (!favouriteGearIds.includes(matchedOption.id)) {
-      setJourneyState(request, {
-        favouriteGearIds: [...favouriteGearIds, matchedOption.id]
-      })
-    }
-
-    return h
-      .redirect(resolveNextPath(request, '/gear-selection'))
-      .code(statusCodes.seeOther)
+      : handleGearSearchSubmission(request, h, journeyState)
   }
 }
