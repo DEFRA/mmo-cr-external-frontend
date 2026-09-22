@@ -80,10 +80,11 @@ export function parseNodeList(raw) {
     .map((n) => normaliseNodeId(n.trim()))
     .filter(Boolean)
     .map((n) => {
-      if (!NODE_ID_RE.test(n))
-        {throw new SafeError(`Invalid node id "${n}" in --nodes.`, {
+      if (!NODE_ID_RE.test(n)) {
+        throw new SafeError(`Invalid node id "${n}" in --nodes.`, {
           code: 'ERR_INPUT'
-        })}
+        })
+      }
       return n
     })
 }
@@ -109,19 +110,22 @@ export function createFigmaClient(config) {
         { code: 'ERR_AUTH' }
       )
     }
-    if (res.status === 404)
-      {throw new SafeError('Figma file or node was not found (404).', {
+    if (res.status === 404) {
+      throw new SafeError('Figma file or node was not found (404).', {
         code: 'ERR_NOT_FOUND'
-      })}
-    if (res.status === 429)
-      {throw new SafeError(
+      })
+    }
+    if (res.status === 429) {
+      throw new SafeError(
         'Figma rate limit reached (429) — stopping early without retrying. Wait a while before re-running.',
         { code: 'ERR_RATE_LIMIT' }
-      )}
-    if (!res.ok)
-      {throw new SafeError(`Figma request failed (${res.status}).`, {
+      )
+    }
+    if (!res.ok) {
+      throw new SafeError(`Figma request failed (${res.status}).`, {
         code: 'ERR_FIGMA'
-      })}
+      })
+    }
     return { status: res.status, body: await res.json() }
   }
 
@@ -144,8 +148,9 @@ export function createFigmaClient(config) {
     // Rendered images (png/svg/…) for the requested node ids.
     async getImages(key, ids, { format, scale } = {}) {
       const params = [`ids=${ids.map(enc).join(',')}`, `format=${enc(format)}`]
-      if (format !== 'svg' && format !== 'pdf' && scale)
-        {params.push(`scale=${scale}`)}
+      if (format !== 'svg' && format !== 'pdf' && scale) {
+        params.push(`scale=${scale}`)
+      }
       const { body } = await get(`/v1/images/${enc(key)}?${params.join('&')}`)
       return body
     },

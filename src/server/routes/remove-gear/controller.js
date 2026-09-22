@@ -92,7 +92,7 @@ export const removeGearSubmitController = {
     setJourneyState(request, {
       favouriteGearIds: remainingFavouriteGearIds,
       selectedGearIds: remainingSelectedGearIds,
-      ...(idsToRemove.includes('pots') && { potsDetails: undefined })
+      ...(idsToRemove.includes('pots') && { potsDetails: null })
     })
 
     return h
