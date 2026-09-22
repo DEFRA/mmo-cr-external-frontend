@@ -216,44 +216,6 @@ export const statisticalAreaOtherSubmitController = {
     if (statisticalArea !== 'other') {
       return handleKnownAreaSelection(request, h, statisticalArea)
     }
-    const submitted = alternativeStatisticalArea
-
-    if (!AREA_FORMAT.test(submitted)) {
-      return h
-        .view(
-          'statistical-area-other/index',
-          viewContext(request, {
-            errorSummary: {
-              titleText: 'There is a problem',
-              errorList: [
-                {
-                  text: 'Enter the statistical sub area in the correct format, like 46E45',
-                  href: '#alternativeStatisticalArea'
-                }
-              ]
-            },
-            fieldErrors: {
-              alternativeStatisticalArea:
-                'Enter the statistical sub area in the correct format, like 46E45'
-            },
-            areaOptions: areaRadioItems('other'),
-            selectedArea: 'other',
-            showAlternativeInput: true,
-            alternativeStatisticalArea: submitted
-          })
-        )
-        .code(statusCodes.badRequest)
-        .takeover()
-    }
-
-    setJourneyState(request, {
-      statAreaBranch: 'other',
-      selectedAlternativeAreaOption: 'other',
-      alternativeStatisticalArea: submitted.trim().toUpperCase()
-    })
-
-    return h
-      .redirect(resolveNextPath(request, '/species-selection'))
-      .code(statusCodes.seeOther)
+    return handleManualAreaSubmission(request, h)
   }
 }
