@@ -108,8 +108,9 @@ function renderTable(node, state) {
     const cells = Array.isArray(row?.content) ? row.content : []
     if (rowIndex === 0) {
       cells.forEach((cell, i) => {
-        if (NAME_COLUMN_RE.test(cellHeaderLabel(cell, state)))
+        if (NAME_COLUMN_RE.test(cellHeaderLabel(cell, state))) {
           nameColumns.add(i)
+        }
       })
       out.push(renderNodes(row.content, state))
       return
@@ -131,8 +132,9 @@ function renderTable(node, state) {
 }
 
 function renderNode(node, state) {
-  if (!node || typeof node !== 'object' || typeof node.type !== 'string')
+  if (!node || typeof node !== 'object' || typeof node.type !== 'string') {
     return ''
+  }
   switch (node.type) {
     case 'text': {
       const text = typeof node.text === 'string' ? node.text : ''
@@ -259,10 +261,12 @@ const FORBIDDEN_KEYS = new Set([
 export function scanForPii(value, path = '$', out = [], seen = new WeakSet()) {
   if (value == null) return out
   if (typeof value === 'string') {
-    if (EMAIL_RE.test(value))
+    if (EMAIL_RE.test(value)) {
       out.push({ path, reason: 'email address in value' })
-    if (ACCOUNT_ID_RE.test(value))
+    }
+    if (ACCOUNT_ID_RE.test(value)) {
       out.push({ path, reason: 'accountId in value' })
+    }
     return out
   }
   if (typeof value !== 'object' || seen.has(value)) return out
@@ -272,8 +276,9 @@ export function scanForPii(value, path = '$', out = [], seen = new WeakSet()) {
     return out
   }
   for (const [key, val] of Object.entries(value)) {
-    if (FORBIDDEN_KEYS.has(key.toLowerCase()))
+    if (FORBIDDEN_KEYS.has(key.toLowerCase())) {
       out.push({ path: `${path}.${key}`, reason: 'forbidden identity key' })
+    }
     scanForPii(val, `${path}.${key}`, out, seen)
   }
   return out
@@ -371,8 +376,9 @@ function sanitiseLabels(labels) {
 
 function assertItemShape(record) {
   for (const key of Object.keys(record)) {
-    if (!ALLOWED_ITEM_KEYS.has(key))
+    if (!ALLOWED_ITEM_KEYS.has(key)) {
       throw new Error(`sanitiser produced an unexpected key "${key}"`)
+    }
   }
   return record
 }

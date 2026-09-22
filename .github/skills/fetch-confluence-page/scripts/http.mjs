@@ -17,15 +17,17 @@ export function assertAllowedHost(rawUrl, allowedHosts) {
       code: 'ERR_EGRESS'
     })
   }
-  if (url.protocol !== 'https:')
+  if (url.protocol !== 'https:') {
     throw new SafeError('Refusing non-https request.', { code: 'ERR_EGRESS' })
+  }
   const allowed = allowedHosts.some(
     (h) => url.host === h || url.host.endsWith(`.${h}`)
   )
-  if (!allowed)
+  if (!allowed) {
     throw new SafeError(`Refusing to contact disallowed host "${url.host}".`, {
       code: 'ERR_EGRESS'
     })
+  }
   return url
 }
 

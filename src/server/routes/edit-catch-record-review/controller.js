@@ -25,12 +25,16 @@ function findRecord(recordId) {
 }
 
 function viewContext(request, recordId, overrides = {}) {
-  const details = getData('catchRecordDetails')
+  const record = findRecord(recordId)
+  const details = record.details || getData('catchRecordDetails')
   const { sections } = buildCheckAnswersViewModel(request, {
     buildChangeHref: () => AMENDMENT_CHANGE_HREF,
     hideVesselChange: true
   })
-  const heading = `Catch record for ${details.vesselName}`
+  const heading =
+    record.recordId === 'late-1'
+      ? `Edit the record for ${details.vesselName}`
+      : `Catch record for ${details.vesselName}`
 
   return {
     pageTitle: heading,

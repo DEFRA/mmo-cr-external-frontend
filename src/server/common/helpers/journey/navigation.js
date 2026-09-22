@@ -15,13 +15,18 @@ const SAFE_RETURN_PATHS = [
   '/trip-return-date',
   '/departure-port',
   '/return-port',
+  '/add-port',
+  '/confirm-same-port',
   '/gear-selection',
   '/add-gear',
   '/remove-gear',
   '/statistical-area',
   '/statistical-area-other',
   '/species-selection',
+  '/add-species',
+  '/remove-species',
   '/catch-not-landed',
+  '/species-not-landed',
   '/check-answers',
   '/confirmation',
   '/account',
@@ -50,6 +55,12 @@ export function backForSpeciesSelection(request) {
   return getJourneyState(request).statAreaBranch === 'other'
     ? '/statistical-area-other'
     : '/statistical-area'
+}
+
+export function backForCheckAnswers(request) {
+  return getJourneyState(request).catchNotLanded
+    ? '/species-not-landed'
+    : '/catch-not-landed'
 }
 
 export function safeReturnPath(candidate) {
