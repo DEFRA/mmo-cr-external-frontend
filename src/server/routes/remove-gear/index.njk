@@ -1,0 +1,45 @@
+{% extends 'layouts/page.njk' %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% block pageContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <form method="post" novalidate>
+        <div class="govuk-form-group{{ ' govuk-form-group--error' if fieldErrors.gearIds }}">
+          <fieldset class="govuk-fieldset" aria-describedby="gearIds-hint{{ ' gearIds-error' if fieldErrors.gearIds }}">
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+              <h1 class="govuk-fieldset__heading">
+                {{ headingLine1 }} <br>{{ vesselName }}
+              </h1>
+            </legend>
+            <div id="gearIds-hint" class="govuk-hint">Select all that apply</div>
+            {% if fieldErrors.gearIds %}
+              <p id="gearIds-error" class="govuk-error-message">
+                <span class="govuk-visually-hidden">Error:</span> {{ fieldErrors.gearIds }}
+              </p>
+            {% endif %}
+            <div class="govuk-checkboxes" data-module="govuk-checkboxes">
+              {% for item in gearCheckboxItems %}
+                <div class="govuk-checkboxes__item">
+                  <input
+                    class="govuk-checkboxes__input"
+                    id="gearIds-{{ loop.index }}"
+                    name="gearIds"
+                    type="checkbox"
+                    value="{{ item.value }}"
+                  >
+                  <label class="govuk-label govuk-checkboxes__label" for="gearIds-{{ loop.index }}">{{ item.text }}</label>
+                  {% if item.hint %}
+                    <div id="gearIds-{{ loop.index }}-item-hint" class="govuk-hint govuk-checkboxes__hint">{{ item.hint }}</div>
+                  {% endif %}
+                </div>
+              {% endfor %}
+            </div>
+          </fieldset>
+        </div>
+
+        {{ govukButton({ text: "Continue", classes: "govuk-!-margin-top-6" }) }}
+      </form>
+    </div>
+  </div>
+{% endblock %}

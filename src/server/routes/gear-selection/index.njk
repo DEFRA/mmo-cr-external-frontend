@@ -8,7 +8,7 @@
       id: "potsHauled",
       name: "potsHauled",
       label: { text: "Total pots or traps hauled" },
-      classes: "govuk-input--width-5",
+      classes: "govuk-input--width-10",
       inputmode: "numeric",
       value: potsDetails.potsHauled,
       errorMessage: { text: fieldErrors.potsHauled } if fieldErrors.potsHauled else false
@@ -16,8 +16,8 @@
     {{ govukInput({
       id: "potsInWater",
       name: "potsInWater",
-      label: { text: "Total pots or traps left in the water" },
-      classes: "govuk-input--width-5",
+      label: { text: "Total pots or traps left in water" },
+      classes: "govuk-input--width-10",
       inputmode: "numeric",
       value: potsDetails.potsInWater,
       errorMessage: { text: fieldErrors.potsInWater } if fieldErrors.potsInWater else false
@@ -28,10 +28,11 @@
     <div class="govuk-grid-column-two-thirds">
       <form method="post" novalidate>
         <div class="govuk-form-group{{ ' govuk-form-group--error' if fieldErrors.gearIds }}">
-          <fieldset class="govuk-fieldset">
-            <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
-              <h1 class="govuk-fieldset__heading">{{ heading }}</h1>
+          <fieldset class="govuk-fieldset" aria-describedby="gearIds-hint{{ ' gearIds-error' if fieldErrors.gearIds }}">
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--xl">
+              <h1 class="govuk-fieldset__heading"><span class="govuk-caption-l">{{ caption }}</span>{{ heading }}</h1>
             </legend>
+            <div id="gearIds-hint" class="govuk-hint">Select all that apply</div>
             {% if fieldErrors.gearIds %}
               <p id="gearIds-error" class="govuk-error-message">
                 <span class="govuk-visually-hidden">Error:</span> {{ fieldErrors.gearIds }}
@@ -64,9 +65,10 @@
           </fieldset>
         </div>
 
-        <p><a class="govuk-link" href="/not-implemented?return=/gear-selection">Add gear</a></p>
+        <p><a class="govuk-link" href="/add-gear">Add gear</a></p>
+        <p><a class="govuk-link" href="/remove-gear">Remove gear</a></p>
 
-        {{ govukButton({ text: "Continue", classes: "govuk-!-margin-top-6" }) }}
+        {{ govukButton({ text: "Save and continue", classes: "govuk-!-margin-top-6" }) }}
       </form>
     </div>
   </div>

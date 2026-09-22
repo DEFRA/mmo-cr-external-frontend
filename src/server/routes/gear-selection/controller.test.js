@@ -25,6 +25,18 @@ describe('#gearSelectionController', () => {
     expect(statusCode).toBe(statusCodes.ok)
   })
 
+  test('Should render the question as the page heading with caption and hint', async () => {
+    const { result } = await server.inject({
+      method: 'GET',
+      url: '/gear-selection'
+    })
+    const $ = load(result)
+
+    expect($('h1').text()).toContain('What gear did you use?')
+    expect($('h1 .govuk-caption-l').text().trim()).toBe('New catch record')
+    expect($('.govuk-hint').first().text().trim()).toBe('Select all that apply')
+  })
+
   test('Should render 9 gear checkboxes with the stable ids', async () => {
     const { result } = await server.inject({
       method: 'GET',
@@ -68,6 +80,17 @@ describe('#gearSelectionController', () => {
     expect(
       $('[data-testid="app-page-navigation-back-link"]').attr('href')
     ).toBe('/return-port')
+  })
+
+  test('Should render Add gear and Remove gear links', async () => {
+    const { result } = await server.inject({
+      method: 'GET',
+      url: '/gear-selection'
+    })
+    const $ = load(result)
+
+    expect($('a.govuk-link[href="/add-gear"]').text()).toBe('Add gear')
+    expect($('a.govuk-link[href="/remove-gear"]').text()).toBe('Remove gear')
   })
 
   test('Should restore previously-selected gear ids as checked', async () => {
@@ -246,7 +269,7 @@ describe('#gearSelectionSubmitController', () => {
       'Enter the total pots or traps hauled'
     )
     expect($('.govuk-error-summary').text()).toContain(
-      'Enter the total pots or traps left in the water'
+      'Enter the total pots or traps left in water'
     )
     expect($('.govuk-error-summary a[href="#potsHauled"]')).toHaveLength(1)
     expect($('.govuk-error-summary a[href="#potsInWater"]')).toHaveLength(1)
@@ -265,7 +288,7 @@ describe('#gearSelectionSubmitController', () => {
       'Enter the total pots or traps hauled'
     )
     expect($('.govuk-error-summary').text()).toContain(
-      'Enter the total pots or traps left in the water'
+      'Enter the total pots or traps left in water'
     )
   })
 

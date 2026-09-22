@@ -241,7 +241,6 @@ export const statisticalAreaOtherSubmitController = {
     if (statisticalArea !== 'other') {
       return handleKnownAreaSelection(request, h, statisticalArea)
     }
-
     return handleManualAreaSubmission(request, h)
   }
 }

@@ -20,10 +20,15 @@ import { returnPort } from '../routes/return-port/index.js'
 import { addPort } from '../routes/add-port/index.js'
 import { confirmSamePort } from '../routes/confirm-same-port/index.js'
 import { gearSelection } from '../routes/gear-selection/index.js'
+import { addGear } from '../routes/add-gear/index.js'
+import { removeGear } from '../routes/remove-gear/index.js'
 import { statisticalArea } from '../routes/statistical-area/index.js'
 import { statisticalAreaOther } from '../routes/statistical-area-other/index.js'
 import { speciesSelection } from '../routes/species-selection/index.js'
+import { addSpecies } from '../routes/add-species/index.js'
+import { removeSpecies } from '../routes/remove-species/index.js'
 import { catchNotLanded } from '../routes/catch-not-landed/index.js'
+import { speciesNotLanded } from '../routes/species-not-landed/index.js'
 import { checkAnswers } from '../routes/check-answers/index.js'
 import { confirmation } from '../routes/confirmation/index.js'
 import { account } from '../routes/account/index.js'
@@ -65,10 +70,15 @@ export const router = {
         addPort,
         confirmSamePort,
         gearSelection,
+        addGear,
+        removeGear,
         statisticalArea,
         statisticalAreaOther,
         speciesSelection,
+        addSpecies,
+        removeSpecies,
         catchNotLanded,
+        speciesNotLanded,
         checkAnswers,
         confirmation,
         account,

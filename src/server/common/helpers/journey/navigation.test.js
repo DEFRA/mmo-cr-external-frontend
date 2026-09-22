@@ -1,4 +1,5 @@
 import {
+  backForCheckAnswers,
   backForDeparturePort,
   backForSpeciesSelection,
   getJourneyState,
@@ -68,6 +69,23 @@ describe('#backForSpeciesSelection', () => {
   test('Should return /statistical-area-other when that branch was taken', () => {
     const request = createFakeRequest({ statAreaBranch: 'other' })
     expect(backForSpeciesSelection(request)).toBe('/statistical-area-other')
+  })
+})
+
+describe('#backForCheckAnswers', () => {
+  test('Should return /species-not-landed when catch not landed is Yes', () => {
+    const request = createFakeRequest({ catchNotLanded: true })
+    expect(backForCheckAnswers(request)).toBe('/species-not-landed')
+  })
+
+  test('Should return /catch-not-landed by default', () => {
+    const request = createFakeRequest(undefined)
+    expect(backForCheckAnswers(request)).toBe('/catch-not-landed')
+  })
+
+  test('Should return /catch-not-landed when catch not landed is No', () => {
+    const request = createFakeRequest({ catchNotLanded: false })
+    expect(backForCheckAnswers(request)).toBe('/catch-not-landed')
   })
 })
 

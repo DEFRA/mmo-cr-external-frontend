@@ -11,12 +11,14 @@ import { initialiseStatisticalAreaSearch } from './modules/statistical-area-sear
 import { initialisePortSearch } from './modules/port-search.js'
 import { initialiseClearInputErrors } from './clear-input-error.js'
 
+import { initSpeciesWeightToggle } from './species-weight-toggle.js'
+
 createAll(Button)
 createAll(Checkboxes)
 createAll(ErrorSummary)
 createAll(Radios)
 createAll(SkipLink)
-
+initSpeciesWeightToggle()
 initialiseStatisticalAreaMap()
 initialiseStatisticalAreaSearch()
 initialisePortSearch()
