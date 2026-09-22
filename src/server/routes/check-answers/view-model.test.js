@@ -121,6 +121,51 @@ describe('#buildCheckAnswersViewModel', () => {
     expect(rowValue(rows, 'Statistical sub area')).toBe('30F05')
   })
 
+  test('Should fall back to the illustrative sub area when the "direct" selection does not match a nearby area', () => {
+    const fallback = getData('catchRecordDetails')
+    const viewModel = buildCheckAnswersViewModel(
+      fakeRequest({
+        statAreaBranch: 'direct',
+        selectedStatisticalArea: 'not-a-real-area'
+      })
+    )
+    const rows = rowsFor(viewModel, 'Trips details')
+
+    expect(rowValue(rows, 'Statistical sub area')).toBe(
+      fallback.statisticalSubArea
+    )
+  })
+
+  test('Should fall back to the illustrative sub area for the "other, typed" branch when nothing was typed', () => {
+    const fallback = getData('catchRecordDetails')
+    const viewModel = buildCheckAnswersViewModel(
+      fakeRequest({
+        statAreaBranch: 'other',
+        selectedAlternativeAreaOption: 'other'
+      })
+    )
+    const rows = rowsFor(viewModel, 'Trips details')
+
+    expect(rowValue(rows, 'Statistical sub area')).toBe(
+      fallback.statisticalSubArea
+    )
+  })
+
+  test('Should fall back to the illustrative sub area for the "other, listed" branch when nothing matches', () => {
+    const fallback = getData('catchRecordDetails')
+    const viewModel = buildCheckAnswersViewModel(
+      fakeRequest({
+        statAreaBranch: 'other',
+        selectedAlternativeAreaOption: 'not-a-real-area'
+      })
+    )
+    const rows = rowsFor(viewModel, 'Trips details')
+
+    expect(rowValue(rows, 'Statistical sub area')).toBe(
+      fallback.statisticalSubArea
+    )
+  })
+
   test('Should render pots hauled/left-in-water and the mock mesh size when pots is selected', () => {
     const viewModel = buildCheckAnswersViewModel(
       fakeRequest({
@@ -180,8 +225,7 @@ describe('#buildCheckAnswersViewModel', () => {
     const viewModel = buildCheckAnswersViewModel(
       fakeRequest({
         selectedSpeciesIds: ['cod'],
-        codWeights: { weightAboveMinimum: 12 },
-        weightFieldsVisible: { belowMinimum: false, legallyDiscarded: false }
+        speciesWeights: { cod: { weightAboveMinimum: 12 } }
       })
     )
     const rows = rowsFor(viewModel, 'Species caught')
@@ -200,12 +244,13 @@ describe('#buildCheckAnswersViewModel', () => {
     const viewModel = buildCheckAnswersViewModel(
       fakeRequest({
         selectedSpeciesIds: ['cod'],
-        codWeights: {
-          weightAboveMinimum: 15,
-          weightBelowMinimum: 10,
-          weightDiscarded: 5
-        },
-        weightFieldsVisible: { belowMinimum: true, legallyDiscarded: true }
+        speciesWeights: {
+          cod: {
+            weightAboveMinimum: 15,
+            weightBelowMinimum: 10,
+            weightDiscarded: 5
+          }
+        }
       })
     )
     const rows = rowsFor(viewModel, 'Species caught')
@@ -240,12 +285,36 @@ describe('#buildCheckAnswersViewModel', () => {
     ).toBe('5')
   })
 
+  test('Should show the real captured species-not-landed weight over the fallback example', () => {
+    const viewModel = buildCheckAnswersViewModel(
+      fakeRequest({
+        catchNotLanded: true,
+        speciesNotLanded: { cod: { weightAboveMinimum: 8 } }
+      })
+    )
+    const rows = rowsFor(viewModel, 'Species not landed')
+
+    expect(rowValue(rows, 'Species')).toBe('Atlantic cod (COD)')
+    expect(
+      rowValue(
+        rows,
+        'Weight above minimum size kept onboard or in keep pots (kg)'
+      )
+    ).toBe('8')
+    expect(rowChangeHref(rows, 'Species')).toBe(
+      '/species-not-landed?return=/check-answers'
+    )
+    expect(rowChangeHref(rows, 'Not landed')).toBe(
+      '/catch-not-landed?return=/check-answers'
+    )
+  })
+
   test('Should never expose undefined, null or raw internal ids as a visible value', () => {
     const viewModel = buildCheckAnswersViewModel(
       fakeRequest({
         selectedGearIds: ['pots'],
         selectedSpeciesIds: ['cod'],
-        codWeights: { weightAboveMinimum: 10 }
+        speciesWeights: { cod: { weightAboveMinimum: 10 } }
       })
     )
 

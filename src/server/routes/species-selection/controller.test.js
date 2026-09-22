@@ -59,16 +59,19 @@ describe('#speciesSelectionController', () => {
     ).toBe('/statistical-area-other')
   })
 
-  test('Should link Add species and Remove species to the Empty Page', async () => {
+  test('Should link Add species and Remove species to their respective routes', async () => {
     const { result } = await server.inject({
       method: 'GET',
       url: '/species-selection'
     })
     const $ = load(result)
 
+    expect($('a[href="/add-species?return=/species-selection"]')).toHaveLength(
+      1
+    )
     expect(
-      $('a[href="/not-implemented?return=/species-selection"]')
-    ).toHaveLength(2)
+      $('a[href="/remove-species?return=/species-selection"]')
+    ).toHaveLength(1)
   })
 
   test('Should render the 3 species checkboxes with stable ids in order', async () => {
@@ -108,7 +111,7 @@ describe('#speciesSelectionController', () => {
       payload: {
         speciesIds: 'cod',
         speciesAction: 'continue',
-        weightAboveMinimum: '120.5'
+        'weightAboveMinimum-cod': '120.5'
       }
     })
     const cookie = setResponse.headers['set-cookie'][0].split(';')[0]
@@ -121,7 +124,7 @@ describe('#speciesSelectionController', () => {
     const $ = load(result)
 
     expect($('input[value="cod"]').prop('checked')).toBe(true)
-    expect($('#weightAboveMinimum').attr('value')).toBe('120.5')
+    expect($('#weightAboveMinimum-cod').attr('value')).toBe('120.5')
     expect(
       $('#speciesIds-conditional-1').hasClass(
         'govuk-checkboxes__conditional--hidden'
@@ -142,111 +145,75 @@ describe('#speciesSelectionSubmitController', () => {
     await server.stop({ timeout: 0 })
   })
 
-  test('Should show the weight below minimum field when add-below-minimum is submitted', async () => {
-    const { statusCode, result } = await server.inject({
-      method: 'POST',
-      url: '/species-selection',
-      payload: { speciesIds: 'cod', speciesAction: 'add-below-minimum' }
-    })
-    const $ = load(result)
-
-    expect(statusCode).toBe(statusCodes.ok)
-    expect($('#weightBelowMinimum')).toHaveLength(1)
-    expect($('input[value="cod"]').prop('checked')).toBe(true)
-  })
-
-  test('Should show the weight legally discarded field when add-legally-discarded is submitted', async () => {
-    const { statusCode, result } = await server.inject({
-      method: 'POST',
-      url: '/species-selection',
-      payload: { speciesIds: 'cod', speciesAction: 'add-legally-discarded' }
-    })
-    const $ = load(result)
-
-    expect(statusCode).toBe(statusCodes.ok)
-    expect($('#weightDiscarded')).toHaveLength(1)
-  })
-
-  test('Should show both optional weight fields when both have been added in sequence', async () => {
-    const firstResponse = await server.inject({
-      method: 'POST',
-      url: '/species-selection',
-      payload: { speciesIds: 'cod', speciesAction: 'add-below-minimum' }
-    })
-    const $first = load(firstResponse.result)
-
-    expect($first('input[name="belowMinimumVisible"]').attr('value')).toBe(
-      'true'
-    )
-
-    const { statusCode, result } = await server.inject({
-      method: 'POST',
-      url: '/species-selection',
-      payload: {
-        speciesIds: 'cod',
-        speciesAction: 'add-legally-discarded',
-        belowMinimumVisible: 'true'
-      }
-    })
-    const $ = load(result)
-
-    expect(statusCode).toBe(statusCodes.ok)
-    expect($('#weightBelowMinimum')).toHaveLength(1)
-    expect($('#weightDiscarded')).toHaveLength(1)
-  })
-
-  test('Should hide the weight below minimum field and clear its value when removed', async () => {
-    const { statusCode, result } = await server.inject({
-      method: 'POST',
-      url: '/species-selection',
-      payload: {
-        speciesIds: 'cod',
-        speciesAction: 'remove-below-minimum',
-        belowMinimumVisible: 'true',
-        weightBelowMinimum: '8.2'
-      }
-    })
-    const $ = load(result)
-
-    expect(statusCode).toBe(statusCodes.ok)
-    expect($('#weightBelowMinimum')).toHaveLength(0)
-  })
-
-  test('Should hide the weight legally discarded field and clear its value when removed', async () => {
-    const { statusCode, result } = await server.inject({
-      method: 'POST',
-      url: '/species-selection',
-      payload: {
-        speciesIds: 'cod',
-        speciesAction: 'remove-legally-discarded',
-        legallyDiscardedVisible: 'true',
-        weightDiscarded: '3.1'
-      }
-    })
-    const $ = load(result)
-
-    expect(statusCode).toBe(statusCodes.ok)
-    expect($('#weightDiscarded')).toHaveLength(0)
-  })
-
-  test('Should re-render with a field error when the legally-discarded weight is missing', async () => {
+  test('Should render the below-minimum weight field expanded when it already has a value', async () => {
     const { statusCode, result } = await server.inject({
       method: 'POST',
       url: '/species-selection',
       payload: {
         speciesIds: 'cod',
         speciesAction: 'continue',
-        weightAboveMinimum: '120.5',
-        legallyDiscardedVisible: 'true',
-        weightDiscarded: ''
+        'weightBelowMinimum-cod': '8.2'
       }
     })
     const $ = load(result)
 
     expect(statusCode).toBe(statusCodes.badRequest)
-    expect($('.govuk-error-summary').text()).toContain(
-      'Enter the weight legally discarded'
-    )
+    expect($('#weightBelowMinimum-cod')).toHaveLength(1)
+    expect(
+      $('#weightBelowMinimum-cod-group').hasClass('govuk-visually-hidden')
+    ).toBe(false)
+  })
+
+  test('Should render the legally-discarded weight field expanded when it already has a value', async () => {
+    const { statusCode, result } = await server.inject({
+      method: 'POST',
+      url: '/species-selection',
+      payload: {
+        speciesIds: 'cod',
+        speciesAction: 'continue',
+        'weightDiscarded-cod': '3.1'
+      }
+    })
+    const $ = load(result)
+
+    expect(statusCode).toBe(statusCodes.badRequest)
+    expect($('#weightDiscarded-cod')).toHaveLength(1)
+    expect(
+      $('#weightDiscarded-cod-group').hasClass('govuk-visually-hidden')
+    ).toBe(false)
+  })
+
+  test('Should render the js-weight-toggle links for revealing the optional weight fields', async () => {
+    const { result } = await server.inject({
+      method: 'POST',
+      url: '/species-selection',
+      payload: { speciesIds: 'cod', speciesAction: 'continue' }
+    })
+    const $ = load(result)
+
+    expect(
+      $('a.js-weight-toggle[data-target="weightBelowMinimum-cod-group"]').text()
+    ).toBe('Add weight below minimum size retained (kg)')
+    expect(
+      $('a.js-weight-toggle[data-target="weightDiscarded-cod-group"]').text()
+    ).toBe('Add weight legally discarded (kg)')
+  })
+
+  test('Should redirect to catch not landed when the below-minimum and legally-discarded weights are both provided', async () => {
+    const { statusCode, headers } = await server.inject({
+      method: 'POST',
+      url: '/species-selection',
+      payload: {
+        speciesIds: 'cod',
+        speciesAction: 'continue',
+        'weightAboveMinimum-cod': '120.5',
+        'weightBelowMinimum-cod': '8.2',
+        'weightDiscarded-cod': '3.1'
+      }
+    })
+
+    expect(statusCode).toBe(303)
+    expect(headers.location).toBe('/catch-not-landed')
   })
 
   test('Should redirect to catch not landed when cod is selected with a valid weight', async () => {
@@ -256,7 +223,7 @@ describe('#speciesSelectionSubmitController', () => {
       payload: {
         speciesIds: 'cod',
         speciesAction: 'continue',
-        weightAboveMinimum: '120.5'
+        'weightAboveMinimum-cod': '120.5'
       }
     })
 
@@ -271,7 +238,7 @@ describe('#speciesSelectionSubmitController', () => {
       payload: {
         speciesIds: 'cod',
         speciesAction: 'continue',
-        weightAboveMinimum: '120.5'
+        'weightAboveMinimum-cod': '120.5'
       }
     })
 
@@ -279,15 +246,19 @@ describe('#speciesSelectionSubmitController', () => {
     expect(headers.location).toBe('/check-answers')
   })
 
-  test('Should redirect to the Empty Page when cod is not among the selected species', async () => {
+  test('Should redirect to catch not landed when a non-cod species is selected with a valid weight', async () => {
     const { statusCode, headers } = await server.inject({
       method: 'POST',
       url: '/species-selection',
-      payload: { speciesIds: 'had', speciesAction: 'continue' }
+      payload: {
+        speciesIds: 'had',
+        speciesAction: 'continue',
+        'weightAboveMinimum-had': '4.2'
+      }
     })
 
     expect(statusCode).toBe(303)
-    expect(headers.location).toBe('/not-implemented?return=/species-selection')
+    expect(headers.location).toBe('/catch-not-landed')
   })
 
   test('Should re-render the page with an error summary when no species is selected', async () => {
@@ -301,12 +272,26 @@ describe('#speciesSelectionSubmitController', () => {
     expect(statusCode).toBe(statusCodes.badRequest)
     expect($('.govuk-error-summary')).toHaveLength(1)
     expect($('.govuk-error-summary').text()).toContain(
-      'Select the species you caught'
+      'Select at least one species'
     )
     expect($('.govuk-error-summary a').attr('href')).toBe('#speciesIds')
   })
 
-  test('Should re-render with a field error when cod is selected but the primary weight is missing', async () => {
+  test('Should ignore an unknown speciesId rather than error', async () => {
+    const { statusCode, result } = await server.inject({
+      method: 'POST',
+      url: '/species-selection',
+      payload: { speciesIds: 'mon', speciesAction: 'continue' }
+    })
+    const $ = load(result)
+
+    expect(statusCode).toBe(statusCodes.badRequest)
+    expect($('.govuk-error-summary').text()).toContain(
+      'Select at least one species'
+    )
+  })
+
+  test('Should re-render with a named field error when cod is selected but the primary weight is missing', async () => {
     const { statusCode, result } = await server.inject({
       method: 'POST',
       url: '/species-selection',
@@ -316,48 +301,46 @@ describe('#speciesSelectionSubmitController', () => {
 
     expect(statusCode).toBe(statusCodes.badRequest)
     expect($('.govuk-error-summary').text()).toContain(
-      'Enter the weight above minimum size retained'
+      'Enter a weight for atlantic cod (cod)'
     )
-    expect($('#weightAboveMinimum-error')).toHaveLength(1)
+    expect($('#weightAboveMinimum-cod-error')).toHaveLength(1)
   })
 
-  test('Should re-render with a field error when the below-minimum weight is missing', async () => {
+  test('Should re-render with a named field error when the below-minimum weight has an invalid format', async () => {
     const { statusCode, result } = await server.inject({
       method: 'POST',
       url: '/species-selection',
       payload: {
         speciesIds: 'cod',
         speciesAction: 'continue',
-        weightAboveMinimum: '120.5',
-        belowMinimumVisible: 'true',
-        weightBelowMinimum: ''
+        'weightAboveMinimum-cod': '120.5',
+        'weightBelowMinimum-cod': '12.345'
       }
     })
     const $ = load(result)
 
     expect(statusCode).toBe(statusCodes.badRequest)
     expect($('.govuk-error-summary').text()).toContain(
-      'Enter the weight below minimum size retained'
+      'Enter a weight below minimum size retained for atlantic cod (cod)'
     )
   })
 
-  test('Should re-render with a field error when the below-minimum weight has an invalid format', async () => {
+  test('Should re-render with a named field error when the legally-discarded weight has an invalid format', async () => {
     const { statusCode, result } = await server.inject({
       method: 'POST',
       url: '/species-selection',
       payload: {
         speciesIds: 'cod',
         speciesAction: 'continue',
-        weightAboveMinimum: '120.5',
-        belowMinimumVisible: 'true',
-        weightBelowMinimum: '12.345'
+        'weightAboveMinimum-cod': '120.5',
+        'weightDiscarded-cod': '12.345'
       }
     })
     const $ = load(result)
 
     expect(statusCode).toBe(statusCodes.badRequest)
     expect($('.govuk-error-summary').text()).toContain(
-      'Enter the weight below minimum size retained'
+      'Enter a weight legally discarded for atlantic cod (cod)'
     )
   })
 

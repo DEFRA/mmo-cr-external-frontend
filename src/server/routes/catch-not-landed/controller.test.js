@@ -111,7 +111,7 @@ describe('#catchNotLandedSubmitController', () => {
     expect(headers.location).toBe('/check-answers')
   })
 
-  test('Should redirect to the Empty Page when Yes', async () => {
+  test('Should redirect to species not landed when Yes', async () => {
     const { statusCode, headers } = await server.inject({
       method: 'POST',
       url: '/catch-not-landed',
@@ -119,7 +119,7 @@ describe('#catchNotLandedSubmitController', () => {
     })
 
     expect(statusCode).toBe(303)
-    expect(headers.location).toBe('/not-implemented?return=/catch-not-landed')
+    expect(headers.location).toBe('/species-not-landed')
   })
 
   test('Should reject an invalid choice', async () => {
