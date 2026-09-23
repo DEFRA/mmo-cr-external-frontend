@@ -63,7 +63,7 @@ function gearCheckboxItems(
 function defaultMeasurementDetails(journeyState) {
   return {
     ...getFavouriteGearMeasurements(journeyState),
-    ...(journeyState.gearMeasurementDetails || {})
+    ...journeyState.gearMeasurementDetails
   }
 }
 
