@@ -50,6 +50,21 @@ describe('#addPortController', () => {
     expect($('[data-port-search]')).toHaveLength(1)
     expect($('.govuk-button').text().trim()).toBe('Save and continue')
   })
+
+  test('Should render the Back link to the account page and preserve return in the form action', async () => {
+    const { result } = await server.inject({
+      method: 'GET',
+      url: '/add-port?for=departure&return=/account'
+    })
+    const $ = load(result)
+
+    expect(
+      $('[data-testid="app-page-navigation-back-link"]').attr('href')
+    ).toBe('/account')
+    expect($('form').attr('action')).toBe(
+      '/add-port?for=departure&return=/account'
+    )
+  })
 })
 
 describe('#addPortSubmitController', () => {
@@ -141,5 +156,50 @@ describe('#addPortSubmitController', () => {
     expect($('.govuk-error-summary').text()).toContain(
       'Select a port from the list'
     )
+  })
+
+  test('Should redirect straight back to the account page, without continuing the trip journey, when return=/account', async () => {
+    const { statusCode, headers } = await server.inject({
+      method: 'POST',
+      url: '/add-port?for=departure&return=/account',
+      payload: { port: 'Newhaven' }
+    })
+
+    expect(statusCode).toBe(303)
+    expect(headers.location).toBe('/account')
+  })
+
+  test('Should show a newly added port on the account page and its Remove port checkboxes', async () => {
+    const signInResponse = await server.inject({
+      method: 'POST',
+      url: '/sign-in'
+    })
+    const signInCookie = signInResponse.headers['set-cookie'][0].split(';')[0]
+
+    const response = await server.inject({
+      method: 'POST',
+      url: '/add-port?for=departure&return=/account',
+      headers: { cookie: signInCookie },
+      payload: { port: 'Newhaven' }
+    })
+    const cookie = response.headers['set-cookie'][0].split(';')[0]
+
+    const accountPage = await server.inject({
+      method: 'GET',
+      url: '/account',
+      headers: { cookie }
+    })
+    const accountBody = accountPage.result
+
+    expect(accountBody).toContain('Newhaven')
+
+    const removePortPage = await server.inject({
+      method: 'GET',
+      url: '/remove-port',
+      headers: { cookie }
+    })
+    const $ = load(removePortPage.result)
+
+    expect($('input[value="Newhaven"]')).toHaveLength(1)
   })
 })

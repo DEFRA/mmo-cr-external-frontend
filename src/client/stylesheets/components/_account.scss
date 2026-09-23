@@ -1,0 +1,17 @@
+// Keep each row's "Add"/"Remove" actions on a single line instead of
+// wrapping onto separate rows when the value column has multi-line content.
+.app-account-summary-list {
+  @media (min-width: 40.0625em) {
+    .govuk-summary-list__value {
+      width: 45%;
+    }
+
+    .govuk-summary-list__actions {
+      width: 25%;
+    }
+
+    .govuk-summary-list__actions-list-item {
+      white-space: nowrap;
+    }
+  }
+}

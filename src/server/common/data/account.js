@@ -8,10 +8,5 @@ export const account = {
   addressLines: ['175 Roding Lane', 'Redbridge Lakes', 'Woodford', 'IG8 4ED'],
   contactNumber: '071234 56789',
   skippers: 'N/A',
-  portsUsed: ['Hastings'],
-  gearOnboard: [
-    { label: 'Pots', hint: null },
-    { label: 'Seine nets', hint: '100mm mesh' },
-    { label: 'Beam trawl', hint: '10mm mesh' }
-  ]
+  portsUsed: ['Hastings']
 }

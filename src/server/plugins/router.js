@@ -32,6 +32,7 @@ import { speciesNotLanded } from '../routes/species-not-landed/index.js'
 import { checkAnswers } from '../routes/check-answers/index.js'
 import { confirmation } from '../routes/confirmation/index.js'
 import { account } from '../routes/account/index.js'
+import { removePort } from '../routes/remove-port/index.js'
 import { addSkipper } from '../routes/add-skipper/route.js'
 import { skipperDetails } from '../routes/skipper-details/route.js'
 import { skipperCheck } from '../routes/skipper-check/route.js'
@@ -82,6 +83,7 @@ export const router = {
         checkAnswers,
         confirmation,
         account,
+        removePort,
         addSkipper,
         skipperDetails,
         skipperCheck,
