@@ -11,6 +11,9 @@ function baseMarkup() {
     <div data-statistical-area-search-panel hidden></div>
     <div data-statistical-area-options></div>
     <ul data-statistical-area-results hidden></ul>
+    <p data-statistical-area-coordinates hidden>
+      Coordinates: <span data-statistical-area-coordinates-value></span>
+    </p>
   `
 }
 
@@ -108,6 +111,140 @@ describe('#initialiseStatisticalAreaSearch', () => {
 
     expect(input.value).toBe('27.7.D')
     expect(results.hidden).toBe(true)
+  })
+
+  test('Should auto-populate coordinates when a suggested result is selected', async () => {
+    setBodyHtml(baseMarkup())
+    mockFetchOnce({
+      subrectangles: [
+        { subCode: '27.7.D', labelCoordinate: [-5.1234, 50.5678] }
+      ]
+    })
+
+    await initialiseStatisticalAreaSearch()
+
+    const input = document.querySelector('[data-statistical-area-search]')
+    input.value = '27.7'
+    input.dispatchEvent(new Event('input'))
+
+    document.querySelector('[data-statistical-area-results] button').click()
+
+    const coordinates = document.querySelector(
+      '[data-statistical-area-coordinates]'
+    )
+    const coordinatesValue = document.querySelector(
+      '[data-statistical-area-coordinates-value]'
+    )
+    expect(coordinates.hidden).toBe(false)
+    expect(coordinatesValue.textContent).toBe('50.5678, -5.1234')
+  })
+
+  test('Should auto-populate coordinates dynamically as a valid code is typed', async () => {
+    setBodyHtml(baseMarkup())
+    mockFetchOnce({
+      subrectangles: [
+        { subCode: '27.7.D', labelCoordinate: [-5.1234, 50.5678] }
+      ]
+    })
+
+    await initialiseStatisticalAreaSearch()
+
+    const input = document.querySelector('[data-statistical-area-search]')
+    const coordinates = document.querySelector(
+      '[data-statistical-area-coordinates]'
+    )
+
+    input.value = '27.7'
+    input.dispatchEvent(new Event('input'))
+    expect(coordinates.hidden).toBe(true)
+
+    input.value = '27.7.D'
+    input.dispatchEvent(new Event('input'))
+    expect(coordinates.hidden).toBe(false)
+  })
+
+  test('Should hide coordinates once the typed code no longer matches', async () => {
+    setBodyHtml(baseMarkup())
+    mockFetchOnce({
+      subrectangles: [
+        { subCode: '27.7.D', labelCoordinate: [-5.1234, 50.5678] }
+      ]
+    })
+
+    await initialiseStatisticalAreaSearch()
+
+    const input = document.querySelector('[data-statistical-area-search]')
+    const coordinates = document.querySelector(
+      '[data-statistical-area-coordinates]'
+    )
+
+    input.value = '27.7.D'
+    input.dispatchEvent(new Event('input'))
+    expect(coordinates.hidden).toBe(false)
+
+    input.value = '27.7.DX'
+    input.dispatchEvent(new Event('input'))
+    expect(coordinates.hidden).toBe(true)
+  })
+
+  test('Should show each result with its ICES rectangle and coordinates', async () => {
+    setBodyHtml(baseMarkup())
+    mockFetchOnce({
+      subrectangles: [
+        { subCode: '27D86', labelCoordinate: [-5.1234, 50.5678] },
+        { subCode: '27D89' }
+      ]
+    })
+
+    await initialiseStatisticalAreaSearch()
+
+    const input = document.querySelector('[data-statistical-area-search]')
+    input.value = '27D8'
+    input.dispatchEvent(new Event('input'))
+
+    const buttons = document.querySelectorAll(
+      '[data-statistical-area-results] button'
+    )
+    expect(
+      buttons[0].querySelector('.app-statistical-area-search__option-code')
+        .textContent
+    ).toBe('27D86')
+    expect(
+      buttons[0].querySelector('.app-statistical-area-search__option-detail')
+        .textContent
+    ).toBe('ICES rectangle 27D8 \u00b7 50.5678, -5.1234')
+    expect(
+      buttons[1].querySelector('.app-statistical-area-search__option-detail')
+        .textContent
+    ).toBe('ICES rectangle 27D8')
+  })
+
+  test('Should show coordinates when a known area radio option is selected', async () => {
+    setBodyHtml(baseMarkup())
+    mockFetchOnce({
+      subrectangles: [{ subCode: '27D86', labelCoordinate: [-5.1234, 50.5678] }]
+    })
+
+    await initialiseStatisticalAreaSearch()
+
+    const radioOptions = document.querySelector(
+      '[data-statistical-area-options]'
+    )
+    const coordinates = document.querySelector(
+      '[data-statistical-area-coordinates]'
+    )
+    const coordinatesValue = document.querySelector(
+      '[data-statistical-area-coordinates-value]'
+    )
+
+    const changeEvent = new Event('change')
+    Object.defineProperty(changeEvent, 'target', {
+      value: { value: '27D86' }
+    })
+    radioOptions.dispatchEvent(changeEvent)
+
+    expect(coordinates.hidden).toBe(false)
+    expect(coordinatesValue.textContent).toBe('50.5678, -5.1234')
   })
 
   test('Should hide results when Escape is pressed', async () => {
