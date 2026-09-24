@@ -94,6 +94,27 @@ describe('#accountController', () => {
     ).toBeGreaterThan(0)
   })
 
+  test('Should link the Personal details Change actions to their dedicated pages', async () => {
+    const cookie = await signedInCookie()
+
+    const { result } = await server.inject({
+      method: 'GET',
+      url: '/account',
+      headers: { cookie }
+    })
+    const $ = load(result)
+
+    expect($('a[href="/change-email"]').text().trim()).toContain('Change')
+    expect($('a[href="/reset-password"]').text().trim()).toContain('Change')
+    expect($('a[href="/change-vessel-owner"]').text().trim()).toContain(
+      'Change'
+    )
+    expect($('a[href="/change-address"]').text().trim()).toContain('Change')
+    expect($('a[href="/change-contact-number"]').text().trim()).toContain(
+      'Change'
+    )
+  })
+
   test('Should render the signed-in header with Home, Your account (current) and a Sign out form', async () => {
     const cookie = await signedInCookie()
 

@@ -13,14 +13,14 @@ import {
 
 const NOT_IMPLEMENTED_HREF = '/not-implemented?return=/account'
 
-function row(key, value, actionText, visuallyHiddenText) {
+function row(key, value, href, actionText, visuallyHiddenText) {
   return {
     key: { text: key },
     value: { html: value },
     actions: {
       items: [
         {
-          href: NOT_IMPLEMENTED_HREF,
+          href,
           text: actionText,
           visuallyHiddenText
         }
@@ -46,17 +46,48 @@ function buildPersonalDetailsSection(account, vesselLabel) {
   return {
     heading: 'Personal details',
     rows: [
-      row('Email address', account.email, 'Change', 'email address'),
-      row('Password', account.passwordMasked, 'Change', 'password'),
-      row('Vessel owned', vesselLabel, 'Change', 'vessel owned'),
+      row(
+        'Email address',
+        account.email,
+        '/change-email',
+        'Change',
+        'email address'
+      ),
+      row(
+        'Password',
+        account.passwordMasked,
+        '/reset-password',
+        'Change',
+        'password'
+      ),
+      row(
+        'Vessel owned',
+        vesselLabel,
+        '/change-vessel-owner',
+        'Change',
+        'vessel owned'
+      ),
       row(
         'Vessels skipper of',
         account.vesselsSkipperOf,
+        NOT_IMPLEMENTED_HREF,
         'Change',
         'vessels skipper of'
       ),
-      row('Address', joinLines(account.addressLines), 'Change', 'address'),
-      row('Contact number', account.contactNumber, 'Change', 'contact number')
+      row(
+        'Address',
+        joinLines(account.addressLines),
+        '/change-address',
+        'Change',
+        'address'
+      ),
+      row(
+        'Contact number',
+        account.contactNumber,
+        '/change-contact-number',
+        'Change',
+        'contact number'
+      )
     ]
   }
 }

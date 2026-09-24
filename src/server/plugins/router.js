@@ -37,6 +37,12 @@ import { addSkipper } from '../routes/add-skipper/route.js'
 import { skipperDetails } from '../routes/skipper-details/route.js'
 import { skipperCheck } from '../routes/skipper-check/route.js'
 import { skipperConfirmation } from '../routes/skipper-confirmation/route.js'
+import { changeEmail } from '../routes/change-email/route.js'
+import { resetPassword } from '../routes/reset-password/route.js'
+import { passwordResetSuccessful } from '../routes/password-reset-successful/route.js'
+import { changeVesselOwner } from '../routes/change-vessel-owner/route.js'
+import { changeAddress } from '../routes/change-address/route.js'
+import { changeContactNumber } from '../routes/change-contact-number/route.js'
 import { notImplemented } from '../routes/not-implemented/index.js'
 import { serveStaticFiles } from './serve-static-files.js'
 import { config } from '#/config/config.js'
@@ -88,6 +94,12 @@ export const router = {
         skipperDetails,
         skipperCheck,
         skipperConfirmation,
+        changeEmail,
+        resetPassword,
+        passwordResetSuccessful,
+        changeVesselOwner,
+        changeAddress,
+        changeContactNumber,
         notImplemented
       ])
 
