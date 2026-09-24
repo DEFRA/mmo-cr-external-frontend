@@ -7,6 +7,7 @@ import { statusCodes } from '#/server/common/constants/status-codes.js'
 
 const pageTitle = 'Which date did you set off on your trip?'
 const hintText = 'For example, 31/03/2020'
+const MIN_DEPARTURE_DATE = '2025-07-24'
 
 function viewContext(overrides = {}) {
   return {
@@ -39,7 +40,17 @@ export const tripDepartureDateSubmitController = {
         year: payload['tripDepartureDate-year']
       },
       'tripDepartureDate',
-      'the date you left for your trip'
+      {
+        subject: 'the date you left for your trip',
+        subjectSuffix: 'you left for your trip',
+        formatMessage:
+          'Enter a date in the correct format, for example 31 3 2019',
+        minDate: MIN_DEPARTURE_DATE,
+        minDateMessage:
+          'Date you left for your trip must be on or after 24 July 2025',
+        maxDateMessage:
+          'Date you left for your trip must be today or in the past'
+      }
     )
 
     if (!result.isValid) {
