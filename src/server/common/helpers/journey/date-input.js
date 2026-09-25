@@ -1,4 +1,6 @@
 // Structural + business-rule validation for a GOV.UK date-input day/month/year triple.
+const MONTHS_IN_YEAR = 12
+
 function isMissing(value) {
   return value === undefined || value === null || String(value).trim() === ''
 }
@@ -24,7 +26,7 @@ function isoDateValue(isoDate) {
 // reimplementing them - an out-of-range day/month rolls over into a different date, which is
 // detected by the roundtrip year/month/day comparison below.
 function isValidCalendarDate(dayNum, monthNum, yearNum) {
-  if (monthNum < 1 || monthNum > 12) {
+  if (monthNum < 1 || monthNum > MONTHS_IN_YEAR) {
     return false
   }
 
@@ -109,7 +111,7 @@ function checkRealDate(values, options) {
   const dayNum = Number(values.day)
   const monthNum = Number(values.month)
   const yearNum = Number(values.year)
-  const monthValid = monthNum >= 1 && monthNum <= 12
+  const monthValid = monthNum >= 1 && monthNum <= MONTHS_IN_YEAR
   const dayValid = monthValid && isValidCalendarDate(dayNum, monthNum, yearNum)
   const formatMessage = options.formatMessage ?? 'Date must be a real date'
 
