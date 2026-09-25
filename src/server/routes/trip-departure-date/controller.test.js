@@ -78,8 +78,8 @@ describe('#tripDepartureDateSubmitController', () => {
       url: '/trip-departure-date',
       payload: {
         'tripDepartureDate-day': '31',
-        'tripDepartureDate-month': '3',
-        'tripDepartureDate-year': '2020'
+        'tripDepartureDate-month': '8',
+        'tripDepartureDate-year': '2025'
       }
     })
 
@@ -93,8 +93,8 @@ describe('#tripDepartureDateSubmitController', () => {
       url: '/trip-departure-date?return=/check-answers',
       payload: {
         'tripDepartureDate-day': '31',
-        'tripDepartureDate-month': '3',
-        'tripDepartureDate-year': '2020'
+        'tripDepartureDate-month': '8',
+        'tripDepartureDate-year': '2025'
       }
     })
 
@@ -123,17 +123,17 @@ describe('#tripDepartureDateSubmitController', () => {
       payload: {
         'tripDepartureDate-day': '',
         'tripDepartureDate-month': '3',
-        'tripDepartureDate-year': '2020'
+        'tripDepartureDate-year': '2025'
       }
     })
     const $ = load(result)
 
     expect(statusCode).toBe(statusCodes.ok)
     expect($('.govuk-error-summary').text()).toContain(
-      'Date must include a day'
+      'Enter the day you left for your trip'
     )
     expect($('#tripDepartureDate-month').val()).toBe('3')
-    expect($('#tripDepartureDate-year').val()).toBe('2020')
+    expect($('#tripDepartureDate-year').val()).toBe('2025')
   })
 
   test('Should re-render with an error summary when the month is missing', async () => {
@@ -143,14 +143,14 @@ describe('#tripDepartureDateSubmitController', () => {
       payload: {
         'tripDepartureDate-day': '31',
         'tripDepartureDate-month': '',
-        'tripDepartureDate-year': '2020'
+        'tripDepartureDate-year': '2025'
       }
     })
     const $ = load(result)
 
     expect(statusCode).toBe(statusCodes.ok)
     expect($('.govuk-error-summary').text()).toContain(
-      'Date must include a month'
+      'Enter the month you left for your trip'
     )
   })
 
@@ -168,7 +168,7 @@ describe('#tripDepartureDateSubmitController', () => {
 
     expect(statusCode).toBe(statusCodes.ok)
     expect($('.govuk-error-summary').text()).toContain(
-      'Date must include a year'
+      'Enter the year you left for your trip'
     )
   })
 
@@ -179,14 +179,14 @@ describe('#tripDepartureDateSubmitController', () => {
       payload: {
         'tripDepartureDate-day': '',
         'tripDepartureDate-month': '',
-        'tripDepartureDate-year': '2020'
+        'tripDepartureDate-year': '2025'
       }
     })
     const $ = load(result)
 
     expect(statusCode).toBe(statusCodes.ok)
     expect($('.govuk-error-summary').text()).toContain(
-      'Date must include a day and a month'
+      'Enter the day and month you left for your trip'
     )
   })
 
@@ -197,14 +197,14 @@ describe('#tripDepartureDateSubmitController', () => {
       payload: {
         'tripDepartureDate-day': 'aa',
         'tripDepartureDate-month': '3',
-        'tripDepartureDate-year': '2020'
+        'tripDepartureDate-year': '2025'
       }
     })
     const $ = load(result)
 
     expect(statusCode).toBe(statusCodes.ok)
     expect($('.govuk-error-summary').text()).toContain(
-      'Date must be a real date'
+      'Enter a date in the correct format, for example 31 3 2019'
     )
     expect($('#tripDepartureDate-day').val()).toBe('aa')
   })
@@ -216,14 +216,14 @@ describe('#tripDepartureDateSubmitController', () => {
       payload: {
         'tripDepartureDate-day': '31',
         'tripDepartureDate-month': 'March',
-        'tripDepartureDate-year': '2020'
+        'tripDepartureDate-year': '2025'
       }
     })
     const $ = load(result)
 
     expect(statusCode).toBe(statusCodes.ok)
     expect($('.govuk-error-summary').text()).toContain(
-      'Date must be a real date'
+      'Enter a date in the correct format, for example 31 3 2019'
     )
   })
 
@@ -241,7 +241,25 @@ describe('#tripDepartureDateSubmitController', () => {
 
     expect(statusCode).toBe(statusCodes.ok)
     expect($('.govuk-error-summary').text()).toContain(
-      'Date must be a real date'
+      'Enter a date in the correct format, for example 31 3 2019'
+    )
+  })
+
+  test('Should re-render with an error summary for a year that is not 4 digits (e.g. 1 or 90)', async () => {
+    const { statusCode, result } = await server.inject({
+      method: 'POST',
+      url: '/trip-departure-date',
+      payload: {
+        'tripDepartureDate-day': '9',
+        'tripDepartureDate-month': '9',
+        'tripDepartureDate-year': '90'
+      }
+    })
+    const $ = load(result)
+
+    expect(statusCode).toBe(statusCodes.ok)
+    expect($('.govuk-error-summary').text()).toContain(
+      'Enter a date in the correct format, for example 31 3 2019'
     )
   })
 
@@ -252,14 +270,14 @@ describe('#tripDepartureDateSubmitController', () => {
       payload: {
         'tripDepartureDate-day': '31',
         'tripDepartureDate-month': '2',
-        'tripDepartureDate-year': '2020'
+        'tripDepartureDate-year': '2025'
       }
     })
     const $ = load(result)
 
     expect(statusCode).toBe(statusCodes.ok)
     expect($('.govuk-error-summary').text()).toContain(
-      'Date must be a real date'
+      'Enter a date in the correct format, for example 31 3 2019'
     )
   })
 
@@ -270,29 +288,50 @@ describe('#tripDepartureDateSubmitController', () => {
       payload: {
         'tripDepartureDate-day': '29',
         'tripDepartureDate-month': '2',
-        'tripDepartureDate-year': '2021'
+        'tripDepartureDate-year': '2025'
       }
     })
     const $ = load(result)
 
     expect(statusCode).toBe(statusCodes.ok)
     expect($('.govuk-error-summary').text()).toContain(
-      'Date must be a real date'
+      'Enter a date in the correct format, for example 31 3 2019'
     )
   })
 
-  test('Should accept 29 February in a leap year', async () => {
-    const { statusCode, headers } = await server.inject({
+  test('Should re-render with an error summary when the year is before the supported minimum (e.g. 1223)', async () => {
+    const { statusCode, result } = await server.inject({
       method: 'POST',
       url: '/trip-departure-date',
       payload: {
-        'tripDepartureDate-day': '29',
-        'tripDepartureDate-month': '2',
-        'tripDepartureDate-year': '2020'
+        'tripDepartureDate-day': '9',
+        'tripDepartureDate-month': '9',
+        'tripDepartureDate-year': '1223'
       }
     })
+    const $ = load(result)
 
-    expect(statusCode).toBe(303)
-    expect(headers.location).toBe('/trip-return-date')
+    expect(statusCode).toBe(statusCodes.ok)
+    expect($('.govuk-error-summary').text()).toContain(
+      'Date you left for your trip must be on or after 24 July 2025'
+    )
+  })
+
+  test('Should re-render with an error summary when the date is in the future (e.g. year 2222)', async () => {
+    const { statusCode, result } = await server.inject({
+      method: 'POST',
+      url: '/trip-departure-date',
+      payload: {
+        'tripDepartureDate-day': '9',
+        'tripDepartureDate-month': '9',
+        'tripDepartureDate-year': '2222'
+      }
+    })
+    const $ = load(result)
+
+    expect(statusCode).toBe(statusCodes.ok)
+    expect($('.govuk-error-summary').text()).toContain(
+      'Date you left for your trip must be today or in the past'
+    )
   })
 })

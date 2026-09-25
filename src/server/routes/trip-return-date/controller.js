@@ -1,5 +1,6 @@
 import { validateDateInput } from '#/server/common/helpers/journey/date-input.js'
 import {
+  getJourneyState,
   resolveNextPath,
   setJourneyState
 } from '#/server/common/helpers/journey/navigation.js'
@@ -39,7 +40,17 @@ export const tripReturnDateSubmitController = {
         year: payload['tripReturnDate-year']
       },
       'tripReturnDate',
-      'the date you returned from your trip'
+      {
+        subject: 'the date you returned from your trip',
+        subjectSuffix: 'you returned from your trip',
+        formatMessage:
+          'Date you returned from your trip must be in the format 31 3 2019',
+        maxDateMessage:
+          'Date you returned from your trip must be today or in the past',
+        notBeforeDate: getJourneyState(request).departureDate,
+        notBeforeMessage:
+          'Date you returned from your trip must be the same as or after the date you left'
+      }
     )
 
     if (!result.isValid) {
