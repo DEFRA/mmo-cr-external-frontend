@@ -70,6 +70,23 @@ describe('#gearSelectionController', () => {
     expect($('#potsInWater')).toHaveLength(1)
   })
 
+  test('Should always render the other gear types conditional measurement fields in the DOM too', async () => {
+    const { result } = await server.inject({
+      method: 'GET',
+      url: '/gear-selection'
+    })
+    const $ = load(result)
+
+    expect($('#dredge-numberOfDredges')).toHaveLength(1)
+    expect($('#dredge-numberOfTimesShot')).toHaveLength(1)
+    expect($('#bottom-otter-trawl-numberOfTrawlNets')).toHaveLength(1)
+    expect($('#bottom-otter-trawl-meshSize')).toHaveLength(1)
+    expect($('#seine-nets-meshSize')).toHaveLength(1)
+    expect($('#handlines-pole-lines-rodsAndLines')).toHaveLength(1)
+    expect($('#traps-totalHauled')).toHaveLength(1)
+    expect($('#traps-totalInWater')).toHaveLength(1)
+  })
+
   test('Should render the Back link to the return port page', async () => {
     const { result } = await server.inject({
       method: 'GET',
@@ -389,5 +406,59 @@ describe('#gearSelectionSubmitController', () => {
     expect(
       load(returnCheck.result)('input[value="newhaven"]').prop('checked')
     ).toBe(true)
+  })
+
+  test('Should save and pre-fill measurements for a non-pots gear type', async () => {
+    const setResponse = await server.inject({
+      method: 'POST',
+      url: '/gear-selection',
+      payload: {
+        gearIds: 'dredge',
+        'dredge-numberOfDredges': '2',
+        'dredge-numberOfTimesShot': '3'
+      }
+    })
+    const cookie = setResponse.headers['set-cookie'][0].split(';')[0]
+
+    const { result } = await server.inject({
+      method: 'GET',
+      url: '/gear-selection',
+      headers: { cookie }
+    })
+    const $ = load(result)
+
+    expect($('#dredge-numberOfDredges').attr('value')).toBe('2')
+    expect($('#dredge-numberOfTimesShot').attr('value')).toBe('3')
+  })
+
+  test('Should re-render with a field error when a non-pots measurement is invalid', async () => {
+    const { statusCode, result } = await server.inject({
+      method: 'POST',
+      url: '/gear-selection',
+      payload: {
+        gearIds: 'dredge',
+        'dredge-numberOfDredges': '-1'
+      }
+    })
+    const $ = load(result)
+
+    expect(statusCode).toBe(statusCodes.badRequest)
+    expect($('.govuk-error-summary').text()).toContain(
+      'Enter the number of dredges'
+    )
+    expect(
+      $('.govuk-error-summary a[href="#dredge-numberOfDredges"]')
+    ).toHaveLength(1)
+  })
+
+  test('Should allow a non-pots gear type to be saved with its measurement fields left blank', async () => {
+    const { statusCode, headers } = await server.inject({
+      method: 'POST',
+      url: '/gear-selection',
+      payload: { gearIds: 'dredge' }
+    })
+
+    expect(statusCode).toBe(303)
+    expect(headers.location).toBe('/statistical-area')
   })
 })

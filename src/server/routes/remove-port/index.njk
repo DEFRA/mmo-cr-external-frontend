@@ -1,0 +1,42 @@
+{% extends 'layouts/page.njk' %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% block pageContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <form method="post" novalidate>
+        <div class="govuk-form-group{{ ' govuk-form-group--error' if fieldErrors.ports }}">
+          <fieldset class="govuk-fieldset" aria-describedby="ports-hint{{ ' ports-error' if fieldErrors.ports }}">
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+              <h1 class="govuk-fieldset__heading">
+                {{ headingLine1 }} <br>{{ vesselName }}
+              </h1>
+            </legend>
+            <div id="ports-hint" class="govuk-hint">Select all that apply</div>
+            {% if fieldErrors.ports %}
+              <p id="ports-error" class="govuk-error-message">
+                <span class="govuk-visually-hidden">Error:</span> {{ fieldErrors.ports }}
+              </p>
+            {% endif %}
+            <div class="govuk-checkboxes" data-module="govuk-checkboxes">
+              {% for item in portCheckboxItems %}
+                <div class="govuk-checkboxes__item">
+                  <input
+                    class="govuk-checkboxes__input"
+                    id="ports-{{ loop.index }}"
+                    name="ports"
+                    type="checkbox"
+                    value="{{ item.value }}"
+                  >
+                  <label class="govuk-label govuk-checkboxes__label" for="ports-{{ loop.index }}">{{ item.text }}</label>
+                </div>
+              {% endfor %}
+            </div>
+          </fieldset>
+        </div>
+
+        {{ govukButton({ text: "Continue", classes: "govuk-!-margin-top-6" }) }}
+      </form>
+    </div>
+  </div>
+{% endblock %}

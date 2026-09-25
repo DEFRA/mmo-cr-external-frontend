@@ -1,0 +1,16 @@
+{% extends 'layouts/page.njk' %}
+{% from "heading/macro.njk" import appHeading %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% block pageContent %}
+  {{ appHeading({ text: heading }) }}
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <p class="govuk-body">To reset or change your password we need to send you an email containing a link.</p>
+      <form method="post" novalidate>
+        {{ govukButton({ text: "Send reset password email" }) }}
+      </form>
+    </div>
+  </div>
+{% endblock %}
