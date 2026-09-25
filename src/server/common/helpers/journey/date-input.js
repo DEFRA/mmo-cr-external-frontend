@@ -1,31 +1,4 @@
 // Structural + business-rule validation for a GOV.UK date-input day/month/year triple.
-const MONTH_DAYS = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
-const MONTH_NAMES = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December'
-]
-
-function isLeapYear(year) {
-  return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0
-}
-
-function daysInMonth(month, year) {
-  if (month === 2 && isLeapYear(year)) {
-    return 29
-  }
-  return MONTH_DAYS[month - 1]
-}
-
 function isMissing(value) {
   return value === undefined || value === null || String(value).trim() === ''
 }
@@ -47,9 +20,30 @@ function isoDateValue(isoDate) {
   return Number(isoDate.replaceAll('-', ''))
 }
 
+// Uses the UTC Date constructor's own calendar rules (leap years, month lengths) rather than
+// reimplementing them - an out-of-range day/month rolls over into a different date, which is
+// detected by the roundtrip year/month/day comparison below.
+function isValidCalendarDate(dayNum, monthNum, yearNum) {
+  if (monthNum < 1 || monthNum > 12) {
+    return false
+  }
+
+  const date = new Date(Date.UTC(yearNum, monthNum - 1, dayNum))
+
+  return (
+    date.getUTCFullYear() === yearNum &&
+    date.getUTCMonth() === monthNum - 1 &&
+    date.getUTCDate() === dayNum
+  )
+}
+
 export function formatIsoDate(isoDate) {
   const [year, month, day] = isoDate.split('-').map(Number)
-  return `${day} ${MONTH_NAMES[month - 1]} ${year}`
+  const monthName = new Date(Date.UTC(year, month - 1, day)).toLocaleString(
+    'en-GB',
+    { month: 'long', timeZone: 'UTC' }
+  )
+  return `${day} ${monthName} ${year}`
 }
 
 export function todayIsoDate() {
@@ -116,8 +110,7 @@ function checkRealDate(values, options) {
   const monthNum = Number(values.month)
   const yearNum = Number(values.year)
   const monthValid = monthNum >= 1 && monthNum <= 12
-  const dayValid =
-    monthValid && dayNum >= 1 && dayNum <= daysInMonth(monthNum, yearNum)
+  const dayValid = monthValid && isValidCalendarDate(dayNum, monthNum, yearNum)
   const formatMessage = options.formatMessage ?? 'Date must be a real date'
 
   if (monthValid && dayValid) {

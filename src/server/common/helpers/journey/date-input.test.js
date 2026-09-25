@@ -158,6 +158,61 @@ describe('#validateDateInput', () => {
     expect(result.fieldErrors).toEqual({ day: true, month: false, year: false })
   })
 
+  test('Should reject 30 February (invalid day for any year)', () => {
+    const result = validateDateInput(
+      { day: '30', month: '2', year: '2028' },
+      'tripDepartureDate',
+      { ...departureOptions, maxDate: '2028-12-31' }
+    )
+
+    expect(result.isValid).toBe(false)
+    expect(result.fieldErrors).toEqual({ day: true, month: false, year: false })
+  })
+
+  test('Should reject a day of 0', () => {
+    const result = validateDateInput(
+      { day: '0', month: '6', year: '2025' },
+      'tripDepartureDate',
+      departureOptions
+    )
+
+    expect(result.isValid).toBe(false)
+    expect(result.fieldErrors).toEqual({ day: true, month: false, year: false })
+  })
+
+  test('Should reject a day of 32', () => {
+    const result = validateDateInput(
+      { day: '32', month: '6', year: '2025' },
+      'tripDepartureDate',
+      departureOptions
+    )
+
+    expect(result.isValid).toBe(false)
+    expect(result.fieldErrors).toEqual({ day: true, month: false, year: false })
+  })
+
+  test('Should reject a month of 0', () => {
+    const result = validateDateInput(
+      { day: '15', month: '0', year: '2025' },
+      'tripDepartureDate',
+      departureOptions
+    )
+
+    expect(result.isValid).toBe(false)
+    expect(result.fieldErrors).toEqual({ day: true, month: true, year: false })
+  })
+
+  test('Should reject a month of 13', () => {
+    const result = validateDateInput(
+      { day: '15', month: '13', year: '2025' },
+      'tripDepartureDate',
+      departureOptions
+    )
+
+    expect(result.isValid).toBe(false)
+    expect(result.fieldErrors).toEqual({ day: true, month: true, year: false })
+  })
+
   test('Should accept 29 February in a leap year', () => {
     const result = validateDateInput(
       { day: '29', month: '2', year: '2028' },
@@ -167,6 +222,39 @@ describe('#validateDateInput', () => {
 
     expect(result.isValid).toBe(true)
     expect(result.isoDate).toBe('2028-02-29')
+  })
+
+  test('Should accept 29 February in a century leap year (divisible by 400)', () => {
+    const result = validateDateInput(
+      { day: '29', month: '2', year: '2000' },
+      'tripDepartureDate',
+      { ...departureOptions, minDate: undefined, maxDate: '2000-12-31' }
+    )
+
+    expect(result.isValid).toBe(true)
+    expect(result.isoDate).toBe('2000-02-29')
+  })
+
+  test('Should reject 29 February in a century non-leap year (divisible by 100 but not 400)', () => {
+    const result = validateDateInput(
+      { day: '29', month: '2', year: '1900' },
+      'tripDepartureDate',
+      { ...departureOptions, minDate: undefined, maxDate: '1900-12-31' }
+    )
+
+    expect(result.isValid).toBe(false)
+    expect(result.fieldErrors).toEqual({ day: true, month: false, year: false })
+  })
+
+  test('Should accept 31 December as the last day of a month', () => {
+    const result = validateDateInput(
+      { day: '31', month: '12', year: '2025' },
+      'tripDepartureDate',
+      departureOptions
+    )
+
+    expect(result.isValid).toBe(true)
+    expect(result.isoDate).toBe('2025-12-31')
   })
 
   test('Should accept a normal valid date within range', () => {
