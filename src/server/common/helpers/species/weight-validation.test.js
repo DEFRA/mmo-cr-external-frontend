@@ -53,6 +53,34 @@ describe('#validateWeight', () => {
   test('Should accept a value with surrounding whitespace', () => {
     expect(validateWeight('  12.3  ')).toEqual({ valid: true, reason: null })
   })
+
+  // AC8 / BR7: only whole or one-decimal-place numeric values are valid,
+  // e.g. 10 and 10.2/10.5 are accepted, but 10.55, -8 and A1 are not.
+  test('Should accept a whole number weight (AC8/BR7 example: 10)', () => {
+    expect(validateWeight('10')).toEqual({ valid: true, reason: null })
+  })
+
+  test('Should accept a one-decimal-place weight (AC8/BR7 example: 10.2)', () => {
+    expect(validateWeight('10.2')).toEqual({ valid: true, reason: null })
+  })
+
+  test('Should reject a two-decimal-place weight (AC8/BR7 example: 10.55)', () => {
+    expect(validateWeight('10.55')).toEqual({
+      valid: false,
+      reason: 'tooManyDecimals'
+    })
+  })
+
+  test('Should reject a negative weight (BR7 example: -8)', () => {
+    expect(validateWeight('-8')).toEqual({ valid: false, reason: 'negative' })
+  })
+
+  test('Should reject a non-numeric weight (BR7 example: A1)', () => {
+    expect(validateWeight('A1')).toEqual({
+      valid: false,
+      reason: 'notANumber'
+    })
+  })
 })
 
 describe('#isValidWeight', () => {
