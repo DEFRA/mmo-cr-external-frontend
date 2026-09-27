@@ -30,6 +30,7 @@ const SAFE_RETURN_PATHS = [
   '/check-answers',
   '/confirmation',
   '/account',
+  '/remove-port',
   '/not-implemented'
 ]
 

@@ -48,7 +48,7 @@
                     type="checkbox"
                     value="{{ item.value }}"
                     {{ 'checked' if item.checked }}
-                    {% if item.value == 'pots' %}data-aria-controls="gearIds-conditional-{{ loop.index }}"{% endif %}
+                    {% if item.value == 'pots' or item.measurements.length %}data-aria-controls="gearIds-conditional-{{ loop.index }}"{% endif %}
                   >
                   <label class="govuk-label govuk-checkboxes__label" for="gearIds-{{ loop.index }}">{{ item.text }}</label>
                   {% if item.hint %}
@@ -58,6 +58,20 @@
                 {% if item.value == 'pots' %}
                   <div class="govuk-checkboxes__conditional{{ '' if item.checked else ' govuk-checkboxes__conditional--hidden' }}" id="gearIds-conditional-{{ loop.index }}">
                     {{ potsFieldsHtml | safe }}
+                  </div>
+                {% elif item.measurements.length %}
+                  <div class="govuk-checkboxes__conditional{{ '' if item.checked else ' govuk-checkboxes__conditional--hidden' }}" id="gearIds-conditional-{{ loop.index }}">
+                    {% for measurement in item.measurements %}
+                      {{ govukInput({
+                        id: measurement.id,
+                        name: measurement.id,
+                        label: { text: measurement.label },
+                        classes: "govuk-input--width-10",
+                        inputmode: "numeric",
+                        value: measurement.value,
+                        errorMessage: { text: fieldErrors[measurement.id] } if fieldErrors[measurement.id] else false
+                      }) }}
+                    {% endfor %}
                   </div>
                 {% endif %}
               {% endfor %}

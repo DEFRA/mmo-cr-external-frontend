@@ -94,6 +94,27 @@ describe('#accountController', () => {
     ).toBeGreaterThan(0)
   })
 
+  test('Should link the Personal details Change actions to their dedicated pages', async () => {
+    const cookie = await signedInCookie()
+
+    const { result } = await server.inject({
+      method: 'GET',
+      url: '/account',
+      headers: { cookie }
+    })
+    const $ = load(result)
+
+    expect($('a[href="/change-email"]').text().trim()).toContain('Change')
+    expect($('a[href="/reset-password"]').text().trim()).toContain('Change')
+    expect($('a[href="/change-vessel-owner"]').text().trim()).toContain(
+      'Change'
+    )
+    expect($('a[href="/change-address"]').text().trim()).toContain('Change')
+    expect($('a[href="/change-contact-number"]').text().trim()).toContain(
+      'Change'
+    )
+  })
+
   test('Should render the signed-in header with Home, Your account (current) and a Sign out form', async () => {
     const cookie = await signedInCookie()
 
@@ -153,6 +174,113 @@ describe('#accountController', () => {
     const $ = load(result)
 
     expect($('a[href="/add-skipper"]')).toHaveLength(1)
+  })
+
+  test('Should link Add port to the add-port journey and Remove port to the remove-port page', async () => {
+    const cookie = await signedInCookie()
+    const { result } = await server.inject({
+      method: 'GET',
+      url: '/account',
+      headers: { cookie }
+    })
+    const $ = load(result)
+
+    expect($('a[href="/add-port?for=departure&return=/account"]')).toHaveLength(
+      1
+    )
+    expect($('a[href="/remove-port"]')).toHaveLength(1)
+  })
+
+  test('Should reflect a port removal on the account page', async () => {
+    const signInCookie = await signedInCookie()
+    const removeResponse = await server.inject({
+      method: 'POST',
+      url: '/remove-port',
+      headers: { cookie: signInCookie },
+      payload: { ports: 'Hastings' }
+    })
+    expect(removeResponse.headers.location).toBe('/account')
+    const cookie = removeResponse.headers['set-cookie'][0].split(';')[0]
+
+    const { result } = await server.inject({
+      method: 'GET',
+      url: '/account',
+      headers: { cookie }
+    })
+    const $ = load(result)
+    const portsRow = $('.govuk-summary-list__row').filter(
+      (_, row) => $(row).find('dt').text().trim() === 'Ports used'
+    )
+
+    expect(portsRow.find('.govuk-summary-list__value').text().trim()).toBe('')
+  })
+
+  test('Should link Add gear and Remove gear to the gear journey with a return path', async () => {
+    const cookie = await signedInCookie()
+    const { result } = await server.inject({
+      method: 'GET',
+      url: '/account',
+      headers: { cookie }
+    })
+    const $ = load(result)
+
+    expect($('a[href="/add-gear?return=/account"]')).toHaveLength(1)
+    expect($('a[href="/remove-gear?return=/account"]')).toHaveLength(1)
+  })
+
+  test('Should link Add species and Remove species to the species journey with a return path', async () => {
+    const cookie = await signedInCookie()
+    const { result } = await server.inject({
+      method: 'GET',
+      url: '/account',
+      headers: { cookie }
+    })
+    const $ = load(result)
+
+    expect($('a[href="/add-species?return=/account"]')).toHaveLength(1)
+    expect($('a[href="/remove-species?return=/account"]')).toHaveLength(1)
+  })
+
+  test('Should reflect a gear removal on the account page', async () => {
+    const signInCookie = await signedInCookie()
+    const removeResponse = await server.inject({
+      method: 'POST',
+      url: '/remove-gear?return=/account',
+      headers: { cookie: signInCookie },
+      payload: { gearIds: 'pots' }
+    })
+    expect(removeResponse.headers.location).toBe('/account')
+    const cookie = removeResponse.headers['set-cookie'][0].split(';')[0]
+
+    const { result } = await server.inject({
+      method: 'GET',
+      url: '/account',
+      headers: { cookie }
+    })
+
+    expect(result).not.toContain('Pots')
+    expect(result).toContain('Beam trawl')
+  })
+
+  test('Should reflect a species removal on the account page', async () => {
+    const signInCookie = await signedInCookie()
+    const removeResponse = await server.inject({
+      method: 'POST',
+      url: '/remove-species?return=/account',
+      headers: { cookie: signInCookie },
+      payload: { speciesIds: 'cod' }
+    })
+    expect(removeResponse.headers.location).toBe('/account')
+    const cookie = removeResponse.headers['set-cookie'][0].split(';')[0]
+
+    const { result } = await server.inject({
+      method: 'GET',
+      url: '/account',
+      headers: { cookie }
+    })
+
+    expect(result).not.toContain('Atlantic cod (COD)')
+    expect(result).toContain('Haddock (HAD)')
   })
 
   test('Should show the named, escaped skipper once one has been added', async () => {
