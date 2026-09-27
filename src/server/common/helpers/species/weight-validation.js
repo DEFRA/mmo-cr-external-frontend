@@ -7,7 +7,7 @@ const ONE_DECIMAL_PLACE_PATTERN = /^\d+(\.\d)?$/
 const MAX_WEIGHT = 10000
 
 export function validateWeight(rawValue) {
-  if (!rawValue || !rawValue.trim()) {
+  if (!rawValue?.trim()) {
     return { valid: false, reason: 'missing' }
   }
 

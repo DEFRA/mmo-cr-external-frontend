@@ -29,6 +29,46 @@ function isProvided(value) {
   return typeof value === 'string' && value.trim() !== ''
 }
 
+// Validates an optional weight field, skipping the check entirely when no value was entered.
+function validateOptionalWeightField(rawValue, nameAndId, fieldLabel) {
+  if (!isProvided(rawValue)) {
+    return { result: { valid: true, reason: null }, errorText: null }
+  }
+
+  const result = validateWeight(rawValue)
+  const errorText = result.valid
+    ? null
+    : weightErrorMessage(result.reason, nameAndId, fieldLabel)
+
+  return { result, errorText }
+}
+
+// AC7/BR11: above-minimum weight must be strictly higher than legally-discarded weight.
+function checkAboveMinimumHigherThanDiscarded(
+  aboveMinimumResult,
+  discardedResult,
+  weights,
+  nameAndId
+) {
+  const canCompare =
+    aboveMinimumResult.valid &&
+    isProvided(weights.weightDiscarded) &&
+    discardedResult.valid
+
+  if (!canCompare) {
+    return null
+  }
+
+  const aboveMinimumValue = Number(weights.weightAboveMinimum.trim())
+  const discardedValue = Number(weights.weightDiscarded.trim())
+
+  if (aboveMinimumValue > discardedValue) {
+    return null
+  }
+
+  return `Weight above minimum size retained must be higher than weight legally discarded for ${nameAndId}`
+}
+
 function speciesCheckboxItems(
   selectedSpeciesIds,
   speciesOptions,
@@ -201,61 +241,48 @@ export const speciesSelectionSubmitController = {
         speciesFieldErrors.weightAboveMinimum = errorText
       }
 
-      let belowMinimumResult = { valid: true, reason: null }
+      const belowMinimum = validateOptionalWeightField(
+        weights.weightBelowMinimum,
+        nameAndId,
+        'weight below minimum size retained'
+      )
 
-      if (isProvided(weights.weightBelowMinimum)) {
-        belowMinimumResult = validateWeight(weights.weightBelowMinimum)
-
-        if (!belowMinimumResult.valid) {
-          const errorText = weightErrorMessage(
-            belowMinimumResult.reason,
-            nameAndId,
-            'weight below minimum size retained'
-          )
-          errorList.push({
-            text: errorText,
-            href: `#weightBelowMinimum-${speciesId}`
-          })
-          speciesFieldErrors.weightBelowMinimum = errorText
-        }
-      }
-
-      let discardedResult = { valid: true, reason: null }
-
-      if (isProvided(weights.weightDiscarded)) {
-        discardedResult = validateWeight(weights.weightDiscarded)
-
-        if (!discardedResult.valid) {
-          const errorText = weightErrorMessage(
-            discardedResult.reason,
-            nameAndId,
-            'weight legally discarded'
-          )
-          errorList.push({
-            text: errorText,
-            href: `#weightDiscarded-${speciesId}`
-          })
-          speciesFieldErrors.weightDiscarded = errorText
-        }
-      }
-
-      const canCompareAboveMinimumToDiscarded =
-        aboveMinimumResult.valid &&
-        isProvided(weights.weightDiscarded) &&
-        discardedResult.valid
-
-      if (
-        canCompareAboveMinimumToDiscarded &&
-        Number(weights.weightAboveMinimum.trim()) <=
-          Number(weights.weightDiscarded.trim())
-      ) {
-        const errorText = `Weight above minimum size retained must be higher than weight legally discarded for ${nameAndId}`
+      if (belowMinimum.errorText) {
         errorList.push({
-          text: errorText,
+          text: belowMinimum.errorText,
+          href: `#weightBelowMinimum-${speciesId}`
+        })
+        speciesFieldErrors.weightBelowMinimum = belowMinimum.errorText
+      }
+
+      const discarded = validateOptionalWeightField(
+        weights.weightDiscarded,
+        nameAndId,
+        'weight legally discarded'
+      )
+
+      if (discarded.errorText) {
+        errorList.push({
+          text: discarded.errorText,
+          href: `#weightDiscarded-${speciesId}`
+        })
+        speciesFieldErrors.weightDiscarded = discarded.errorText
+      }
+
+      const crossFieldErrorText = checkAboveMinimumHigherThanDiscarded(
+        aboveMinimumResult,
+        discarded.result,
+        weights,
+        nameAndId
+      )
+
+      if (crossFieldErrorText) {
+        errorList.push({
+          text: crossFieldErrorText,
           href: `#weightAboveMinimum-${speciesId}`
         })
-        speciesFieldErrors.weightAboveMinimum = errorText
-        speciesFieldErrors.weightDiscarded = errorText
+        speciesFieldErrors.weightAboveMinimum = crossFieldErrorText
+        speciesFieldErrors.weightDiscarded = crossFieldErrorText
       }
 
       if (Object.keys(speciesFieldErrors).length > 0) {
