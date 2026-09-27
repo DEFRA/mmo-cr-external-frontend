@@ -132,7 +132,7 @@ describe('#tripReturnDateSubmitController', () => {
 
     expect(statusCode).toBe(statusCodes.ok)
     expect($('.govuk-error-summary').text()).toContain(
-      'Date must include a day'
+      'Enter the day you returned from your trip'
     )
     expect($('#tripReturnDate-month').val()).toBe('3')
     expect($('#tripReturnDate-year').val()).toBe('2020')
@@ -152,7 +152,7 @@ describe('#tripReturnDateSubmitController', () => {
 
     expect(statusCode).toBe(statusCodes.ok)
     expect($('.govuk-error-summary').text()).toContain(
-      'Date must include a month'
+      'Enter the month you returned from your trip'
     )
   })
 
@@ -170,7 +170,7 @@ describe('#tripReturnDateSubmitController', () => {
 
     expect(statusCode).toBe(statusCodes.ok)
     expect($('.govuk-error-summary').text()).toContain(
-      'Date must include a year'
+      'Enter the year you returned from your trip'
     )
   })
 
@@ -188,7 +188,7 @@ describe('#tripReturnDateSubmitController', () => {
 
     expect(statusCode).toBe(statusCodes.ok)
     expect($('.govuk-error-summary').text()).toContain(
-      'Date must include a day and a month'
+      'Enter the day and month you returned from your trip'
     )
   })
 
@@ -206,7 +206,7 @@ describe('#tripReturnDateSubmitController', () => {
 
     expect(statusCode).toBe(statusCodes.ok)
     expect($('.govuk-error-summary').text()).toContain(
-      'Date must be a real date'
+      'Date you returned from your trip must be in the format 31 3 2019'
     )
     expect($('#tripReturnDate-day').val()).toBe('aa')
   })
@@ -225,7 +225,7 @@ describe('#tripReturnDateSubmitController', () => {
 
     expect(statusCode).toBe(statusCodes.ok)
     expect($('.govuk-error-summary').text()).toContain(
-      'Date must be a real date'
+      'Date you returned from your trip must be in the format 31 3 2019'
     )
   })
 
@@ -243,7 +243,25 @@ describe('#tripReturnDateSubmitController', () => {
 
     expect(statusCode).toBe(statusCodes.ok)
     expect($('.govuk-error-summary').text()).toContain(
-      'Date must be a real date'
+      'Date you returned from your trip must be in the format 31 3 2019'
+    )
+  })
+
+  test('Should re-render with an error summary for a year that is not 4 digits (e.g. 1 or 90)', async () => {
+    const { statusCode, result } = await server.inject({
+      method: 'POST',
+      url: '/trip-return-date',
+      payload: {
+        'tripReturnDate-day': '9',
+        'tripReturnDate-month': '9',
+        'tripReturnDate-year': '90'
+      }
+    })
+    const $ = load(result)
+
+    expect(statusCode).toBe(statusCodes.ok)
+    expect($('.govuk-error-summary').text()).toContain(
+      'Date you returned from your trip must be in the format 31 3 2019'
     )
   })
 
@@ -261,7 +279,7 @@ describe('#tripReturnDateSubmitController', () => {
 
     expect(statusCode).toBe(statusCodes.ok)
     expect($('.govuk-error-summary').text()).toContain(
-      'Date must be a real date'
+      'Date you returned from your trip must be in the format 31 3 2019'
     )
   })
 
@@ -279,7 +297,7 @@ describe('#tripReturnDateSubmitController', () => {
 
     expect(statusCode).toBe(statusCodes.ok)
     expect($('.govuk-error-summary').text()).toContain(
-      'Date must be a real date'
+      'Date you returned from your trip must be in the format 31 3 2019'
     )
   })
 
@@ -296,5 +314,53 @@ describe('#tripReturnDateSubmitController', () => {
 
     expect(statusCode).toBe(303)
     expect(headers.location).toBe('/departure-port')
+  })
+
+  test('Should re-render with an error summary when the date is in the future (e.g. year 2222)', async () => {
+    const { statusCode, result } = await server.inject({
+      method: 'POST',
+      url: '/trip-return-date',
+      payload: {
+        'tripReturnDate-day': '9',
+        'tripReturnDate-month': '9',
+        'tripReturnDate-year': '2222'
+      }
+    })
+    const $ = load(result)
+
+    expect(statusCode).toBe(statusCodes.ok)
+    expect($('.govuk-error-summary').text()).toContain(
+      'Date you returned from your trip must be today or in the past'
+    )
+  })
+
+  test('Should re-render with an error summary when the return date is before the departure date set in the journey', async () => {
+    const departureResponse = await server.inject({
+      method: 'POST',
+      url: '/trip-departure-date',
+      payload: {
+        'tripDepartureDate-day': '20',
+        'tripDepartureDate-month': '8',
+        'tripDepartureDate-year': '2025'
+      }
+    })
+    const cookie = departureResponse.headers['set-cookie'][0].split(';')[0]
+
+    const { statusCode, result } = await server.inject({
+      method: 'POST',
+      url: '/trip-return-date',
+      headers: { cookie },
+      payload: {
+        'tripReturnDate-day': '10',
+        'tripReturnDate-month': '8',
+        'tripReturnDate-year': '2025'
+      }
+    })
+    const $ = load(result)
+
+    expect(statusCode).toBe(statusCodes.ok)
+    expect($('.govuk-error-summary').text()).toContain(
+      'Date you returned from your trip must be the same as or after the date you left'
+    )
   })
 })

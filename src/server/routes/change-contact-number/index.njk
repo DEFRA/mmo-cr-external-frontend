@@ -1,0 +1,14 @@
+{% extends 'layouts/page.njk' %}
+{% from "heading/macro.njk" import appHeading %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% block pageContent %}
+  {{ appHeading({ text: heading }) }}
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <p class="govuk-body">To change your contact number, send an email to {{ contactEmail }}</p>
+      {{ govukButton({ text: "Back to your account", href: "/account" }) }}
+    </div>
+  </div>
+{% endblock %}

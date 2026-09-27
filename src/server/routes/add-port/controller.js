@@ -5,6 +5,7 @@ import {
   resolveNextPath
 } from '#/server/common/helpers/journey/navigation.js'
 import { addFavouritePortCode } from '#/server/common/helpers/journey/favourite-ports.js'
+import { addAccountPortName } from '#/server/common/helpers/account/account-ports.js'
 import { getData } from '#/server/common/data/get-data.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 
@@ -12,6 +13,7 @@ const ports = getData('ports')
 const selectionErrorText = 'Select a port from the list'
 const returnPhase = 'return'
 const departurePortPath = '/departure-port'
+const accountPath = '/account'
 
 const headingByPhase = {
   departure: 'Enter the port or closest port you set off from',
@@ -26,7 +28,15 @@ function isEntry(request) {
   return request.query.entry === '1'
 }
 
+function isAccountReturn(request) {
+  return request.query.return === accountPath
+}
+
 function backLink(request) {
+  if (isAccountReturn(request)) {
+    return accountPath
+  }
+
   const phase = resolvePhase(request)
   if (!isEntry(request)) {
     return phase === returnPhase ? '/return-port' : departurePortPath
@@ -40,7 +50,8 @@ function backLink(request) {
 function formAction(request) {
   const phase = resolvePhase(request)
   const entrySuffix = isEntry(request) ? '&entry=1' : ''
-  return `/add-port?for=${phase}${entrySuffix}`
+  const returnSuffix = isAccountReturn(request) ? '&return=/account' : ''
+  return `/add-port?for=${phase}${entrySuffix}${returnSuffix}`
 }
 
 function viewContext(request, overrides = {}) {
@@ -103,6 +114,11 @@ export const addPortSubmitController = {
 
     if (!matchedPort) {
       return renderError(request, h, port)
+    }
+
+    if (isAccountReturn(request)) {
+      addAccountPortName(request, matchedPort.name)
+      return h.redirect(accountPath).code(statusCodes.seeOther)
     }
 
     addFavouritePortCode(request, matchedPort.code)
