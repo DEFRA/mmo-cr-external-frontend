@@ -1,5 +1,6 @@
 import Joi from 'joi'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
+import { setJourneyState } from '#/server/common/helpers/journey/navigation.js'
 
 const errorText = 'Select what you want to do with this draft record'
 
@@ -55,5 +56,38 @@ export const draftSubmitController = {
           : '/not-implemented?return=/draft'
       )
       .code(statusCodes.seeOther)
+  }
+}
+
+// BR-SUB-008: periodically persists in-progress field values so a lost connection or
+// closed tab doesn't lose work - the client module debounces calls to this every 10s.
+export const draftAutosaveController = {
+  options: {
+    validate: {
+      payload: Joi.object({
+        path: Joi.string().max(200).required(),
+        fields: Joi.object()
+          .pattern(
+            Joi.string(),
+            Joi.alternatives().try(
+              Joi.string().allow(''),
+              Joi.array().items(Joi.string()).single()
+            )
+          )
+          .required()
+      }),
+      failAction(_request, h) {
+        return h.response().code(statusCodes.badRequest).takeover()
+      }
+    }
+  },
+  handler(request, h) {
+    const { path, fields } = request.payload
+
+    setJourneyState(request, {
+      autosave: { path, fields, savedAt: new Date().toISOString() }
+    })
+
+    return h.response().code(statusCodes.noContent)
   }
 }

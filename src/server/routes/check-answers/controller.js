@@ -1,10 +1,32 @@
 import Joi from 'joi'
 
 import { statusCodes } from '#/server/common/constants/status-codes.js'
-import { backForCheckAnswers } from '#/server/common/helpers/journey/navigation.js'
+import {
+  backForCheckAnswers,
+  getJourneyState
+} from '#/server/common/helpers/journey/navigation.js'
+import { isLateSubmission } from '#/server/common/helpers/records/late-submission.js'
 import { buildCheckAnswersViewModel } from './view-model.js'
 
 const pageTitle = 'Check your catch record'
+
+// BR-SUB-003: warn (rather than block) when the trip ended more than 24 hours ago.
+function lateSubmissionNotification(request) {
+  if (!isLateSubmission(getJourneyState(request).returnDate)) {
+    return undefined
+  }
+
+  return {
+    titleText: 'Important',
+    text: 'Review the trip end date before continuing.',
+    details: {
+      reviewLink: '/trip-return-date?return=/check-answers',
+      reviewText: 'Review trip end date',
+      continueText: 'Continue with submission',
+      returnText: 'Return to record to make corrections'
+    }
+  }
+}
 
 function viewContext(request, overrides = {}) {
   const { sections } = buildCheckAnswersViewModel(request)
@@ -17,6 +39,7 @@ function viewContext(request, overrides = {}) {
       href: backForCheckAnswers(request),
       text: 'Back'
     },
+    notification: lateSubmissionNotification(request),
     sections,
     ...overrides
   }

@@ -30,6 +30,39 @@ describe('#getJourneyState', () => {
     const request = createFakeRequest({ tripSameDate: true })
     expect(getJourneyState(request)).toEqual({ tripSameDate: true })
   })
+
+  test('Should restore current-route autosave values into the journey state', () => {
+    const request = {
+      path: '/trip-date',
+      yar: {
+        get: () => ({
+          autosave: { path: '/trip-date', fields: { tripSameDate: 'no' } }
+        }),
+        set: () => {} 
+      }
+    }
+
+    expect(getJourneyState(request)).toEqual({
+      autosave: { path: '/trip-date', fields: { tripSameDate: 'no' } },
+      tripSameDate: false
+    })
+  })
+
+  test('Should ignore autosave values for a different route', () => {
+    const request = {
+      path: '/trip-departure-date',
+      yar: {
+        get: () => ({
+          autosave: { path: '/trip-date', fields: { tripSameDate: 'yes' } }
+        }),
+        set: () => {}
+      }
+    }
+
+    expect(getJourneyState(request)).toEqual({
+      autosave: { path: '/trip-date', fields: { tripSameDate: 'yes' } }
+    })
+  })
 })
 
 describe('#setJourneyState', () => {

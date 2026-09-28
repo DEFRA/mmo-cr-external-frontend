@@ -1,7 +1,8 @@
 import Joi from 'joi'
-import Boom from '@hapi/boom'
 
 import { getData } from '#/server/common/data/get-data.js'
+import { findAmendableRecord } from '#/server/common/helpers/records/find-amendable-record.js'
+import { recordAmendment } from '#/server/common/helpers/records/amendment-audit-log.js'
 import {
   getAmendmentState,
   clearAmendmentState
@@ -12,20 +13,8 @@ import { statusCodes } from '#/server/common/constants/status-codes.js'
 
 const AMENDMENT_CHANGE_HREF = '/not-implemented?return=/records'
 
-function findRecord(recordId) {
-  const record = getData('allRecords').find(
-    (item) => item.recordId === recordId
-  )
-
-  if (!record) {
-    throw Boom.notFound()
-  }
-
-  return record
-}
-
 function viewContext(request, recordId, overrides = {}) {
-  const record = findRecord(recordId)
+  const record = findAmendableRecord(recordId)
   const details = record.details || getData('catchRecordDetails')
   const { sections } = buildCheckAnswersViewModel(request, {
     buildChangeHref: () => AMENDMENT_CHANGE_HREF,
@@ -73,7 +62,7 @@ export const editCatchRecordReviewController = {
   },
   handler(request, h) {
     const { recordId } = request.params
-    findRecord(recordId)
+    findAmendableRecord(recordId)
 
     if (!hasValidAmendment(request, recordId)) {
       return h.redirect(`/records/${recordId}/edit-reason`).code(302)
@@ -97,7 +86,7 @@ export const editCatchRecordReviewSubmitController = {
       }),
       failAction(request, h) {
         const { recordId } = request.params
-        findRecord(recordId)
+        findAmendableRecord(recordId)
 
         if (!hasValidAmendment(request, recordId)) {
           return h
@@ -127,12 +116,19 @@ export const editCatchRecordReviewSubmitController = {
   },
   handler(request, h) {
     const { recordId } = request.params
-    findRecord(recordId)
+    findAmendableRecord(recordId)
 
     if (!hasValidAmendment(request, recordId)) {
       return h.redirect(`/records/${recordId}/edit-reason`).code(302)
     }
 
+    const { reason } = getAmendmentState(request)
+    recordAmendment({
+      recordId,
+      reason,
+      amendedBy: getData('account').name,
+      amendedAt: new Date().toISOString()
+    })
     clearAmendmentState(request)
 
     return h.redirect('/confirmation').code(303)

@@ -72,15 +72,22 @@ describe('#tripDepartureDateSubmitController', () => {
     await server.stop({ timeout: 0 })
   })
 
+  // A fixed number of days ago, rather than a hardcoded date, keeps this inside the
+  // rolling 365-day window (BR-CAT-006) no matter when the suite is run.
+  function recentDepartureDatePayload() {
+    const recent = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000)
+    return {
+      'tripDepartureDate-day': String(recent.getUTCDate()),
+      'tripDepartureDate-month': String(recent.getUTCMonth() + 1),
+      'tripDepartureDate-year': String(recent.getUTCFullYear())
+    }
+  }
+
   test('Should redirect to the trip return date page on a valid date', async () => {
     const { statusCode, headers } = await server.inject({
       method: 'POST',
       url: '/trip-departure-date',
-      payload: {
-        'tripDepartureDate-day': '31',
-        'tripDepartureDate-month': '8',
-        'tripDepartureDate-year': '2025'
-      }
+      payload: recentDepartureDatePayload()
     })
 
     expect(statusCode).toBe(303)
@@ -91,11 +98,7 @@ describe('#tripDepartureDateSubmitController', () => {
     const { statusCode, headers } = await server.inject({
       method: 'POST',
       url: '/trip-departure-date?return=/check-answers',
-      payload: {
-        'tripDepartureDate-day': '31',
-        'tripDepartureDate-month': '8',
-        'tripDepartureDate-year': '2025'
-      }
+      payload: recentDepartureDatePayload()
     })
 
     expect(statusCode).toBe(303)
@@ -313,7 +316,7 @@ describe('#tripDepartureDateSubmitController', () => {
 
     expect(statusCode).toBe(statusCodes.ok)
     expect($('.govuk-error-summary').text()).toContain(
-      'Date you left for your trip must be on or after 24 July 2025'
+      'Date you left for your trip must be on or after'
     )
   })
 

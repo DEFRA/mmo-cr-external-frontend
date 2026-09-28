@@ -9,13 +9,13 @@ import { statusCodes } from '#/server/common/constants/status-codes.js'
 const pageTitle = 'Which date did you return from your trip?'
 const hintText = 'For example, 31/03/2020'
 
-function viewContext(overrides = {}) {
+function viewContext(request, overrides = {}) {
   return {
     pageTitle,
     heading: pageTitle,
     caption: 'New catch record',
     hintText,
-    values: {},
+    values: getJourneyState(request).tripReturnDate || {},
     backLink: {
       href: '/trip-departure-date',
       text: 'Back'
@@ -25,8 +25,8 @@ function viewContext(overrides = {}) {
 }
 
 export const tripReturnDateController = {
-  handler(_request, h) {
-    return h.view('trip-return-date/index', viewContext())
+  handler(request, h) {
+    return h.view('trip-return-date/index', viewContext(request))
   }
 }
 
@@ -57,7 +57,7 @@ export const tripReturnDateSubmitController = {
       return h
         .view(
           'trip-return-date/index',
-          viewContext({
+          viewContext(request, {
             errorSummary: {
               titleText: 'There is a problem',
               errorList: [

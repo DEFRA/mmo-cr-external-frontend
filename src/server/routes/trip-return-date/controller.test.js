@@ -335,25 +335,29 @@ describe('#tripReturnDateSubmitController', () => {
   })
 
   test('Should re-render with an error summary when the return date is before the departure date set in the journey', async () => {
+    // A fixed number of days ago, rather than a hardcoded date, keeps this inside the
+    // rolling 365-day window (BR-CAT-006) no matter when the suite is run.
+    const departureDate = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000)
     const departureResponse = await server.inject({
       method: 'POST',
       url: '/trip-departure-date',
       payload: {
-        'tripDepartureDate-day': '20',
-        'tripDepartureDate-month': '8',
-        'tripDepartureDate-year': '2025'
+        'tripDepartureDate-day': String(departureDate.getUTCDate()),
+        'tripDepartureDate-month': String(departureDate.getUTCMonth() + 1),
+        'tripDepartureDate-year': String(departureDate.getUTCFullYear())
       }
     })
     const cookie = departureResponse.headers['set-cookie'][0].split(';')[0]
 
+    const returnDate = new Date(Date.now() - 11 * 24 * 60 * 60 * 1000)
     const { statusCode, result } = await server.inject({
       method: 'POST',
       url: '/trip-return-date',
       headers: { cookie },
       payload: {
-        'tripReturnDate-day': '10',
-        'tripReturnDate-month': '8',
-        'tripReturnDate-year': '2025'
+        'tripReturnDate-day': String(returnDate.getUTCDate()),
+        'tripReturnDate-month': String(returnDate.getUTCMonth() + 1),
+        'tripReturnDate-year': String(returnDate.getUTCFullYear())
       }
     })
     const $ = load(result)

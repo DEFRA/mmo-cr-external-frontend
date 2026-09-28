@@ -36,11 +36,69 @@ const SAFE_RETURN_PATHS = [
 
 const DEFAULT_RETURN_PATH = '/records'
 
+function restoreAutosaveFields(fields = {}) {
+  const restored = {}
+
+  for (const [key, value] of Object.entries(fields)) {
+    if (key === 'tripSameDate') {
+      restored.tripSameDate = value === 'yes'
+      continue
+    }
+
+    if (key === 'gearIds') {
+      restored.selectedGearIds = Array.isArray(value) ? value : [value]
+      continue
+    }
+
+    if (key === 'speciesIds') {
+      restored.selectedSpeciesIds = Array.isArray(value) ? value : [value]
+      continue
+    }
+
+    if (key.startsWith('tripDepartureDate-')) {
+      const suffix = key.replace('tripDepartureDate-', '')
+      restored.tripDepartureDate = {
+        ...(restored.tripDepartureDate || {}),
+        [suffix]: value
+      }
+      continue
+    }
+
+    if (key.startsWith('tripReturnDate-')) {
+      const suffix = key.replace('tripReturnDate-', '')
+      restored.tripReturnDate = {
+        ...(restored.tripReturnDate || {}),
+        [suffix]: value
+      }
+      continue
+    }
+
+    restored[key] = value
+  }
+
+  return restored
+}
+
 export function getJourneyState(request) {
-  return request.yar.get(JOURNEY_SESSION_KEY) || {}
+  if (!request || !request.yar) {
+    return {}
+  }
+
+  const state = request.yar.get(JOURNEY_SESSION_KEY) || {}
+  const autosave = state.autosave
+
+  if (!autosave || !request.path || autosave.path !== request.path) {
+    return state
+  }
+
+  return { ...state, ...restoreAutosaveFields(autosave.fields) }
 }
 
 export function setJourneyState(request, patch) {
+  if (!request || !request.yar) {
+    return patch
+  }
+
   const merged = { ...getJourneyState(request), ...patch }
   request.yar.set(JOURNEY_SESSION_KEY, merged)
   return merged

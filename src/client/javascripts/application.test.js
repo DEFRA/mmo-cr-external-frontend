@@ -6,6 +6,7 @@ const initialiseStatisticalAreaMap = vi.fn()
 const initialiseStatisticalAreaSearch = vi.fn()
 const initialisePortSearch = vi.fn()
 const initialiseClearInputErrors = vi.fn()
+const initialiseDraftAutosave = vi.fn()
 
 vi.mock('govuk-frontend', () => ({
   createAll,
@@ -23,6 +24,7 @@ vi.mock('./modules/statistical-area-search.js', () => ({
 }))
 vi.mock('./modules/port-search.js', () => ({ initialisePortSearch }))
 vi.mock('./clear-input-error.js', () => ({ initialiseClearInputErrors }))
+vi.mock('./modules/draft-autosave.js', () => ({ initialiseDraftAutosave }))
 
 describe('application entry point', () => {
   test('Should initialise every GOV.UK Frontend component and app module', async () => {
@@ -37,5 +39,6 @@ describe('application entry point', () => {
     expect(initialiseStatisticalAreaSearch).toHaveBeenCalled()
     expect(initialisePortSearch).toHaveBeenCalled()
     expect(initialiseClearInputErrors).toHaveBeenCalled()
+    expect(initialiseDraftAutosave).toHaveBeenCalled()
   })
 })

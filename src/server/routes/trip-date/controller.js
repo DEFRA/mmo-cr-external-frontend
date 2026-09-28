@@ -1,6 +1,7 @@
 import Joi from 'joi'
 
 import {
+  getJourneyState,
   resolveNextPath,
   setJourneyState
 } from '#/server/common/helpers/journey/navigation.js'
@@ -8,7 +9,9 @@ import { statusCodes } from '#/server/common/constants/status-codes.js'
 
 const pageTitle = 'Did your trip start and finish today?'
 
-function viewContext(overrides = {}) {
+function viewContext(request, overrides = {}) {
+  const journeyState = getJourneyState(request)
+
   return {
     pageTitle,
     heading: pageTitle,
@@ -17,13 +20,14 @@ function viewContext(overrides = {}) {
       href: '/select-vessel',
       text: 'Back'
     },
+    selectedValue: journeyState.tripSameDate,
     ...overrides
   }
 }
 
 export const tripDateController = {
-  handler(_request, h) {
-    return h.view('trip-date/index', viewContext())
+  handler(request, h) {
+    return h.view('trip-date/index', viewContext(request))
   }
 }
 
@@ -33,13 +37,13 @@ export const tripDateSubmitController = {
       payload: Joi.object({
         tripSameDate: Joi.string().valid('yes', 'no').required()
       }),
-      failAction(_request, h) {
+      failAction(request, h) {
         const errorText = 'Select yes if your trip started and finished today'
 
         return h
           .view(
             'trip-date/index',
-            viewContext({
+            viewContext(request, {
               errorSummary: {
                 titleText: 'There is a problem',
                 errorList: [{ text: errorText, href: '#tripSameDate' }]

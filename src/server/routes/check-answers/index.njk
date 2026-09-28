@@ -8,9 +8,27 @@
       <span class="govuk-caption-l" data-testid="app-check-answers-caption">{{ caption }}</span>
       <h1 class="govuk-heading-xl" data-testid="app-heading-title">{{ heading }}</h1>
 
+      {% if notification %}
+        <div class="govuk-warning-text" data-testid="late-submission-warning">
+          <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+          <strong class="govuk-warning-text__text">
+            <span class="govuk-warning-text__assistive">Warning</span>
+            {{ notification.text }}
+          </strong>
+        </div>
+        <p class="govuk-body">
+          <a class="govuk-link" href="{{ notification.details.reviewLink }}">{{ notification.details.reviewText }}</a>
+        </p>
+      {% endif %}
+
       {{ appCatchRecordSummarySections(sections) }}
 
-      {{ appCatchRecordDeclaration(fieldErrors, true) }}
+      {{ appCatchRecordDeclaration(
+        fieldErrors,
+        true,
+        notification.details.continueText if notification else 'Accept and submit trip details',
+        notification.details.reviewLink if notification else null
+      ) }}
     </div>
   </div>
 {% endblock %}

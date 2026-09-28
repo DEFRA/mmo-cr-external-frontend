@@ -10,6 +10,7 @@ import { initialiseStatisticalAreaMap } from './modules/statistical-area-map.js'
 import { initialiseStatisticalAreaSearch } from './modules/statistical-area-search.js'
 import { initialisePortSearch } from './modules/port-search.js'
 import { initialiseClearInputErrors } from './clear-input-error.js'
+import { initialiseDraftAutosave } from './modules/draft-autosave.js'
 
 import { initSpeciesWeightToggle } from './species-weight-toggle.js'
 
@@ -23,3 +24,4 @@ initialiseStatisticalAreaMap()
 initialiseStatisticalAreaSearch()
 initialisePortSearch()
 initialiseClearInputErrors()
+initialiseDraftAutosave()
