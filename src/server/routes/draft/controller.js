@@ -3,6 +3,7 @@ import { statusCodes } from '#/server/common/constants/status-codes.js'
 import { setJourneyState } from '#/server/common/helpers/journey/navigation.js'
 
 const errorText = 'Select what you want to do with this draft record'
+const MAX_AUTOSAVE_PATH_LENGTH = 200
 
 function viewContext(overrides = {}) {
   return {
@@ -65,7 +66,7 @@ export const draftAutosaveController = {
   options: {
     validate: {
       payload: Joi.object({
-        path: Joi.string().max(200).required(),
+        path: Joi.string().max(MAX_AUTOSAVE_PATH_LENGTH).required(),
         fields: Joi.object()
           .pattern(
             Joi.string(),

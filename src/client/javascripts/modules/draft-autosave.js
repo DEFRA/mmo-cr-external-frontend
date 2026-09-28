@@ -8,7 +8,7 @@ function collectFormFields(form) {
   const fields = {}
 
   new FormData(form).forEach((value, key) => {
-    const asString = String(value)
+    const asString = typeof value === 'string' ? value : value.name
     const previous = fields[key]
 
     if (previous === undefined) {

@@ -48,6 +48,55 @@ describe('#getJourneyState', () => {
     })
   })
 
+  test('Should normalize checkbox, radio and split-date autosave values', () => {
+    const fields = {
+      tripSameDate: 'yes',
+      gearIds: ['pots', 'trawl'],
+      speciesIds: 'cod',
+      'tripDepartureDate-day': '12',
+      'tripDepartureDate-month': '4',
+      'tripReturnDate-day': '13',
+      'tripReturnDate-month': '4',
+      departurePort: 'hastings'
+    }
+    const request = {
+      path: '/trip-date',
+      yar: {
+        get: () => ({ autosave: { path: '/trip-date', fields } }),
+        set: () => {}
+      }
+    }
+
+    expect(getJourneyState(request)).toMatchObject({
+      tripSameDate: true,
+      selectedGearIds: ['pots', 'trawl'],
+      selectedSpeciesIds: ['cod'],
+      tripDepartureDate: { day: '12', month: '4' },
+      tripReturnDate: { day: '13', month: '4' },
+      departurePort: 'hastings'
+    })
+  })
+
+  test('Should normalize a single gear checkbox value to an array', () => {
+    const request = {
+      path: '/gear-selection',
+      yar: {
+        get: () => ({
+          autosave: { path: '/gear-selection', fields: { gearIds: 'pots' } }
+        }),
+        set: () => {}
+      }
+    }
+
+    expect(getJourneyState(request).selectedGearIds).toEqual(['pots'])
+  })
+
+  test('Should return an empty state when the request has no session', () => {
+    expect(getJourneyState()).toEqual({})
+    expect(getJourneyState({})).toEqual({})
+    expect(getJourneyState({ yar: { get: () => undefined } })).toEqual({})
+  })
+
   test('Should ignore autosave values for a different route', () => {
     const request = {
       path: '/trip-departure-date',
@@ -153,6 +202,12 @@ describe('#resolveNextPath', () => {
 
   test('Should return the default path when query is undefined', () => {
     expect(resolveNextPath({}, '/gear-selection')).toBe('/gear-selection')
+  })
+
+  test('Should use the default path when the return query is unsafe', () => {
+    expect(
+      resolveNextPath({ query: { return: '//external.example' } }, '/draft')
+    ).toBe('/draft')
   })
 
   test('Should return a safe return path when supplied', () => {

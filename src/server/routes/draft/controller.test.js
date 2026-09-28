@@ -157,3 +157,48 @@ describe('#draftSubmitController', () => {
     )
   })
 })
+
+describe('#draftAutosaveController', () => {
+  let server
+
+  beforeAll(async () => {
+    server = await createServer()
+    await server.initialize()
+  })
+
+  afterAll(async () => {
+    await server.stop({ timeout: 0 })
+  })
+
+  test('Should accept valid autosave fields and return no content', async () => {
+    const { statusCode, headers } = await server.inject({
+      method: 'POST',
+      url: '/draft/autosave',
+      payload: {
+        path: '/trip-date',
+        fields: { tripSameDate: 'yes', gearIds: ['pots', 'trawl'] }
+      }
+    })
+
+    expect(statusCode).toBe(statusCodes.noContent)
+    expect(headers['set-cookie']).toBeDefined()
+  })
+
+  test.each([
+    ['missing path', { fields: { answer: 'yes' } }],
+    ['missing fields', { path: '/trip-date' }],
+    ['non-string field', { path: '/trip-date', fields: { answer: 1 } }],
+    ['overlong path', { path: `/${'a'.repeat(200)}`, fields: {} }]
+  ])(
+    'Should reject autosave payload with %s',
+    async (_description, payload) => {
+      const { statusCode } = await server.inject({
+        method: 'POST',
+        url: '/draft/autosave',
+        payload
+      })
+
+      expect(statusCode).toBe(statusCodes.badRequest)
+    }
+  )
+})

@@ -3,7 +3,7 @@ const JOURNEY_SESSION_KEY = 'journey'
 
 // Allowlist of known internal route paths. Exact string match only — used to
 // prevent an open redirect via the Empty Page's `return` query parameter.
-const SAFE_RETURN_PATHS = [
+const SAFE_RETURN_PATHS = new Set([
   '/',
   '/privacy-notice',
   '/sign-in',
@@ -32,55 +32,42 @@ const SAFE_RETURN_PATHS = [
   '/account',
   '/remove-port',
   '/not-implemented'
-]
+])
 
 const DEFAULT_RETURN_PATH = '/records'
 
-function restoreAutosaveFields(fields = {}) {
-  const restored = {}
-
-  for (const [key, value] of Object.entries(fields)) {
-    if (key === 'tripSameDate') {
-      restored.tripSameDate = value === 'yes'
-      continue
-    }
-
-    if (key === 'gearIds') {
-      restored.selectedGearIds = Array.isArray(value) ? value : [value]
-      continue
-    }
-
-    if (key === 'speciesIds') {
-      restored.selectedSpeciesIds = Array.isArray(value) ? value : [value]
-      continue
-    }
-
-    if (key.startsWith('tripDepartureDate-')) {
-      const suffix = key.replace('tripDepartureDate-', '')
-      restored.tripDepartureDate = {
-        ...(restored.tripDepartureDate || {}),
-        [suffix]: value
-      }
-      continue
-    }
-
-    if (key.startsWith('tripReturnDate-')) {
-      const suffix = key.replace('tripReturnDate-', '')
-      restored.tripReturnDate = {
-        ...(restored.tripReturnDate || {}),
-        [suffix]: value
-      }
-      continue
-    }
-
+function restoreAutosaveField(restored, key, value) {
+  if (key === 'tripSameDate') {
+    restored.tripSameDate = value === 'yes'
+  } else if (key === 'gearIds') {
+    restored.selectedGearIds = Array.isArray(value) ? value : [value]
+  } else if (key === 'speciesIds') {
+    restored.selectedSpeciesIds = Array.isArray(value) ? value : [value]
+  } else if (key.startsWith('tripDepartureDate-')) {
+    const suffix = key.replace('tripDepartureDate-', '')
+    restored.tripDepartureDate ??= {}
+    restored.tripDepartureDate[suffix] = value
+  } else if (key.startsWith('tripReturnDate-')) {
+    const suffix = key.replace('tripReturnDate-', '')
+    restored.tripReturnDate ??= {}
+    restored.tripReturnDate[suffix] = value
+  } else {
     restored[key] = value
   }
+}
+
+function restoreAutosaveFields(fields = {}) {
+  const restored = Object.create(null)
+
+  Object.entries(fields).forEach(([key, value]) => {
+    restoreAutosaveField(restored, key, value)
+  })
 
   return restored
 }
 
 export function getJourneyState(request) {
-  if (!request || !request.yar) {
+  if (!request?.yar) {
     return {}
   }
 
@@ -95,7 +82,7 @@ export function getJourneyState(request) {
 }
 
 export function setJourneyState(request, patch) {
-  if (!request || !request.yar) {
+  if (!request?.yar) {
     return patch
   }
 
@@ -123,14 +110,12 @@ export function backForCheckAnswers(request) {
 }
 
 export function safeReturnPath(candidate) {
-  return SAFE_RETURN_PATHS.includes(candidate) ? candidate : DEFAULT_RETURN_PATH
+  return SAFE_RETURN_PATHS.has(candidate) ? candidate : DEFAULT_RETURN_PATH
 }
 
 // Lets an edit page's successful submit send the user back to the page that linked to it
 // (for example a Check Your Answers "Change" link) instead of always continuing the journey.
 export function resolveNextPath(request, defaultPath) {
-  const candidate = request.query && request.query.return
-  return candidate && SAFE_RETURN_PATHS.includes(candidate)
-    ? candidate
-    : defaultPath
+  const candidate = request.query?.return
+  return candidate && SAFE_RETURN_PATHS.has(candidate) ? candidate : defaultPath
 }
