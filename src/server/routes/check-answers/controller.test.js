@@ -67,11 +67,13 @@ describe('#checkAnswersController', () => {
   })
 
   test('Should render the late submission warning and review prompt when the trip ended more than 24 hours ago', async () => {
-    let cookie = (await server.inject({
-      method: 'POST',
-      url: '/trip-date',
-      payload: { tripSameDate: 'no' }
-    })).headers['set-cookie'][0].split(';')[0]
+    let cookie = (
+      await server.inject({
+        method: 'POST',
+        url: '/trip-date',
+        payload: { tripSameDate: 'no' }
+      })
+    ).headers['set-cookie'][0].split(';')[0]
 
     const departureDate = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000)
     const departureResponse = await server.inject({
@@ -109,10 +111,12 @@ describe('#checkAnswersController', () => {
     expect($('.govuk-warning-text__text').text()).toContain(
       'Review the trip end date before continuing.'
     )
-    expect($('a[href="/trip-return-date?return=/check-answers"]').text()).toContain(
-      'Review trip end date'
+    expect(
+      $('a[href="/trip-return-date?return=/check-answers"]').text()
+    ).toContain('Review trip end date')
+    expect($('.govuk-button').last().text().trim()).toBe(
+      'Continue with submission'
     )
-    expect($('.govuk-button').last().text().trim()).toBe('Continue with submission')
     expect($('a.govuk-link').last().text().trim()).toBe(
       'Return to record to make corrections'
     )

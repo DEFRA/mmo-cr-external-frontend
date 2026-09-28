@@ -38,7 +38,7 @@ describe('#getJourneyState', () => {
         get: () => ({
           autosave: { path: '/trip-date', fields: { tripSameDate: 'no' } }
         }),
-        set: () => {} 
+        set: () => {}
       }
     }
 
