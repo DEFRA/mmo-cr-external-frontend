@@ -322,12 +322,28 @@ function distanceSquared(first, second) {
 }
 
 export function closestSubrectangles(subrectangles, portCoordinate, count) {
+  const seenCodes = new Set()
+  const seenCoordinates = new Set()
+
   return subrectangles
     .toSorted(
       (first, second) =>
         distanceSquared(first.labelCoordinate, portCoordinate) -
         distanceSquared(second.labelCoordinate, portCoordinate)
     )
+    .filter((subrectangle) => {
+      const coordinateKey = JSON.stringify(subrectangle.labelCoordinate)
+      if (
+        seenCodes.has(subrectangle.subCode) ||
+        seenCoordinates.has(coordinateKey)
+      ) {
+        return false
+      }
+
+      seenCodes.add(subrectangle.subCode)
+      seenCoordinates.add(coordinateKey)
+      return true
+    })
     .slice(0, count)
 }
 

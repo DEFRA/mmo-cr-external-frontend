@@ -265,6 +265,47 @@ describe('#initialiseStatisticalAreaMap', () => {
     expect(context.arc).toHaveBeenCalled()
   })
 
+  test('Should show each rectangle code and coordinate only once when zoomed out', async () => {
+    const { context, zoomOutButton } = setupMapDom()
+    mockFetchWith({
+      land: [landFeature],
+      subrectangles: [
+        subrectangle,
+        { ...subrectangle },
+        { ...subrectangle, subCode: 'R0C1' }
+      ],
+      ports: [port]
+    })
+
+    await initialiseStatisticalAreaMap()
+    for (let step = 0; step < 50; step++) {
+      context.fillText.mockClear()
+      zoomOutButton.click()
+
+      expect(context.fillText).toHaveBeenCalledTimes(1)
+      expect(context.fillText).toHaveBeenCalledWith(
+        'R0C0, R0C1',
+        expect.any(Number),
+        expect.any(Number)
+      )
+    }
+
+    const zoomInButton = document.querySelector(
+      '[data-statistical-area-map-zoom-in]'
+    )
+    for (let step = 0; step < 50; step++) {
+      context.fillText.mockClear()
+      zoomInButton.click()
+
+      expect(context.fillText).toHaveBeenCalledTimes(1)
+      expect(context.fillText).toHaveBeenCalledWith(
+        'R0C0, R0C1',
+        expect.any(Number),
+        expect.any(Number)
+      )
+    }
+  })
+
   test('Should select a subrectangle on tap and submit the form', async () => {
     const { input, status, form } = setupMapDom()
     mockFetchWith({

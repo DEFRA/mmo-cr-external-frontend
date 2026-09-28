@@ -55,4 +55,19 @@ describe('offline map preprocessing', () => {
       )
     ).toEqual(['LAND', 'NEAR', 'FAR'])
   })
+
+  test('Should return only unique rectangle codes and coordinates', () => {
+    const subrectangles = [
+      { subCode: 'NEAR', labelCoordinate: [0, 0] },
+      { subCode: 'NEAR', labelCoordinate: [0.5, 0.5] },
+      { subCode: 'SAME-COORDINATE', labelCoordinate: [0, 0] },
+      { subCode: 'NEXT', labelCoordinate: [0.1, 0.1] }
+    ]
+
+    expect(
+      closestSubrectangles(subrectangles, [0, 0], 9).map(
+        (subrectangle) => subrectangle.subCode
+      )
+    ).toEqual(['NEAR', 'NEXT'])
+  })
 })

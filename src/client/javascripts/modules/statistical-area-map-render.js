@@ -41,6 +41,18 @@ export function resizeCanvas(canvas) {
   canvas.height = Math.max(1, Math.round(bounds.height * ratio))
 }
 
+function uniqueSubrectanglesByCode(subrectangles) {
+  const unique = new Map()
+
+  for (const subrectangle of subrectangles) {
+    if (!unique.has(subrectangle.subCode)) {
+      unique.set(subrectangle.subCode, subrectangle)
+    }
+  }
+
+  return [...unique.values()]
+}
+
 export async function loadOfflineMapData() {
   const [landResponse, subrectangleResponse, portResponse] = await Promise.all([
     fetch('/public/offline-map/land.json'),
@@ -62,8 +74,8 @@ export async function loadOfflineMapData() {
       portResponse.json()
     ])
   // A rectangle entirely on land has no fishing area and must never be shown, selectable or not.
-  const subrectangles = allSubrectangles.filter(
-    (subrectangle) => subrectangle.overlapsSea
+  const subrectangles = uniqueSubrectanglesByCode(
+    allSubrectangles.filter((subrectangle) => subrectangle.overlapsSea)
   )
 
   return { land, subrectangles, ports }
@@ -166,6 +178,7 @@ function drawLand(context, land, viewport, canvas) {
 function drawSubrectangleLabels(context, subrectangles, viewport, canvas) {
   context.fillStyle = '#1d1d1d'
   context.font = `${Math.max(minimumLabelFontSize, canvas.width / fontSizeCanvasWidthDivisor)}px sans-serif`
+  const labelsByCoordinate = new Map()
   // A rectangle cropped down to a sliver by the viewport edge is too thin to own a legible,
   // non-overlapping label - skip it rather than let its label spill into the visible neighbour.
   subrectangles
@@ -196,8 +209,19 @@ function drawSubrectangleLabels(context, subrectangles, viewport, canvas) {
         viewport,
         canvas
       )
-      context.fillText(subrectangle.subCode, x + 4, y - 4)
+      const coordinateKey = JSON.stringify(subrectangle.labelCoordinate)
+      const label = labelsByCoordinate.get(coordinateKey) || {
+        codes: new Set(),
+        x,
+        y
+      }
+      label.codes.add(subrectangle.subCode)
+      labelsByCoordinate.set(coordinateKey, label)
     })
+
+  for (const { codes, x, y } of labelsByCoordinate.values()) {
+    context.fillText([...codes].join(', '), x + 4, y - 4)
+  }
 }
 
 function drawDeparturePortMarker(context, departurePort, viewport, canvas) {
