@@ -23,20 +23,23 @@ function gearCheckboxItems(favouriteOptions) {
 
 function viewContext(request, overrides = {}) {
   const favouriteGearIds = getFavouriteGearIds(getJourneyState(request))
+  const gearCheckboxItems = gearCheckboxItemsForIds(favouriteGearIds)
 
   return {
     pageTitle: `${headingLine1} ${vesselName}`,
     headingLine1,
     vesselName,
     backLink: {
-      href: '/gear-selection',
+      href: resolveNextPath(request, '/gear-selection'),
       text: 'Back'
     },
-    gearCheckboxItems: gearCheckboxItems(
-      getFavouriteGearOptions(favouriteGearIds)
-    ),
+    gearCheckboxItems,
     ...overrides
   }
+}
+
+function gearCheckboxItemsForIds(favouriteGearIds) {
+  return gearCheckboxItems(getFavouriteGearOptions(favouriteGearIds))
 }
 
 function renderWithError(request, h) {
@@ -65,6 +68,15 @@ export const removeGearController = {
 
 export const removeGearSubmitController = {
   handler(request, h) {
+    const initialFavouriteGearIds = getFavouriteGearIds(
+      getJourneyState(request)
+    )
+    if (getFavouriteGearOptions(initialFavouriteGearIds).length === 0) {
+      return h
+        .redirect(resolveNextPath(request, '/gear-selection'))
+        .code(statusCodes.seeOther)
+    }
+
     const rawGearIds = request.payload.gearIds
 
     if (!rawGearIds) {

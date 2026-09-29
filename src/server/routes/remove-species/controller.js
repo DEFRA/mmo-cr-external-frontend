@@ -26,7 +26,7 @@ function viewContext(request, overrides = {}) {
     heading: pageTitle,
     caption: 'New catch record',
     backLink: {
-      href: '/species-selection',
+      href: resolveNextPath(request, '/species-selection'),
       text: 'Back'
     },
     speciesCheckboxItems: speciesCheckboxItems(
@@ -54,6 +54,12 @@ export const removeSpeciesSubmitController = {
   handler(request, h) {
     const journeyState = getJourneyState(request)
     const availableSpeciesIds = getAvailableSpeciesIds(journeyState)
+    if (availableSpeciesIds.length === 0) {
+      return h
+        .redirect(resolveNextPath(request, '/species-selection'))
+        .code(statusCodes.seeOther)
+    }
+
     const requestedIds = normalizeSpeciesIds(request.payload.speciesIds)
     const idsToRemove = requestedIds.filter((id) =>
       availableSpeciesIds.includes(id)

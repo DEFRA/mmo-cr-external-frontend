@@ -39,6 +39,18 @@ describe('#addSpeciesController', () => {
     ).toBe('/species-selection')
   })
 
+  test('Should point Back to the account when Add species was opened from the account', async () => {
+    const { result } = await server.inject({
+      method: 'GET',
+      url: '/add-species?return=/account'
+    })
+    const $ = load(result)
+
+    expect(
+      $('[data-testid="app-page-navigation-back-link"]').attr('href')
+    ).toBe('/account')
+  })
+
   test('Should render the New catch record caption above the heading', async () => {
     const { result } = await server.inject({
       method: 'GET',

@@ -74,6 +74,30 @@ describe('#speciesSelectionController', () => {
     ).toHaveLength(1)
   })
 
+  test('Should hide Remove species when there are no favourite species', async () => {
+    const removeResponse = await server.inject({
+      method: 'POST',
+      url: '/remove-species',
+      payload: { speciesIds: ['cod', 'had', 'sal'] }
+    })
+    const cookie = removeResponse.headers['set-cookie'][0].split(';')[0]
+
+    const { result } = await server.inject({
+      method: 'GET',
+      url: '/species-selection',
+      headers: { cookie }
+    })
+    const $ = load(result)
+
+    expect($('input[type="checkbox"][name="speciesIds"]')).toHaveLength(0)
+    expect($('a[href="/add-species?return=/species-selection"]')).toHaveLength(
+      1
+    )
+    expect(
+      $('a[href="/remove-species?return=/species-selection"]')
+    ).toHaveLength(0)
+  })
+
   test('Should render the 3 species checkboxes with stable ids in order', async () => {
     const { result } = await server.inject({
       method: 'GET',
