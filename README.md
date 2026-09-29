@@ -107,6 +107,37 @@ To run the application in `development` mode run:
 npm run dev
 ```
 
+### Reference Data Service
+
+Species pages retrieve their catalogue from the Reference Data Service on the frontend server.
+For host-run development, the service URL defaults to `http://localhost:3002`. Start the local
+backend services and seed their data from the `mmo-cr-backend-local` repository before opening a
+species page. The frontend requires `REFERENCE_DATA_SERVICE_TOKEN`; without it species pages
+return `503`. For example, stop and restart the frontend with a non-empty local development token
+accepted by the local Authentication Service stub:
+
+```bash
+REFERENCE_DATA_SERVICE_TOKEN=local-dev-token npm run dev
+```
+
+The local stub accepts any non-empty bearer token; this example is for local development only.
+The token must be provided to the frontend process at startup. Setting it in another terminal
+does not update an already-running frontend.
+
+When running this frontend with Docker Compose, its `cdp-tenant` network is external and shared
+with the backend Compose project. Start the backend Compose project first, set
+`REFERENCE_DATA_SERVICE_TOKEN` in the shell used by Compose, then start the frontend, for example:
+
+```bash
+REFERENCE_DATA_SERVICE_TOKEN=local-dev-token docker compose up --build -d your-frontend
+```
+
+The container
+uses `http://mmo-cr-reference-data-service:3001`; do not use `localhost` for a backend container.
+Production must supply the deployed service URL and an approved bearer-token credential through
+the platform secret/configuration mechanism. The local Authentication Service stub is not real
+authentication and must never be used in production.
+
 ### Production
 
 To mimic the application running in `production` mode locally run:

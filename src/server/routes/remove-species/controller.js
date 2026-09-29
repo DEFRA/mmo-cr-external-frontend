@@ -1,12 +1,9 @@
 import {
-  getJourneyState,
   resolveNextPath,
   setJourneyState
 } from '#/server/common/helpers/journey/navigation.js'
-import {
-  getAvailableSpeciesIds,
-  getSpeciesOptionsByIds
-} from '#/server/common/helpers/species/species-list.js'
+import { filterKnownSpeciesIds } from '#/server/common/helpers/species/species-form.js'
+import { getSpeciesPageData } from '#/server/common/helpers/species/species-list.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 
 const pageTitle = 'Remove a species'
@@ -18,9 +15,7 @@ function speciesCheckboxItems(speciesOptions) {
   }))
 }
 
-function viewContext(request, overrides = {}) {
-  const availableSpeciesIds = getAvailableSpeciesIds(getJourneyState(request))
-
+function viewContext(request, speciesData, overrides = {}) {
   return {
     pageTitle,
     heading: pageTitle,
@@ -29,9 +24,7 @@ function viewContext(request, overrides = {}) {
       href: '/species-selection',
       text: 'Back'
     },
-    speciesCheckboxItems: speciesCheckboxItems(
-      getSpeciesOptionsByIds(availableSpeciesIds)
-    ),
+    speciesCheckboxItems: speciesCheckboxItems(speciesData.speciesOptions),
     ...overrides
   }
 }
@@ -45,19 +38,21 @@ function normalizeSpeciesIds(rawValue) {
 }
 
 export const removeSpeciesController = {
-  handler(request, h) {
-    return h.view('remove-species/index', viewContext(request))
+  async handler(request, h) {
+    const speciesData = await getSpeciesPageData(request)
+    return h.view('remove-species/index', viewContext(request, speciesData))
   }
 }
 
 export const removeSpeciesSubmitController = {
-  handler(request, h) {
-    const journeyState = getJourneyState(request)
-    const availableSpeciesIds = getAvailableSpeciesIds(journeyState)
+  async handler(request, h) {
+    const speciesData = await getSpeciesPageData(request)
+    const { journeyState, availableSpeciesIds } = speciesData
     const requestedIds = normalizeSpeciesIds(request.payload.speciesIds)
-    const idsToRemove = requestedIds.filter((id) =>
-      availableSpeciesIds.includes(id)
-    )
+    const idsToRemove = filterKnownSpeciesIds(
+      requestedIds,
+      speciesData.speciesOptions
+    ).filter((id) => availableSpeciesIds.includes(id))
 
     if (idsToRemove.length === 0) {
       const errorText = 'Select the species you want to remove'
@@ -65,7 +60,7 @@ export const removeSpeciesSubmitController = {
       return h
         .view(
           'remove-species/index',
-          viewContext(request, {
+          viewContext(request, speciesData, {
             errorSummary: {
               titleText: 'There is a problem',
               errorList: [{ text: errorText, href: '#speciesIds' }]

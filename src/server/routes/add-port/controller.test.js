@@ -2,6 +2,13 @@ import { load } from 'cheerio'
 
 import { createServer } from '#/server/server.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
+import {
+  mockSpeciesReferenceData,
+  restoreSpeciesReferenceDataMock
+} from '#/test-helpers/mock-species-reference-data.js'
+
+beforeEach(() => mockSpeciesReferenceData())
+afterEach(() => restoreSpeciesReferenceDataMock())
 
 describe('#addPortController', () => {
   let server

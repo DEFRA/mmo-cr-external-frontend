@@ -1,21 +1,18 @@
 import Joi from 'joi'
 
 import {
-  getJourneyState,
   resolveNextPath,
   setJourneyState
 } from '#/server/common/helpers/journey/navigation.js'
-import {
-  getAvailableSpeciesIds,
-  getSpeciesOptionsByIds
-} from '#/server/common/helpers/species/species-list.js'
+import { getSpeciesPageData } from '#/server/common/helpers/species/species-list.js'
 import { isValidWeight } from '#/server/common/helpers/species/weight-validation.js'
 import {
   ERROR_SUMMARY_TITLE,
   filterKnownSpeciesIds,
   noSpeciesSelectedError,
   normalizeSpeciesIds,
-  speciesNameAndId
+  speciesNameAndId,
+  speciesWeightFromPayload
 } from '#/server/common/helpers/species/species-form.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 
@@ -37,13 +34,10 @@ function speciesCheckboxItems(
   }))
 }
 
-function viewContext(request, overrides = {}) {
-  const journeyState = getJourneyState(request)
+function viewContext(request, speciesData, overrides = {}) {
+  const { journeyState, speciesOptions } = speciesData
   const speciesNotLanded = journeyState.speciesNotLanded || {}
   const selectedSpeciesIds = Object.keys(speciesNotLanded)
-  const speciesOptions = getSpeciesOptionsByIds(
-    getAvailableSpeciesIds(journeyState)
-  )
 
   return {
     pageTitle,
@@ -63,9 +57,12 @@ function viewContext(request, overrides = {}) {
   }
 }
 
-function renderPage(request, h, overrides, code = statusCodes.ok) {
+function renderPage(request, h, speciesData, overrides, code = statusCodes.ok) {
   const response = h
-    .view('species-not-landed/index', viewContext(request, overrides))
+    .view(
+      'species-not-landed/index',
+      viewContext(request, speciesData, overrides)
+    )
     .code(code)
 
   return code === statusCodes.ok ? response : response.takeover()
@@ -76,7 +73,11 @@ function buildSpeciesWeightsFromPayload(payload, speciesOptions) {
 
   speciesOptions.forEach((species) => {
     speciesWeights[species.id] = {
-      weightAboveMinimum: payload[`weightAboveMinimum-${species.id}`]
+      weightAboveMinimum: speciesWeightFromPayload(
+        payload,
+        'weightAboveMinimum',
+        species
+      )
     }
   })
 
@@ -124,8 +125,9 @@ function persistSpeciesNotLanded(request, speciesIds, speciesWeights) {
 }
 
 export const speciesNotLandedController = {
-  handler(request, h) {
-    return h.view('species-not-landed/index', viewContext(request))
+  async handler(request, h) {
+    const speciesData = await getSpeciesPageData(request)
+    return h.view('species-not-landed/index', viewContext(request, speciesData))
   }
 }
 
@@ -138,19 +140,18 @@ export const speciesNotLandedSubmitController = {
           .allow('')
           .optional()
       }).unknown(true),
-      failAction(request, h) {
+      async failAction(request, h) {
         const selectedSpeciesIds = normalizeSpeciesIds(
           request.payload.speciesIds
         )
-        const journeyState = getJourneyState(request)
-        const speciesOptions = getSpeciesOptionsByIds(
-          getAvailableSpeciesIds(journeyState)
-        )
+        const speciesData = await getSpeciesPageData(request)
+        const { journeyState, speciesOptions } = speciesData
         const errorText = 'There was a problem with your submission'
 
         return renderPage(
           request,
           h,
+          speciesData,
           {
             speciesCheckboxItems: speciesCheckboxItems(
               selectedSpeciesIds,
@@ -168,11 +169,9 @@ export const speciesNotLandedSubmitController = {
       }
     }
   },
-  handler(request, h) {
-    const journeyState = getJourneyState(request)
-    const speciesOptions = getSpeciesOptionsByIds(
-      getAvailableSpeciesIds(journeyState)
-    )
+  async handler(request, h) {
+    const speciesData = await getSpeciesPageData(request)
+    const { speciesOptions } = speciesData
     const speciesIds = filterKnownSpeciesIds(
       normalizeSpeciesIds(request.payload.speciesIds),
       speciesOptions
@@ -186,6 +185,7 @@ export const speciesNotLandedSubmitController = {
       return renderPage(
         request,
         h,
+        speciesData,
         {
           speciesCheckboxItems: speciesCheckboxItems(
             speciesIds,

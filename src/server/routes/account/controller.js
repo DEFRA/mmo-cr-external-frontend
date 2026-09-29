@@ -6,10 +6,7 @@ import {
   getFavouriteGearIds,
   getFavouriteGearOptions
 } from '#/server/common/helpers/gear/favourite-gear.js'
-import {
-  getAvailableSpeciesIds,
-  getSpeciesOptionsByIds
-} from '#/server/common/helpers/species/species-list.js'
+import { getSpeciesPageData } from '#/server/common/helpers/species/species-list.js'
 
 const NOT_IMPLEMENTED_HREF = '/not-implemented?return=/account'
 
@@ -205,7 +202,7 @@ function buildVesselDetailsSection(
 }
 
 export const accountController = {
-  handler(request, h) {
+  async handler(request, h) {
     if (!isSignedIn(request)) {
       return h.redirect('/sign-in').code(302)
     }
@@ -219,9 +216,8 @@ export const accountController = {
     const favouriteGearOptions = getFavouriteGearOptions(
       getFavouriteGearIds(journeyState)
     )
-    const speciesCaught = getSpeciesOptionsByIds(
-      getAvailableSpeciesIds(journeyState)
-    ).map((species) => species.text)
+    const { speciesOptions } = await getSpeciesPageData(request)
+    const speciesCaught = speciesOptions.map((species) => species.text)
 
     return h.view('account/index', {
       pageTitle: 'Your account',

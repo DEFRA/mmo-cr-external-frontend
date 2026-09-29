@@ -2,6 +2,14 @@ import { load } from 'cheerio'
 
 import { createServer } from '#/server/server.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
+import {
+  mockSpeciesReferenceData,
+  restoreSpeciesReferenceDataMock,
+  SPECIES_IDS
+} from '#/test-helpers/mock-species-reference-data.js'
+
+beforeEach(() => mockSpeciesReferenceData())
+afterEach(() => restoreSpeciesReferenceDataMock())
 
 describe('#speciesSelectionController', () => {
   let server
@@ -84,9 +92,9 @@ describe('#speciesSelectionController', () => {
 
     expect(checkboxes).toHaveLength(3)
     expect(checkboxes.map((_, el) => $(el).attr('value')).get()).toEqual([
-      'cod',
-      'had',
-      'sal'
+      SPECIES_IDS.cod,
+      SPECIES_IDS.haddock,
+      SPECIES_IDS.mackerel
     ])
   })
 
@@ -123,8 +131,10 @@ describe('#speciesSelectionController', () => {
     })
     const $ = load(result)
 
-    expect($('input[value="cod"]').prop('checked')).toBe(true)
-    expect($('#weightAboveMinimum-cod').attr('value')).toBe('120.5')
+    expect($(`input[value="${SPECIES_IDS.cod}"]`).prop('checked')).toBe(true)
+    expect($(`#weightAboveMinimum-${SPECIES_IDS.cod}`).attr('value')).toBe(
+      '120.5'
+    )
     expect(
       $('#speciesIds-conditional-1').hasClass(
         'govuk-checkboxes__conditional--hidden'
@@ -158,9 +168,11 @@ describe('#speciesSelectionSubmitController', () => {
     const $ = load(result)
 
     expect(statusCode).toBe(statusCodes.badRequest)
-    expect($('#weightBelowMinimum-cod')).toHaveLength(1)
+    expect($(`#weightBelowMinimum-${SPECIES_IDS.cod}`)).toHaveLength(1)
     expect(
-      $('#weightBelowMinimum-cod-group').hasClass('govuk-visually-hidden')
+      $(`#weightBelowMinimum-${SPECIES_IDS.cod}-group`).hasClass(
+        'govuk-visually-hidden'
+      )
     ).toBe(false)
   })
 
@@ -177,9 +189,11 @@ describe('#speciesSelectionSubmitController', () => {
     const $ = load(result)
 
     expect(statusCode).toBe(statusCodes.badRequest)
-    expect($('#weightDiscarded-cod')).toHaveLength(1)
+    expect($(`#weightDiscarded-${SPECIES_IDS.cod}`)).toHaveLength(1)
     expect(
-      $('#weightDiscarded-cod-group').hasClass('govuk-visually-hidden')
+      $(`#weightDiscarded-${SPECIES_IDS.cod}-group`).hasClass(
+        'govuk-visually-hidden'
+      )
     ).toBe(false)
   })
 
@@ -192,10 +206,14 @@ describe('#speciesSelectionSubmitController', () => {
     const $ = load(result)
 
     expect(
-      $('a.js-weight-toggle[data-target="weightBelowMinimum-cod-group"]').text()
+      $(
+        `a.js-weight-toggle[data-target="weightBelowMinimum-${SPECIES_IDS.cod}-group"]`
+      ).text()
     ).toBe('Add weight below minimum size retained (kg)')
     expect(
-      $('a.js-weight-toggle[data-target="weightDiscarded-cod-group"]').text()
+      $(
+        `a.js-weight-toggle[data-target="weightDiscarded-${SPECIES_IDS.cod}-group"]`
+      ).text()
     ).toBe('Add weight legally discarded (kg)')
   })
 
@@ -301,9 +319,9 @@ describe('#speciesSelectionSubmitController', () => {
 
     expect(statusCode).toBe(statusCodes.badRequest)
     expect($('.govuk-error-summary').text()).toContain(
-      'Enter a weight for atlantic cod (cod)'
+      'Enter a weight for atlantic cod (COD)'
     )
-    expect($('#weightAboveMinimum-cod-error')).toHaveLength(1)
+    expect($(`#weightAboveMinimum-${SPECIES_IDS.cod}-error`)).toHaveLength(1)
   })
 
   test('Should re-render with a named field error when the below-minimum weight has an invalid format', async () => {
@@ -321,7 +339,7 @@ describe('#speciesSelectionSubmitController', () => {
 
     expect(statusCode).toBe(statusCodes.badRequest)
     expect($('.govuk-error-summary').text()).toContain(
-      'Enter a weight below minimum size retained for atlantic cod (cod)'
+      'Enter a weight below minimum size retained for atlantic cod (COD)'
     )
   })
 
@@ -340,7 +358,7 @@ describe('#speciesSelectionSubmitController', () => {
 
     expect(statusCode).toBe(statusCodes.badRequest)
     expect($('.govuk-error-summary').text()).toContain(
-      'Enter a weight legally discarded for atlantic cod (cod)'
+      'Enter a weight legally discarded for atlantic cod (COD)'
     )
   })
 

@@ -1,5 +1,21 @@
-import { buildCheckAnswersViewModel } from './view-model.js'
+import { buildCheckAnswersViewModel as buildViewModel } from './view-model.js'
 import { getData } from '#/server/common/data/get-data.js'
+import {
+  SPECIES_IDS,
+  SPECIES_ITEMS
+} from '#/test-helpers/mock-species-reference-data.js'
+
+const speciesCatalogue = SPECIES_ITEMS.map((species) => ({
+  id: species.id,
+  code: species.faoCode,
+  faoCode: species.faoCode,
+  displayName: species.displayName,
+  text: `${species.displayName} (${species.faoCode})`
+}))
+
+function buildCheckAnswersViewModel(request, options = {}) {
+  return buildViewModel(request, { speciesCatalogue, ...options })
+}
 
 function fakeRequest(journeyState) {
   return { yar: { get: () => journeyState } }
@@ -211,21 +227,21 @@ describe('#buildCheckAnswersViewModel', () => {
     expect(rowValue(rows, 'Gear type')).toBe('Dredge, Traps and Pots')
   })
 
-  test('Should omit the Species caught section when cod was not selected', () => {
+  test('Should show another selected species when cod was not selected', () => {
     const viewModel = buildCheckAnswersViewModel(
-      fakeRequest({ selectedSpeciesIds: ['had'] })
+      fakeRequest({ selectedSpeciesIds: [SPECIES_IDS.haddock] })
     )
 
-    expect(
-      viewModel.sections.find((section) => section.heading === 'Species caught')
-    ).toBeUndefined()
+    expect(rowValue(rowsFor(viewModel, 'Species caught'), 'Species')).toBe(
+      'Haddock'
+    )
   })
 
   test('Should only show the optional weight rows the journey marked visible', () => {
     const viewModel = buildCheckAnswersViewModel(
       fakeRequest({
-        selectedSpeciesIds: ['cod'],
-        speciesWeights: { cod: { weightAboveMinimum: 12 } }
+        selectedSpeciesIds: [SPECIES_IDS.cod],
+        speciesWeights: { [SPECIES_IDS.cod]: { weightAboveMinimum: 12 } }
       })
     )
     const rows = rowsFor(viewModel, 'Species caught')
@@ -243,9 +259,9 @@ describe('#buildCheckAnswersViewModel', () => {
   test('Should show all weight rows when the journey marked them visible', () => {
     const viewModel = buildCheckAnswersViewModel(
       fakeRequest({
-        selectedSpeciesIds: ['cod'],
+        selectedSpeciesIds: [SPECIES_IDS.cod],
         speciesWeights: {
-          cod: {
+          [SPECIES_IDS.cod]: {
             weightAboveMinimum: 15,
             weightBelowMinimum: 10,
             weightDiscarded: 5
@@ -289,7 +305,9 @@ describe('#buildCheckAnswersViewModel', () => {
     const viewModel = buildCheckAnswersViewModel(
       fakeRequest({
         catchNotLanded: true,
-        speciesNotLanded: { cod: { weightAboveMinimum: 8 } }
+        speciesNotLanded: {
+          [SPECIES_IDS.cod]: { weightAboveMinimum: 8 }
+        }
       })
     )
     const rows = rowsFor(viewModel, 'Species not landed')
@@ -313,8 +331,10 @@ describe('#buildCheckAnswersViewModel', () => {
     const viewModel = buildCheckAnswersViewModel(
       fakeRequest({
         selectedGearIds: ['pots'],
-        selectedSpeciesIds: ['cod'],
-        speciesWeights: { cod: { weightAboveMinimum: 10 } }
+        selectedSpeciesIds: [SPECIES_IDS.cod],
+        speciesWeights: {
+          [SPECIES_IDS.cod]: { weightAboveMinimum: 10 }
+        }
       })
     )
 
@@ -323,6 +343,38 @@ describe('#buildCheckAnswersViewModel', () => {
         expect(row.value.text).not.toMatch(/undefined|null/)
       }
     }
+  })
+
+  test('Should include each selected species and its weight rows using GUID-keyed state', () => {
+    const viewModel = buildCheckAnswersViewModel(
+      fakeRequest({
+        selectedSpeciesIds: [SPECIES_IDS.cod, SPECIES_IDS.haddock],
+        speciesWeights: {
+          [SPECIES_IDS.cod]: { weightAboveMinimum: 12 },
+          [SPECIES_IDS.haddock]: { weightAboveMinimum: 8 }
+        },
+        catchNotLanded: true,
+        speciesNotLanded: {
+          [SPECIES_IDS.cod]: { weightAboveMinimum: 4 },
+          [SPECIES_IDS.haddock]: { weightAboveMinimum: 3 }
+        }
+      })
+    )
+
+    const caughtRows = rowsFor(viewModel, 'Species caught')
+    const notLandedRows = rowsFor(viewModel, 'Species not landed')
+
+    expect(rowValue(caughtRows, 'Species (COD)')).toBe('Atlantic cod')
+    expect(
+      rowValue(caughtRows, 'Weight above minimum size retained (HAD)')
+    ).toBe('8 kg')
+    expect(rowValue(notLandedRows, 'Species (HAD)')).toBe('Haddock (HAD)')
+    expect(
+      rowValue(
+        notLandedRows,
+        'Weight above minimum size kept onboard or in keep pots (kg) (COD)'
+      )
+    ).toBe('4')
   })
 
   test('Should give every Change link a unique accessible name within a section', () => {
