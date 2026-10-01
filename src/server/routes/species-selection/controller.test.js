@@ -325,12 +325,12 @@ describe('#speciesSelectionSubmitController', () => {
 
     expect(statusCode).toBe(statusCodes.badRequest)
     expect($('.govuk-error-summary').text()).toContain(
-      'Enter a weight for atlantic cod (cod)'
+      'Enter the weight above minimum size retained for atlantic cod (cod)'
     )
     expect($('#weightAboveMinimum-cod-error')).toHaveLength(1)
   })
 
-  test('Should re-render with a named field error when the below-minimum weight has an invalid format', async () => {
+  test('Should re-render with a named field error when the below-minimum weight has too many decimal places', async () => {
     const { statusCode, result } = await server.inject({
       method: 'POST',
       url: '/species-selection',
@@ -345,11 +345,11 @@ describe('#speciesSelectionSubmitController', () => {
 
     expect(statusCode).toBe(statusCodes.badRequest)
     expect($('.govuk-error-summary').text()).toContain(
-      'Enter a weight below minimum size retained for atlantic cod (cod)'
+      'The weight for atlantic cod (cod) must be a number with up to one decimal place'
     )
   })
 
-  test('Should re-render with a named field error when the legally-discarded weight has an invalid format', async () => {
+  test('Should re-render with a named field error when the legally-discarded weight has too many decimal places', async () => {
     const { statusCode, result } = await server.inject({
       method: 'POST',
       url: '/species-selection',
@@ -364,8 +364,149 @@ describe('#speciesSelectionSubmitController', () => {
 
     expect(statusCode).toBe(statusCodes.badRequest)
     expect($('.govuk-error-summary').text()).toContain(
-      'Enter a weight legally discarded for atlantic cod (cod)'
+      'The weight for atlantic cod (cod) must be a number with up to one decimal place'
     )
+  })
+
+  test('Should reject a weight of 0', async () => {
+    const { statusCode, result } = await server.inject({
+      method: 'POST',
+      url: '/species-selection',
+      payload: {
+        speciesIds: 'cod',
+        speciesAction: 'continue',
+        'weightAboveMinimum-cod': '0'
+      }
+    })
+    const $ = load(result)
+
+    expect(statusCode).toBe(statusCodes.badRequest)
+    expect($('.govuk-error-summary').text()).toContain(
+      'The weight for atlantic cod (cod) must be more than 0kg'
+    )
+  })
+
+  test('Should reject a negative weight', async () => {
+    const { statusCode, result } = await server.inject({
+      method: 'POST',
+      url: '/species-selection',
+      payload: {
+        speciesIds: 'cod',
+        speciesAction: 'continue',
+        'weightAboveMinimum-cod': '-8'
+      }
+    })
+    const $ = load(result)
+
+    expect(statusCode).toBe(statusCodes.badRequest)
+    expect($('.govuk-error-summary').text()).toContain(
+      'The weight for atlantic cod (cod) must be more than 0kg'
+    )
+  })
+
+  test('Should reject a non-numeric weight', async () => {
+    const { statusCode, result } = await server.inject({
+      method: 'POST',
+      url: '/species-selection',
+      payload: {
+        speciesIds: 'cod',
+        speciesAction: 'continue',
+        'weightAboveMinimum-cod': 'A1'
+      }
+    })
+    const $ = load(result)
+
+    expect(statusCode).toBe(statusCodes.badRequest)
+    expect($('.govuk-error-summary').text()).toContain(
+      'The weight for atlantic cod (cod) must be a number'
+    )
+  })
+
+  test('Should reject a weight over 10,000kg', async () => {
+    const { statusCode, result } = await server.inject({
+      method: 'POST',
+      url: '/species-selection',
+      payload: {
+        speciesIds: 'cod',
+        speciesAction: 'continue',
+        'weightAboveMinimum-cod': '10000.1'
+      }
+    })
+    const $ = load(result)
+
+    expect(statusCode).toBe(statusCodes.badRequest)
+    expect($('.govuk-error-summary').text()).toContain(
+      'The weight for atlantic cod (cod) must be 10,000kg or less'
+    )
+  })
+
+  test('Should accept a weight of exactly 10,000kg', async () => {
+    const { statusCode, headers } = await server.inject({
+      method: 'POST',
+      url: '/species-selection',
+      payload: {
+        speciesIds: 'cod',
+        speciesAction: 'continue',
+        'weightAboveMinimum-cod': '10000'
+      }
+    })
+
+    expect(statusCode).toBe(303)
+    expect(headers.location).toBe('/catch-not-landed')
+  })
+
+  test('Should reject when the legally-discarded weight is the same as the above-minimum weight', async () => {
+    const { statusCode, result } = await server.inject({
+      method: 'POST',
+      url: '/species-selection',
+      payload: {
+        speciesIds: 'cod',
+        speciesAction: 'continue',
+        'weightAboveMinimum-cod': '10',
+        'weightDiscarded-cod': '10'
+      }
+    })
+    const $ = load(result)
+
+    expect(statusCode).toBe(statusCodes.badRequest)
+    expect($('.govuk-error-summary').text()).toContain(
+      'Weight above minimum size retained must be higher than weight legally discarded for atlantic cod (cod)'
+    )
+  })
+
+  test('Should reject when the legally-discarded weight is higher than the above-minimum weight', async () => {
+    const { statusCode, result } = await server.inject({
+      method: 'POST',
+      url: '/species-selection',
+      payload: {
+        speciesIds: 'cod',
+        speciesAction: 'continue',
+        'weightAboveMinimum-cod': '10',
+        'weightDiscarded-cod': '10.5'
+      }
+    })
+    const $ = load(result)
+
+    expect(statusCode).toBe(statusCodes.badRequest)
+    expect($('.govuk-error-summary').text()).toContain(
+      'Weight above minimum size retained must be higher than weight legally discarded for atlantic cod (cod)'
+    )
+  })
+
+  test('Should accept when the legally-discarded weight is lower than the above-minimum weight', async () => {
+    const { statusCode, headers } = await server.inject({
+      method: 'POST',
+      url: '/species-selection',
+      payload: {
+        speciesIds: 'cod',
+        speciesAction: 'continue',
+        'weightAboveMinimum-cod': '10.5',
+        'weightDiscarded-cod': '10'
+      }
+    })
+
+    expect(statusCode).toBe(303)
+    expect(headers.location).toBe('/catch-not-landed')
   })
 
   test('Should reject an unknown speciesAction value', async () => {
