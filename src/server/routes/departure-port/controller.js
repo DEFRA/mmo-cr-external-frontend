@@ -10,27 +10,30 @@ import {
   addFavouritePortCode,
   getFavouritePortCodes
 } from '#/server/common/helpers/journey/favourite-ports.js'
-import { getData } from '#/server/common/data/get-data.js'
+import {
+  findPortByCode,
+  getPortCatalogue,
+  migratePortJourneyState,
+  rememberPortName
+} from '#/server/common/helpers/ports/ports-list.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 
 const pageTitle = 'Select the port you left from'
 const hintText = 'Select a port name or the nearest port to where you left.'
-const ports = getData('ports')
-
-function favouritePorts(request) {
+function favouritePorts(request, ports) {
   const codes = getFavouritePortCodes(request)
   return ports.filter((port) => codes.includes(port.code))
 }
 
-function portOptions(request, selectedCode) {
-  return favouritePorts(request).map(({ code, name }) => ({
+function portOptions(request, selectedCode, ports) {
+  return favouritePorts(request, ports).map(({ code, name }) => ({
     value: code,
     text: name,
     checked: code === selectedCode
   }))
 }
 
-function viewContext(request, overrides = {}) {
+function viewContext(request, ports, overrides = {}) {
   return {
     pageTitle,
     heading: pageTitle,
@@ -41,20 +44,26 @@ function viewContext(request, overrides = {}) {
       text: 'Back'
     },
     addPortHref: '/add-port?for=departure',
-    portOptions: portOptions(request, getJourneyState(request).departurePort),
+    portOptions: portOptions(
+      request,
+      getJourneyState(request).departurePort,
+      ports
+    ),
     ...overrides
   }
 }
 
 export const departurePortController = {
-  handler(request, h) {
-    if (getFavouritePortCodes(request).length === 0) {
+  async handler(request, h) {
+    const ports = await getPortCatalogue()
+    migratePortJourneyState(request, ports)
+    if (favouritePorts(request, ports).length === 0) {
       return h
         .redirect('/add-port?for=departure&entry=1')
         .code(statusCodes.seeOther)
     }
 
-    return h.view('departure-port/index', viewContext(request))
+    return h.view('departure-port/index', viewContext(request, ports))
   }
 }
 
@@ -62,17 +71,16 @@ export const departurePortSubmitController = {
   options: {
     validate: {
       payload: Joi.object({
-        departurePort: Joi.string()
-          .valid(...ports.map(({ code }) => code))
-          .required()
+        departurePort: Joi.string().required()
       }),
-      failAction(request, h) {
+      async failAction(request, h) {
+        const ports = await getPortCatalogue()
         const errorText = 'Select the port you left from'
 
         return h
           .view(
             'departure-port/index',
-            viewContext(request, {
+            viewContext(request, ports, {
               errorSummary: {
                 titleText: 'There is a problem',
                 errorList: [{ text: errorText, href: '#departurePort' }]
@@ -85,11 +93,29 @@ export const departurePortSubmitController = {
       }
     }
   },
-  handler(request, h) {
+  async handler(request, h) {
+    const ports = await getPortCatalogue()
     const { departurePort } = request.payload
+    const port = findPortByCode(departurePort, ports)
+    if (!port) {
+      const errorText = 'Select the port you left from'
+      return h
+        .view(
+          'departure-port/index',
+          viewContext(request, ports, {
+            errorSummary: {
+              titleText: 'There is a problem',
+              errorList: [{ text: errorText, href: '#departurePort' }]
+            },
+            fieldErrors: { departurePort: errorText }
+          })
+        )
+        .code(statusCodes.badRequest)
+    }
 
-    addFavouritePortCode(request, departurePort)
-    setJourneyState(request, { departurePort })
+    addFavouritePortCode(request, port.code)
+    rememberPortName(request, port)
+    setJourneyState(request, { departurePort: port.code })
 
     return h
       .redirect(resolveNextPath(request, '/return-port'))

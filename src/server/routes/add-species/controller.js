@@ -1,6 +1,7 @@
 import Joi from 'joi'
 
 import {
+  getJourneyState,
   resolveNextPath,
   setJourneyState
 } from '#/server/common/helpers/journey/navigation.js'
@@ -10,8 +11,6 @@ import {
 } from '#/server/common/helpers/species/species-list.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 
-const pageTitle = 'Add species to your vessel OLGA'
-
 function speciesOptionLabels(availableSpeciesIds, catalogue) {
   return catalogue
     .filter((species) => !availableSpeciesIds.includes(species.id))
@@ -19,6 +18,7 @@ function speciesOptionLabels(availableSpeciesIds, catalogue) {
 }
 
 function viewContext(request, speciesData, overrides = {}) {
+  const pageTitle = `Add species to your vessel ${getJourneyState(request).selectedVesselName || 'OLGA'}`
   return {
     pageTitle,
     heading: pageTitle,

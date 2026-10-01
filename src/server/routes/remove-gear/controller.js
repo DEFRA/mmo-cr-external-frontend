@@ -10,7 +10,6 @@ import {
 import { getData } from '#/server/common/data/get-data.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 
-const { name: vesselName } = getData('selectVessel')
 const headingLine1 = 'Remove gear from vessel'
 
 function gearCheckboxItems(favouriteOptions) {
@@ -23,6 +22,8 @@ function gearCheckboxItems(favouriteOptions) {
 
 function viewContext(request, overrides = {}) {
   const favouriteGearIds = getFavouriteGearIds(getJourneyState(request))
+  const vesselName =
+    getJourneyState(request).selectedVesselName || getData('selectVessel').name
 
   return {
     pageTitle: `${headingLine1} ${vesselName}`,

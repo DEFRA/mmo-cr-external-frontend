@@ -39,7 +39,10 @@ function viewContext(request, overrides = {}) {
       href: '/gear-selection',
       text: 'Back'
     },
-    departurePortName: departurePort?.name || '',
+    departurePortName:
+      journeyState.portNamesByCode?.[journeyState.departurePort] ||
+      departurePort?.name ||
+      '',
     selectedStatisticalArea,
     ...overrides
   }

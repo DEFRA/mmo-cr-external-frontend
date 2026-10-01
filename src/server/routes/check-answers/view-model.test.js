@@ -59,6 +59,15 @@ describe('#buildCheckAnswersViewModel', () => {
     )
   })
 
+  test('Should display the selected API vessel instead of the placeholder vessel', () => {
+    const viewModel = buildCheckAnswersViewModel(
+      fakeRequest({ selectedVesselName: 'ACHILLES' })
+    )
+    expect(rowValue(rowsFor(viewModel, 'Trips details'), 'Vessel')).toBe(
+      'ACHILLES'
+    )
+  })
+
   test('Should source Trips details rows from real journey state when present', () => {
     const viewModel = buildCheckAnswersViewModel(
       fakeRequest({

@@ -6,8 +6,12 @@ import {
   mockSpeciesReferenceData,
   restoreSpeciesReferenceDataMock
 } from '#/test-helpers/mock-species-reference-data.js'
+import { mockPortsReferenceData } from '#/test-helpers/mock-ports-reference-data.js'
 
-beforeEach(() => mockSpeciesReferenceData())
+beforeEach(() => {
+  mockSpeciesReferenceData()
+  mockPortsReferenceData()
+})
 afterEach(() => restoreSpeciesReferenceDataMock())
 
 async function withDeparturePort(server, code) {

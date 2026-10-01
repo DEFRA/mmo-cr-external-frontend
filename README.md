@@ -124,6 +124,28 @@ The local stub accepts any non-empty bearer token; this example is for local dev
 The token must be provided to the frontend process at startup. Setting it in another terminal
 does not update an already-running frontend.
 
+Vessel selection reads active vessels from `GET /api/v1/reference-data/vessels?view=mobile`
+and confirms the selected GUID with `GET /api/v1/reference-data/vessels/{id}`. The committed
+local seed contains ACHILLES and SEA SPRAY as active vessels; the old OLGA placeholder is not
+an approved API vessel. This reference catalogue is not filtered to a signed-in user's fleet;
+account-specific access requires a separate fleet/role integration.
+
+Port selection uses the Reference Data Service's active `ports` collection and saves its exact
+port codes. Older session favourites stored as name-based slugs are converted only when their
+names match one unique active API port. Unmatched slugs remain in session but are not offered
+as valid choices; users must search for and reselect an approved port. The committed local seed
+contains only Plymouth, Newlyn and Padstow. To load the full 624-port local catalogue (including
+Hull) after starting and seeding the backend stack, run this from the frontend repository root:
+
+```bash
+curl --fail-with-body -X PUT http://localhost:3002/api/v1/reference-data/ports \
+  -H 'Authorization: Bearer local-dev-token' \
+  -F 'file=@../mmo-cr-backend-local/datafiles/ports.json;type=application/json'
+```
+
+This updates only the local Reference Data Service; the frontend continues to accept only active
+API ports. The upload is idempotent if this version is already active.
+
 When running this frontend with Docker Compose, its `cdp-tenant` network is external and shared
 with the backend Compose project. Start the backend Compose project first, set
 `REFERENCE_DATA_SERVICE_TOKEN` in the shell used by Compose, then start the frontend, for example:

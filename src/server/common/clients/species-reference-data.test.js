@@ -7,12 +7,19 @@ const speciesItem = {
   displayName: 'Cod'
 }
 
-function response({ items = [speciesItem], etag = '"species-v1"' } = {}) {
+function response({
+  items = [speciesItem],
+  etag = '"species-v1"',
+  total = items.length,
+  offset = 0,
+  limit = 50,
+  version = 'v1'
+} = {}) {
   return {
     ok: true,
     status: 200,
     headers: { get: (name) => (name === 'etag' ? etag : null) },
-    json: async () => ({ items })
+    json: async () => ({ items, total, offset, limit, version })
   }
 }
 
@@ -28,7 +35,7 @@ describe('#createSpeciesReferenceDataClient', () => {
     const species = await client.getSpeciesCatalogue('cy')
 
     expect(fetchFn).toHaveBeenCalledWith(
-      'http://localhost:3002/api/v1/reference-data/species?view=mobile',
+      'http://localhost:3002/api/v1/reference-data/species?view=mobile&offset=0',
       expect.objectContaining({
         method: 'GET',
         headers: expect.objectContaining({
@@ -49,6 +56,19 @@ describe('#createSpeciesReferenceDataClient', () => {
     ])
   })
 
+  test('Should send the default English tag when no language is supplied', async () => {
+    const fetchFn = vi.fn().mockResolvedValue(response())
+    const client = createSpeciesReferenceDataClient({
+      serviceUrl: 'http://localhost:3002',
+      token: 'test-token',
+      fetchFn
+    })
+
+    await client.getSpeciesCatalogue()
+
+    expect(fetchFn.mock.calls[0][1].headers['Accept-Language']).toBe('en')
+  })
+
   test('Should send If-None-Match and reuse cached items on 304', async () => {
     const fetchFn = vi
       .fn()
@@ -66,6 +86,63 @@ describe('#createSpeciesReferenceDataClient', () => {
     expect(fetchFn.mock.calls[1][1].headers['If-None-Match']).toBe(
       '"species-v1"'
     )
+    expect(second).toBe(first)
+  })
+
+  test('Should collect all pages and revalidate each page independently', async () => {
+    const secondSpecies = {
+      ...speciesItem,
+      id: '00000000-0000-4000-8000-000000000042',
+      faoCode: 'HAD',
+      displayName: 'Haddock'
+    }
+    const fetchFn = vi
+      .fn()
+      .mockResolvedValueOnce(
+        response({ items: [speciesItem], total: 2, limit: 1, etag: '"first"' })
+      )
+      .mockResolvedValueOnce(
+        response({
+          items: [secondSpecies],
+          total: 2,
+          offset: 1,
+          limit: 1,
+          etag: '"second"'
+        })
+      )
+      .mockResolvedValueOnce({ ok: false, status: 304 })
+      .mockResolvedValueOnce({ ok: false, status: 304 })
+    const client = createSpeciesReferenceDataClient({
+      serviceUrl: 'http://localhost:3002',
+      token: 'test-token',
+      fetchFn
+    })
+
+    const first = await client.getSpeciesCatalogue()
+    const second = await client.getSpeciesCatalogue()
+
+    expect(first.map((species) => species.code)).toEqual(['COD', 'HAD'])
+    expect(fetchFn.mock.calls[1][0]).toContain('&offset=1')
+    expect(fetchFn.mock.calls[2][1].headers['If-None-Match']).toBe('"first"')
+    expect(fetchFn.mock.calls[3][1].headers['If-None-Match']).toBe('"second"')
+    expect(second).toBe(first)
+  })
+
+  test('Should keep the complete cached catalogue when a later page fails', async () => {
+    const fetchFn = vi
+      .fn()
+      .mockResolvedValueOnce(response())
+      .mockResolvedValueOnce(response({ total: 2, limit: 1 }))
+      .mockRejectedValueOnce(new Error('network failure'))
+    const client = createSpeciesReferenceDataClient({
+      serviceUrl: 'http://localhost:3002',
+      token: 'test-token',
+      fetchFn
+    })
+
+    const first = await client.getSpeciesCatalogue()
+    const second = await client.getSpeciesCatalogue()
+
     expect(second).toBe(first)
   })
 

@@ -68,7 +68,7 @@ export function createSpeciesReferenceDataClient({
       )
     }
 
-    const languageKey = acceptLanguage || ''
+    const languageKey = acceptLanguage || 'en'
     const cached = cacheByLanguage.get(languageKey)
     const inFlight = inFlightByLanguage.get(languageKey)
     if (inFlight) {
@@ -76,7 +76,7 @@ export function createSpeciesReferenceDataClient({
     }
 
     const request = fetchCatalogue({
-      acceptLanguage,
+      acceptLanguage: languageKey,
       cached,
       bearerToken
     })
@@ -89,72 +89,125 @@ export function createSpeciesReferenceDataClient({
     }
   }
 
-  async function fetchCatalogue({ acceptLanguage, cached, bearerToken }) {
+  async function fetchPage({
+    offset,
+    previousPage,
+    acceptLanguage,
+    bearerToken
+  }) {
     const controller = new AbortController()
     const timeout = setTimeout(() => controller.abort(), timeoutMs)
-    const headers = {
-      Accept: 'application/json',
-      Authorization: `Bearer ${bearerToken}`,
-      ...(acceptLanguage ? { 'Accept-Language': acceptLanguage } : {}),
-      ...(cached?.etag ? { 'If-None-Match': cached.etag } : {})
-    }
-
+    let response
     try {
-      let response
-      try {
-        response = await fetchFn(
-          `${serviceUrl.replace(/\/$/, '')}${SPECIES_ENDPOINT}`,
-          {
-            method: 'GET',
-            headers,
-            signal: controller.signal
-          }
-        )
-      } catch {
-        return getStaleOrThrow(
-          cached,
-          new SpeciesReferenceDataError(
-            'Species reference data is temporarily unavailable'
-          )
-        )
-      }
-
-      if (response.status === 304) {
-        if (!cached) {
-          throw new SpeciesReferenceDataError(
-            'Species reference data returned an unexpected cache response'
-          )
+      response = await fetchFn(
+        `${serviceUrl.replace(/\/$/, '')}${SPECIES_ENDPOINT}&offset=${offset}`,
+        {
+          method: 'GET',
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${bearerToken}`,
+            'Accept-Language': acceptLanguage,
+            ...(previousPage?.etag
+              ? { 'If-None-Match': previousPage.etag }
+              : {})
+          },
+          signal: controller.signal
         }
-        return cached.items
-      }
-
-      if (!response.ok) {
-        const error = new SpeciesReferenceDataError(
-          response.status >= 500
-            ? 'Species reference data is temporarily unavailable'
-            : 'Species reference data could not be retrieved',
-          response.status
-        )
-        return getStaleOrThrow(cached, error)
-      }
-
-      let body
-      try {
-        body = await response.json()
-      } catch {
-        throw new SpeciesReferenceDataError(
-          'Species reference data returned an invalid response'
-        )
-      }
-
-      const items = mapSpecies(body?.items)
-      cacheByLanguage.set(acceptLanguage || '', {
-        etag: response.headers?.get('etag') || undefined,
-        items
-      })
-      return items
+      )
+    } catch {
+      throw new SpeciesReferenceDataError(
+        'Species reference data is temporarily unavailable'
+      )
     } finally {
       clearTimeout(timeout)
+    }
+
+    if (response.status === 304) {
+      if (!previousPage) {
+        throw new SpeciesReferenceDataError(
+          'Species reference data returned an unexpected cache response'
+        )
+      }
+      return previousPage
+    }
+    if (!response.ok) {
+      throw new SpeciesReferenceDataError(
+        response.status >= 500
+          ? 'Species reference data is temporarily unavailable'
+          : 'Species reference data could not be retrieved',
+        response.status
+      )
+    }
+
+    let body
+    try {
+      body = await response.json()
+    } catch {
+      throw new SpeciesReferenceDataError(
+        'Species reference data returned an invalid response'
+      )
+    }
+
+    if (
+      !Number.isSafeInteger(body?.total) ||
+      body.total < 0 ||
+      body.offset !== offset ||
+      !Number.isSafeInteger(body.limit) ||
+      body.limit <= 0
+    ) {
+      throw new SpeciesReferenceDataError(
+        'Species reference data returned an invalid response'
+      )
+    }
+    return {
+      etag: response.headers?.get('etag') || undefined,
+      items: mapSpecies(body.items),
+      total: body.total,
+      version: body.version
+    }
+  }
+
+  async function fetchCatalogue({ acceptLanguage, cached, bearerToken }) {
+    try {
+      const pages = new Map()
+      const items = []
+      let offset = 0
+      let total
+      let version
+
+      do {
+        const page = await fetchPage({
+          offset,
+          previousPage: cached?.pages.get(offset),
+          acceptLanguage,
+          bearerToken
+        })
+        if (
+          (total !== undefined && page.total !== total) ||
+          (version !== undefined && page.version !== version) ||
+          (page.items.length === 0 && offset < page.total)
+        ) {
+          throw new SpeciesReferenceDataError(
+            'Species reference data returned an invalid response'
+          )
+        }
+        total = page.total
+        version = page.version
+        pages.set(offset, page)
+        items.push(...page.items)
+        offset += page.items.length
+      } while (offset < total)
+
+      const catalogue = { items, pages }
+      cacheByLanguage.set(acceptLanguage, catalogue)
+      return cached?.pages.size === pages.size &&
+        [...pages].every(
+          ([pageOffset, page]) => page === cached.pages.get(pageOffset)
+        )
+        ? cached.items
+        : items
+    } catch (error) {
+      return getStaleOrThrow(cached, error)
     }
   }
 

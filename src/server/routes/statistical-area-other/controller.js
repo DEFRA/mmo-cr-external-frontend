@@ -74,7 +74,13 @@ function viewContext(request, overrides = {}) {
     (port) => port.code === journeyState.departurePort
   )
   const nearbyAreaCodes = closestSubareas(
-    offlineMapPorts.get((departurePort?.name || 'Hastings').toLowerCase())
+    offlineMapPorts.get(
+      (
+        journeyState.portNamesByCode?.[journeyState.departurePort] ||
+        departurePort?.name ||
+        'Hastings'
+      ).toLowerCase()
+    )
   )
   const selectedArea = journeyState.selectedAlternativeAreaOption
 

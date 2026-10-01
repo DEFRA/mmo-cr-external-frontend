@@ -44,7 +44,13 @@ export function mockSpeciesReferenceData() {
     ok: true,
     status: 200,
     headers: { get: () => '"species-test-v1"' },
-    json: async () => ({ items: SPECIES_ITEMS })
+    json: async () => ({
+      items: SPECIES_ITEMS,
+      total: SPECIES_ITEMS.length,
+      offset: 0,
+      limit: 50,
+      version: 'test-v1'
+    })
   })
 
   vi.stubGlobal('fetch', fetchMock)

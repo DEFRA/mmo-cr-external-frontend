@@ -2,6 +2,12 @@ import {
   addFavouritePortCode,
   getFavouritePortCodes
 } from './favourite-ports.js'
+import {
+  findPortByCode,
+  findPortByName,
+  migratePortJourneyState,
+  portSearchLabel
+} from '#/server/common/helpers/ports/ports-list.js'
 
 function createFakeRequest(initialState) {
   let state = initialState
@@ -49,5 +55,48 @@ describe('#addFavouritePortCode', () => {
 
     expect(result).toEqual(['GB000123'])
     expect(getFavouritePortCodes(request)).toEqual(['GB000123'])
+  })
+})
+
+describe('#migratePortJourneyState', () => {
+  const catalogue = [
+    { code: 'GBPLY', name: 'Plymouth' },
+    { code: 'GB007', name: 'Newlyn' }
+  ]
+
+  test('Should migrate unique legacy slugs to canonical codes without dropping unknown values', () => {
+    const request = createFakeRequest({
+      favouritePorts: ['plymouth', 'GBPLY', 'hastings'],
+      departurePort: 'plymouth',
+      returnPort: 'hastings'
+    })
+
+    const state = migratePortJourneyState(request, catalogue)
+
+    expect(state.favouritePorts).toEqual(['GBPLY', 'hastings'])
+    expect(state.departurePort).toBe('GBPLY')
+    expect(state.returnPort).toBe('hastings')
+    expect(state.portNamesByCode.GBPLY).toBe('Plymouth')
+  })
+
+  test('Should reject an ambiguous or unknown slug', () => {
+    expect(findPortByCode('hastings', catalogue)).toBeUndefined()
+    expect(
+      findPortByCode('plymouth', [
+        ...catalogue,
+        { code: 'GBOTHER', name: 'Plymouth' }
+      ])
+    ).toBeUndefined()
+  })
+
+  test('Should distinguish approved ports sharing a name by exact code', () => {
+    const ports = [
+      { code: 'GB001', name: 'Example' },
+      { code: 'GB002', name: 'Example' }
+    ]
+
+    expect(portSearchLabel(ports[0], ports)).toBe('Example (GB001)')
+    expect(findPortByName('Example', ports)).toBeUndefined()
+    expect(findPortByName('Example (GB002)', ports)).toBe(ports[1])
   })
 })

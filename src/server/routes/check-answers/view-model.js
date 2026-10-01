@@ -13,8 +13,12 @@ function joinWithAnd(items) {
   return `${items.slice(0, -1).join(', ')} and ${items[items.length - 1]}`
 }
 
-function resolvePortName(ports, code, fallbackName) {
-  return ports.find((port) => port.code === code)?.name ?? fallbackName
+function resolvePortName(ports, code, fallbackName, portNamesByCode) {
+  return (
+    portNamesByCode?.[code] ??
+    ports.find((port) => port.code === code)?.name ??
+    fallbackName
+  )
 }
 
 function resolveStatisticalSubArea(journeyState, fallback) {
@@ -47,12 +51,14 @@ function tripsDetailsSection(
   const departurePortName = resolvePortName(
     ports,
     journeyState.departurePort,
-    fallback.departurePort
+    fallback.departurePort,
+    journeyState.portNamesByCode
   )
   const returnPortName = resolvePortName(
     ports,
     journeyState.returnPort,
-    fallback.returnPort
+    fallback.returnPort,
+    journeyState.portNamesByCode
   )
   const statisticalSubArea = resolveStatisticalSubArea(journeyState, fallback)
 
@@ -70,7 +76,7 @@ function tripsDetailsSection(
     rows: [
       {
         key: 'Vessel',
-        value: getData('selectVessel').name,
+        value: journeyState.selectedVesselName || getData('selectVessel').name,
         changeHref: hideVesselChange ? null : buildChangeHref('/select-vessel')
       },
       {

@@ -6,8 +6,12 @@ import {
   mockSpeciesReferenceData,
   restoreSpeciesReferenceDataMock
 } from '#/test-helpers/mock-species-reference-data.js'
+import { mockPortsReferenceData } from '#/test-helpers/mock-ports-reference-data.js'
 
-beforeEach(() => mockSpeciesReferenceData())
+beforeEach(() => {
+  mockSpeciesReferenceData()
+  mockPortsReferenceData()
+})
 afterEach(() => restoreSpeciesReferenceDataMock())
 
 describe('#addPortController', () => {
@@ -113,6 +117,33 @@ describe('#addPortSubmitController', () => {
     const $ = load(result)
 
     expect($('input[value="hastings"]')).toHaveLength(1)
+  })
+
+  test('Should save canonical API codes and resolve the confirmation by GUID', async () => {
+    const response = await server.inject({
+      method: 'POST',
+      url: '/add-port?for=departure&entry=1',
+      payload: { port: 'Plymouth' }
+    })
+    const cookie = response.headers['set-cookie'][0].split(';')[0]
+
+    expect(response.statusCode).toBe(303)
+    expect(response.headers.location).toBe('/confirm-same-port?port=GBPLY')
+
+    const confirmation = await server.inject({
+      method: 'GET',
+      url: response.headers.location,
+      headers: { cookie }
+    })
+    expect(confirmation.statusCode).toBe(200)
+    expect(confirmation.result).toContain('Was Plymouth the port')
+
+    const selection = await server.inject({
+      method: 'GET',
+      url: '/departure-port',
+      headers: { cookie }
+    })
+    expect(load(selection.result)('input[value="GBPLY"]')).toHaveLength(1)
   })
 
   test('Should redirect back to the departure select screen when adding another port', async () => {
