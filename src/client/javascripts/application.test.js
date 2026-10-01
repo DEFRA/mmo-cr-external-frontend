@@ -2,8 +2,8 @@
 import { vi } from 'vitest'
 
 const createAll = vi.fn()
-const initialiseStatisticalAreaMap = vi.fn()
-const initialiseStatisticalAreaSearch = vi.fn()
+const initialiseStatisticalAreaMap = vi.fn().mockResolvedValue(undefined)
+const initialiseStatisticalAreaSearch = vi.fn().mockResolvedValue(undefined)
 const initialisePortSearch = vi.fn()
 const initialiseClearInputErrors = vi.fn()
 

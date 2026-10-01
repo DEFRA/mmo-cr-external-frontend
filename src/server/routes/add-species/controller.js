@@ -28,7 +28,7 @@ function viewContext(request, overrides = {}) {
     heading: pageTitle,
     caption: 'New catch record',
     backLink: {
-      href: '/species-selection',
+      href: resolveNextPath(request, '/species-selection'),
       text: 'Back'
     },
     speciesOptionLabels: speciesOptionLabels(availableSpeciesIds),

@@ -28,6 +28,8 @@ const measurementFieldIds = [
   'numberOfDredges',
   'numberOfTimesShot',
   'rodsAndLines',
+  'netLengthHauled',
+  'netLengthLeft',
   'totalHauled',
   'totalInWater',
   'totalHooksHauled',
@@ -69,7 +71,7 @@ function viewContext(request, overrides = {}) {
       : pageTitle,
     caption: reference,
     backLink: {
-      href: gearSelectionPath,
+      href: resolveNextPath(request, gearSelectionPath),
       text: 'Back'
     },
     pendingOption,
