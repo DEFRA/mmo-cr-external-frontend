@@ -1,6 +1,8 @@
 // Walkthrough-only mock data — fictional, not persisted.
+const MESH_SIZE_LABEL = 'Mesh size (mm)'
+
 const gillnetMeasurements = [
-  { id: 'meshSize', label: 'Mesh size (mm)' },
+  { id: 'meshSize', label: MESH_SIZE_LABEL },
   {
     id: 'netLengthHauled',
     label: 'Total length of nets hauled during the trip (m)'
@@ -27,7 +29,7 @@ export const gearSelection = [
     displayOrder: 2,
     measurements: [
       { id: 'numberOfTrawlNets', label: 'Number of trawl nets' },
-      { id: 'meshSize', label: 'Mesh size (mm)' }
+      { id: 'meshSize', label: MESH_SIZE_LABEL }
     ]
   },
   {
@@ -74,7 +76,7 @@ export const gearSelection = [
     hint: '100mm mesh',
     requiresPotsDetails: false,
     displayOrder: 7,
-    measurements: [{ id: 'meshSize', label: 'Mesh size (mm)' }]
+    measurements: [{ id: 'meshSize', label: MESH_SIZE_LABEL }]
   },
   {
     id: 'trammel-net',
