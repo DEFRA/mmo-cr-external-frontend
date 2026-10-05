@@ -12,6 +12,7 @@ import { statusCodes } from '#/server/common/constants/status-codes.js'
 
 const { name: vesselName } = getData('selectVessel')
 const headingLine1 = 'Remove gear from vessel'
+const GEAR_SELECTION_PATH = '/gear-selection'
 
 function gearCheckboxItems(favouriteOptions) {
   return favouriteOptions.map((option) => ({
@@ -23,20 +24,23 @@ function gearCheckboxItems(favouriteOptions) {
 
 function viewContext(request, overrides = {}) {
   const favouriteGearIds = getFavouriteGearIds(getJourneyState(request))
+  const checkboxItems = gearCheckboxItemsForIds(favouriteGearIds)
 
   return {
     pageTitle: `${headingLine1} ${vesselName}`,
     headingLine1,
     vesselName,
     backLink: {
-      href: '/gear-selection',
+      href: resolveNextPath(request, GEAR_SELECTION_PATH),
       text: 'Back'
     },
-    gearCheckboxItems: gearCheckboxItems(
-      getFavouriteGearOptions(favouriteGearIds)
-    ),
+    gearCheckboxItems: checkboxItems,
     ...overrides
   }
+}
+
+function gearCheckboxItemsForIds(favouriteGearIds) {
+  return gearCheckboxItems(getFavouriteGearOptions(favouriteGearIds))
 }
 
 function renderWithError(request, h) {
@@ -65,6 +69,15 @@ export const removeGearController = {
 
 export const removeGearSubmitController = {
   handler(request, h) {
+    const initialFavouriteGearIds = getFavouriteGearIds(
+      getJourneyState(request)
+    )
+    if (getFavouriteGearOptions(initialFavouriteGearIds).length === 0) {
+      return h
+        .redirect(resolveNextPath(request, GEAR_SELECTION_PATH))
+        .code(statusCodes.seeOther)
+    }
+
     const rawGearIds = request.payload.gearIds
 
     if (!rawGearIds) {
@@ -96,7 +109,7 @@ export const removeGearSubmitController = {
     })
 
     return h
-      .redirect(resolveNextPath(request, '/gear-selection'))
+      .redirect(resolveNextPath(request, GEAR_SELECTION_PATH))
       .code(statusCodes.seeOther)
   }
 }
