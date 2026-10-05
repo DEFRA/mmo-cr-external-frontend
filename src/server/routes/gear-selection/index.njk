@@ -80,7 +80,9 @@
         </div>
 
         <p><a class="govuk-link" href="/add-gear">Add gear</a></p>
-        <p><a class="govuk-link" href="/remove-gear">Remove gear</a></p>
+        {% if gearCheckboxItems.length %}
+          <p><a class="govuk-link" href="/remove-gear">Remove gear</a></p>
+        {% endif %}
 
         {{ govukButton({ text: "Save and continue", classes: "govuk-!-margin-top-6" }) }}
       </form>
