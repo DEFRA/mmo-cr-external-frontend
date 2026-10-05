@@ -137,14 +137,7 @@ function gearUsedSection(
         .map((id) => gearOptions.find((option) => option.id === id)?.hint)
         .filter((hint) => hint && MESH_HINT_PATTERN.test(hint))
     : []
-  let meshSize = null
-  if (meshHints.length > 0) {
-    meshSize = meshHints.join(', ')
-  } else if (potsSelected) {
-    meshSize = meshSizeDefault
-  } else {
-    meshSize = null
-  }
+  const meshSize = resolveMeshSize(meshHints, potsSelected, meshSizeDefault)
 
   const rows = [
     { key: 'Gear type', value: gearLabel, changeHref },
@@ -166,6 +159,13 @@ function gearUsedSection(
   ]
 
   return { heading: 'Gear used', rows }
+}
+
+function resolveMeshSize(meshHints, potsSelected, meshSizeDefault) {
+  if (meshHints.length > 0) {
+    return meshHints.join(', ')
+  }
+  return potsSelected ? meshSizeDefault : null
 }
 
 function speciesCaughtSection(

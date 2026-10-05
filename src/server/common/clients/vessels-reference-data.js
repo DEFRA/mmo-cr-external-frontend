@@ -96,14 +96,7 @@ function isValidPageBody(body, offset) {
   )
 }
 
-async function readVesselPage(
-  configuration,
-  request,
-  path,
-  previous,
-  offset,
-  view
-) {
+async function readVesselPage(request, path, previous, offset, view) {
   const response = await request(path, previous?.etag)
   if (response.status === NOT_MODIFIED_STATUS && previous) {
     return previous
@@ -145,7 +138,6 @@ function readVesselCollection(
   function readNextPage(offset, total, version) {
     const path = `${VESSELS_PATH}?${query}&offset=${offset}`
     return readVesselPage(
-      configuration,
       request,
       path,
       cached?.pages.get(offset),

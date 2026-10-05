@@ -34,7 +34,7 @@ function speciesCheckboxItems(
   }))
 }
 
-function viewContext(request, speciesData, overrides = {}) {
+function viewContext(speciesData, overrides = {}) {
   const { journeyState, speciesOptions } = speciesData
   const speciesNotLanded = journeyState.speciesNotLanded || {}
   const selectedSpeciesIds = Object.keys(speciesNotLanded)
@@ -57,12 +57,9 @@ function viewContext(request, speciesData, overrides = {}) {
   }
 }
 
-function renderPage(request, h, speciesData, overrides, code = statusCodes.ok) {
+function renderPage(h, speciesData, overrides, code = statusCodes.ok) {
   const response = h
-    .view(
-      'species-not-landed/index',
-      viewContext(request, speciesData, overrides)
-    )
+    .view('species-not-landed/index', viewContext(speciesData, overrides))
     .code(code)
 
   return code === statusCodes.ok ? response : response.takeover()
@@ -127,7 +124,7 @@ function persistSpeciesNotLanded(request, speciesIds, speciesWeights) {
 export const speciesNotLandedController = {
   async handler(request, h) {
     const speciesData = await getSpeciesPageData(request)
-    return h.view('species-not-landed/index', viewContext(request, speciesData))
+    return h.view('species-not-landed/index', viewContext(speciesData))
   }
 }
 
@@ -149,7 +146,6 @@ export const speciesNotLandedSubmitController = {
         const errorText = 'There was a problem with your submission'
 
         return renderPage(
-          request,
           h,
           speciesData,
           {
@@ -183,7 +179,6 @@ export const speciesNotLandedSubmitController = {
 
     function rerender(extraOverrides, code = statusCodes.ok) {
       return renderPage(
-        request,
         h,
         speciesData,
         {

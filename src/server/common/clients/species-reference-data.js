@@ -49,6 +49,46 @@ function getStaleOrThrow(cached, error) {
   throw error
 }
 
+function cachedPageOrThrow(response, previousPage) {
+  if (response.status !== NOT_MODIFIED_STATUS) {
+    return undefined
+  }
+  if (!previousPage) {
+    throw new SpeciesReferenceDataError(
+      'Species reference data returned an unexpected cache response'
+    )
+  }
+  return previousPage
+}
+
+function ensureSuccessfulResponse(response) {
+  if (!response.ok) {
+    const message =
+      response.status >= SERVER_ERROR_STATUS
+        ? 'Species reference data is temporarily unavailable'
+        : 'Species reference data could not be retrieved'
+    throw new SpeciesReferenceDataError(message, response.status)
+  }
+}
+
+async function parseResponseBody(response) {
+  try {
+    return await response.json()
+  } catch {
+    throw new SpeciesReferenceDataError(INVALID_RESPONSE_MESSAGE)
+  }
+}
+
+function isValidSpeciesPage(body, offset) {
+  return (
+    Number.isSafeInteger(body?.total) &&
+    body.total >= 0 &&
+    body.offset === offset &&
+    Number.isSafeInteger(body.limit) &&
+    body.limit > 0
+  )
+}
+
 async function fetchSpeciesPage(
   { serviceUrl, timeoutMs, fetchFn },
   { offset, previousPage, acceptLanguage, bearerToken }
@@ -78,37 +118,14 @@ async function fetchSpeciesPage(
     clearTimeout(timeout)
   }
 
-  if (response.status === NOT_MODIFIED_STATUS) {
-    if (!previousPage) {
-      throw new SpeciesReferenceDataError(
-        'Species reference data returned an unexpected cache response'
-      )
-    }
-    return previousPage
-  }
-  if (!response.ok) {
-    throw new SpeciesReferenceDataError(
-      response.status >= SERVER_ERROR_STATUS
-        ? 'Species reference data is temporarily unavailable'
-        : 'Species reference data could not be retrieved',
-      response.status
-    )
+  const cachedPage = cachedPageOrThrow(response, previousPage)
+  if (cachedPage) {
+    return cachedPage
   }
 
-  let body
-  try {
-    body = await response.json()
-  } catch {
-    throw new SpeciesReferenceDataError(INVALID_RESPONSE_MESSAGE)
-  }
-
-  if (
-    !Number.isSafeInteger(body?.total) ||
-    body.total < 0 ||
-    body.offset !== offset ||
-    !Number.isSafeInteger(body.limit) ||
-    body.limit <= 0
-  ) {
+  ensureSuccessfulResponse(response)
+  const body = await parseResponseBody(response)
+  if (!isValidSpeciesPage(body, offset)) {
     throw new SpeciesReferenceDataError(INVALID_RESPONSE_MESSAGE)
   }
   return {
