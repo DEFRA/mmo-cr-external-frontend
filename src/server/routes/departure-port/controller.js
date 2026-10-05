@@ -19,6 +19,7 @@ import {
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 
 const pageTitle = 'Select the port you left from'
+const templatePath = 'departure-port/index'
 const errorSummaryTitle = 'There is a problem'
 const hintText = 'Select a port name or the nearest port to where you left.'
 function favouritePorts(request, ports) {
@@ -64,7 +65,7 @@ export const departurePortController = {
         .code(statusCodes.seeOther)
     }
 
-    return h.view('departure-port/index', viewContext(request, ports))
+    return h.view(templatePath, viewContext(request, ports))
   }
 }
 
@@ -80,7 +81,7 @@ export const departurePortSubmitController = {
 
         return h
           .view(
-            'departure-port/index',
+            templatePath,
             viewContext(request, ports, {
               errorSummary: {
                 titleText: errorSummaryTitle,
@@ -102,7 +103,7 @@ export const departurePortSubmitController = {
       const errorText = pageTitle
       return h
         .view(
-          'departure-port/index',
+          templatePath,
           viewContext(request, ports, {
             errorSummary: {
               titleText: errorSummaryTitle,
