@@ -75,7 +75,7 @@ export const departurePortSubmitController = {
       }),
       async failAction(request, h) {
         const ports = await getPortCatalogue()
-        const errorText = 'Select the port you left from'
+        const errorText = pageTitle
 
         return h
           .view(
@@ -98,7 +98,7 @@ export const departurePortSubmitController = {
     const { departurePort } = request.payload
     const port = findPortByCode(departurePort, ports)
     if (!port) {
-      const errorText = 'Select the port you left from'
+      const errorText = pageTitle
       return h
         .view(
           'departure-port/index',

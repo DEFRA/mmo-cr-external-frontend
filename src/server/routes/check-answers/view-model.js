@@ -142,6 +142,8 @@ function gearUsedSection(
     meshSize = meshHints.join(', ')
   } else if (potsSelected) {
     meshSize = meshSizeDefault
+  } else {
+    meshSize = null
   }
 
   const rows = [
@@ -192,39 +194,56 @@ function speciesCaughtSection(
     const weights = journeyState.speciesWeights?.[species.id] || {}
     const useExampleWeights = !hasSession && species.code === 'COD'
     const codeSuffix = hasMultipleSpecies ? ` (${species.code})` : ''
-    return [
-      {
-        key: `Species${codeSuffix}`,
-        value: species.displayName,
-        changeHref
-      },
-      {
-        key: `Weight above minimum size retained${codeSuffix}`,
-        value: `${weights.weightAboveMinimum ?? (useExampleWeights ? fallback.weightAboveMinimumRetained : '')} ${fallback.weightUnit}`,
-        changeHref
-      },
-      ...(weights.weightBelowMinimum || useExampleWeights
-        ? [
-            {
-              key: `Weight below minimum size retained${codeSuffix}`,
-              value: `${weights.weightBelowMinimum ?? fallback.weightBelowMinimumRetained} ${fallback.weightUnit}`,
-              changeHref
-            }
-          ]
-        : []),
-      ...(weights.weightDiscarded || useExampleWeights
-        ? [
-            {
-              key: `Weight legally discard${codeSuffix}`,
-              value: `${weights.weightDiscarded ?? fallback.weightLegallyDiscarded} ${fallback.weightUnit}`,
-              changeHref
-            }
-          ]
-        : [])
-    ]
+    return speciesCaughtRows(
+      species,
+      weights,
+      fallback,
+      changeHref,
+      codeSuffix,
+      useExampleWeights
+    )
   })
 
   return { heading: 'Species caught', rows }
+}
+
+function speciesCaughtRows(
+  species,
+  weights,
+  fallback,
+  changeHref,
+  codeSuffix,
+  useExampleWeights
+) {
+  const rows = [
+    {
+      key: `Species${codeSuffix}`,
+      value: species.displayName,
+      changeHref
+    },
+    {
+      key: `Weight above minimum size retained${codeSuffix}`,
+      value: `${weights.weightAboveMinimum ?? (useExampleWeights ? fallback.weightAboveMinimumRetained : '')} ${fallback.weightUnit}`,
+      changeHref
+    }
+  ]
+
+  if (weights.weightBelowMinimum || useExampleWeights) {
+    rows.push({
+      key: `Weight below minimum size retained${codeSuffix}`,
+      value: `${weights.weightBelowMinimum ?? fallback.weightBelowMinimumRetained} ${fallback.weightUnit}`,
+      changeHref
+    })
+  }
+  if (weights.weightDiscarded || useExampleWeights) {
+    rows.push({
+      key: `Weight legally discard${codeSuffix}`,
+      value: `${weights.weightDiscarded ?? fallback.weightLegallyDiscarded} ${fallback.weightUnit}`,
+      changeHref
+    })
+  }
+
+  return rows
 }
 
 function speciesNotLandedSection(
