@@ -83,7 +83,9 @@ describe('#removeSpeciesController', () => {
     const removeResponse = await server.inject({
       method: 'POST',
       url: '/remove-species',
-      payload: { speciesIds: ['cod', 'had', 'sal'] }
+      payload: {
+        speciesIds: [SPECIES_IDS.cod, SPECIES_IDS.haddock, SPECIES_IDS.mackerel]
+      }
     })
     const cookie = removeResponse.headers['set-cookie'][0].split(';')[0]
     const { result } = await server.inject({

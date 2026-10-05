@@ -86,7 +86,9 @@ describe('#speciesSelectionController', () => {
     const removeResponse = await server.inject({
       method: 'POST',
       url: '/remove-species',
-      payload: { speciesIds: ['cod', 'had', 'sal'] }
+      payload: {
+        speciesIds: [SPECIES_IDS.cod, SPECIES_IDS.haddock, SPECIES_IDS.mackerel]
+      }
     })
     const cookie = removeResponse.headers['set-cookie'][0].split(';')[0]
 
@@ -343,7 +345,7 @@ describe('#speciesSelectionSubmitController', () => {
 
     expect(statusCode).toBe(statusCodes.badRequest)
     expect($('.govuk-error-summary').text()).toContain(
-      'Enter a weight for atlantic cod (COD)'
+      'Enter the weight above minimum size retained for atlantic cod (COD)'
     )
     expect($(`#weightAboveMinimum-${SPECIES_IDS.cod}-error`)).toHaveLength(1)
   })
@@ -363,8 +365,9 @@ describe('#speciesSelectionSubmitController', () => {
 
     expect(statusCode).toBe(statusCodes.badRequest)
     expect($('.govuk-error-summary').text()).toContain(
-      'Enter a weight below minimum size retained for atlantic cod (COD)'
+      'The weight for atlantic cod (COD) must be a number with up to one decimal place'
     )
+    expect($(`#weightBelowMinimum-${SPECIES_IDS.cod}-error`)).toHaveLength(1)
   })
 
   test('Should re-render with a named field error when the legally-discarded weight has too many decimal places', async () => {
@@ -382,8 +385,9 @@ describe('#speciesSelectionSubmitController', () => {
 
     expect(statusCode).toBe(statusCodes.badRequest)
     expect($('.govuk-error-summary').text()).toContain(
-      'Enter a weight legally discarded for atlantic cod (COD)'
+      'The weight for atlantic cod (COD) must be a number with up to one decimal place'
     )
+    expect($(`#weightDiscarded-${SPECIES_IDS.cod}-error`)).toHaveLength(1)
   })
 
   test('Should reject a weight of 0', async () => {
@@ -400,7 +404,7 @@ describe('#speciesSelectionSubmitController', () => {
 
     expect(statusCode).toBe(statusCodes.badRequest)
     expect($('.govuk-error-summary').text()).toContain(
-      'The weight for atlantic cod (cod) must be more than 0kg'
+      'The weight for atlantic cod (COD) must be more than 0kg'
     )
   })
 
@@ -418,7 +422,7 @@ describe('#speciesSelectionSubmitController', () => {
 
     expect(statusCode).toBe(statusCodes.badRequest)
     expect($('.govuk-error-summary').text()).toContain(
-      'The weight for atlantic cod (cod) must be more than 0kg'
+      'The weight for atlantic cod (COD) must be more than 0kg'
     )
   })
 
@@ -436,7 +440,7 @@ describe('#speciesSelectionSubmitController', () => {
 
     expect(statusCode).toBe(statusCodes.badRequest)
     expect($('.govuk-error-summary').text()).toContain(
-      'The weight for atlantic cod (cod) must be a number'
+      'The weight for atlantic cod (COD) must be a number'
     )
   })
 
@@ -454,7 +458,7 @@ describe('#speciesSelectionSubmitController', () => {
 
     expect(statusCode).toBe(statusCodes.badRequest)
     expect($('.govuk-error-summary').text()).toContain(
-      'The weight for atlantic cod (cod) must be 10,000kg or less'
+      'The weight for atlantic cod (COD) must be 10,000kg or less'
     )
   })
 
@@ -488,7 +492,7 @@ describe('#speciesSelectionSubmitController', () => {
 
     expect(statusCode).toBe(statusCodes.badRequest)
     expect($('.govuk-error-summary').text()).toContain(
-      'Weight above minimum size retained must be higher than weight legally discarded for atlantic cod (cod)'
+      'Weight above minimum size retained must be higher than weight legally discarded for atlantic cod (COD)'
     )
   })
 
@@ -507,7 +511,7 @@ describe('#speciesSelectionSubmitController', () => {
 
     expect(statusCode).toBe(statusCodes.badRequest)
     expect($('.govuk-error-summary').text()).toContain(
-      'Weight above minimum size retained must be higher than weight legally discarded for atlantic cod (cod)'
+      'Weight above minimum size retained must be higher than weight legally discarded for atlantic cod (COD)'
     )
   })
 

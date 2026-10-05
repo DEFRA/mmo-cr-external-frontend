@@ -49,6 +49,13 @@ export const removeSpeciesSubmitController = {
   async handler(request, h) {
     const speciesData = await getSpeciesPageData(request)
     const { journeyState, availableSpeciesIds } = speciesData
+
+    if (availableSpeciesIds.length === 0) {
+      return h
+        .redirect(resolveNextPath(request, '/add-species'))
+        .code(statusCodes.seeOther)
+    }
+
     const requestedIds = normalizeSpeciesIds(request.payload.speciesIds)
     const idsToRemove = filterKnownSpeciesIds(
       requestedIds,
