@@ -18,6 +18,7 @@ import {
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 
 const pageTitle = 'Select the port you returned to'
+const errorSummaryTitle = 'There is a problem'
 const hintText =
   'Select the port name, or the nearest port to where you returned.'
 function favouritePorts(request, ports) {
@@ -80,7 +81,7 @@ export const returnPortSubmitController = {
             'return-port/index',
             viewContext(request, ports, {
               errorSummary: {
-                titleText: 'There is a problem',
+                titleText: errorSummaryTitle,
                 errorList: [{ text: errorText, href: '#returnPort' }]
               },
               fieldErrors: { returnPort: errorText }
@@ -102,7 +103,7 @@ export const returnPortSubmitController = {
           'return-port/index',
           viewContext(request, ports, {
             errorSummary: {
-              titleText: 'There is a problem',
+              titleText: errorSummaryTitle,
               errorList: [{ text: errorText, href: '#returnPort' }]
             },
             fieldErrors: { returnPort: errorText }
