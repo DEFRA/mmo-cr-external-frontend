@@ -2,6 +2,7 @@ import { load } from 'cheerio'
 
 import { createServer } from '#/server/server.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
+import { config } from '#/config/config.js'
 
 describe('#statisticalAreaOtherController', () => {
   let server
@@ -140,6 +141,62 @@ describe('#statisticalAreaOtherSubmitController', () => {
 
   afterAll(async () => {
     await server.stop({ timeout: 0 })
+  })
+
+  test('Should resolve a selected API area by code and GUID item route', async () => {
+    const originalToken = config.get('referenceData.token')
+    config.set('referenceData.token', 'test-read-token')
+    const feature = {
+      type: 'Feature',
+      id: 'area-guid',
+      properties: {
+        id: 'area-guid',
+        code: '27D86',
+        name: 'ICES subrectangle 27D86',
+        areaType: 'ices-subrectangle',
+        parentCode: '27D8',
+        parentName: 'ICES rectangle 27D8',
+        centroid: { longitude: -4.5, latitude: 50.25 }
+      },
+      geometry: { type: 'Polygon', coordinates: [] }
+    }
+    const fetchMock = vi.fn((url) =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        headers: { get: () => '"areas-v1"' },
+        json: async () =>
+          url.endsWith('/area-guid')
+            ? feature
+            : {
+                type: 'FeatureCollection',
+                metadata: { dataset: 'map-statistical-areas' },
+                features: [feature]
+              }
+      })
+    )
+    vi.stubGlobal('fetch', fetchMock)
+
+    try {
+      const { statusCode } = await server.inject({
+        method: 'POST',
+        url: '/statistical-area-other',
+        payload: {
+          statisticalArea: 'other',
+          alternativeStatisticalArea: '27D86'
+        }
+      })
+      expect(statusCode).toBe(303)
+      expect(fetchMock.mock.calls.map(([url]) => url)).toContain(
+        'http://localhost:3002/api/v1/reference-data/map/statistical-areas?code=27D86'
+      )
+      expect(fetchMock.mock.calls.map(([url]) => url)).toContain(
+        'http://localhost:3002/api/v1/reference-data/map/statistical-areas/area-guid'
+      )
+    } finally {
+      vi.unstubAllGlobals()
+      config.set('referenceData.token', originalToken)
+    }
   })
 
   test('Should redirect back to check your answers when a valid area and return query are supplied', async () => {

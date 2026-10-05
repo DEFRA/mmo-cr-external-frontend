@@ -8,6 +8,10 @@ import {
 import { getData } from '#/server/common/data/get-data.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 import { offlineMapSubrectangleCodes } from '#/server/common/data/offline-map-subrectangle-codes.js'
+import {
+  getPortCatalogue,
+  migratePortJourneyState
+} from '#/server/common/helpers/ports/ports-list.js'
 
 const pageTitle = 'Where was most of your catch caught using pots?'
 const nearbyStatisticalAreas = getData('nearbyStatisticalAreas')
@@ -43,15 +47,26 @@ function viewContext(request, overrides = {}) {
       journeyState.portNamesByCode?.[journeyState.departurePort] ||
       departurePort?.name ||
       '',
+    departurePortCoordinate:
+      journeyState.portCoordinatesByCode?.[journeyState.departurePort] || null,
     selectedStatisticalArea,
     ...overrides
   }
 }
 
 export const statisticalAreaController = {
-  handler(request, h) {
-    if (!getJourneyState(request).departurePort) {
+  async handler(request, h) {
+    const journeyState = getJourneyState(request)
+    if (!journeyState.departurePort) {
       return h.redirect('/departure-port').code(statusCodes.seeOther)
+    }
+
+    if (!journeyState.portCoordinatesByCode?.[journeyState.departurePort]) {
+      try {
+        migratePortJourneyState(request, await getPortCatalogue())
+      } catch {
+        // Retain the bundled map fallback when reference data is unavailable.
+      }
     }
 
     return h.view('statistical-area/index', viewContext(request))
