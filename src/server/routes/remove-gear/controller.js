@@ -1,11 +1,12 @@
 import {
-  getJourneyState,
   resolveNextPath,
   setJourneyState
 } from '#/server/common/helpers/journey/navigation.js'
 import {
   getFavouriteGearIds,
-  getFavouriteGearOptions
+  getFavouriteGearOptions,
+  getGearCatalogue,
+  migrateGearJourneyState
 } from '#/server/common/helpers/gear/favourite-gear.js'
 import { getData } from '#/server/common/data/get-data.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
@@ -20,10 +21,11 @@ function gearCheckboxItems(favouriteOptions) {
   }))
 }
 
-function viewContext(request, overrides = {}) {
-  const favouriteGearIds = getFavouriteGearIds(getJourneyState(request))
+function viewContext(request, catalogue, overrides = {}) {
+  const journeyState = migrateGearJourneyState(request, catalogue)
+  const favouriteGearIds = getFavouriteGearIds(journeyState, catalogue)
   const vesselName =
-    getJourneyState(request).selectedVesselName || getData('selectVessel').name
+    journeyState.selectedVesselName || getData('selectVessel').name
 
   return {
     pageTitle: `${headingLine1} ${vesselName}`,
@@ -34,19 +36,19 @@ function viewContext(request, overrides = {}) {
       text: 'Back'
     },
     gearCheckboxItems: gearCheckboxItems(
-      getFavouriteGearOptions(favouriteGearIds)
+      getFavouriteGearOptions(favouriteGearIds, catalogue)
     ),
     ...overrides
   }
 }
 
-function renderWithError(request, h) {
+function renderWithError(request, h, catalogue) {
   const errorText = 'Select the gear you want to remove'
 
   return h
     .view(
       'remove-gear/index',
-      viewContext(request, {
+      viewContext(request, catalogue, {
         errorSummary: {
           titleText: 'There is a problem',
           errorList: [{ text: errorText, href: '#gearIds' }]
@@ -59,28 +61,30 @@ function renderWithError(request, h) {
 }
 
 export const removeGearController = {
-  handler(request, h) {
-    return h.view('remove-gear/index', viewContext(request))
+  async handler(request, h) {
+    const catalogue = await getGearCatalogue()
+    return h.view('remove-gear/index', viewContext(request, catalogue))
   }
 }
 
 export const removeGearSubmitController = {
-  handler(request, h) {
+  async handler(request, h) {
+    const catalogue = await getGearCatalogue()
     const rawGearIds = request.payload.gearIds
 
     if (!rawGearIds) {
-      return renderWithError(request, h)
+      return renderWithError(request, h, catalogue)
     }
 
     const requestedIds = Array.isArray(rawGearIds) ? rawGearIds : [rawGearIds]
-    const journeyState = getJourneyState(request)
-    const favouriteGearIds = getFavouriteGearIds(journeyState)
+    const journeyState = migrateGearJourneyState(request, catalogue)
+    const favouriteGearIds = getFavouriteGearIds(journeyState, catalogue)
     const idsToRemove = requestedIds.filter((id) =>
       favouriteGearIds.includes(id)
     )
 
     if (idsToRemove.length === 0) {
-      return renderWithError(request, h)
+      return renderWithError(request, h, catalogue)
     }
 
     const remainingFavouriteGearIds = favouriteGearIds.filter(

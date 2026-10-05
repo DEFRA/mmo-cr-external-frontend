@@ -6,8 +6,12 @@ import {
   mockSpeciesReferenceData,
   restoreSpeciesReferenceDataMock
 } from '#/test-helpers/mock-species-reference-data.js'
+import { mockGearsReferenceData } from '#/test-helpers/mock-gears-reference-data.js'
 
-beforeEach(() => mockSpeciesReferenceData())
+beforeEach(() => {
+  mockSpeciesReferenceData()
+  mockGearsReferenceData()
+})
 afterEach(() => restoreSpeciesReferenceDataMock())
 
 describe('#accountController', () => {

@@ -4,7 +4,8 @@ import { getJourneyState } from '#/server/common/helpers/journey/navigation.js'
 import { getAccountPortsUsed } from '#/server/common/helpers/account/account-ports.js'
 import {
   getFavouriteGearIds,
-  getFavouriteGearOptions
+  getFavouriteGearOptions,
+  getGearCatalogue
 } from '#/server/common/helpers/gear/favourite-gear.js'
 import { getSpeciesPageData } from '#/server/common/helpers/species/species-list.js'
 
@@ -213,8 +214,10 @@ export const accountController = {
     const journeyState = getJourneyState(request)
     const skipper = journeyState.skipper
     const portsUsed = getAccountPortsUsed(journeyState)
+    const gearCatalogue = await getGearCatalogue()
     const favouriteGearOptions = getFavouriteGearOptions(
-      getFavouriteGearIds(journeyState)
+      getFavouriteGearIds(journeyState, gearCatalogue),
+      gearCatalogue
     )
     const { speciesOptions } = await getSpeciesPageData(request)
     const speciesCaught = speciesOptions.map((species) => species.text)

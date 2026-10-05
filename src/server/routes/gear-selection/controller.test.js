@@ -6,9 +6,19 @@ import {
   mockPortsReferenceData,
   restorePortsReferenceDataMock
 } from '#/test-helpers/mock-ports-reference-data.js'
+import {
+  mockGearsReferenceData,
+  restoreGearsReferenceDataMock
+} from '#/test-helpers/mock-gears-reference-data.js'
 
-beforeEach(() => mockPortsReferenceData())
-afterEach(() => restorePortsReferenceDataMock())
+beforeEach(() => {
+  mockPortsReferenceData()
+  mockGearsReferenceData()
+})
+afterEach(() => {
+  restoreGearsReferenceDataMock()
+  restorePortsReferenceDataMock()
+})
 
 describe('#gearSelectionController', () => {
   let server

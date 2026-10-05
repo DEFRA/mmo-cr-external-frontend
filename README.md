@@ -109,12 +109,12 @@ npm run dev
 
 ### Reference Data Service
 
-Species pages retrieve their catalogue from the Reference Data Service on the frontend server.
-For host-run development, the service URL defaults to `http://localhost:3002`. Start the local
-backend services and seed their data from the `mmo-cr-backend-local` repository before opening a
-species page. The frontend requires `REFERENCE_DATA_SERVICE_TOKEN`; without it species pages
-return `503`. For example, stop and restart the frontend with a non-empty local development token
-accepted by the local Authentication Service stub:
+Species and gear pages retrieve reference catalogues from the Reference Data Service on the
+frontend server. For host-run development, the service URL defaults to `http://localhost:3002`.
+Start the local backend services and seed their data from the `mmo-cr-backend-local` repository
+before opening these pages. The frontend requires `REFERENCE_DATA_SERVICE_TOKEN`; without it,
+reference-data-backed pages return `503`. For example, stop and restart the frontend with a
+non-empty local development token accepted by the local Authentication Service stub:
 
 ```bash
 REFERENCE_DATA_SERVICE_TOKEN=local-dev-token npm run dev
@@ -124,11 +124,27 @@ The local stub accepts any non-empty bearer token; this example is for local dev
 The token must be provided to the frontend process at startup. Setting it in another terminal
 does not update an already-running frontend.
 
+Gear selection and favourite gear lookup use the active Reference Data Service catalogue through
+`GET /api/v1/reference-data/gears`; selected records are validated through
+`GET /api/v1/reference-data/gears/{id}`. The service supplies mobile measurement definitions and
+required/variable measurement IDs. The committed local gear seed has three active items, so the
+available types differ from the former 12-item frontend walkthrough catalogue. The existing Pots
+fields remain a frontend compatibility option unless Pots is included in the active API dataset.
+Old session favourites migrate only when their names match one unique API gear; unmatched IDs are
+not accepted as API gear selections.
+
 Vessel selection reads active vessels from `GET /api/v1/reference-data/vessels?view=mobile`
 and confirms the selected GUID with `GET /api/v1/reference-data/vessels/{id}`. The committed
 local seed contains ACHILLES and SEA SPRAY as active vessels; the old OLGA placeholder is not
 an approved API vessel. This reference catalogue is not filtered to a signed-in user's fleet;
 account-specific access requires a separate fleet/role integration.
+
+Gear selection and add/remove gear lookups use `GET /api/v1/reference-data/gears` and item
+validation uses `GET /api/v1/reference-data/gears/{id}`. The API supplies measurement definitions
+and applicable measurement IDs; the local seed currently has three gear records, unlike the old
+12-item frontend walkthrough catalogue. Pots remains a local compatibility option for its existing
+dedicated catch measurement fields; it is not a reference-data gear unless present in the active
+API collection. Legacy gear favourites migrate only when a unique API name/code match exists.
 
 Port selection uses the Reference Data Service's active `ports` collection and saves its exact
 port codes. Older session favourites stored as name-based slugs are converted only when their

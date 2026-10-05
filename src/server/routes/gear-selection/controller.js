@@ -9,34 +9,31 @@ import {
   getFavouriteGearIds,
   getFavouriteGearMeasurements,
   getFavouriteGearOptions,
-  getGearCatalogue
+  getGearCatalogue,
+  migrateGearJourneyState
 } from '#/server/common/helpers/gear/favourite-gear.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 
 const pageTitle = 'What gear did you use?'
-const validGearIds = getGearCatalogue().map((option) => option.id)
-const catalogueById = new Map(
-  getGearCatalogue().map((option) => [option.id, option])
-)
 
 // Pots keeps its own dedicated potsHauled/potsInWater fields (wired into
 // check-answers/records elsewhere) - every other gear type with a catalogue
 // `measurements` config gets the same conditionally-revealed-input pattern,
 // generalised here instead of hardcoded to a single gear id.
-function measurableOptionsOf(gearId) {
+function measurableOptionsOf(gearId, catalogue) {
   if (gearId === 'pots') {
     return []
   }
 
-  return catalogueById.get(gearId)?.measurements || []
+  return catalogue.find((gear) => gear.id === gearId)?.measurements || []
 }
 
 function measurementFieldName(gearId, measurementId) {
   return `${gearId}-${measurementId}`
 }
 
-function gearMeasurementItems(gearId, values) {
-  return measurableOptionsOf(gearId).map((measurement) => ({
+function gearMeasurementItems(gearId, values, catalogue) {
+  return measurableOptionsOf(gearId, catalogue).map((measurement) => ({
     id: measurementFieldName(gearId, measurement.id),
     label: measurement.label,
     value: values[measurement.id]
@@ -46,8 +43,10 @@ function gearMeasurementItems(gearId, values) {
 function gearCheckboxItems(
   selectedGearIds,
   favouriteOptions,
-  measurementDetailsByGearId = {}
+  catalogue,
+  measurementDetailsByGearId
 ) {
+  const details = measurementDetailsByGearId || {}
   return favouriteOptions.map((option) => ({
     value: option.id,
     text: option.label,
@@ -55,7 +54,8 @@ function gearCheckboxItems(
     checked: selectedGearIds.includes(option.id),
     measurements: gearMeasurementItems(
       option.id,
-      measurementDetailsByGearId[option.id] || {}
+      details[option.id] || {},
+      catalogue
     )
   }))
 }
@@ -67,11 +67,12 @@ function defaultMeasurementDetails(journeyState) {
   }
 }
 
-function viewContext(request, overrides = {}) {
-  const journeyState = getJourneyState(request)
+function viewContext(request, catalogue, overrides = {}) {
+  const journeyState = migrateGearJourneyState(request, catalogue)
   const selectedGearIds = journeyState.selectedGearIds || []
   const favouriteOptions = getFavouriteGearOptions(
-    getFavouriteGearIds(journeyState)
+    getFavouriteGearIds(journeyState, catalogue),
+    catalogue
   )
 
   return {
@@ -85,6 +86,7 @@ function viewContext(request, overrides = {}) {
     gearCheckboxItems: gearCheckboxItems(
       selectedGearIds,
       favouriteOptions,
+      catalogue,
       defaultMeasurementDetails(journeyState)
     ),
     potsDetails: journeyState.potsDetails || {},
@@ -103,6 +105,7 @@ function normalizeGearIds(rawValue) {
 function renderWithErrors(
   request,
   h,
+  catalogue,
   {
     errorSummary,
     fieldErrors,
@@ -111,21 +114,23 @@ function renderWithErrors(
     measurementDetailsByGearId
   }
 ) {
-  const journeyState = getJourneyState(request)
+  const journeyState = migrateGearJourneyState(request, catalogue)
   const favouriteOptions = getFavouriteGearOptions(
-    getFavouriteGearIds(journeyState)
+    getFavouriteGearIds(journeyState, catalogue),
+    catalogue
   )
 
   return h
     .view(
       'gear-selection/index',
-      viewContext(request, {
+      viewContext(request, catalogue, {
         errorSummary,
         fieldErrors,
         ...(selectedGearIds && {
           gearCheckboxItems: gearCheckboxItems(
             selectedGearIds,
             favouriteOptions,
+            catalogue,
             measurementDetailsByGearId ||
               defaultMeasurementDetails(journeyState)
           )
@@ -137,63 +142,84 @@ function renderWithErrors(
     .takeover()
 }
 
-function normalizeMeasurementValue(rawValue) {
+function isWithinMeasurementRange(value, measurement) {
+  const aboveMinimum =
+    measurement.minimumValue == null || value >= measurement.minimumValue
+  const belowMaximum =
+    measurement.maximumValue == null || value <= measurement.maximumValue
+  return aboveMinimum && belowMaximum
+}
+
+function normalizeMeasurementValue(rawValue, measurement = {}) {
   if (rawValue === undefined || rawValue === null || rawValue === '') {
     return { value: undefined, valid: false }
   }
-
-  const numericValue = Number(rawValue)
-
-  return {
-    value: numericValue,
-    valid: Number.isInteger(numericValue) && numericValue >= 0
-  }
+  const value = Number(rawValue)
+  const valid =
+    Number.isInteger(value) &&
+    value >= 0 &&
+    isWithinMeasurementRange(value, measurement)
+  return { value, valid }
 }
 
-function validateGearMeasurements(gearIds, payload) {
+function validateMeasurementsForGear(gearId, payload, catalogue) {
+  const errorList = []
+  const fieldErrors = {}
+  const values = {}
+  const measurements = measurableOptionsOf(gearId, catalogue)
+
+  for (const measurement of measurements) {
+    const fieldName = measurementFieldName(gearId, measurement.id)
+    const rawValue = payload[fieldName]
+
+    if (rawValue === undefined || rawValue === null || rawValue === '') {
+      if (measurement.required) {
+        const errorText = `Enter the ${measurement.label.toLowerCase()}`
+        errorList.push({ text: errorText, href: `#${fieldName}` })
+        fieldErrors[fieldName] = errorText
+      }
+      continue
+    }
+
+    const { value, valid } = normalizeMeasurementValue(rawValue, measurement)
+
+    if (!valid) {
+      const errorText = `Enter the ${measurement.label.toLowerCase()}`
+      errorList.push({ text: errorText, href: `#${fieldName}` })
+      fieldErrors[fieldName] = errorText
+    } else {
+      values[measurement.id] = value
+    }
+  }
+
+  return { errorList, fieldErrors, values }
+}
+
+function validateGearMeasurements(gearIds, payload, catalogue) {
   const errorList = []
   const fieldErrors = {}
   const measurementDetailsByGearId = {}
 
   for (const gearId of gearIds) {
-    const measurements = measurableOptionsOf(gearId)
-
-    if (!measurements.length) {
-      continue
-    }
-
-    measurementDetailsByGearId[gearId] = {}
-
-    for (const measurement of measurements) {
-      const fieldName = measurementFieldName(gearId, measurement.id)
-      const rawValue = payload[fieldName]
-
-      // Unlike Pots (mandatory), these generalised fields are optional -
-      // only validate the format when the user has actually entered something.
-      if (rawValue === undefined || rawValue === null || rawValue === '') {
-        continue
-      }
-
-      const { value, valid } = normalizeMeasurementValue(rawValue)
-
-      if (!valid) {
-        const errorText = `Enter the ${measurement.label.toLowerCase()}`
-        errorList.push({ text: errorText, href: `#${fieldName}` })
-        fieldErrors[fieldName] = errorText
-      } else {
-        measurementDetailsByGearId[gearId][measurement.id] = value
-      }
+    const result = validateMeasurementsForGear(gearId, payload, catalogue)
+    errorList.push(...result.errorList)
+    Object.assign(fieldErrors, result.fieldErrors)
+    if (
+      Object.keys(result.values).length > 0 ||
+      measurableOptionsOf(gearId, catalogue).length > 0
+    ) {
+      measurementDetailsByGearId[gearId] = result.values
     }
   }
 
   return { errorList, fieldErrors, measurementDetailsByGearId }
 }
 
-function rawGearMeasurementDetails(gearIds, payload) {
+function rawGearMeasurementDetails(gearIds, payload, catalogue) {
   const details = {}
 
   for (const gearId of gearIds) {
-    const measurements = measurableOptionsOf(gearId)
+    const measurements = measurableOptionsOf(gearId, catalogue)
 
     if (!measurements.length) {
       continue
@@ -211,8 +237,11 @@ function rawGearMeasurementDetails(gearIds, payload) {
 }
 
 export const gearSelectionController = {
-  handler(request, h) {
-    return h.view('gear-selection/index', viewContext(request))
+  async handler(request, h) {
+    const vesselLengthMetres =
+      getJourneyState(request).selectedVesselLengthOverallMetres
+    const catalogue = await getGearCatalogue({ vesselLengthMetres })
+    return h.view('gear-selection/index', viewContext(request, catalogue))
   }
 }
 
@@ -221,20 +250,16 @@ export const gearSelectionSubmitController = {
     validate: {
       payload: Joi.object({
         gearIds: Joi.alternatives()
-          .try(
-            Joi.array()
-              .items(Joi.string().valid(...validGearIds))
-              .min(1),
-            Joi.string().valid(...validGearIds)
-          )
+          .try(Joi.array().items(Joi.string()).min(1), Joi.string())
           .required(),
         potsHauled: Joi.string().allow(''),
         potsInWater: Joi.string().allow('')
       }).unknown(true),
-      failAction(request, h) {
+      async failAction(request, h) {
+        const catalogue = await getGearCatalogue()
         const errorText = 'Select the gear you used'
 
-        return renderWithErrors(request, h, {
+        return renderWithErrors(request, h, catalogue, {
           errorSummary: {
             titleText: 'There is a problem',
             errorList: [{ text: errorText, href: '#gearIds' }]
@@ -245,9 +270,25 @@ export const gearSelectionSubmitController = {
       }
     }
   },
-  handler(request, h) {
+  async handler(request, h) {
+    const vesselLengthMetres =
+      getJourneyState(request).selectedVesselLengthOverallMetres
+    const catalogue = await getGearCatalogue({ vesselLengthMetres })
+    const currentState = migrateGearJourneyState(request, catalogue)
     const { gearIds: rawGearIds, potsHauled, potsInWater } = request.payload
     const gearIds = Array.isArray(rawGearIds) ? rawGearIds : [rawGearIds]
+    const validGearIds = new Set(catalogue.map((gear) => gear.id))
+    if (!gearIds.length || gearIds.some((id) => !validGearIds.has(id))) {
+      const errorText = 'Select the gear you used'
+      return renderWithErrors(request, h, catalogue, {
+        errorSummary: {
+          titleText: 'There is a problem',
+          errorList: [{ text: errorText, href: '#gearIds' }]
+        },
+        fieldErrors: { gearIds: errorText },
+        selectedGearIds: gearIds
+      })
+    }
     const potsSelected = gearIds.includes('pots')
 
     const errorList = []
@@ -277,20 +318,21 @@ export const gearSelectionSubmitController = {
       errorList: gearMeasurementErrors,
       fieldErrors: gearMeasurementFieldErrors,
       measurementDetailsByGearId
-    } = validateGearMeasurements(gearIds, request.payload)
+    } = validateGearMeasurements(gearIds, request.payload, catalogue)
 
     errorList.push(...gearMeasurementErrors)
     Object.assign(fieldErrors, gearMeasurementFieldErrors)
 
     if (errorList.length) {
-      return renderWithErrors(request, h, {
+      return renderWithErrors(request, h, catalogue, {
         errorSummary: { titleText: 'There is a problem', errorList },
         fieldErrors,
         selectedGearIds: gearIds,
         potsDetails: potsSelected ? { potsHauled, potsInWater } : undefined,
         measurementDetailsByGearId: rawGearMeasurementDetails(
           gearIds,
-          request.payload
+          request.payload,
+          catalogue
         )
       })
     }
@@ -298,7 +340,8 @@ export const gearSelectionSubmitController = {
     setJourneyState(request, {
       selectedGearIds: gearIds,
       potsDetails: potsSelected ? potsValues : undefined,
-      gearMeasurementDetails: measurementDetailsByGearId
+      gearMeasurementDetails: measurementDetailsByGearId,
+      favouriteGearIds: getFavouriteGearIds(currentState, catalogue)
     })
 
     return h.redirect(resolveNextPath(request, '/statistical-area')).code(303)

@@ -114,9 +114,9 @@ function gearUsedSection(
   journeyState,
   fallback,
   meshSizeDefault,
-  buildChangeHref
+  buildChangeHref,
+  gearCatalogue
 ) {
-  const gearOptions = getData('gearSelection')
   const selectedGearIds = journeyState.selectedGearIds
   const hasSelection =
     Array.isArray(selectedGearIds) && selectedGearIds.length > 0
@@ -127,18 +127,44 @@ function gearUsedSection(
   const gearLabel = hasSelection
     ? joinWithAnd(
         selectedGearIds
-          .map((id) => gearOptions.find((option) => option.id === id)?.label)
+          .map(
+            (id) =>
+              gearCatalogue.find((option) => option.id === id)?.name ||
+              gearCatalogue.find((option) => option.id === id)?.label
+          )
           .filter(Boolean)
       )
     : fallback.gear
 
   const meshHints = hasSelection
     ? selectedGearIds
-        .map((id) => gearOptions.find((option) => option.id === id)?.hint)
+        .map((id) => gearCatalogue.find((option) => option.id === id)?.hint)
         .filter((hint) => hint && MESH_HINT_PATTERN.test(hint))
     : []
+  const measurementDetails = {
+    ...journeyState.favouriteGearMeasurements,
+    ...journeyState.gearMeasurementDetails
+  }
+  const measuredMeshSizes = hasSelection
+    ? selectedGearIds.flatMap((id) => {
+        const gear = gearCatalogue.find((option) => option.id === id)
+        return (gear?.measurements || [])
+          .filter((measurement) => /mesh size/i.test(measurement.label))
+          .map((measurement) => {
+            const value = measurementDetails[id]?.[measurement.id]
+            if (value === undefined || value === null || value === '') {
+              return undefined
+            }
+            const unit = measurement.unit ? ` ${measurement.unit}` : ''
+            return `${value}${unit}`
+          })
+          .filter(Boolean)
+      })
+    : []
   let meshSize = null
-  if (meshHints.length > 0) {
+  if (measuredMeshSizes.length > 0) {
+    meshSize = measuredMeshSizes.join(', ')
+  } else if (meshHints.length > 0) {
     meshSize = meshHints.join(', ')
   } else if (potsSelected) {
     meshSize = meshSizeDefault
@@ -314,6 +340,7 @@ export function buildCheckAnswersViewModel(request, options = {}) {
     ((wizardPath) => `${wizardPath}${RETURN_TO_CHECK_ANSWERS}`)
   const journeyState = getJourneyState(request)
   const speciesCatalogue = options.speciesCatalogue || []
+  const gearCatalogue = options.gearCatalogue || getData('gearSelection')
   const fallback = getData('catchRecordDetails')
   const { potsMeshSize } = getData('checkAnswersDefaults')
 
@@ -324,7 +351,13 @@ export function buildCheckAnswersViewModel(request, options = {}) {
       buildChangeHref,
       options.hideVesselChange
     ),
-    gearUsedSection(journeyState, fallback, potsMeshSize, buildChangeHref),
+    gearUsedSection(
+      journeyState,
+      fallback,
+      potsMeshSize,
+      buildChangeHref,
+      gearCatalogue
+    ),
     speciesCaughtSection(
       journeyState,
       fallback,
