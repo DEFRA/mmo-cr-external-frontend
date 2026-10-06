@@ -1,15 +1,41 @@
 // Walkthrough-only mock data — fictional, not persisted.
-const MESH_SIZE_LABEL = 'Mesh size (mm)'
+const meshSizeMeasurement = {
+  id: 'meshSize',
+  label: 'Mesh size (mm)',
+  emptyMessage: 'Enter the mesh size, in millimetres',
+  invalidMessage: 'Mesh size must be a whole number greater than 0'
+}
+
+const potsOrTrapsMeasurements = [
+  {
+    id: 'totalHauled',
+    label: 'Total pots or traps hauled',
+    emptyMessage: 'Enter the total number of pots or traps hauled',
+    invalidMessage:
+      'Total pots or traps hauled must be a whole number greater than 0'
+  },
+  {
+    id: 'totalInWater',
+    label: 'Total pots or traps left in water',
+    emptyMessage: 'Enter the total number of pots or traps left in the water',
+    invalidMessage:
+      'Total pots or traps left in the water must be a whole number greater than 0'
+  }
+]
 
 const gillnetMeasurements = [
-  { id: 'meshSize', label: MESH_SIZE_LABEL },
+  meshSizeMeasurement,
   {
     id: 'netLengthHauled',
-    label: 'Total length of nets hauled during the trip (m)'
+    label: 'Total length of nets hauled during the trip (m)',
+    emptyMessage:
+      'Enter the total length of nets hauled during the trip, in metres'
   },
   {
     id: 'netLengthLeft',
-    label: 'Total length of nets left in the water at the end of the trip (m)'
+    label: 'Total length of nets left in the water at the end of the trip (m)',
+    emptyMessage:
+      'Enter the total length of nets left in the water at the end of the trip, in metres'
   }
 ]
 
@@ -28,8 +54,12 @@ export const gearSelection = [
     requiresPotsDetails: false,
     displayOrder: 2,
     measurements: [
-      { id: 'numberOfTrawlNets', label: 'Number of trawl nets' },
-      { id: 'meshSize', label: MESH_SIZE_LABEL }
+      {
+        id: 'numberOfTrawlNets',
+        label: 'Number of trawl nets',
+        emptyMessage: 'Enter the number of trawl nets'
+      },
+      meshSizeMeasurement
     ]
   },
   {
@@ -39,8 +69,19 @@ export const gearSelection = [
     requiresPotsDetails: false,
     displayOrder: 3,
     measurements: [
-      { id: 'numberOfDredges', label: 'Number of dredges' },
-      { id: 'numberOfTimesShot', label: 'Number of times shot' }
+      {
+        id: 'numberOfDredges',
+        label: 'Number of dredges',
+        emptyMessage: 'Enter the number of dredges',
+        invalidMessage:
+          'Number of dredges must be a whole number greater than 0'
+      },
+      {
+        id: 'numberOfTimesShot',
+        label: 'Number of times shot',
+        emptyMessage:
+          'Enter the number of times this gear was shot during the trip'
+      }
     ]
   },
   {
@@ -49,7 +90,15 @@ export const gearSelection = [
     hint: 'Hint text',
     requiresPotsDetails: false,
     displayOrder: 4,
-    measurements: [{ id: 'rodsAndLines', label: 'Number of rods and lines' }]
+    measurements: [
+      {
+        id: 'rodsAndLines',
+        label: 'Number of rods and lines',
+        emptyMessage: 'Enter the number of rods and lines',
+        invalidMessage:
+          'Number of rods and lines must be a whole number greater than 0'
+      }
+    ]
   },
   {
     id: 'miscellaneous-gear-diving',
@@ -65,10 +114,7 @@ export const gearSelection = [
     hint: null,
     requiresPotsDetails: true,
     displayOrder: 6,
-    measurements: [
-      { id: 'totalHauled', label: 'Total pots or traps hauled' },
-      { id: 'totalInWater', label: 'Total pots or traps left in water' }
-    ]
+    measurements: potsOrTrapsMeasurements
   },
   {
     id: 'seine-nets',
@@ -76,7 +122,7 @@ export const gearSelection = [
     hint: '100mm mesh',
     requiresPotsDetails: false,
     displayOrder: 7,
-    measurements: [{ id: 'meshSize', label: MESH_SIZE_LABEL }]
+    measurements: [meshSizeMeasurement]
   },
   {
     id: 'trammel-net',
@@ -92,10 +138,7 @@ export const gearSelection = [
     hint: null,
     requiresPotsDetails: false,
     displayOrder: 9,
-    measurements: [
-      { id: 'totalHauled', label: 'Total pots or traps hauled' },
-      { id: 'totalInWater', label: 'Total pots or traps left in water' }
-    ]
+    measurements: potsOrTrapsMeasurements
   }
 ]
 
@@ -117,8 +160,20 @@ export const gearCatalogue = [
     requiresPotsDetails: false,
     displayOrder: 11,
     measurements: [
-      { id: 'totalHooksHauled', label: 'Total hooks hauled' },
-      { id: 'totalHooksInWater', label: 'Total hooks left in water' }
+      {
+        id: 'totalHooksHauled',
+        label: 'Total hooks hauled',
+        emptyMessage: 'Enter the total number of hooks hauled',
+        invalidMessage:
+          'Total hooks hauled must be a whole number greater than 0'
+      },
+      {
+        id: 'totalHooksInWater',
+        label: 'Total hooks left in water',
+        emptyMessage: 'Enter the total number of hooks left in the water',
+        invalidMessage:
+          'Total hooks left in the water must be a whole number greater than 0'
+      }
     ]
   },
   {

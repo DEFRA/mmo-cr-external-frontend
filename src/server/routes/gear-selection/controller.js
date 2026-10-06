@@ -11,6 +11,10 @@ import {
   getFavouriteGearOptions,
   getGearCatalogue
 } from '#/server/common/helpers/gear/favourite-gear.js'
+import {
+  isBlankMeasurement,
+  validateMeasurement
+} from '#/server/common/helpers/gear/measurement-validation.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 
 const pageTitle = 'What gear did you use?'
@@ -137,19 +141,6 @@ function renderWithErrors(
     .takeover()
 }
 
-function normalizeMeasurementValue(rawValue) {
-  if (rawValue === undefined || rawValue === null || rawValue === '') {
-    return { value: undefined, valid: false }
-  }
-
-  const numericValue = Number(rawValue)
-
-  return {
-    value: numericValue,
-    valid: Number.isInteger(numericValue) && numericValue >= 0
-  }
-}
-
 function validateGearMeasurements(gearIds, payload) {
   const errorList = []
   const fieldErrors = {}
@@ -170,16 +161,15 @@ function validateGearMeasurements(gearIds, payload) {
 
       // Unlike Pots (mandatory), these generalised fields are optional -
       // only validate the format when the user has actually entered something.
-      if (rawValue === undefined || rawValue === null || rawValue === '') {
+      if (isBlankMeasurement(rawValue)) {
         continue
       }
 
-      const { value, valid } = normalizeMeasurementValue(rawValue)
+      const { value, error } = validateMeasurement(rawValue, measurement)
 
-      if (!valid) {
-        const errorText = `Enter the ${measurement.label.toLowerCase()}`
-        errorList.push({ text: errorText, href: `#${fieldName}` })
-        fieldErrors[fieldName] = errorText
+      if (error) {
+        errorList.push({ text: error, href: `#${fieldName}` })
+        fieldErrors[fieldName] = error
       } else {
         measurementDetailsByGearId[gearId][measurement.id] = value
       }
@@ -232,7 +222,7 @@ export const gearSelectionSubmitController = {
         potsInWater: Joi.string().allow('')
       }).unknown(true),
       failAction(request, h) {
-        const errorText = 'Select the gear you used'
+        const errorText = 'Select the gear used on this trip'
 
         return renderWithErrors(request, h, {
           errorSummary: {
@@ -255,19 +245,19 @@ export const gearSelectionSubmitController = {
     let potsValues
 
     if (potsSelected) {
-      const hauled = normalizeMeasurementValue(potsHauled)
-      const inWater = normalizeMeasurementValue(potsInWater)
+      const [hauledMeasurement, inWaterMeasurement] =
+        catalogueById.get('pots').measurements
+      const hauled = validateMeasurement(potsHauled, hauledMeasurement)
+      const inWater = validateMeasurement(potsInWater, inWaterMeasurement)
 
-      if (!hauled.valid) {
-        const errorText = 'Enter the total pots or traps hauled'
-        errorList.push({ text: errorText, href: '#potsHauled' })
-        fieldErrors.potsHauled = errorText
+      if (hauled.error) {
+        errorList.push({ text: hauled.error, href: '#potsHauled' })
+        fieldErrors.potsHauled = hauled.error
       }
 
-      if (!inWater.valid) {
-        const errorText = 'Enter the total pots or traps left in water'
-        errorList.push({ text: errorText, href: '#potsInWater' })
-        fieldErrors.potsInWater = errorText
+      if (inWater.error) {
+        errorList.push({ text: inWater.error, href: '#potsInWater' })
+        fieldErrors.potsInWater = inWater.error
       }
 
       potsValues = { potsHauled: hauled.value, potsInWater: inWater.value }
