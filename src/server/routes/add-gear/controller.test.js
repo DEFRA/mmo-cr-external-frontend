@@ -210,12 +210,12 @@ describe('#addGearSubmitController', () => {
     })
 
     expect(addResponse.statusCode).toBe(303)
-    expect(addResponse.headers.location).toBe('/add-gear')
+    expect(addResponse.headers.location).toBe('/add-gear?step=measurements')
 
     const cookie = nextCookie(addResponse)
     const { result } = await server.inject({
       method: 'GET',
-      url: '/add-gear',
+      url: '/add-gear?step=measurements',
       headers: { cookie }
     })
     const $ = load(result)
@@ -223,6 +223,48 @@ describe('#addGearSubmitController', () => {
     expect($('h1').text().trim()).toBe('Enter the measurements for dredge')
     expect($('#numberOfDredges')).toHaveLength(1)
     expect($('#numberOfTimesShot')).toHaveLength(1)
+  })
+
+  test('Should discard an abandoned measurement step and show measurements for a newly selected gear', async () => {
+    const firstAdd = await server.inject({
+      method: 'POST',
+      url: '/add-gear',
+      payload: { gear: 'Dredge' }
+    })
+    let cookie = nextCookie(firstAdd)
+
+    const freshVisit = await server.inject({
+      method: 'GET',
+      url: '/add-gear',
+      headers: { cookie }
+    })
+    cookie = nextCookie(freshVisit, cookie)
+    const $fresh = load(freshVisit.result)
+
+    expect($fresh('#gear')).toHaveLength(1)
+    expect($fresh('h1').text()).toContain('What gear did you use?')
+    expect($fresh('#numberOfDredges')).toHaveLength(0)
+
+    const secondAdd = await server.inject({
+      method: 'POST',
+      url: '/add-gear',
+      payload: { gear: 'Bottom otter trawl' },
+      headers: { cookie }
+    })
+    cookie = nextCookie(secondAdd, cookie)
+
+    const { result } = await server.inject({
+      method: 'GET',
+      url: secondAdd.headers.location,
+      headers: { cookie }
+    })
+    const $ = load(result)
+
+    expect($('h1').text().trim()).toBe(
+      'Enter the measurements for bottom otter trawl'
+    )
+    expect($('#numberOfTrawlNets')).toHaveLength(1)
+    expect($('#numberOfDredges')).toHaveLength(0)
   })
 
   test('Should require the reference net measurements before adding it to favourites', async () => {
@@ -233,11 +275,11 @@ describe('#addGearSubmitController', () => {
     })
     let cookie = nextCookie(addResponse)
 
-    expect(addResponse.headers.location).toBe('/add-gear')
+    expect(addResponse.headers.location).toBe('/add-gear?step=measurements')
 
     const measurementPage = await server.inject({
       method: 'GET',
-      url: '/add-gear',
+      url: '/add-gear?step=measurements',
       headers: { cookie }
     })
     const $ = load(measurementPage.result)
@@ -305,7 +347,7 @@ describe('#addGearSubmitController', () => {
 
     const { result } = await server.inject({
       method: 'GET',
-      url: '/add-gear',
+      url: addResponse.headers.location,
       headers: { cookie }
     })
     const $ = load(result)
@@ -397,7 +439,7 @@ describe('#addGearSubmitController', () => {
     const cookie = nextCookie(addResponse)
 
     expect(addResponse.headers.location).toBe(
-      '/add-gear?return=%2Fcheck-answers'
+      '/add-gear?return=%2Fcheck-answers&step=measurements'
     )
 
     const confirmResponse = await server.inject({

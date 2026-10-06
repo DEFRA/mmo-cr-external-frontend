@@ -19,6 +19,7 @@ const pageTitle = 'What gear did you use?'
 const { reference } = getData('confirmation')
 const addGearViewName = 'add-gear/index'
 const gearSelectionPath = '/gear-selection'
+const measurementStep = 'measurements'
 
 // Every measurement field id used across the gear catalogue's `measurements`
 // arrays — declared explicitly so Joi only accepts known field names.
@@ -38,11 +39,16 @@ const measurementFieldIds = [
 
 // Keeps the "return" query param across the page's own add/measurement redirects
 // so "Save and continue" still honours it once the measurement step is done.
-function addGearPath(request) {
-  const candidate = request.query?.return
-  return candidate
-    ? `/add-gear?return=${encodeURIComponent(candidate)}`
-    : '/add-gear'
+function addGearPath(request, { step } = {}) {
+  const params = new URLSearchParams()
+  if (request.query?.return) {
+    params.set('return', request.query.return)
+  }
+  if (step) {
+    params.set('step', step)
+  }
+  const query = params.toString()
+  return query ? `/add-gear?${query}` : '/add-gear'
 }
 
 function normalizeMeasurementValue(rawValue) {
@@ -113,6 +119,13 @@ function renderMeasurementErrors(request, h, errorList, fieldErrors) {
 
 export const addGearController = {
   handler(request, h) {
+    // A plain /add-gear visit is a fresh start, so drop any abandoned measurement entry.
+    if (
+      request.query.step !== measurementStep &&
+      getJourneyState(request).addGearPendingId
+    ) {
+      setJourneyState(request, { addGearPendingId: null })
+    }
     return h.view(addGearViewName, viewContext(request))
   }
 }
@@ -183,7 +196,9 @@ function handleGearSearchSubmission(request, h, journeyState) {
 
   if (matchedOption.measurements) {
     setJourneyState(request, { addGearPendingId: matchedOption.id })
-    return h.redirect(addGearPath(request)).code(statusCodes.seeOther)
+    return h
+      .redirect(addGearPath(request, { step: measurementStep }))
+      .code(statusCodes.seeOther)
   }
 
   const favouriteGearIds = getFavouriteGearIds(journeyState)
