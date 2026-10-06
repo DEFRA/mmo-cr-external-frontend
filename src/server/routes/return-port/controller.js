@@ -18,6 +18,8 @@ import {
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 
 const pageTitle = 'Select the port you returned to'
+const templatePath = 'return-port/index'
+const errorSummaryTitle = 'There is a problem'
 const hintText =
   'Select the port name, or the nearest port to where you returned.'
 function favouritePorts(request, ports) {
@@ -61,7 +63,7 @@ export const returnPortController = {
       return h.redirect('/add-port?for=return').code(statusCodes.seeOther)
     }
 
-    return h.view('return-port/index', viewContext(request, ports))
+    return h.view(templatePath, viewContext(request, ports))
   }
 }
 
@@ -73,14 +75,14 @@ export const returnPortSubmitController = {
       }),
       async failAction(request, h) {
         const ports = await getPortCatalogue()
-        const errorText = 'Select the port you returned to'
+        const errorText = pageTitle
 
         return h
           .view(
-            'return-port/index',
+            templatePath,
             viewContext(request, ports, {
               errorSummary: {
-                titleText: 'There is a problem',
+                titleText: errorSummaryTitle,
                 errorList: [{ text: errorText, href: '#returnPort' }]
               },
               fieldErrors: { returnPort: errorText }
@@ -96,13 +98,13 @@ export const returnPortSubmitController = {
     const { returnPort } = request.payload
     const port = findPortByCode(returnPort, ports)
     if (!port) {
-      const errorText = 'Select the port you returned to'
+      const errorText = pageTitle
       return h
         .view(
-          'return-port/index',
+          templatePath,
           viewContext(request, ports, {
             errorSummary: {
-              titleText: 'There is a problem',
+              titleText: errorSummaryTitle,
               errorList: [{ text: errorText, href: '#returnPort' }]
             },
             fieldErrors: { returnPort: errorText }

@@ -6,7 +6,10 @@ import {
   setJourneyState
 } from '#/server/common/helpers/journey/navigation.js'
 import { getSpeciesPageData } from '#/server/common/helpers/species/species-list.js'
-import { isValidWeight } from '#/server/common/helpers/species/weight-validation.js'
+import {
+  validateWeight,
+  weightErrorMessage
+} from '#/server/common/helpers/species/weight-validation.js'
 import {
   ERROR_SUMMARY_TITLE,
   filterKnownSpeciesIds,
@@ -18,6 +21,207 @@ import {
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 
 const pageTitle = 'What species did you catch using pots?'
+
+function isProvided(value) {
+  return typeof value === 'string' && value.trim() !== ''
+}
+
+function validateWeightField(
+  rawValue,
+  nameAndId,
+  fieldLabel,
+  fieldName,
+  speciesId,
+  required = false
+) {
+  if (!required && !isProvided(rawValue)) {
+    return { result: { valid: true, reason: null }, errorText: null }
+  }
+
+  const result = validateWeight(rawValue)
+  const errorText = result.valid
+    ? null
+    : weightErrorMessage(result.reason, nameAndId, fieldLabel)
+
+  return {
+    fieldName,
+    result,
+    errorText,
+    errorItem: errorText
+      ? { text: errorText, href: `#${fieldName}-${speciesId}` }
+      : null
+  }
+}
+
+// AC7/BR11: above-minimum weight must be strictly higher than legally-discarded weight.
+function checkAboveMinimumHigherThanDiscarded(
+  aboveMinimumResult,
+  discardedResult,
+  weights,
+  nameAndId
+) {
+  const canCompare =
+    aboveMinimumResult.valid &&
+    isProvided(weights.weightDiscarded) &&
+    discardedResult.valid
+
+  if (!canCompare) {
+    return null
+  }
+
+  const aboveMinimumValue = Number(weights.weightAboveMinimum.trim())
+  const discardedValue = Number(weights.weightDiscarded.trim())
+
+  if (aboveMinimumValue > discardedValue) {
+    return null
+  }
+
+  return `Weight above minimum size retained must be higher than weight legally discarded for ${nameAndId}`
+}
+
+function speciesWeightsFromPayload(payload, speciesOptions) {
+  return Object.fromEntries(
+    speciesOptions.map((species) => [
+      species.id,
+      {
+        weightAboveMinimum: speciesWeightFromPayload(
+          payload,
+          'weightAboveMinimum',
+          species
+        ),
+        weightBelowMinimum: speciesWeightFromPayload(
+          payload,
+          'weightBelowMinimum',
+          species
+        ),
+        weightDiscarded: speciesWeightFromPayload(
+          payload,
+          'weightDiscarded',
+          species
+        )
+      }
+    ])
+  )
+}
+
+function validateSpeciesWeightFields(speciesId, speciesOption, weights) {
+  const nameAndId = speciesNameAndId(speciesOption, speciesId)
+  const validations = [
+    validateWeightField(
+      weights.weightAboveMinimum,
+      nameAndId,
+      'weight above minimum size retained',
+      'weightAboveMinimum',
+      speciesId,
+      true
+    ),
+    validateWeightField(
+      weights.weightBelowMinimum,
+      nameAndId,
+      'weight below minimum size retained',
+      'weightBelowMinimum',
+      speciesId
+    ),
+    validateWeightField(
+      weights.weightDiscarded,
+      nameAndId,
+      'weight legally discarded',
+      'weightDiscarded',
+      speciesId
+    )
+  ]
+  const errorList = validations
+    .map((validation) => validation.errorItem)
+    .filter(Boolean)
+  const fieldErrors = Object.fromEntries(
+    validations
+      .filter((validation) => validation.errorText)
+      .map((validation) => [validation.fieldName, validation.errorText])
+  )
+  const crossFieldErrorText = checkAboveMinimumHigherThanDiscarded(
+    validations[0].result,
+    validations[2].result,
+    weights,
+    nameAndId
+  )
+
+  if (crossFieldErrorText) {
+    errorList.push({
+      text: crossFieldErrorText,
+      href: `#weightAboveMinimum-${speciesId}`
+    })
+    fieldErrors.weightAboveMinimum = crossFieldErrorText
+    fieldErrors.weightDiscarded = crossFieldErrorText
+  }
+
+  return { errorList, fieldErrors }
+}
+
+function validateSpeciesWeights(speciesIds, speciesOptions, speciesWeights) {
+  const result = { errorList: [], fieldErrorsBySpecies: {} }
+
+  for (const speciesId of speciesIds) {
+    const speciesOption = speciesOptions.find(
+      (option) => option.id === speciesId
+    )
+    const validation = validateSpeciesWeightFields(
+      speciesId,
+      speciesOption,
+      speciesWeights[speciesId] || {}
+    )
+    result.errorList.push(...validation.errorList)
+    if (Object.keys(validation.fieldErrors).length > 0) {
+      result.fieldErrorsBySpecies[speciesId] = validation.fieldErrors
+    }
+  }
+
+  return result
+}
+
+function persistedSpeciesWeights(speciesIds, speciesWeights) {
+  return Object.fromEntries(
+    speciesIds.map((speciesId) => {
+      const weights = speciesWeights[speciesId] || {}
+      return [
+        speciesId,
+        {
+          weightAboveMinimum: Number(weights.weightAboveMinimum),
+          weightBelowMinimum: weights.weightBelowMinimum
+            ? Number(weights.weightBelowMinimum)
+            : undefined,
+          weightDiscarded: weights.weightDiscarded
+            ? Number(weights.weightDiscarded)
+            : undefined
+        }
+      ]
+    })
+  )
+}
+
+function renderSelectionError(
+  request,
+  h,
+  speciesData,
+  speciesIds,
+  speciesWeights,
+  overrides
+) {
+  return renderPage(
+    request,
+    h,
+    speciesData,
+    {
+      speciesCheckboxItems: speciesCheckboxItems(
+        speciesIds,
+        speciesData.speciesOptions,
+        speciesWeights,
+        overrides.fieldErrorsBySpecies || {}
+      ),
+      ...overrides
+    },
+    statusCodes.badRequest
+  )
+}
 
 function speciesCheckboxItems(
   selectedSpeciesIds,
@@ -132,125 +336,45 @@ export const speciesSelectionSubmitController = {
       normalizeSpeciesIds(request.payload.speciesIds),
       speciesOptions
     )
-    const speciesWeights = {}
+    const speciesWeights = speciesWeightsFromPayload(
+      request.payload,
+      speciesOptions
+    )
 
-    speciesOptions.forEach((species) => {
-      speciesWeights[species.id] = {
-        weightAboveMinimum: speciesWeightFromPayload(
-          request.payload,
-          'weightAboveMinimum',
-          species
-        ),
-        weightBelowMinimum: speciesWeightFromPayload(
-          request.payload,
-          'weightBelowMinimum',
-          species
-        ),
-        weightDiscarded: speciesWeightFromPayload(
-          request.payload,
-          'weightDiscarded',
-          species
-        )
-      }
-    })
-
-    function rerender(extraOverrides, code = statusCodes.ok) {
-      return renderPage(
+    if (speciesIds.length === 0) {
+      return renderSelectionError(
         request,
         h,
         speciesData,
-        {
-          speciesCheckboxItems: speciesCheckboxItems(
-            speciesIds,
-            speciesOptions,
-            speciesWeights,
-            extraOverrides.fieldErrorsBySpecies || {}
-          ),
-          ...extraOverrides
-        },
-        code
+        speciesIds,
+        speciesWeights,
+        noSpeciesSelectedError()
       )
     }
 
-    if (speciesIds.length === 0) {
-      return rerender(noSpeciesSelectedError(), statusCodes.badRequest)
-    }
-
-    const errorList = []
-    const fieldErrorsBySpecies = {}
-
-    speciesIds.forEach((speciesId) => {
-      const speciesOption = speciesOptions.find(
-        (option) => option.id === speciesId
-      )
-      const nameAndId = speciesNameAndId(speciesOption, speciesId)
-      const weights = speciesWeights[speciesId] || {}
-      const speciesFieldErrors = {}
-
-      if (!isValidWeight(weights.weightAboveMinimum)) {
-        const errorText = `Enter a weight for ${nameAndId}`
-        errorList.push({
-          text: errorText,
-          href: `#weightAboveMinimum-${speciesId}`
-        })
-        speciesFieldErrors.weightAboveMinimum = errorText
-      }
-
-      if (
-        weights.weightBelowMinimum &&
-        !isValidWeight(weights.weightBelowMinimum)
-      ) {
-        const errorText = `Enter a weight below minimum size retained for ${nameAndId}`
-        errorList.push({
-          text: errorText,
-          href: `#weightBelowMinimum-${speciesId}`
-        })
-        speciesFieldErrors.weightBelowMinimum = errorText
-      }
-
-      if (weights.weightDiscarded && !isValidWeight(weights.weightDiscarded)) {
-        const errorText = `Enter a weight legally discarded for ${nameAndId}`
-        errorList.push({
-          text: errorText,
-          href: `#weightDiscarded-${speciesId}`
-        })
-        speciesFieldErrors.weightDiscarded = errorText
-      }
-
-      if (Object.keys(speciesFieldErrors).length > 0) {
-        fieldErrorsBySpecies[speciesId] = speciesFieldErrors
-      }
-    })
+    const { errorList, fieldErrorsBySpecies } = validateSpeciesWeights(
+      speciesIds,
+      speciesOptions,
+      speciesWeights
+    )
 
     if (errorList.length > 0) {
-      return rerender(
+      return renderSelectionError(
+        request,
+        h,
+        speciesData,
+        speciesIds,
+        speciesWeights,
         {
           errorSummary: { titleText: ERROR_SUMMARY_TITLE, errorList },
           fieldErrorsBySpecies
-        },
-        statusCodes.badRequest
+        }
       )
     }
 
-    const persistedSpeciesWeights = {}
-
-    speciesIds.forEach((speciesId) => {
-      const weights = speciesWeights[speciesId] || {}
-
-      persistedSpeciesWeights[speciesId] = {
-        weightAboveMinimum: Number(weights.weightAboveMinimum),
-        weightBelowMinimum: weights.weightBelowMinimum
-          ? Number(weights.weightBelowMinimum)
-          : undefined,
-        weightDiscarded: weights.weightDiscarded
-          ? Number(weights.weightDiscarded)
-          : undefined
-      }
-    })
-
     setJourneyState(request, {
       selectedSpeciesIds: speciesIds,
-      speciesWeights: persistedSpeciesWeights
+      speciesWeights: persistedSpeciesWeights(speciesIds, speciesWeights)
     })
 
     return h

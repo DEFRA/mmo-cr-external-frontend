@@ -79,6 +79,47 @@ describe('#removeGearController', () => {
     expect(checkboxes).toHaveLength(9)
     expect(checkboxes.filter((_, el) => $(el).prop('checked'))).toHaveLength(0)
   })
+
+  test('Should show the empty state and return to account when no gear remains', async () => {
+    const removeResponse = await server.inject({
+      method: 'POST',
+      url: '/remove-gear',
+      payload: {
+        gearIds: [
+          'beam-trawl',
+          'bottom-otter-trawl',
+          'dredge',
+          'handlines-pole-lines',
+          'miscellaneous-gear-diving',
+          'pots',
+          'seine-nets',
+          'trammel-net',
+          'traps'
+        ]
+      }
+    })
+    const cookie = removeResponse.headers['set-cookie'][0].split(';')[0]
+    const { result } = await server.inject({
+      method: 'GET',
+      url: '/remove-gear?return=/account',
+      headers: { cookie }
+    })
+    const $ = load(result)
+
+    expect($('body').text()).toContain('You have nothing to remove')
+    expect($('input[name="gearIds"]')).toHaveLength(0)
+    expect($('.govuk-button').text().trim()).toBe('Continue')
+
+    const continueResponse = await server.inject({
+      method: 'POST',
+      url: '/remove-gear?return=/account',
+      payload: {},
+      headers: { cookie }
+    })
+
+    expect(continueResponse.statusCode).toBe(303)
+    expect(continueResponse.headers.location).toBe('/account')
+  })
 })
 
 describe('#removeGearSubmitController', () => {

@@ -7,6 +7,7 @@ import { getSpeciesPageData } from '#/server/common/helpers/species/species-list
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 
 const pageTitle = 'Remove a species'
+const SPECIES_SELECTION_PATH = '/species-selection'
 
 function speciesCheckboxItems(speciesOptions) {
   return speciesOptions.map((species) => ({
@@ -21,7 +22,7 @@ function viewContext(request, speciesData, overrides = {}) {
     heading: pageTitle,
     caption: 'New catch record',
     backLink: {
-      href: '/species-selection',
+      href: resolveNextPath(request, SPECIES_SELECTION_PATH),
       text: 'Back'
     },
     speciesCheckboxItems: speciesCheckboxItems(speciesData.speciesOptions),
@@ -48,6 +49,13 @@ export const removeSpeciesSubmitController = {
   async handler(request, h) {
     const speciesData = await getSpeciesPageData(request)
     const { journeyState, availableSpeciesIds } = speciesData
+
+    if (availableSpeciesIds.length === 0) {
+      return h
+        .redirect(resolveNextPath(request, '/add-species'))
+        .code(statusCodes.seeOther)
+    }
+
     const requestedIds = normalizeSpeciesIds(request.payload.speciesIds)
     const idsToRemove = filterKnownSpeciesIds(
       requestedIds,
@@ -102,7 +110,7 @@ export const removeSpeciesSubmitController = {
     }
 
     return h
-      .redirect(resolveNextPath(request, '/species-selection'))
+      .redirect(resolveNextPath(request, SPECIES_SELECTION_PATH))
       .code(statusCodes.seeOther)
   }
 }

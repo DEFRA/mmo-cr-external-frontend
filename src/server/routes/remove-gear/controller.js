@@ -12,6 +12,7 @@ import { getData } from '#/server/common/data/get-data.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 
 const headingLine1 = 'Remove gear from vessel'
+const GEAR_SELECTION_PATH = '/gear-selection'
 
 function gearCheckboxItems(favouriteOptions) {
   return favouriteOptions.map((option) => ({
@@ -32,7 +33,7 @@ function viewContext(request, catalogue, overrides = {}) {
     headingLine1,
     vesselName,
     backLink: {
-      href: '/gear-selection',
+      href: resolveNextPath(request, GEAR_SELECTION_PATH),
       text: 'Back'
     },
     gearCheckboxItems: gearCheckboxItems(
@@ -70,15 +71,22 @@ export const removeGearController = {
 export const removeGearSubmitController = {
   async handler(request, h) {
     const catalogue = await getGearCatalogue()
-    const rawGearIds = request.payload.gearIds
+    const journeyState = migrateGearJourneyState(request, catalogue)
+    const favouriteGearIds = getFavouriteGearIds(journeyState, catalogue)
+
+    if (getFavouriteGearOptions(favouriteGearIds, catalogue).length === 0) {
+      return h
+        .redirect(resolveNextPath(request, GEAR_SELECTION_PATH))
+        .code(statusCodes.seeOther)
+    }
+
+    const rawGearIds = request.payload?.gearIds
 
     if (!rawGearIds) {
       return renderWithError(request, h, catalogue)
     }
 
     const requestedIds = Array.isArray(rawGearIds) ? rawGearIds : [rawGearIds]
-    const journeyState = migrateGearJourneyState(request, catalogue)
-    const favouriteGearIds = getFavouriteGearIds(journeyState, catalogue)
     const idsToRemove = requestedIds.filter((id) =>
       favouriteGearIds.includes(id)
     )
@@ -101,7 +109,7 @@ export const removeGearSubmitController = {
     })
 
     return h
-      .redirect(resolveNextPath(request, '/gear-selection'))
+      .redirect(resolveNextPath(request, GEAR_SELECTION_PATH))
       .code(statusCodes.seeOther)
   }
 }

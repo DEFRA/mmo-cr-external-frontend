@@ -20,6 +20,7 @@ const pageTitle = 'What gear did you use?'
 const { reference } = getData('confirmation')
 const addGearViewName = 'add-gear/index'
 const gearSelectionPath = '/gear-selection'
+const emptyGearMessage = 'Enter the name of the gear you want to add'
 
 // Keeps the "return" query param across the page's own add/measurement redirects
 // so "Save and continue" still honours it once the measurement step is done.
@@ -57,7 +58,7 @@ function viewContext(request, catalogue, overrides = {}) {
       : pageTitle,
     caption: reference,
     backLink: {
-      href: gearSelectionPath,
+      href: resolveNextPath(request, gearSelectionPath),
       text: 'Back'
     },
     pendingOption,
@@ -130,12 +131,12 @@ function handlePendingMeasurementSubmission(
       request.payload[measurement.id]
     )
 
-    if (!valid) {
+    if (valid) {
+      values[measurement.id] = value
+    } else {
       const errorText = `Enter the ${measurement.label.toLowerCase()}`
       errorList.push({ text: errorText, href: `#${measurement.id}` })
       fieldErrors[measurement.id] = errorText
-    } else if (valid) {
-      values[measurement.id] = value
     }
   }
 
@@ -172,12 +173,7 @@ async function handleGearSearchSubmission(request, h, journeyState, catalogue) {
   const gearLabel = (request.payload.gear || '').trim()
 
   if (!gearLabel) {
-    return renderSearchError(
-      request,
-      h,
-      catalogue,
-      'Enter the name of the gear you want to add'
-    )
+    return renderSearchError(request, h, catalogue, emptyGearMessage)
   }
 
   const matchedOption = findGearOptionByLabel(
@@ -221,21 +217,15 @@ export const addGearSubmitController = {
       }).unknown(true),
       async failAction(request, h) {
         const catalogue = await getGearCatalogue()
-        return renderSearchError(
-          request,
-          h,
-          catalogue,
-          'Enter the name of the gear you want to add'
-        )
+        return renderSearchError(request, h, catalogue, emptyGearMessage)
       }
     }
   },
   async handler(request, h) {
-    const catalogue = await getGearCatalogue({
-      vesselLengthMetres:
-        getJourneyState(request).selectedVesselLengthOverallMetres
-    })
     const journeyState = getJourneyState(request)
+    const catalogue = await getGearCatalogue({
+      vesselLengthMetres: journeyState.selectedVesselLengthOverallMetres
+    })
     const pendingGearId = journeyState.addGearPendingId
     const pendingOption =
       pendingGearId && getGearOptionById(pendingGearId, catalogue)

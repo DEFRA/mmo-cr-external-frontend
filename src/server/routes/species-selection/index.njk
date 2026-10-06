@@ -86,7 +86,9 @@
         </div>
 
         <p class="govuk-body"><a class="govuk-link" href="/add-species?return=/species-selection">Add species</a></p>
-        <p class="govuk-body"><a class="govuk-link" href="/remove-species?return=/species-selection">Remove species</a></p>
+        {% if speciesCheckboxItems.length %}
+          <p class="govuk-body"><a class="govuk-link" href="/remove-species?return=/species-selection">Remove species</a></p>
+        {% endif %}
 
         {{ govukButton({
           text: "Save and continue",

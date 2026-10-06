@@ -12,6 +12,7 @@ import {
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 
 const errorText = 'Select your vessel'
+const templatePath = 'select-vessel/index'
 
 function viewContext(request, vessels, overrides = {}) {
   const selectedId = getJourneyState(request).selectedVesselId
@@ -35,7 +36,7 @@ function viewContext(request, vessels, overrides = {}) {
 export const selectVesselController = {
   async handler(request, h) {
     const vessels = await getVesselCatalogue()
-    return h.view('select-vessel/index', viewContext(request, vessels))
+    return h.view(templatePath, viewContext(request, vessels))
   }
 }
 
@@ -49,7 +50,7 @@ export const selectVesselSubmitController = {
         const vessels = await getVesselCatalogue()
         return h
           .view(
-            'select-vessel/index',
+            templatePath,
             viewContext(request, vessels, {
               errorSummary: {
                 titleText: 'There is a problem',
@@ -69,7 +70,7 @@ export const selectVesselSubmitController = {
     if (!vessel) {
       return h
         .view(
-          'select-vessel/index',
+          templatePath,
           viewContext(request, vessels, {
             errorSummary: {
               titleText: 'There is a problem',

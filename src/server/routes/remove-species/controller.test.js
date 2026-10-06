@@ -78,6 +78,37 @@ describe('#removeSpeciesController', () => {
       expect($(el).prop('checked')).toBe(false)
     })
   })
+
+  test('Should show the empty state and return to account when no species remains', async () => {
+    const removeResponse = await server.inject({
+      method: 'POST',
+      url: '/remove-species',
+      payload: {
+        speciesIds: [SPECIES_IDS.cod, SPECIES_IDS.haddock, SPECIES_IDS.mackerel]
+      }
+    })
+    const cookie = removeResponse.headers['set-cookie'][0].split(';')[0]
+    const { result } = await server.inject({
+      method: 'GET',
+      url: '/remove-species?return=/account',
+      headers: { cookie }
+    })
+    const $ = load(result)
+
+    expect($('body').text()).toContain('No species to remove')
+    expect($('input[name="speciesIds"]')).toHaveLength(0)
+    expect($('.govuk-button').text().trim()).toBe('Continue')
+
+    const continueResponse = await server.inject({
+      method: 'POST',
+      url: '/remove-species?return=/account',
+      payload: {},
+      headers: { cookie }
+    })
+
+    expect(continueResponse.statusCode).toBe(303)
+    expect(continueResponse.headers.location).toBe('/account')
+  })
 })
 
 describe('#removeSpeciesSubmitController', () => {

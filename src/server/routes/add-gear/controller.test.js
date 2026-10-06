@@ -75,6 +75,18 @@ describe('#addGearController', () => {
     ).toBe('/gear-selection')
   })
 
+  test('Should point Back to the account when Add gear was opened from the account', async () => {
+    const { result } = await server.inject({
+      method: 'GET',
+      url: '/add-gear?return=/account'
+    })
+    const $ = load(result)
+
+    expect(
+      $('[data-testid="app-page-navigation-back-link"]').attr('href')
+    ).toBe('/account')
+  })
+
   test('Should list catalogue gear not already favourited in the datalist', async () => {
     const { result } = await server.inject({
       method: 'GET',
@@ -86,6 +98,8 @@ describe('#addGearController', () => {
       .get()
 
     expect(labels).toContain('Set net')
+    expect(labels).toContain('Drifting longlines')
+    expect(labels).toContain('Nets (Gillnets and Trammels)')
     expect(labels).not.toContain('Beam trawl')
   })
 })
@@ -218,7 +232,77 @@ describe('#addGearSubmitController', () => {
     expect($('#numberOfTimesShot')).toHaveLength(1)
   })
 
-  test('Should add gear without measurements directly to favourites', async () => {
+  test('Should require the reference net measurements before adding it to favourites', async () => {
+    const addResponse = await server.inject({
+      method: 'POST',
+      url: '/add-gear',
+      payload: { gear: 'Nets (Gillnets and Trammels)' }
+    })
+    let cookie = nextCookie(addResponse)
+
+    expect(addResponse.headers.location).toBe('/add-gear')
+
+    const measurementPage = await server.inject({
+      method: 'GET',
+      url: '/add-gear',
+      headers: { cookie }
+    })
+    const $ = load(measurementPage.result)
+    expect($('#meshSize')).toHaveLength(1)
+    expect($('#netLengthHauled')).toHaveLength(1)
+    expect($('#netLengthLeft')).toHaveLength(1)
+
+    const invalidResponse = await server.inject({
+      method: 'POST',
+      url: '/add-gear',
+      payload: { meshSize: '100', netLengthHauled: '300' },
+      headers: { cookie }
+    })
+    cookie = nextCookie(invalidResponse, cookie)
+    const $invalid = load(invalidResponse.result)
+
+    expect(invalidResponse.statusCode).toBe(statusCodes.badRequest)
+    expect($invalid('.govuk-error-summary').text()).toContain(
+      'Enter the total length of nets left in the water at the end of the trip (m)'
+    )
+
+    const beforeSave = await server.inject({
+      method: 'GET',
+      url: '/gear-selection',
+      headers: { cookie }
+    })
+    expect(
+      load(beforeSave.result)('input[value="gillnets-trammel-nets"]')
+    ).toHaveLength(0)
+
+    const saveResponse = await server.inject({
+      method: 'POST',
+      url: '/add-gear',
+      payload: {
+        meshSize: '100',
+        netLengthHauled: '300',
+        netLengthLeft: '50'
+      },
+      headers: { cookie }
+    })
+    cookie = nextCookie(saveResponse, cookie)
+
+    expect(saveResponse.statusCode).toBe(303)
+    expect(saveResponse.headers.location).toBe('/gear-selection')
+
+    const afterSave = await server.inject({
+      method: 'GET',
+      url: '/gear-selection',
+      headers: { cookie }
+    })
+    const $afterSave = load(afterSave.result)
+    expect($afterSave('input[value="gillnets-trammel-nets"]')).toHaveLength(1)
+    expect(
+      $afterSave('#gillnets-trammel-nets-netLengthHauled').attr('value')
+    ).toBe('300')
+  })
+
+  test('Should show "no details required" for gear with no measurements and save it on confirm', async () => {
     const addResponse = await server.inject({
       method: 'POST',
       url: '/add-gear',
@@ -312,5 +396,34 @@ describe('#addGearSubmitController', () => {
 
     expect(confirmResponse.statusCode).toBe(303)
     expect(confirmResponse.headers.location).toBe('/check-answers')
+  })
+
+  test('Should return to the account after adding measured gear from the account', async () => {
+    const addResponse = await server.inject({
+      method: 'POST',
+      url: '/add-gear?return=/account',
+      payload: { gear: 'Dredge' }
+    })
+    const cookie = nextCookie(addResponse)
+    const { result: measurementPage } = await server.inject({
+      method: 'GET',
+      url: addResponse.headers.location,
+      headers: { cookie }
+    })
+    const $ = load(measurementPage)
+
+    expect(
+      $('[data-testid="app-page-navigation-back-link"]').attr('href')
+    ).toBe('/account')
+
+    const confirmResponse = await server.inject({
+      method: 'POST',
+      url: '/add-gear?return=/account',
+      payload: { numberOfDredges: '2', numberOfTimesShot: '3' },
+      headers: { cookie }
+    })
+
+    expect(confirmResponse.statusCode).toBe(303)
+    expect(confirmResponse.headers.location).toBe('/account')
   })
 })

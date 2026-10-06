@@ -1,4 +1,18 @@
 // Walkthrough-only mock data — fictional, not persisted.
+const MESH_SIZE_LABEL = 'Mesh size (mm)'
+
+const gillnetMeasurements = [
+  { id: 'meshSize', label: MESH_SIZE_LABEL },
+  {
+    id: 'netLengthHauled',
+    label: 'Total length of nets hauled during the trip (m)'
+  },
+  {
+    id: 'netLengthLeft',
+    label: 'Total length of nets left in the water at the end of the trip (m)'
+  }
+]
+
 export const gearSelection = [
   {
     id: 'beam-trawl',
@@ -15,7 +29,7 @@ export const gearSelection = [
     displayOrder: 2,
     measurements: [
       { id: 'numberOfTrawlNets', label: 'Number of trawl nets' },
-      { id: 'meshSize', label: 'Mesh size (mm)' }
+      { id: 'meshSize', label: MESH_SIZE_LABEL }
     ]
   },
   {
@@ -62,14 +76,15 @@ export const gearSelection = [
     hint: '100mm mesh',
     requiresPotsDetails: false,
     displayOrder: 7,
-    measurements: [{ id: 'meshSize', label: 'Mesh size (mm)' }]
+    measurements: [{ id: 'meshSize', label: MESH_SIZE_LABEL }]
   },
   {
     id: 'trammel-net',
     label: 'Trammel net',
     hint: '80mm mesh',
     requiresPotsDetails: false,
-    displayOrder: 8
+    displayOrder: 8,
+    measurements: gillnetMeasurements
   },
   {
     id: 'traps',
@@ -97,7 +112,7 @@ export const gearCatalogue = [
   },
   {
     id: 'long-line',
-    label: 'Long line',
+    label: 'Drifting longlines',
     hint: null,
     requiresPotsDetails: false,
     displayOrder: 11,
@@ -112,5 +127,13 @@ export const gearCatalogue = [
     hint: '100mm mesh',
     requiresPotsDetails: false,
     displayOrder: 12
+  },
+  {
+    id: 'gillnets-trammel-nets',
+    label: 'Nets (Gillnets and Trammels)',
+    hint: null,
+    requiresPotsDetails: false,
+    displayOrder: 13,
+    measurements: gillnetMeasurements
   }
 ]

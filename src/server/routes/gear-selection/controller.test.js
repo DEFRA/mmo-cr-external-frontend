@@ -127,6 +127,37 @@ describe('#gearSelectionController', () => {
     expect($('a.govuk-link[href="/remove-gear"]').text()).toBe('Remove gear')
   })
 
+  test('Should hide Remove gear when there are no favourite gears', async () => {
+    const removeResponse = await server.inject({
+      method: 'POST',
+      url: '/remove-gear',
+      payload: {
+        gearIds: [
+          'beam-trawl',
+          'bottom-otter-trawl',
+          'dredge',
+          'handlines-pole-lines',
+          'miscellaneous-gear-diving',
+          'pots',
+          'seine-nets',
+          'trammel-net',
+          'traps'
+        ]
+      }
+    })
+    const cookie = removeResponse.headers['set-cookie'][0].split(';')[0]
+
+    const { result } = await server.inject({
+      method: 'GET',
+      url: '/gear-selection',
+      headers: { cookie }
+    })
+    const $ = load(result)
+
+    expect($('a.govuk-link[href="/add-gear"]')).toHaveLength(1)
+    expect($('a.govuk-link[href="/remove-gear"]')).toHaveLength(0)
+  })
+
   test('Should restore previously-selected gear ids as checked', async () => {
     const setResponse = await server.inject({
       method: 'POST',
