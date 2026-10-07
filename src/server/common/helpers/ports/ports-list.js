@@ -70,6 +70,8 @@ export function portSearchLabel(port, catalogue) {
 export function migratePortJourneyState(request, catalogue) {
   const state = getJourneyState(request)
   const patch = {}
+  const portNamesByCode = { ...state.portNamesByCode }
+  const portCoordinatesByCode = { ...state.portCoordinatesByCode }
   const canonicalCode = (code) => findPortByCode(code, catalogue)?.code || code
 
   if (Array.isArray(state.favouritePorts)) {
@@ -81,14 +83,31 @@ export function migratePortJourneyState(request, catalogue) {
 
   for (const key of ['departurePort', 'returnPort']) {
     const port = findPortByCode(state[key], catalogue)
-    if (port && port.code !== state[key]) {
-      patch[key] = port.code
-      patch.portNamesByCode = {
-        ...state.portNamesByCode,
-        ...patch.portNamesByCode,
-        [port.code]: port.name
-      }
+    if (!port) continue
+    if (port.code !== state[key]) patch[key] = port.code
+    if (portNamesByCode[port.code] !== port.name) {
+      portNamesByCode[port.code] = port.name
     }
+    const coordinate = coordinateTuple(port.coordinate)
+    if (coordinate && !portCoordinatesByCode[port.code]) {
+      portCoordinatesByCode[port.code] = coordinate
+    }
+  }
+
+  if (
+    Object.keys(portNamesByCode).length !==
+      Object.keys(state.portNamesByCode || {}).length ||
+    Object.entries(portNamesByCode).some(
+      ([code, name]) => state.portNamesByCode?.[code] !== name
+    )
+  ) {
+    patch.portNamesByCode = portNamesByCode
+  }
+  if (
+    Object.keys(portCoordinatesByCode).length !==
+    Object.keys(state.portCoordinatesByCode || {}).length
+  ) {
+    patch.portCoordinatesByCode = portCoordinatesByCode
   }
 
   return Object.keys(patch).length ? setJourneyState(request, patch) : state
@@ -96,7 +115,24 @@ export function migratePortJourneyState(request, catalogue) {
 
 export function rememberPortName(request, port) {
   const state = getJourneyState(request)
+  const coordinate = coordinateTuple(port.coordinate)
   setJourneyState(request, {
-    portNamesByCode: { ...state.portNamesByCode, [port.code]: port.name }
+    portNamesByCode: { ...state.portNamesByCode, [port.code]: port.name },
+    ...(coordinate && {
+      portCoordinatesByCode: {
+        ...state.portCoordinatesByCode,
+        [port.code]: coordinate
+      }
+    })
   })
+}
+
+function coordinateTuple(coordinate) {
+  if (
+    !Number.isFinite(coordinate?.longitude) ||
+    !Number.isFinite(coordinate?.latitude)
+  ) {
+    return undefined
+  }
+  return [coordinate.longitude, coordinate.latitude]
 }

@@ -27,11 +27,71 @@ function mockFetchOnce(response) {
   )
 }
 
+function mockAreaApiAndOffline(apiCollection, subrectangles) {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((url) => {
+      if (url === '/map-data/statistical-areas') {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve(apiCollection)
+        })
+      }
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({ subrectangles })
+      })
+    })
+  )
+}
+
 afterEach(() => {
   vi.unstubAllGlobals()
 })
 
 describe('#initialiseStatisticalAreaSearch', () => {
+  test('Should add API subrectangles to offline search results and prefer API coordinates', async () => {
+    setBodyHtml(baseMarkup())
+    mockAreaApiAndOffline(
+      {
+        type: 'FeatureCollection',
+        features: [
+          {
+            type: 'Feature',
+            id: 'area-guid',
+            properties: {
+              code: '27D86',
+              areaType: 'ices-subrectangle',
+              parentCode: '27D8',
+              centroid: { longitude: -4.5, latitude: 50.25 }
+            },
+            geometry: { type: 'Polygon', coordinates: [] }
+          }
+        ]
+      },
+      [{ subCode: '27D86', labelCoordinate: [-4, 50] }, { subCode: '30F04' }]
+    )
+
+    await initialiseStatisticalAreaSearch()
+    const input = document.querySelector('[data-statistical-area-search]')
+    input.value = '27D86'
+    input.dispatchEvent(new Event('input'))
+
+    expect(
+      document.querySelector('[data-statistical-area-results] button')
+    ).not.toBeNull()
+    expect(
+      document.querySelector('[data-statistical-area-coordinates-value]')
+        .textContent
+    ).toBe('50.2500, -4.5000')
+    input.value = '30F04'
+    input.dispatchEvent(new Event('input'))
+    expect(
+      document.querySelector('[data-statistical-area-coordinates-value]')
+        .textContent
+    ).toBe('')
+  })
+
   test('Should do nothing when there is no search input', async () => {
     setBodyHtml('<div></div>')
 

@@ -6,7 +6,8 @@ import {
   findPortByCode,
   findPortByName,
   migratePortJourneyState,
-  portSearchLabel
+  portSearchLabel,
+  rememberPortName
 } from '#/server/common/helpers/ports/ports-list.js'
 
 function createFakeRequest(initialState) {
@@ -60,7 +61,11 @@ describe('#addFavouritePortCode', () => {
 
 describe('#migratePortJourneyState', () => {
   const catalogue = [
-    { code: 'GBPLY', name: 'Plymouth' },
+    {
+      code: 'GBPLY',
+      name: 'Plymouth',
+      coordinate: { longitude: -4.1427, latitude: 50.3661 }
+    },
     { code: 'GB007', name: 'Newlyn' }
   ]
 
@@ -77,6 +82,7 @@ describe('#migratePortJourneyState', () => {
     expect(state.departurePort).toBe('GBPLY')
     expect(state.returnPort).toBe('hastings')
     expect(state.portNamesByCode.GBPLY).toBe('Plymouth')
+    expect(state.portCoordinatesByCode.GBPLY).toEqual([-4.1427, 50.3661])
   })
 
   test('Should reject an ambiguous or unknown slug', () => {
@@ -98,5 +104,21 @@ describe('#migratePortJourneyState', () => {
     expect(portSearchLabel(ports[0], ports)).toBe('Example (GB001)')
     expect(findPortByName('Example', ports)).toBeUndefined()
     expect(findPortByName('Example (GB002)', ports)).toBe(ports[1])
+  })
+})
+
+describe('#rememberPortName', () => {
+  test('Should store API port coordinates for the statistical-area map', () => {
+    const request = createFakeRequest({})
+    rememberPortName(request, {
+      code: 'GBHUL',
+      name: 'Hull',
+      coordinate: { longitude: -0.333, latitude: 53.717 }
+    })
+
+    expect(request.yar.get().portNamesByCode.GBHUL).toBe('Hull')
+    expect(request.yar.get().portCoordinatesByCode.GBHUL).toEqual([
+      -0.333, 53.717
+    ])
   })
 })
