@@ -20,6 +20,7 @@ const pageTitle = 'What gear did you use?'
 const { reference } = getData('confirmation')
 const addGearViewName = 'add-gear/index'
 const gearSelectionPath = '/gear-selection'
+const measurementStep = 'measurements'
 const emptyGearMessage = 'Select the gear you want to add'
 
 // Every measurement field id used across the gear catalogue's `measurements`
