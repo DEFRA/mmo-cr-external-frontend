@@ -114,9 +114,9 @@ function gearUsedSection(
   journeyState,
   fallback,
   meshSizeDefault,
-  buildChangeHref
+  buildChangeHref,
+  gearCatalogue
 ) {
-  const gearOptions = getData('gearSelection')
   const selectedGearIds = journeyState.selectedGearIds
   const hasSelection =
     Array.isArray(selectedGearIds) && selectedGearIds.length > 0
@@ -127,14 +127,18 @@ function gearUsedSection(
   const gearLabel = hasSelection
     ? joinWithAnd(
         selectedGearIds
-          .map((id) => gearOptions.find((option) => option.id === id)?.label)
+          .map(
+            (id) =>
+              gearCatalogue.find((option) => option.id === id)?.name ||
+              gearCatalogue.find((option) => option.id === id)?.label
+          )
           .filter(Boolean)
       )
     : fallback.gear
 
   const meshHints = hasSelection
     ? selectedGearIds
-        .map((id) => gearOptions.find((option) => option.id === id)?.hint)
+        .map((id) => gearCatalogue.find((option) => option.id === id)?.hint)
         .filter((hint) => hint && MESH_HINT_PATTERN.test(hint))
     : []
   const meshSize = resolveMeshSize(meshHints, potsSelected, meshSizeDefault)
@@ -333,6 +337,7 @@ export function buildCheckAnswersViewModel(request, options = {}) {
     ((wizardPath) => `${wizardPath}${RETURN_TO_CHECK_ANSWERS}`)
   const journeyState = getJourneyState(request)
   const speciesCatalogue = options.speciesCatalogue || []
+  const gearCatalogue = options.gearCatalogue || getData('gearSelection')
   const fallback = getData('catchRecordDetails')
   const { potsMeshSize } = getData('checkAnswersDefaults')
 
@@ -343,7 +348,13 @@ export function buildCheckAnswersViewModel(request, options = {}) {
       buildChangeHref,
       options.hideVesselChange
     ),
-    gearUsedSection(journeyState, fallback, potsMeshSize, buildChangeHref),
+    gearUsedSection(
+      journeyState,
+      fallback,
+      potsMeshSize,
+      buildChangeHref,
+      gearCatalogue
+    ),
     speciesCaughtSection(
       journeyState,
       fallback,

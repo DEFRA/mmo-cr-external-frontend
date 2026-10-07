@@ -2,6 +2,13 @@ import { load } from 'cheerio'
 
 import { createServer } from '#/server/server.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
+import {
+  mockGearsReferenceData,
+  restoreGearsReferenceDataMock
+} from '#/test-helpers/mock-gears-reference-data.js'
+
+beforeEach(() => mockGearsReferenceData())
+afterEach(() => restoreGearsReferenceDataMock())
 
 describe('#removeGearController', () => {
   let server

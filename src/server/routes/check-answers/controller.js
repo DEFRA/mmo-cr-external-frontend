@@ -3,14 +3,17 @@ import Joi from 'joi'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 import { backForCheckAnswers } from '#/server/common/helpers/journey/navigation.js'
 import { getSpeciesPageData } from '#/server/common/helpers/species/species-list.js'
+import { getGearCatalogue } from '#/server/common/helpers/gear/favourite-gear.js'
 import { buildCheckAnswersViewModel } from './view-model.js'
 
 const pageTitle = 'Check your catch record'
 
 async function viewContext(request, overrides = {}) {
   const { catalogue } = await getSpeciesPageData(request)
+  const gearCatalogue = await getGearCatalogue()
   const { sections } = buildCheckAnswersViewModel(request, {
-    speciesCatalogue: catalogue
+    speciesCatalogue: catalogue,
+    gearCatalogue
   })
 
   return {
