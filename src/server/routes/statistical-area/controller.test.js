@@ -7,6 +7,7 @@ import {
   restoreSpeciesReferenceDataMock
 } from '#/test-helpers/mock-species-reference-data.js'
 import { mockPortsReferenceData } from '#/test-helpers/mock-ports-reference-data.js'
+import { statisticalAreaController } from './controller.js'
 
 beforeEach(() => {
   mockSpeciesReferenceData()
@@ -43,6 +44,48 @@ describe('#statisticalAreaController', () => {
 
     expect(statusCode).toBe(statusCodes.seeOther)
     expect(headers.location).toBe('/departure-port')
+  })
+
+  test('Should restore the API coordinate for an existing Hamnavoe journey', async () => {
+    const journeyState = { departurePort: 'GBHMV' }
+    const request = {
+      yar: {
+        get: () => journeyState,
+        set: (_key, patch) => Object.assign(journeyState, patch)
+      }
+    }
+    const h = { view: vi.fn() }
+    vi.mocked(globalThis.fetch).mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      headers: { get: () => '"hamnavoe-test"' },
+      json: async () => ({
+        items: [
+          {
+            id: '00000000-0000-4000-8000-000000000036',
+            code: 'GBHMV',
+            name: 'Hamnavoe, Burra Isle',
+            coordinate: {
+              longitude: -1.32197999954224,
+              latitude: 60.103401184082
+            }
+          }
+        ],
+        total: 1,
+        offset: 0,
+        limit: 50
+      })
+    })
+
+    await statisticalAreaController.handler(request, h)
+
+    expect(h.view).toHaveBeenCalledWith(
+      'statistical-area/index',
+      expect.objectContaining({
+        departurePortName: 'Hamnavoe, Burra Isle',
+        departurePortCoordinate: [-1.32197999954224, 60.103401184082]
+      })
+    )
   })
 
   test('Should provide expected response', async () => {

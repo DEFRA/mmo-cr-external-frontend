@@ -109,10 +109,10 @@ npm run dev
 
 ### Reference Data Service
 
-Species and gear pages retrieve reference catalogues from the Reference Data Service on the
-frontend server. For host-run development, the service URL defaults to `http://localhost:3002`.
-Start the local backend services and seed their data from the `mmo-cr-backend-local` repository
-before opening these pages. The frontend requires `REFERENCE_DATA_SERVICE_TOKEN`; without it,
+Species, vessel, gear, port and map-land reads use the Reference Data Service from the frontend
+server. For host-run development, the service URL defaults to `http://localhost:3002`. Start the
+local backend services and seed their data from the `mmo-cr-backend-local` repository before
+opening these pages. The frontend requires `REFERENCE_DATA_SERVICE_TOKEN`; without it,
 reference-data-backed pages return `503`. For example, stop and restart the frontend with a
 non-empty local development token accepted by the local Authentication Service stub:
 
@@ -161,6 +161,18 @@ curl --fail-with-body -X PUT http://localhost:3002/api/v1/reference-data/ports \
 
 This updates only the local Reference Data Service; the frontend continues to accept only active
 API ports. The upload is idempotent if this version is already active.
+
+The statistical-area map requests land GeoJSON through the same-origin frontend endpoint
+`GET /map-data/land`, which proxies `GET /api/v1/reference-data/map/land` without exposing the
+bearer token to browser JavaScript. If the API is unavailable, the map falls back to its bundled
+`src/client/public/offline-map/land.json` layer. Subrectangles and map port markers remain bundled
+offline data.
+
+The alternative-area search also reads `GET /api/v1/reference-data/map/statistical-areas` and
+resolves selected API features through `GET /api/v1/reference-data/map/statistical-areas/{id}` via
+same-origin `/map-data/statistical-areas` proxy routes. API subrectangle results are merged with
+the bundled subrectangle catalogue, which remains the offline fallback and supplies the nearby
+map geometry/choices when the service dataset is incomplete.
 
 When running this frontend with Docker Compose, its `cdp-tenant` network is external and shared
 with the backend Compose project. Start the backend Compose project first, set

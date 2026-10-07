@@ -23,6 +23,8 @@ import { gearSelection } from '../routes/gear-selection/index.js'
 import { addGear } from '../routes/add-gear/index.js'
 import { removeGear } from '../routes/remove-gear/index.js'
 import { statisticalArea } from '../routes/statistical-area/index.js'
+import { mapStatisticalAreasData } from '../routes/map-statistical-areas-data/index.js'
+import { mapLandData } from '../routes/map-land-data/index.js'
 import { statisticalAreaOther } from '../routes/statistical-area-other/index.js'
 import { speciesSelection } from '../routes/species-selection/index.js'
 import { addSpecies } from '../routes/add-species/index.js'
@@ -79,6 +81,8 @@ export const router = {
         gearSelection,
         addGear,
         removeGear,
+        mapLandData,
+        mapStatisticalAreasData,
         statisticalArea,
         statisticalAreaOther,
         speciesSelection,

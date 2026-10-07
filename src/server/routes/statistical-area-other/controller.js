@@ -9,6 +9,8 @@ import { getData } from '#/server/common/data/get-data.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 import { offlineMapSubrectangles } from '#/server/common/data/offline-map-subrectangles.js'
 import { offlineMapPorts } from '#/server/common/data/offline-map-ports.js'
+import { config } from '#/config/config.js'
+import { createMapStatisticalAreasReferenceDataClient } from '#/server/common/clients/map-statistical-areas-reference-data.js'
 
 const pageTitle =
   'Select the statistical sub area where the majority of your catch was caught using seine nets (mesh size 100mm)?'
@@ -20,6 +22,26 @@ const subrectangleErrorText = 'Enter a valid statistical sub area code.'
 const errorSummaryTitle = 'There is a problem'
 const alternativeStatisticalAreaHref = '#alternativeStatisticalArea'
 const nearbyAreaCount = 9
+const statisticalAreasClient = createMapStatisticalAreasReferenceDataClient({
+  serviceUrl: config.get('referenceData.serviceUrl'),
+  token: () => config.get('referenceData.token'),
+  timeoutMs: config.get('referenceData.timeoutMs')
+})
+
+async function apiSubrectangle(code) {
+  try {
+    const result = await statisticalAreasClient.getCollection({ code })
+    const match = result.body.features.find(
+      (feature) => feature.properties.code.toUpperCase() === code.toUpperCase()
+    )
+    if (!match) return undefined
+    const { feature } = await statisticalAreasClient.getFeature(match.id)
+    const centroid = feature.properties.centroid
+    return centroid ? [centroid.longitude, centroid.latitude] : undefined
+  } catch {
+    return undefined
+  }
+}
 
 function closestSubareas(portCoordinate) {
   return [...offlineMapSubrectangles.entries()]
@@ -73,15 +95,18 @@ function viewContext(request, overrides = {}) {
   const departurePort = getData('ports').find(
     (port) => port.code === journeyState.departurePort
   )
-  const nearbyAreaCodes = closestSubareas(
-    offlineMapPorts.get(
-      (
-        journeyState.portNamesByCode?.[journeyState.departurePort] ||
-        departurePort?.name ||
-        'Hastings'
-      ).toLowerCase()
-    )
-  )
+  const departurePortName =
+    journeyState.portNamesByCode?.[journeyState.departurePort] ||
+    departurePort?.name ||
+    'Hastings'
+  const departurePortCoordinate =
+    journeyState.portCoordinatesByCode?.[journeyState.departurePort] ||
+    (departurePortName
+      ? offlineMapPorts.get(departurePortName.toLowerCase())
+      : undefined)
+  const nearbyAreaCodes = departurePortCoordinate
+    ? closestSubareas(departurePortCoordinate)
+    : []
   const selectedArea = journeyState.selectedAlternativeAreaOption
 
   return {
@@ -113,8 +138,11 @@ export const statisticalAreaOtherController = {
   }
 }
 
-function handleKnownAreaSelection(request, h, statisticalArea) {
-  if (!offlineMapSubrectangles.has(statisticalArea)) {
+async function handleKnownAreaSelection(request, h, statisticalArea) {
+  const apiCoordinate = await apiSubrectangle(statisticalArea)
+  const offlineArea = offlineMapSubrectangles.get(statisticalArea)
+  const coordinate = apiCoordinate || offlineArea?.coordinate
+  if (!coordinate) {
     return h.response().code(statusCodes.badRequest)
   }
 
@@ -122,8 +150,7 @@ function handleKnownAreaSelection(request, h, statisticalArea) {
     statAreaBranch: 'other',
     selectedAlternativeAreaOption: statisticalArea,
     alternativeStatisticalArea: null,
-    alternativeStatisticalAreaCoordinates:
-      offlineMapSubrectangles.get(statisticalArea).coordinate
+    alternativeStatisticalAreaCoordinates: coordinate
   })
 
   return h
@@ -131,7 +158,7 @@ function handleKnownAreaSelection(request, h, statisticalArea) {
     .code(statusCodes.seeOther)
 }
 
-function handleManualAreaSubmission(request, h) {
+async function handleManualAreaSubmission(request, h) {
   const submitted = request.payload.alternativeStatisticalArea
     .trim()
     .toUpperCase()
@@ -160,9 +187,11 @@ function handleManualAreaSubmission(request, h) {
       .takeover()
   }
 
+  const apiCoordinate = await apiSubrectangle(submitted)
   const selectedSubrectangle = offlineMapSubrectangles.get(submitted)
+  const coordinate = apiCoordinate || selectedSubrectangle?.coordinate
 
-  if (!selectedSubrectangle) {
+  if (!coordinate) {
     return h
       .view(
         'statistical-area-other/index',
@@ -190,7 +219,7 @@ function handleManualAreaSubmission(request, h) {
     statAreaBranch: 'other',
     selectedAlternativeAreaOption: 'other',
     alternativeStatisticalArea: submitted,
-    alternativeStatisticalAreaCoordinates: selectedSubrectangle.coordinate
+    alternativeStatisticalAreaCoordinates: coordinate
   })
 
   return h
@@ -242,7 +271,7 @@ export const statisticalAreaOtherSubmitController = {
       }
     }
   },
-  handler(request, h) {
+  async handler(request, h) {
     const { statisticalArea } = request.payload
     if (statisticalArea !== 'other') {
       return handleKnownAreaSelection(request, h, statisticalArea)
