@@ -126,7 +126,7 @@ describe('#addGearSubmitController', () => {
 
     expect(statusCode).toBe(statusCodes.badRequest)
     expect($('.govuk-error-summary').text()).toContain(
-      'Enter the name of the gear you want to add'
+      'Select the gear you want to add'
     )
   })
 
@@ -217,12 +217,12 @@ describe('#addGearSubmitController', () => {
     })
 
     expect(addResponse.statusCode).toBe(303)
-    expect(addResponse.headers.location).toBe('/add-gear')
+    expect(addResponse.headers.location).toBe('/add-gear?step=measurements')
 
     const cookie = nextCookie(addResponse)
     const { result } = await server.inject({
       method: 'GET',
-      url: '/add-gear',
+      url: '/add-gear?step=measurements',
       headers: { cookie }
     })
     const $ = load(result)
@@ -230,6 +230,48 @@ describe('#addGearSubmitController', () => {
     expect($('h1').text().trim()).toBe('Enter the measurements for dredge')
     expect($('#numberOfDredges')).toHaveLength(1)
     expect($('#numberOfTimesShot')).toHaveLength(1)
+  })
+
+  test('Should discard an abandoned measurement step and show measurements for a newly selected gear', async () => {
+    const firstAdd = await server.inject({
+      method: 'POST',
+      url: '/add-gear',
+      payload: { gear: 'Dredge' }
+    })
+    let cookie = nextCookie(firstAdd)
+
+    const freshVisit = await server.inject({
+      method: 'GET',
+      url: '/add-gear',
+      headers: { cookie }
+    })
+    cookie = nextCookie(freshVisit, cookie)
+    const $fresh = load(freshVisit.result)
+
+    expect($fresh('#gear')).toHaveLength(1)
+    expect($fresh('h1').text()).toContain('What gear did you use?')
+    expect($fresh('#numberOfDredges')).toHaveLength(0)
+
+    const secondAdd = await server.inject({
+      method: 'POST',
+      url: '/add-gear',
+      payload: { gear: 'Bottom otter trawl' },
+      headers: { cookie }
+    })
+    cookie = nextCookie(secondAdd, cookie)
+
+    const { result } = await server.inject({
+      method: 'GET',
+      url: secondAdd.headers.location,
+      headers: { cookie }
+    })
+    const $ = load(result)
+
+    expect($('h1').text().trim()).toBe(
+      'Enter the measurements for bottom otter trawl'
+    )
+    expect($('#numberOfTrawlNets')).toHaveLength(1)
+    expect($('#numberOfDredges')).toHaveLength(0)
   })
 
   test('Should require the reference net measurements before adding it to favourites', async () => {
@@ -240,11 +282,11 @@ describe('#addGearSubmitController', () => {
     })
     let cookie = nextCookie(addResponse)
 
-    expect(addResponse.headers.location).toBe('/add-gear')
+    expect(addResponse.headers.location).toBe('/add-gear?step=measurements')
 
     const measurementPage = await server.inject({
       method: 'GET',
-      url: '/add-gear',
+      url: '/add-gear?step=measurements',
       headers: { cookie }
     })
     const $ = load(measurementPage.result)
@@ -263,7 +305,7 @@ describe('#addGearSubmitController', () => {
 
     expect(invalidResponse.statusCode).toBe(statusCodes.badRequest)
     expect($invalid('.govuk-error-summary').text()).toContain(
-      'Enter the total length of nets left in the water at the end of the trip (m)'
+      'Enter the total length of nets left in the water at the end of the trip, in metres'
     )
 
     const beforeSave = await server.inject({
@@ -342,9 +384,67 @@ describe('#addGearSubmitController', () => {
 
     expect(statusCode).toBe(statusCodes.badRequest)
     expect($('.govuk-error-summary').text()).toContain(
-      'Enter the number of rods and lines'
+      'Number of rods and lines must be a whole number greater than 0'
     )
   })
+
+  test.each([
+    ['0', 'Number of rods and lines must be a whole number greater than 0'],
+    ['', 'Enter the number of rods and lines']
+  ])(
+    'Should reject rods and lines value "%s" and not add the gear to favourites',
+    async (rodsAndLines, expectedError) => {
+      const addResponse = await server.inject({
+        method: 'POST',
+        url: '/add-gear',
+        payload: { gear: 'Handlines and pole lines (hand operated)' }
+      })
+      const cookie = nextCookie(addResponse)
+
+      const { statusCode, result } = await server.inject({
+        method: 'POST',
+        url: '/add-gear',
+        payload: { rodsAndLines },
+        headers: { cookie }
+      })
+      const $ = load(result)
+
+      expect(statusCode).toBe(statusCodes.badRequest)
+      expect($('.govuk-error-summary').text()).toContain(expectedError)
+      expect($('#rodsAndLines')).toHaveLength(1)
+    }
+  )
+
+  test.each([
+    ['0', 'Enter a number greater than 0'],
+    ['1.5', 'Enter a whole number'],
+    ['-1.5', 'Enter a whole number greater than 0'],
+    ['abc', 'Enter a whole number greater than 0']
+  ])(
+    'Should show a generic error for number of trawl nets value "%s"',
+    async (numberOfTrawlNets, expectedError) => {
+      const addResponse = await server.inject({
+        method: 'POST',
+        url: '/add-gear',
+        payload: { gear: 'Bottom otter trawl' }
+      })
+      const cookie = nextCookie(addResponse)
+
+      const { statusCode, result } = await server.inject({
+        method: 'POST',
+        url: '/add-gear',
+        payload: { numberOfTrawlNets, meshSize: '0' },
+        headers: { cookie }
+      })
+      const $ = load(result)
+
+      expect(statusCode).toBe(statusCodes.badRequest)
+      expect($('.govuk-error-summary').text()).toContain(expectedError)
+      expect($('.govuk-error-summary').text()).toContain(
+        'Mesh size must be a whole number greater than 0'
+      )
+    }
+  )
 
   test('Should save all measurements and redirect to gear selection once confirmed', async () => {
     const addResponse = await server.inject({
@@ -384,7 +484,7 @@ describe('#addGearSubmitController', () => {
     const cookie = nextCookie(addResponse)
 
     expect(addResponse.headers.location).toBe(
-      '/add-gear?return=%2Fcheck-answers'
+      '/add-gear?return=%2Fcheck-answers&step=measurements'
     )
 
     const confirmResponse = await server.inject({

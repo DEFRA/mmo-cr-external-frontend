@@ -12,6 +12,10 @@ import {
   getGearCatalogue,
   migrateGearJourneyState
 } from '#/server/common/helpers/gear/favourite-gear.js'
+import {
+  isBlankMeasurement,
+  validateMeasurement
+} from '#/server/common/helpers/gear/measurement-validation.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 
 const pageTitle = 'What gear did you use?'
@@ -142,73 +146,38 @@ function renderWithErrors(
     .takeover()
 }
 
-function isWithinMeasurementRange(value, measurement) {
-  const aboveMinimum =
-    measurement.minimumValue == null || value >= measurement.minimumValue
-  const belowMaximum =
-    measurement.maximumValue == null || value <= measurement.maximumValue
-  return aboveMinimum && belowMaximum
-}
-
-function normalizeMeasurementValue(rawValue, measurement = {}) {
-  if (rawValue === undefined || rawValue === null || rawValue === '') {
-    return { value: undefined, valid: false }
-  }
-  const value = Number(rawValue)
-  const valid =
-    Number.isInteger(value) &&
-    value >= 0 &&
-    isWithinMeasurementRange(value, measurement)
-  return { value, valid }
-}
-
-function validateMeasurementsForGear(gearId, payload, catalogue) {
-  const errorList = []
-  const fieldErrors = {}
-  const values = {}
-  const measurements = measurableOptionsOf(gearId, catalogue)
-
-  for (const measurement of measurements) {
-    const fieldName = measurementFieldName(gearId, measurement.id)
-    const rawValue = payload[fieldName]
-
-    if (rawValue === undefined || rawValue === null || rawValue === '') {
-      if (measurement.required) {
-        const errorText = `Enter the ${measurement.label.toLowerCase()}`
-        errorList.push({ text: errorText, href: `#${fieldName}` })
-        fieldErrors[fieldName] = errorText
-      }
-      continue
-    }
-
-    const { value, valid } = normalizeMeasurementValue(rawValue, measurement)
-
-    if (!valid) {
-      const errorText = `Enter the ${measurement.label.toLowerCase()}`
-      errorList.push({ text: errorText, href: `#${fieldName}` })
-      fieldErrors[fieldName] = errorText
-    } else {
-      values[measurement.id] = value
-    }
-  }
-
-  return { errorList, fieldErrors, values }
-}
-
 function validateGearMeasurements(gearIds, payload, catalogue) {
   const errorList = []
   const fieldErrors = {}
   const measurementDetailsByGearId = {}
 
   for (const gearId of gearIds) {
-    const result = validateMeasurementsForGear(gearId, payload, catalogue)
-    errorList.push(...result.errorList)
-    Object.assign(fieldErrors, result.fieldErrors)
-    if (
-      Object.keys(result.values).length > 0 ||
-      measurableOptionsOf(gearId, catalogue).length > 0
-    ) {
-      measurementDetailsByGearId[gearId] = result.values
+    const measurements = measurableOptionsOf(gearId, catalogue)
+
+    if (!measurements.length) {
+      continue
+    }
+
+    measurementDetailsByGearId[gearId] = {}
+
+    for (const measurement of measurements) {
+      const fieldName = measurementFieldName(gearId, measurement.id)
+      const rawValue = payload[fieldName]
+
+      // Unlike Pots (mandatory), these generalised fields are optional -
+      // only validate the format when the user has actually entered something.
+      if (isBlankMeasurement(rawValue)) {
+        continue
+      }
+
+      const { value, error } = validateMeasurement(rawValue, measurement)
+
+      if (error) {
+        errorList.push({ text: error, href: `#${fieldName}` })
+        fieldErrors[fieldName] = error
+      } else {
+        measurementDetailsByGearId[gearId][measurement.id] = value
+      }
     }
   }
 
@@ -256,8 +225,11 @@ export const gearSelectionSubmitController = {
         potsInWater: Joi.string().allow('')
       }).unknown(true),
       async failAction(request, h) {
-        const catalogue = await getGearCatalogue()
-        const errorText = 'Select the gear you used'
+        const catalogue = await getGearCatalogue({
+          vesselLengthMetres:
+            getJourneyState(request).selectedVesselLengthOverallMetres
+        })
+        const errorText = 'Select the gear used on this trip'
 
         return renderWithErrors(request, h, catalogue, {
           errorSummary: {
@@ -296,19 +268,20 @@ export const gearSelectionSubmitController = {
     let potsValues
 
     if (potsSelected) {
-      const hauled = normalizeMeasurementValue(potsHauled)
-      const inWater = normalizeMeasurementValue(potsInWater)
+      const [hauledMeasurement, inWaterMeasurement] = catalogue.find(
+        (gear) => gear.id === 'pots'
+      ).measurements
+      const hauled = validateMeasurement(potsHauled, hauledMeasurement)
+      const inWater = validateMeasurement(potsInWater, inWaterMeasurement)
 
-      if (!hauled.valid) {
-        const errorText = 'Enter the total pots or traps hauled'
-        errorList.push({ text: errorText, href: '#potsHauled' })
-        fieldErrors.potsHauled = errorText
+      if (hauled.error) {
+        errorList.push({ text: hauled.error, href: '#potsHauled' })
+        fieldErrors.potsHauled = hauled.error
       }
 
-      if (!inWater.valid) {
-        const errorText = 'Enter the total pots or traps left in water'
-        errorList.push({ text: errorText, href: '#potsInWater' })
-        fieldErrors.potsInWater = errorText
+      if (inWater.error) {
+        errorList.push({ text: inWater.error, href: '#potsInWater' })
+        fieldErrors.potsInWater = inWater.error
       }
 
       potsValues = { potsHauled: hauled.value, potsInWater: inWater.value }

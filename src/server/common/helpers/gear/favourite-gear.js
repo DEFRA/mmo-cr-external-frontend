@@ -19,6 +19,27 @@ const legacyDefaultFavouriteIds = getData('gearSelection').map(
 )
 const legacyPotsOption = legacyGearCatalogue.find((gear) => gear.id === 'pots')
 
+function withMeasurementMessages(gear) {
+  const legacy = legacyGearCatalogue.find((option) => option.id === gear.id)
+  return {
+    ...gear,
+    measurements: gear.measurements.map((measurement) => {
+      const legacyMeasurement = legacy?.measurements?.find(
+        (option) => option.id === measurement.id
+      )
+      return {
+        ...measurement,
+        emptyMessage:
+          legacyMeasurement?.emptyMessage ||
+          `Enter the ${measurement.label.toLowerCase()}`,
+        ...(legacyMeasurement?.invalidMessage && {
+          invalidMessage: legacyMeasurement.invalidMessage
+        })
+      }
+    })
+  }
+}
+
 function normalized(value) {
   return String(value || '')
     .trim()
@@ -44,9 +65,11 @@ function migratedGearId(id, catalogue) {
 export async function getGearCatalogue(filters = {}) {
   try {
     const { items } = await client.getGears(filters)
-    return legacyPotsOption && !items.some((gear) => gear.id === 'pots')
-      ? [...items, legacyPotsOption]
-      : items
+    const catalogue =
+      legacyPotsOption && !items.some((gear) => gear.id === 'pots')
+        ? [...items, legacyPotsOption]
+        : items
+    return catalogue.map(withMeasurementMessages)
   } catch {
     throw Boom.serverUnavailable(
       'Gear reference data is temporarily unavailable'
