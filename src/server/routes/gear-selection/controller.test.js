@@ -214,7 +214,7 @@ describe('#gearSelectionSubmitController', () => {
     expect(statusCode).toBe(statusCodes.badRequest)
     expect($('.govuk-error-summary')).toHaveLength(1)
     expect($('.govuk-error-summary').text()).toContain(
-      'Select the gear you used'
+      'Select the gear used on this trip'
     )
     expect($('.govuk-error-summary a').attr('href')).toBe('#gearIds')
     expect($('.govuk-error-message')).toHaveLength(1)
@@ -314,10 +314,10 @@ describe('#gearSelectionSubmitController', () => {
 
     expect(statusCode).toBe(statusCodes.badRequest)
     expect($('.govuk-error-summary').text()).toContain(
-      'Enter the total pots or traps hauled'
+      'Enter the total number of pots or traps hauled'
     )
     expect($('.govuk-error-summary').text()).toContain(
-      'Enter the total pots or traps left in water'
+      'Enter the total number of pots or traps left in the water'
     )
     expect($('.govuk-error-summary a[href="#potsHauled"]')).toHaveLength(1)
     expect($('.govuk-error-summary a[href="#potsInWater"]')).toHaveLength(1)
@@ -333,10 +333,10 @@ describe('#gearSelectionSubmitController', () => {
 
     expect(statusCode).toBe(statusCodes.badRequest)
     expect($('.govuk-error-summary').text()).not.toContain(
-      'Enter the total pots or traps hauled'
+      'Enter the total number of pots or traps hauled'
     )
     expect($('.govuk-error-summary').text()).toContain(
-      'Enter the total pots or traps left in water'
+      'Enter the total number of pots or traps left in the water'
     )
   })
 
@@ -350,7 +350,24 @@ describe('#gearSelectionSubmitController', () => {
 
     expect(statusCode).toBe(statusCodes.badRequest)
     expect($('.govuk-error-summary').text()).toContain(
-      'Enter the total pots or traps hauled'
+      'Total pots or traps hauled must be a whole number greater than 0'
+    )
+  })
+
+  test('Should re-render with field errors when pots fields are 0', async () => {
+    const { statusCode, result } = await server.inject({
+      method: 'POST',
+      url: '/gear-selection',
+      payload: { gearIds: 'pots', potsHauled: '0', potsInWater: '0' }
+    })
+    const $ = load(result)
+
+    expect(statusCode).toBe(statusCodes.badRequest)
+    expect($('.govuk-error-summary').text()).toContain(
+      'Total pots or traps hauled must be a whole number greater than 0'
+    )
+    expect($('.govuk-error-summary').text()).toContain(
+      'Total pots or traps left in the water must be a whole number greater than 0'
     )
   })
 
@@ -364,7 +381,7 @@ describe('#gearSelectionSubmitController', () => {
 
     expect(statusCode).toBe(statusCodes.badRequest)
     expect($('.govuk-error-summary').text()).toContain(
-      'Enter the total pots or traps hauled'
+      'Total pots or traps hauled must be a whole number greater than 0'
     )
   })
 
@@ -475,11 +492,32 @@ describe('#gearSelectionSubmitController', () => {
 
     expect(statusCode).toBe(statusCodes.badRequest)
     expect($('.govuk-error-summary').text()).toContain(
-      'Enter the number of dredges'
+      'Number of dredges must be a whole number greater than 0'
     )
     expect(
       $('.govuk-error-summary a[href="#dredge-numberOfDredges"]')
     ).toHaveLength(1)
+  })
+
+  test('Should re-render with field errors when non-pots measurements are 0', async () => {
+    const { statusCode, result } = await server.inject({
+      method: 'POST',
+      url: '/gear-selection',
+      payload: {
+        gearIds: 'dredge',
+        'dredge-numberOfDredges': '0',
+        'dredge-numberOfTimesShot': '0'
+      }
+    })
+    const $ = load(result)
+
+    expect(statusCode).toBe(statusCodes.badRequest)
+    expect($('.govuk-error-summary').text()).toContain(
+      'Number of dredges must be a whole number greater than 0'
+    )
+    expect($('.govuk-error-summary').text()).toContain(
+      'Enter a number greater than 0'
+    )
   })
 
   test('Should allow a non-pots gear type to be saved with its measurement fields left blank', async () => {

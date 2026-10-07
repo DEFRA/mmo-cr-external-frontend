@@ -12,6 +12,7 @@ import {
   getGearCatalogue,
   getGearOptionById
 } from '#/server/common/helpers/gear/favourite-gear.js'
+import { validateMeasurement } from '#/server/common/helpers/gear/measurement-validation.js'
 import { getData } from '#/server/common/data/get-data.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 
@@ -19,7 +20,7 @@ const pageTitle = 'What gear did you use?'
 const { reference } = getData('confirmation')
 const addGearViewName = 'add-gear/index'
 const gearSelectionPath = '/gear-selection'
-const measurementStep = 'measurements'
+const emptyGearMessage = 'Select the gear you want to add'
 
 // Every measurement field id used across the gear catalogue's `measurements`
 // arrays — declared explicitly so Joi only accepts known field names.
@@ -49,19 +50,6 @@ function addGearPath(request, { step } = {}) {
   }
   const query = params.toString()
   return query ? `/add-gear?${query}` : '/add-gear'
-}
-
-function normalizeMeasurementValue(rawValue) {
-  if (rawValue === undefined || rawValue === null || rawValue === '') {
-    return { value: null, valid: false }
-  }
-
-  const numericValue = Number(rawValue)
-
-  return {
-    value: numericValue,
-    valid: Number.isInteger(numericValue) && numericValue >= 0
-  }
 }
 
 function viewContext(request, overrides = {}) {
@@ -141,14 +129,14 @@ function handlePendingMeasurementSubmission(
   const values = {}
 
   for (const measurement of pendingOption.measurements) {
-    const { value, valid } = normalizeMeasurementValue(
-      request.payload[measurement.id]
+    const { value, error } = validateMeasurement(
+      request.payload[measurement.id],
+      measurement
     )
 
-    if (!valid) {
-      const errorText = `Enter the ${measurement.label.toLowerCase()}`
-      errorList.push({ text: errorText, href: `#${measurement.id}` })
-      fieldErrors[measurement.id] = errorText
+    if (error) {
+      errorList.push({ text: error, href: `#${measurement.id}` })
+      fieldErrors[measurement.id] = error
     } else {
       values[measurement.id] = value
     }
@@ -181,11 +169,7 @@ function handleGearSearchSubmission(request, h, journeyState) {
   const gearLabel = (request.payload.gear || '').trim()
 
   if (!gearLabel) {
-    return renderSearchError(
-      request,
-      h,
-      'Enter the name of the gear you want to add'
-    )
+    return renderSearchError(request, h, emptyGearMessage)
   }
 
   const matchedOption = findGearOptionByLabel(gearLabel)
@@ -224,11 +208,7 @@ export const addGearSubmitController = {
         )
       }),
       failAction(request, h) {
-        return renderSearchError(
-          request,
-          h,
-          'Enter the name of the gear you want to add'
-        )
+        return renderSearchError(request, h, emptyGearMessage)
       }
     }
   },

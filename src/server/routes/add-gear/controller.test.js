@@ -119,7 +119,7 @@ describe('#addGearSubmitController', () => {
 
     expect(statusCode).toBe(statusCodes.badRequest)
     expect($('.govuk-error-summary').text()).toContain(
-      'Enter the name of the gear you want to add'
+      'Select the gear you want to add'
     )
   })
 
@@ -298,7 +298,7 @@ describe('#addGearSubmitController', () => {
 
     expect(invalidResponse.statusCode).toBe(statusCodes.badRequest)
     expect($invalid('.govuk-error-summary').text()).toContain(
-      'Enter the total length of nets left in the water at the end of the trip (m)'
+      'Enter the total length of nets left in the water at the end of the trip, in metres'
     )
 
     const beforeSave = await server.inject({
@@ -397,9 +397,67 @@ describe('#addGearSubmitController', () => {
 
     expect(statusCode).toBe(statusCodes.badRequest)
     expect($('.govuk-error-summary').text()).toContain(
-      'Enter the number of rods and lines'
+      'Number of rods and lines must be a whole number greater than 0'
     )
   })
+
+  test.each([
+    ['0', 'Number of rods and lines must be a whole number greater than 0'],
+    ['', 'Enter the number of rods and lines']
+  ])(
+    'Should reject rods and lines value "%s" and not add the gear to favourites',
+    async (rodsAndLines, expectedError) => {
+      const addResponse = await server.inject({
+        method: 'POST',
+        url: '/add-gear',
+        payload: { gear: 'Handlines and pole lines (hand operated)' }
+      })
+      const cookie = nextCookie(addResponse)
+
+      const { statusCode, result } = await server.inject({
+        method: 'POST',
+        url: '/add-gear',
+        payload: { rodsAndLines },
+        headers: { cookie }
+      })
+      const $ = load(result)
+
+      expect(statusCode).toBe(statusCodes.badRequest)
+      expect($('.govuk-error-summary').text()).toContain(expectedError)
+      expect($('#rodsAndLines')).toHaveLength(1)
+    }
+  )
+
+  test.each([
+    ['0', 'Enter a number greater than 0'],
+    ['1.5', 'Enter a whole number'],
+    ['-1.5', 'Enter a whole number greater than 0'],
+    ['abc', 'Enter a whole number greater than 0']
+  ])(
+    'Should show a generic error for number of trawl nets value "%s"',
+    async (numberOfTrawlNets, expectedError) => {
+      const addResponse = await server.inject({
+        method: 'POST',
+        url: '/add-gear',
+        payload: { gear: 'Bottom otter trawl' }
+      })
+      const cookie = nextCookie(addResponse)
+
+      const { statusCode, result } = await server.inject({
+        method: 'POST',
+        url: '/add-gear',
+        payload: { numberOfTrawlNets, meshSize: '0' },
+        headers: { cookie }
+      })
+      const $ = load(result)
+
+      expect(statusCode).toBe(statusCodes.badRequest)
+      expect($('.govuk-error-summary').text()).toContain(expectedError)
+      expect($('.govuk-error-summary').text()).toContain(
+        'Mesh size must be a whole number greater than 0'
+      )
+    }
+  )
 
   test('Should save all measurements and redirect to gear selection once confirmed', async () => {
     const addResponse = await server.inject({
