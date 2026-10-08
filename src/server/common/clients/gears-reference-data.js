@@ -40,9 +40,7 @@ function mapGear(item, measurements = []) {
     typeof item.code !== 'string' ||
     typeof item.name !== 'string'
   ) {
-    throw new GearsReferenceDataError(
-      THROWDATAERROR
-    )
+    throw new GearsReferenceDataError(THROWDATAERROR)
   }
   return {
     ...item,
@@ -58,9 +56,7 @@ function validatePage(page, offset, total, version) {
     (version !== undefined && page.version !== version) ||
     (page.items.length === 0 && offset < page.total)
   ) {
-    throw new GearsReferenceDataError(
-      THROWDATAERROR
-    )
+    throw new GearsReferenceDataError(THROWDATAERROR)
   }
 }
 
@@ -68,9 +64,7 @@ async function requestReferenceData(config, path, etag) {
   const { serviceUrl, token, timeoutMs, fetchFn } = config
   const bearerToken = typeof token === 'function' ? token() : token
   if (!serviceUrl || !bearerToken) {
-    throw new GearsReferenceDataError(
-      'Gears reference data is not configured'
-    )
+    throw new GearsReferenceDataError('Gears reference data is not configured')
   }
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), timeoutMs)
@@ -142,7 +136,13 @@ async function readCollection(query, cached, { cache, request }) {
   const measurements = new Map()
   let context
   const view = new URLSearchParams(query).get('view')
-  const firstPage = await readPage(query, 0, cached?.pages.get(0), view, request)
+  const firstPage = await readPage(
+    query,
+    0,
+    cached?.pages.get(0),
+    view,
+    request
+  )
   validatePage(firstPage, 0)
   const pageOffsets = Array.from(
     { length: Math.ceil(firstPage.total / firstPage.limit) - 1 },
@@ -182,11 +182,12 @@ async function readCollection(query, cached, { cache, request }) {
   return result
 }
 
-async function getGears(filters, { serviceUrl, token, cache, inFlight, request }) {
+async function getGears(
+  filters,
+  { serviceUrl, token, cache, inFlight, request }
+) {
   if (!serviceUrl || !(typeof token === 'function' ? token() : token)) {
-    throw new GearsReferenceDataError(
-      'Gears reference data is not configured'
-    )
+    throw new GearsReferenceDataError('Gears reference data is not configured')
   }
   const params = new URLSearchParams({ view: 'mobile' })
   for (const [name, value] of Object.entries(filters)) {
