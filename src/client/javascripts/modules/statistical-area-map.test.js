@@ -242,6 +242,83 @@ describe('#initialiseStatisticalAreaMap', () => {
     ])
   })
 
+  test('Should reject malformed or empty land feature collections', () => {
+    expect(mapLandGeoJsonToCanvasData(null)).toBeUndefined()
+    expect(
+      mapLandGeoJsonToCanvasData({ type: 'FeatureCollection', features: [] })
+    ).toBeUndefined()
+    expect(
+      mapLandGeoJsonToCanvasData({
+        type: 'FeatureCollection',
+        features: [{ geometry: { type: 'Point', coordinates: [0, 0] } }]
+      })
+    ).toBeUndefined()
+  })
+
+  test('Should skip invalid subrectangle features and use a polygon-centre fallback', () => {
+    const result = mapSubrectanglesGeoJsonToCanvasData({
+      type: 'FeatureCollection',
+      features: [
+        { properties: { areaType: 'ices-rectangle', code: '27D8' } },
+        {
+          properties: { areaType: 'ices-subrectangle', code: 123 },
+          geometry: { type: 'Polygon', coordinates: [] }
+        },
+        {
+          properties: {
+            areaType: 'ices-subrectangle',
+            code: '27D86',
+            overlapsSea: false
+          },
+          geometry: {
+            type: 'Polygon',
+            coordinates: [
+              [
+                [0, 0],
+                [2, 0],
+                [2, 2],
+                [0, 2]
+              ]
+            ]
+          }
+        }
+      ]
+    })
+
+    expect(result).toHaveLength(1)
+    expect(result[0]).toMatchObject({
+      subCode: '27D86',
+      labelCoordinate: [1, 1],
+      overlapsSea: false
+    })
+  })
+
+  test('Should fall back to a matching bundled port when a saved coordinate is invalid', () => {
+    const map = {
+      dataset: {
+        departurePort: 'Hastings',
+        departurePortCoordinate: '{invalid-json'
+      }
+    }
+
+    expect(findDeparturePort([port], map)).toBe(port)
+    expect(findDeparturePort([], map)).toBeUndefined()
+  })
+
+  test('Should return no map data when required bundled files are missing', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn((url) =>
+        Promise.resolve({
+          ok: !url.includes('subrectangles.json'),
+          json: () => Promise.resolve({ land: [landFeature], ports: [port] })
+        })
+      )
+    )
+
+    await expect(loadOfflineMapData()).resolves.toBeNull()
+  })
+
   test('Should initialize the map with bundled land and selection layers', async () => {
     const dom = setupMapDom()
     mockFetchWith({

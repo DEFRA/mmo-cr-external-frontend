@@ -87,6 +87,28 @@ async function requestReferenceData(config, path, etag) {
   }
 }
 
+function hasValidPageBody(body, offset, view) {
+  if (!Number.isSafeInteger(body?.total)) {
+    return false
+  }
+  if (body.total < 0) {
+    return false
+  }
+  if (body.offset !== offset) {
+    return false
+  }
+  if (!Number.isSafeInteger(body.limit)) {
+    return false
+  }
+  if (body.limit < 1) {
+    return false
+  }
+  if (!Array.isArray(body.items)) {
+    return false
+  }
+  return view !== 'mobile' || Array.isArray(body.measurements)
+}
+
 async function readPage(query, offset, previous, view, request) {
   const params = new URLSearchParams(query)
   params.set('offset', String(offset))
@@ -108,15 +130,7 @@ async function readPage(query, offset, previous, view, request) {
   } catch {
     throw new GearsReferenceDataError(THROWDATAERROR)
   }
-  if (
-    !Number.isSafeInteger(body?.total) ||
-    body.total < 0 ||
-    body.offset !== offset ||
-    !Number.isSafeInteger(body.limit) ||
-    body.limit < 1 ||
-    !Array.isArray(body.items) ||
-    (view === 'mobile' && !Array.isArray(body.measurements))
-  ) {
+  if (!hasValidPageBody(body, offset, view)) {
     throw new GearsReferenceDataError(THROWDATAERROR)
   }
   return {
@@ -182,6 +196,26 @@ async function readCollection(query, cached, { cache, request }) {
   return result
 }
 
+function gearQuery(filters) {
+  const params = new URLSearchParams({ view: 'mobile' })
+  for (const [name, value] of Object.entries(filters)) {
+    if (value !== undefined && value !== null && value !== '') {
+      params.set(name, String(value))
+    }
+  }
+  return params.toString()
+}
+
+function cachedCollectionOrThrow(error, cached) {
+  if (
+    cached &&
+    (error instanceof TypeError || error.statusCode >= SERVER_ERROR_STATUS)
+  ) {
+    return cached
+  }
+  throw error
+}
+
 async function getGears(
   filters,
   { serviceUrl, token, cache, inFlight, request }
@@ -189,27 +223,13 @@ async function getGears(
   if (!serviceUrl || !(typeof token === 'function' ? token() : token)) {
     throw new GearsReferenceDataError('Gears reference data is not configured')
   }
-  const params = new URLSearchParams({ view: 'mobile' })
-  for (const [name, value] of Object.entries(filters)) {
-    if (value !== undefined && value !== null && value !== '') {
-      params.set(name, String(value))
-    }
-  }
-  const query = params.toString()
+  const query = gearQuery(filters)
   if (inFlight.has(query)) {
     return inFlight.get(query)
   }
   const cached = cache.get(query)
   const pending = readCollection(query, cached, { cache, request }).catch(
-    (error) => {
-      if (
-        cached &&
-        (error instanceof TypeError || error.statusCode >= SERVER_ERROR_STATUS)
-      ) {
-        return cached
-      }
-      throw error
-    }
+    (error) => cachedCollectionOrThrow(error, cached)
   )
   inFlight.set(query, pending)
   try {

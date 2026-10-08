@@ -212,4 +212,75 @@ describe('#createGearsReferenceDataClient', () => {
     await expect(client.getGear('gear-one')).rejects.toThrow('not configured')
     expect(fetchFn).not.toHaveBeenCalled()
   })
+
+  test('Should use the last complete collection after a server error', async () => {
+    const fetchFn = vi
+      .fn()
+      .mockResolvedValueOnce(page([gearOne]))
+      .mockResolvedValueOnce({ ok: false, status: 503 })
+    const client = createGearsReferenceDataClient({
+      serviceUrl: 'http://localhost:3002',
+      token: 'test-token',
+      fetchFn
+    })
+
+    const cached = await client.getGears()
+    await expect(client.getGears()).resolves.toBe(cached)
+  })
+
+  test('Should reject a page whose metadata does not match the requested offset', async () => {
+    const invalidPage = page([gearOne])
+    invalidPage.json = async () => ({
+      items: [gearOne],
+      measurements: [measurement],
+      total: 1,
+      offset: 1,
+      limit: 1,
+      version: 'v1'
+    })
+    const client = createGearsReferenceDataClient({
+      serviceUrl: 'http://localhost:3002',
+      token: 'test-token',
+      fetchFn: vi.fn().mockResolvedValue(invalidPage)
+    })
+
+    await expect(client.getGears()).rejects.toMatchObject({
+      message: 'Gears reference data returned an invalid response'
+    })
+  })
+
+  test('Should reject an invalid gear item response', async () => {
+    const client = createGearsReferenceDataClient({
+      serviceUrl: 'http://localhost:3002',
+      token: 'test-token',
+      fetchFn: vi.fn().mockResolvedValue({
+        ok: true,
+        headers: { get: () => null },
+        json: async () => ({ id: 'gear-one' })
+      })
+    })
+
+    await expect(client.getGear('gear-one')).rejects.toMatchObject({
+      message: 'Gears reference data returned an invalid response'
+    })
+  })
+
+  test('Should return a cached item after a server error', async () => {
+    const fetchFn = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        headers: { get: () => '"gear-v1"' },
+        json: async () => gearOne
+      })
+      .mockResolvedValueOnce({ ok: false, status: 500 })
+    const client = createGearsReferenceDataClient({
+      serviceUrl: 'http://localhost:3002',
+      token: 'test-token',
+      fetchFn
+    })
+
+    const cached = await client.getGear('gear-one')
+    await expect(client.getGear('gear-one')).resolves.toBe(cached)
+  })
 })

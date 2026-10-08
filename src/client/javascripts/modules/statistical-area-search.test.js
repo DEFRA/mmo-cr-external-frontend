@@ -364,4 +364,149 @@ describe('#initialiseStatisticalAreaSearch', () => {
     const panel = document.querySelector('[data-statistical-area-search-panel]')
     expect(panel.hidden).toBe(true)
   })
+
+  test('Should ignore API responses that are not a FeatureCollection', async () => {
+    setBodyHtml(baseMarkup())
+    mockAreaApiAndOffline({ type: 'Feature' }, [{ subCode: '30F04' }])
+
+    await initialiseStatisticalAreaSearch()
+
+    const input = document.querySelector('[data-statistical-area-search]')
+    input.value = '30F'
+    input.dispatchEvent(new Event('input'))
+
+    expect(
+      document.querySelector('[data-statistical-area-results] button')
+        .textContent
+    ).toContain('30F04')
+  })
+
+  test('Should skip API features without a valid subrectangle code', async () => {
+    setBodyHtml(baseMarkup())
+    mockAreaApiAndOffline(
+      {
+        type: 'FeatureCollection',
+        features: [
+          {
+            properties: { areaType: 'ices-rectangle', code: '27D8' }
+          },
+          {
+            properties: { areaType: 'ices-subrectangle', code: 'invalid' }
+          }
+        ]
+      },
+      []
+    )
+
+    await initialiseStatisticalAreaSearch()
+
+    const input = document.querySelector('[data-statistical-area-search]')
+    input.value = '27'
+    input.dispatchEvent(new Event('input'))
+
+    expect(
+      document.querySelector('[data-statistical-area-results]').hidden
+    ).toBe(true)
+  })
+
+  test('Should fall back to an empty offline list when its response is not ok', async () => {
+    setBodyHtml(baseMarkup())
+    vi.stubGlobal(
+      'fetch',
+      vi.fn((url) =>
+        Promise.resolve(
+          url === '/map-data/statistical-areas' ? { ok: false } : { ok: false }
+        )
+      )
+    )
+
+    await initialiseStatisticalAreaSearch()
+
+    const input = document.querySelector('[data-statistical-area-search]')
+    input.value = '27'
+    input.dispatchEvent(new Event('input'))
+
+    expect(
+      document.querySelector('[data-statistical-area-results]').hidden
+    ).toBe(true)
+  })
+
+  test('Should ignore API payloads without a feature list', async () => {
+    setBodyHtml(baseMarkup())
+    mockAreaApiAndOffline({ type: 'FeatureCollection' }, [])
+
+    await initialiseStatisticalAreaSearch()
+
+    expect(
+      document.querySelector('[data-statistical-area-results]').hidden
+    ).toBe(true)
+  })
+
+  test('Should hide results if loading the offline file rejects', async () => {
+    setBodyHtml(baseMarkup())
+    vi.stubGlobal(
+      'fetch',
+      vi.fn((url) =>
+        url === '/map-data/statistical-areas'
+          ? Promise.resolve({
+              ok: true,
+              json: () =>
+                Promise.resolve({ type: 'FeatureCollection', features: [] })
+            })
+          : Promise.resolve({
+              ok: true,
+              json: () => Promise.reject(new Error('invalid json'))
+            })
+      )
+    )
+
+    await initialiseStatisticalAreaSearch()
+
+    expect(
+      document.querySelector('[data-statistical-area-results]').hidden
+    ).toBe(true)
+  })
+
+  test('Should use an empty list when offline data omits subrectangles', async () => {
+    setBodyHtml(baseMarkup())
+    vi.stubGlobal(
+      'fetch',
+      vi.fn((url) =>
+        Promise.resolve({
+          ok: true,
+          json: () =>
+            Promise.resolve(
+              url === '/map-data/statistical-areas'
+                ? { type: 'FeatureCollection', features: [] }
+                : {}
+            )
+        })
+      )
+    )
+
+    await initialiseStatisticalAreaSearch()
+    const input = document.querySelector('[data-statistical-area-search]')
+    input.value = '27'
+    input.dispatchEvent(new Event('input'))
+
+    expect(
+      document.querySelector('[data-statistical-area-results]').hidden
+    ).toBe(true)
+  })
+
+  test('Should tolerate a page without optional coordinate elements', async () => {
+    setBodyHtml(`
+      <input data-statistical-area-search />
+      <div data-statistical-area-panel hidden></div>
+      <div data-statistical-area-options></div>
+      <ul data-statistical-area-results hidden></ul>
+    `)
+    mockFetchOnce({ subrectangles: [{ subCode: '27D86' }] })
+
+    await initialiseStatisticalAreaSearch()
+
+    const input = document.querySelector('[data-statistical-area-search]')
+    input.value = '27D86'
+    expect(() => input.dispatchEvent(new Event('input'))).not.toThrow()
+  })
 })

@@ -216,7 +216,7 @@ export function findDeparturePort(ports, map) {
   try {
     coordinate = JSON.parse(map.dataset.departurePortCoordinate || 'null')
   } catch {
-    coordinate = undefined
+    coordinate = null
   }
   if (
     Array.isArray(coordinate) &&

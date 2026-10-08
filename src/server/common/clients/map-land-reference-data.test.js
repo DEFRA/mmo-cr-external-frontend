@@ -80,4 +80,62 @@ describe('#createMapLandReferenceDataClient', () => {
     await expect(client.getLand()).rejects.toThrow('not configured')
     expect(fetchFn).not.toHaveBeenCalled()
   })
+
+  test('Should reject an unexpected 304 response without a cached layer', async () => {
+    const client = createMapLandReferenceDataClient({
+      serviceUrl: 'http://localhost:3002',
+      token: 'test-token',
+      fetchFn: vi.fn().mockResolvedValue(response({ status: 304 }))
+    })
+
+    await expect(client.getLand()).rejects.toMatchObject({
+      statusCode: 503,
+      message: 'Map land reference data returned an unexpected cache response'
+    })
+  })
+
+  test.each([
+    [null, 'Map land reference data returned an invalid response'],
+    [
+      { type: 'FeatureCollection', features: [] },
+      'Map land reference data returned an invalid response'
+    ],
+    [
+      { ...featureCollection, metadata: { dataset: 'other' } },
+      'Map land reference data returned an invalid response'
+    ]
+  ])('Should reject an invalid GeoJSON response', async (body, message) => {
+    const client = createMapLandReferenceDataClient({
+      serviceUrl: 'http://localhost:3002',
+      token: 'test-token',
+      fetchFn: vi.fn().mockResolvedValue(response({ body }))
+    })
+
+    await expect(client.getLand()).rejects.toMatchObject({ message })
+  })
+
+  test('Should preserve the cached layer after a server error', async () => {
+    const fetchFn = vi
+      .fn()
+      .mockResolvedValueOnce(response())
+      .mockResolvedValueOnce(response({ status: 503 }))
+    const client = createMapLandReferenceDataClient({
+      serviceUrl: 'http://localhost:3002',
+      token: 'test-token',
+      fetchFn
+    })
+
+    const cached = await client.getLand()
+    await expect(client.getLand()).resolves.toBe(cached)
+  })
+
+  test('Should surface a client error response when no cache is available', async () => {
+    const client = createMapLandReferenceDataClient({
+      serviceUrl: 'http://localhost:3002',
+      token: 'test-token',
+      fetchFn: vi.fn().mockResolvedValue(response({ status: 404 }))
+    })
+
+    await expect(client.getLand()).rejects.toMatchObject({ statusCode: 404 })
+  })
 })

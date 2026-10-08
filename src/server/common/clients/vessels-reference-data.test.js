@@ -157,4 +157,42 @@ describe('#createVesselsReferenceDataClient', () => {
     )
     expect(fetchFn).toHaveBeenCalledTimes(1)
   })
+
+  test('Should reject malformed mobile vessel items', async () => {
+    const client = createVesselsReferenceDataClient({
+      serviceUrl: 'http://localhost:3002',
+      token: 'test-token',
+      fetchFn: vi
+        .fn()
+        .mockResolvedValue(
+          page([{ id: 'vessel-id', name: 'Missing identifiers' }])
+        )
+    })
+
+    await expect(client.getVessels()).rejects.toMatchObject({
+      message: 'Vessels reference data returned an invalid response'
+    })
+  })
+
+  test('Should reject an invalid item and propagate server item status', async () => {
+    const fetchFn = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ id: 'vessel-id' })
+      })
+      .mockResolvedValueOnce({ ok: false, status: 503 })
+    const client = createVesselsReferenceDataClient({
+      serviceUrl: 'http://localhost:3002',
+      token: 'test-token',
+      fetchFn
+    })
+
+    await expect(client.getVessel('vessel-id')).rejects.toMatchObject({
+      message: 'Vessels reference data returned an invalid response'
+    })
+    await expect(client.getVessel('vessel-id')).rejects.toMatchObject({
+      statusCode: 503
+    })
+  })
 })

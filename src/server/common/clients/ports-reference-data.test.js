@@ -101,4 +101,59 @@ describe('#createPortsReferenceDataClient', () => {
     await expect(client.getPorts()).rejects.toThrow('not configured')
     expect(fetchFn).toHaveBeenCalledTimes(1)
   })
+
+  test('Should reject malformed catalogue pages', async () => {
+    const client = createPortsReferenceDataClient({
+      serviceUrl: 'http://localhost:3002',
+      token: 'test-token',
+      fetchFn: vi.fn().mockResolvedValue({
+        ok: true,
+        headers: { get: () => null },
+        json: async () => ({
+          items: 'not-an-array',
+          total: 1,
+          offset: 0,
+          limit: 50
+        })
+      })
+    })
+
+    await expect(client.getPorts()).rejects.toMatchObject({
+      message: 'Ports reference data returned an invalid response'
+    })
+  })
+
+  test('Should reject an unexpected not-modified response without a page cache', async () => {
+    const client = createPortsReferenceDataClient({
+      serviceUrl: 'http://localhost:3002',
+      token: 'test-token',
+      fetchFn: vi.fn().mockResolvedValue({ status: 304 })
+    })
+
+    await expect(client.getPorts()).rejects.toMatchObject({
+      message: 'Ports reference data could not be retrieved'
+    })
+  })
+
+  test('Should reject invalid port items and propagate item lookup statuses', async () => {
+    const fetchFn = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ id: 'missing-name' })
+      })
+      .mockResolvedValueOnce({ ok: false, status: 404 })
+    const client = createPortsReferenceDataClient({
+      serviceUrl: 'http://localhost:3002',
+      token: 'test-token',
+      fetchFn
+    })
+
+    await expect(client.getPort(firstPort.id)).rejects.toMatchObject({
+      message: 'Ports reference data returned an invalid response'
+    })
+    await expect(client.getPort('missing')).rejects.toMatchObject({
+      statusCode: 404
+    })
+  })
 })

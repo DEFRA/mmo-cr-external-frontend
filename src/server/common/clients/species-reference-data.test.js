@@ -189,4 +189,44 @@ describe('#createSpeciesReferenceDataClient', () => {
       'Species reference data returned an invalid response'
     )
   })
+
+  test('Should reject when no service URL is configured', async () => {
+    const fetchFn = vi.fn()
+    const client = createSpeciesReferenceDataClient({
+      token: 'test-token',
+      fetchFn
+    })
+
+    await expect(client.getSpeciesCatalogue()).rejects.toThrow(
+      'Species reference data is not configured'
+    )
+    expect(fetchFn).not.toHaveBeenCalled()
+  })
+
+  test('Should reject an invalid not-modified response without a cached page', async () => {
+    const client = createSpeciesReferenceDataClient({
+      serviceUrl: 'http://localhost:3002',
+      token: 'test-token',
+      fetchFn: vi.fn().mockResolvedValue({ ok: false, status: 304 })
+    })
+
+    await expect(client.getSpeciesCatalogue()).rejects.toMatchObject({
+      message: 'Species reference data returned an unexpected cache response'
+    })
+  })
+
+  test('Should preserve the cached species after an upstream server error', async () => {
+    const fetchFn = vi
+      .fn()
+      .mockResolvedValueOnce(response())
+      .mockResolvedValueOnce({ ok: false, status: 503 })
+    const client = createSpeciesReferenceDataClient({
+      serviceUrl: 'http://localhost:3002',
+      token: 'test-token',
+      fetchFn
+    })
+
+    const cached = await client.getSpeciesCatalogue()
+    await expect(client.getSpeciesCatalogue()).resolves.toBe(cached)
+  })
 })

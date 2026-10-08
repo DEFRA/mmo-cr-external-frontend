@@ -79,4 +79,75 @@ describe('#createMapStatisticalAreasReferenceDataClient', () => {
     await expect(client.getCollection()).rejects.toThrow('not configured')
     expect(fetchFn).not.toHaveBeenCalled()
   })
+
+  test('Should reject an unexpected 304 response without a cached collection', async () => {
+    const client = createMapStatisticalAreasReferenceDataClient({
+      serviceUrl: 'http://localhost:3002',
+      token: 'read-token',
+      fetchFn: vi.fn().mockResolvedValue({ status: 304 })
+    })
+
+    await expect(client.getCollection()).rejects.toMatchObject({
+      statusCode: 304,
+      message: 'Statistical areas reference data could not be retrieved'
+    })
+  })
+
+  test('Should reject an invalid collection response', async () => {
+    const client = createMapStatisticalAreasReferenceDataClient({
+      serviceUrl: 'http://localhost:3002',
+      token: 'read-token',
+      fetchFn: vi.fn().mockResolvedValue(response({ features: [] }))
+    })
+
+    await expect(client.getCollection()).rejects.toMatchObject({
+      statusCode: 503,
+      message: 'Statistical areas reference data returned an invalid response'
+    })
+  })
+
+  test('Should retain the last collection after a server error', async () => {
+    const fetchFn = vi
+      .fn()
+      .mockResolvedValueOnce(response(collection))
+      .mockResolvedValueOnce({ ok: false, status: 500 })
+    const client = createMapStatisticalAreasReferenceDataClient({
+      serviceUrl: 'http://localhost:3002',
+      token: 'read-token',
+      fetchFn
+    })
+
+    const cached = await client.getCollection()
+    await expect(client.getCollection()).resolves.toBe(cached)
+  })
+
+  test('Should retain a cached feature after a server error', async () => {
+    const fetchFn = vi
+      .fn()
+      .mockResolvedValueOnce(response(feature))
+      .mockResolvedValueOnce({ ok: false, status: 503 })
+    const client = createMapStatisticalAreasReferenceDataClient({
+      serviceUrl: 'http://localhost:3002',
+      token: 'read-token',
+      fetchFn
+    })
+
+    const cached = await client.getFeature(feature.id)
+    await expect(client.getFeature(feature.id)).resolves.toBe(cached)
+  })
+
+  test('Should reject an invalid feature response', async () => {
+    const client = createMapStatisticalAreasReferenceDataClient({
+      serviceUrl: 'http://localhost:3002',
+      token: 'read-token',
+      fetchFn: vi
+        .fn()
+        .mockResolvedValue(response({ ...feature, geometry: null }))
+    })
+
+    await expect(client.getFeature(feature.id)).rejects.toMatchObject({
+      statusCode: 503,
+      message: 'Statistical area reference data returned an invalid response'
+    })
+  })
 })

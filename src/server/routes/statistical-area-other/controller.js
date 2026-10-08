@@ -37,8 +37,9 @@ async function apiSubrectangle(code) {
     if (!match) {
       return undefined
     }
-    const { feature } = await statisticalAreasClient.getFeature(match.id)
-    const centroid = feature.properties.centroid
+    const { feature: selectedFeature } =
+      await statisticalAreasClient.getFeature(match.id)
+    const centroid = selectedFeature.properties.centroid
     return centroid ? [centroid.longitude, centroid.latitude] : undefined
   } catch {
     return undefined

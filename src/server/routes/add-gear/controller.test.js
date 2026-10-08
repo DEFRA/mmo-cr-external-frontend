@@ -388,6 +388,25 @@ describe('#addGearSubmitController', () => {
     )
   })
 
+  test('Should reject fields that do not belong to the pending gear measurements', async () => {
+    const addResponse = await server.inject({
+      method: 'POST',
+      url: '/add-gear',
+      payload: { gear: 'Dredge' }
+    })
+    const cookie = nextCookie(addResponse)
+
+    const response = await server.inject({
+      method: 'POST',
+      url: '/add-gear',
+      payload: { numberOfDredges: '2', unexpectedField: 'value' },
+      headers: { cookie }
+    })
+
+    expect(response.statusCode).toBe(statusCodes.badRequest)
+    expect(load(response.result)('.govuk-error-summary')).toHaveLength(1)
+  })
+
   test.each([
     ['0', 'Number of rods and lines must be a whole number greater than 0'],
     ['', 'Enter the number of rods and lines']

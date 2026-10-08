@@ -53,6 +53,18 @@ describe('#addPortController', () => {
     )
   })
 
+  test('Should use the return-port page as the Back destination outside first entry', async () => {
+    const { result } = await server.inject({
+      method: 'GET',
+      url: '/add-port?for=return'
+    })
+    const $ = load(result)
+
+    expect(
+      $('[data-testid="app-page-navigation-back-link"]').attr('href')
+    ).toBe('/return-port')
+  })
+
   test('Should render the search input and Save and continue button', async () => {
     const { result } = await server.inject({
       method: 'GET',
@@ -170,6 +182,28 @@ describe('#addPortSubmitController', () => {
     expect(headers.location).toBe('/return-port')
   })
 
+  test('Should honor a safe return destination when adding another port', async () => {
+    const { statusCode, headers } = await server.inject({
+      method: 'POST',
+      url: '/add-port?for=return&return=/check-answers',
+      payload: { port: 'Rye' }
+    })
+
+    expect(statusCode).toBe(statusCodes.seeOther)
+    expect(headers.location).toBe('/check-answers')
+  })
+
+  test('Should ignore an unsafe return destination and continue to port selection', async () => {
+    const { statusCode, headers } = await server.inject({
+      method: 'POST',
+      url: '/add-port?for=departure&return=https://example.com',
+      payload: { port: 'Newhaven' }
+    })
+
+    expect(statusCode).toBe(statusCodes.seeOther)
+    expect(headers.location).toBe('/departure-port')
+  })
+
   test('Should re-render with an error when no port is entered', async () => {
     const { statusCode, result } = await server.inject({
       method: 'POST',
@@ -194,6 +228,19 @@ describe('#addPortSubmitController', () => {
 
     expect(statusCode).toBe(statusCodes.badRequest)
     expect($('.govuk-error-summary').text()).toContain(
+      'Select a port from the list'
+    )
+  })
+
+  test('Should re-render with an error when the submitted port is not text', async () => {
+    const { statusCode, result } = await server.inject({
+      method: 'POST',
+      url: '/add-port?for=departure',
+      payload: { port: 123 }
+    })
+
+    expect(statusCode).toBe(statusCodes.badRequest)
+    expect(load(result)('.govuk-error-summary').text()).toContain(
       'Select a port from the list'
     )
   })

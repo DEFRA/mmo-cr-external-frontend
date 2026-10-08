@@ -199,6 +199,64 @@ describe('#statisticalAreaOtherSubmitController', () => {
     }
   })
 
+  test('Should use bundled coordinates when the API collection has no matching code', async () => {
+    const originalToken = config.get('referenceData.token')
+    config.set('referenceData.token', 'test-read-token')
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        headers: { get: () => null },
+        json: async () => ({
+          type: 'FeatureCollection',
+          metadata: { dataset: 'map-statistical-areas' },
+          features: []
+        })
+      })
+    )
+
+    try {
+      const response = await server.inject({
+        method: 'POST',
+        url: '/statistical-area-other',
+        payload: {
+          statisticalArea: 'other',
+          alternativeStatisticalArea: '30F04'
+        }
+      })
+
+      expect(response.statusCode).toBe(statusCodes.seeOther)
+      expect(response.headers.location).toBe('/species-selection')
+    } finally {
+      vi.unstubAllGlobals()
+      config.set('referenceData.token', originalToken)
+    }
+  })
+
+  test('Should fall back to bundled coordinates when reference data is unavailable', async () => {
+    const originalToken = config.get('referenceData.token')
+    config.set('referenceData.token', 'test-read-token')
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('offline')))
+
+    try {
+      const response = await server.inject({
+        method: 'POST',
+        url: '/statistical-area-other',
+        payload: {
+          statisticalArea: 'other',
+          alternativeStatisticalArea: '30F04'
+        }
+      })
+
+      expect(response.statusCode).toBe(statusCodes.seeOther)
+      expect(response.headers.location).toBe('/species-selection')
+    } finally {
+      vi.unstubAllGlobals()
+      config.set('referenceData.token', originalToken)
+    }
+  })
+
   test('Should redirect back to check your answers when a valid area and return query are supplied', async () => {
     const { statusCode, headers } = await server.inject({
       method: 'POST',
