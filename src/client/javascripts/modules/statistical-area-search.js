@@ -141,7 +141,9 @@ function attachEventListeners(elements, subrectangles) {
 }
 
 function apiSubrectangles(featureCollection) {
-  if (featureCollection?.type !== 'FeatureCollection') return []
+  if (featureCollection?.type !== 'FeatureCollection') {
+    return [];
+  }
   return featureCollection.features
     .filter(
       (feature) =>
@@ -163,7 +165,9 @@ function apiSubrectangles(featureCollection) {
 async function fetchApiSubrectangles() {
   try {
     const response = await fetch('/map-data/statistical-areas')
-    if (!response.ok) return []
+    if (!response.ok) {
+      return [];
+    }
     return apiSubrectangles(await response.json())
   } catch {
     return []

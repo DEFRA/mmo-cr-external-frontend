@@ -34,7 +34,9 @@ async function apiSubrectangle(code) {
     const match = result.body.features.find(
       (feature) => feature.properties.code.toUpperCase() === code.toUpperCase()
     )
-    if (!match) return undefined
+    if (!match) {
+      return undefined
+    }
     const { feature } = await statisticalAreasClient.getFeature(match.id)
     const centroid = feature.properties.centroid
     return centroid ? [centroid.longitude, centroid.latitude] : undefined

@@ -55,7 +55,9 @@ export const mapStatisticalAreaItemController = {
       const result = await client.getFeature(request.params.id)
       return respond(h, request, result, result.feature)
     } catch (error) {
-      if (error.output?.statusCode === 404) throw error
+      if (error.output?.statusCode === 404) {
+        throw error
+      }
       throw Boom.serverUnavailable(
         'Statistical area reference data is temporarily unavailable'
       )

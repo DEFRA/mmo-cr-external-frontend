@@ -19,6 +19,7 @@ import {
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 
 const pageTitle = 'What gear did you use?'
+const titleText = 'There is a problem'
 
 // Pots keeps its own dedicated potsHauled/potsInWater fields (wired into
 // check-answers/records elsewhere) - every other gear type with a catalogue
@@ -233,7 +234,7 @@ export const gearSelectionSubmitController = {
 
         return renderWithErrors(request, h, catalogue, {
           errorSummary: {
-            titleText: 'There is a problem',
+            titleText: titleText,
             errorList: [{ text: errorText, href: '#gearIds' }]
           },
           fieldErrors: { gearIds: errorText },
@@ -254,7 +255,7 @@ export const gearSelectionSubmitController = {
       const errorText = 'Select the gear you used'
       return renderWithErrors(request, h, catalogue, {
         errorSummary: {
-          titleText: 'There is a problem',
+          titleText: titleText,
           errorList: [{ text: errorText, href: '#gearIds' }]
         },
         fieldErrors: { gearIds: errorText },
@@ -298,7 +299,7 @@ export const gearSelectionSubmitController = {
 
     if (errorList.length) {
       return renderWithErrors(request, h, catalogue, {
-        errorSummary: { titleText: 'There is a problem', errorList },
+        errorSummary: { titleText: titleText, errorList },
         fieldErrors,
         selectedGearIds: gearIds,
         potsDetails: potsSelected ? { potsHauled, potsInWater } : undefined,

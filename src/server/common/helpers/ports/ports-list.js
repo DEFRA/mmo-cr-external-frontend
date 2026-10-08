@@ -67,6 +67,30 @@ export function portSearchLabel(port, catalogue) {
   return duplicates.length > 1 ? `${port.name} (${port.code})` : port.name
 }
 
+function migrateSelectedPort(
+  state,
+  key,
+  catalogue,
+  patch,
+  portNamesByCode,
+  portCoordinatesByCode
+) {
+  const port = findPortByCode(state[key], catalogue)
+  if (!port) {
+    return
+  }
+  if (port.code !== state[key]) {
+    patch[key] = port.code
+  }
+  if (portNamesByCode[port.code] !== port.name) {
+    portNamesByCode[port.code] = port.name
+  }
+  const coordinate = coordinateTuple(port.coordinate)
+  if (coordinate && !portCoordinatesByCode[port.code]) {
+    portCoordinatesByCode[port.code] = coordinate
+  }
+}
+
 export function migratePortJourneyState(request, catalogue) {
   const state = getJourneyState(request)
   const patch = {}
@@ -82,16 +106,14 @@ export function migratePortJourneyState(request, catalogue) {
   }
 
   for (const key of ['departurePort', 'returnPort']) {
-    const port = findPortByCode(state[key], catalogue)
-    if (!port) continue
-    if (port.code !== state[key]) patch[key] = port.code
-    if (portNamesByCode[port.code] !== port.name) {
-      portNamesByCode[port.code] = port.name
-    }
-    const coordinate = coordinateTuple(port.coordinate)
-    if (coordinate && !portCoordinatesByCode[port.code]) {
-      portCoordinatesByCode[port.code] = coordinate
-    }
+    migrateSelectedPort(
+      state,
+      key,
+      catalogue,
+      patch,
+      portNamesByCode,
+      portCoordinatesByCode
+    )
   }
 
   if (

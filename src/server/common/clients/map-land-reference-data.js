@@ -1,5 +1,7 @@
 const MAP_LAND_ENDPOINT = '/api/v1/reference-data/map/land'
 const DEFAULT_TIMEOUT_MS = 3000
+const NOT_MODIFIED_STATUS = 304
+const SERVER_ERROR_STATUS = 500
 
 export class MapLandReferenceDataError extends Error {
   constructor(message, statusCode = 503) {
@@ -22,6 +24,80 @@ function validateFeatureCollection(body) {
   return body
 }
 
+async function fetchLand({
+  serviceUrl,
+  bearerToken,
+  timeoutMs,
+  fetchFn,
+  cached,
+  cacheLand
+}) {
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), timeoutMs)
+  try {
+    let response
+    try {
+      response = await fetchFn(
+        `${serviceUrl.replace(/\/$/, '')}${MAP_LAND_ENDPOINT}`,
+        {
+          method: 'GET',
+          headers: {
+            Accept: 'application/geo+json, application/json',
+            Authorization: `Bearer ${bearerToken}`,
+            ...(cached?.etag ? { 'If-None-Match': cached.etag } : {})
+          },
+          signal: controller.signal
+        }
+      )
+    } catch {
+      if (cached) {
+        return cached
+      }
+      throw new MapLandReferenceDataError(
+        'Map land reference data is temporarily unavailable'
+      )
+    }
+
+    if (response.status === NOT_MODIFIED_STATUS) {
+      if (!cached) {
+        throw new MapLandReferenceDataError(
+          'Map land reference data returned an unexpected cache response'
+        )
+      }
+      return cached
+    }
+    if (!response.ok) {
+      if (cached && response.status >= SERVER_ERROR_STATUS) {
+        return cached
+      }
+      throw new MapLandReferenceDataError(
+        'Map land reference data could not be retrieved',
+        response.status
+      )
+    }
+
+    let body
+    try {
+      body = validateFeatureCollection(await response.json())
+    } catch (error) {
+      if (error instanceof MapLandReferenceDataError) {
+        throw error
+      }
+      throw new MapLandReferenceDataError(
+        'Map land reference data returned an invalid response'
+      )
+    }
+    const result = {
+      body,
+      etag: response.headers?.get('etag') || undefined
+    }
+    cacheLand(result)
+    return result
+  } finally {
+    clearTimeout(timeout)
+  }
+}
+
 export function createMapLandReferenceDataClient({
   serviceUrl,
   token,
@@ -29,7 +105,7 @@ export function createMapLandReferenceDataClient({
   fetchFn = (...args) => globalThis.fetch(...args)
 } = {}) {
   let cached
-  let inFlight
+  let inFlight = null
 
   async function getLand() {
     const bearerToken = typeof token === 'function' ? token() : token
@@ -38,73 +114,24 @@ export function createMapLandReferenceDataClient({
         'Map land reference data is not configured'
       )
     }
-    if (inFlight) return inFlight
+    if (inFlight) {
+      return inFlight
+    }
 
-    inFlight = fetchLand(bearerToken)
+    inFlight = fetchLand({
+      serviceUrl,
+      bearerToken,
+      timeoutMs,
+      fetchFn,
+      cached,
+      cacheLand: (result) => {
+        cached = result
+      }
+    })
     try {
       return await inFlight
     } finally {
-      inFlight = undefined
-    }
-  }
-
-  async function fetchLand(bearerToken) {
-    const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), timeoutMs)
-    try {
-      let response
-      try {
-        response = await fetchFn(
-          `${serviceUrl.replace(/\/$/, '')}${MAP_LAND_ENDPOINT}`,
-          {
-            method: 'GET',
-            headers: {
-              Accept: 'application/geo+json, application/json',
-              Authorization: `Bearer ${bearerToken}`,
-              ...(cached?.etag ? { 'If-None-Match': cached.etag } : {})
-            },
-            signal: controller.signal
-          }
-        )
-      } catch {
-        if (cached) return cached
-        throw new MapLandReferenceDataError(
-          'Map land reference data is temporarily unavailable'
-        )
-      }
-
-      if (response.status === 304) {
-        if (!cached) {
-          throw new MapLandReferenceDataError(
-            'Map land reference data returned an unexpected cache response'
-          )
-        }
-        return cached
-      }
-      if (!response.ok) {
-        if (cached && response.status >= 500) return cached
-        throw new MapLandReferenceDataError(
-          'Map land reference data could not be retrieved',
-          response.status
-        )
-      }
-
-      let body
-      try {
-        body = validateFeatureCollection(await response.json())
-      } catch (error) {
-        if (error instanceof MapLandReferenceDataError) throw error
-        throw new MapLandReferenceDataError(
-          'Map land reference data returned an invalid response'
-        )
-      }
-      cached = {
-        body,
-        etag: response.headers?.get('etag') || undefined
-      }
-      return cached
-    } finally {
-      clearTimeout(timeout)
+      inFlight = null
     }
   }
 
