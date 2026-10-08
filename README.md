@@ -107,6 +107,87 @@ To run the application in `development` mode run:
 npm run dev
 ```
 
+### Reference Data Service
+
+Species, vessel, gear, port and map-land reads use the Reference Data Service from the frontend
+server. For host-run development, the service URL defaults to `http://localhost:3002`. Start the
+local backend services and seed their data from the `mmo-cr-backend-local` repository before
+opening these pages. The frontend requires `REFERENCE_DATA_SERVICE_TOKEN`; without it,
+reference-data-backed pages return `503`. For example, stop and restart the frontend with a
+non-empty local development token accepted by the local Authentication Service stub:
+
+```bash
+REFERENCE_DATA_SERVICE_TOKEN=local-dev-token npm run dev
+```
+
+The local stub accepts any non-empty bearer token; this example is for local development only.
+The token must be provided to the frontend process at startup. Setting it in another terminal
+does not update an already-running frontend.
+
+Gear selection and favourite gear lookup use the active Reference Data Service catalogue through
+`GET /api/v1/reference-data/gears`; selected records are validated through
+`GET /api/v1/reference-data/gears/{id}`. The service supplies mobile measurement definitions and
+required/variable measurement IDs. The committed local gear seed has three active items, so the
+available types differ from the former 12-item frontend walkthrough catalogue. The existing Pots
+fields remain a frontend compatibility option unless Pots is included in the active API dataset.
+Old session favourites migrate only when their names match one unique API gear; unmatched IDs are
+not accepted as API gear selections.
+
+Vessel selection reads active vessels from `GET /api/v1/reference-data/vessels?view=mobile`
+and confirms the selected GUID with `GET /api/v1/reference-data/vessels/{id}`. The committed
+local seed contains ACHILLES and SEA SPRAY as active vessels; the old OLGA placeholder is not
+an approved API vessel. This reference catalogue is not filtered to a signed-in user's fleet;
+account-specific access requires a separate fleet/role integration.
+
+Gear selection and add/remove gear lookups use `GET /api/v1/reference-data/gears` and item
+validation uses `GET /api/v1/reference-data/gears/{id}`. The API supplies measurement definitions
+and applicable measurement IDs; the local seed currently has three gear records, unlike the old
+12-item frontend walkthrough catalogue. Pots remains a local compatibility option for its existing
+dedicated catch measurement fields; it is not a reference-data gear unless present in the active
+API collection. Legacy gear favourites migrate only when a unique API name/code match exists.
+
+Port selection uses the Reference Data Service's active `ports` collection and saves its exact
+port codes. Older session favourites stored as name-based slugs are converted only when their
+names match one unique active API port. Unmatched slugs remain in session but are not offered
+as valid choices; users must search for and reselect an approved port. The committed local seed
+contains only Plymouth, Newlyn and Padstow. To load the full 624-port local catalogue (including
+Hull) after starting and seeding the backend stack, run this from the frontend repository root:
+
+```bash
+curl --fail-with-body -X PUT http://localhost:3002/api/v1/reference-data/ports \
+  -H 'Authorization: Bearer local-dev-token' \
+  -F 'file=@../mmo-cr-backend-local/datafiles/ports.json;type=application/json'
+```
+
+This updates only the local Reference Data Service; the frontend continues to accept only active
+API ports. The upload is idempotent if this version is already active.
+
+The statistical-area map requests land GeoJSON through the same-origin frontend endpoint
+`GET /map-data/land`, which proxies `GET /api/v1/reference-data/map/land` without exposing the
+bearer token to browser JavaScript. If the API is unavailable, the map falls back to its bundled
+`src/client/public/offline-map/land.json` layer. Subrectangles and map port markers remain bundled
+offline data.
+
+The alternative-area search also reads `GET /api/v1/reference-data/map/statistical-areas` and
+resolves selected API features through `GET /api/v1/reference-data/map/statistical-areas/{id}` via
+same-origin `/map-data/statistical-areas` proxy routes. API subrectangle results are merged with
+the bundled subrectangle catalogue, which remains the offline fallback and supplies the nearby
+map geometry/choices when the service dataset is incomplete.
+
+When running this frontend with Docker Compose, its `cdp-tenant` network is external and shared
+with the backend Compose project. Start the backend Compose project first, set
+`REFERENCE_DATA_SERVICE_TOKEN` in the shell used by Compose, then start the frontend, for example:
+
+```bash
+REFERENCE_DATA_SERVICE_TOKEN=local-dev-token docker compose up --build -d your-frontend
+```
+
+The container
+uses `http://mmo-cr-reference-data-service:3001`; do not use `localhost` for a backend container.
+Production must supply the deployed service URL and an approved bearer-token credential through
+the platform secret/configuration mechanism. The local Authentication Service stub is not real
+authentication and must never be used in production.
+
 ### Production
 
 To mimic the application running in `production` mode locally run:

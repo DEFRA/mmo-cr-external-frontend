@@ -6,7 +6,8 @@ export function speciesNameOnly(text) {
 }
 
 export function speciesNameAndId(speciesOption, speciesId) {
-  return `${speciesNameOnly(speciesOption.text).toLowerCase()} (${speciesId})`
+  const speciesCode = speciesOption?.code || speciesId
+  return `${speciesNameOnly(speciesOption.text).toLowerCase()} (${speciesCode})`
 }
 
 export function normalizeSpeciesIds(rawValue) {
@@ -20,8 +21,27 @@ export function normalizeSpeciesIds(rawValue) {
 // Drops any id that isn't one of the currently-available species options,
 // guarding against a tampered/stale payload referencing an unknown species.
 export function filterKnownSpeciesIds(speciesIds, speciesOptions) {
-  return speciesIds.filter((id) =>
-    speciesOptions.some((option) => option.id === id)
+  return [
+    ...new Set(
+      speciesIds
+        .map(
+          (id) =>
+            speciesOptions.find(
+              (option) =>
+                option.id === id ||
+                (typeof option.code === 'string' &&
+                  option.code.toLowerCase() === String(id).toLowerCase())
+            )?.id
+        )
+        .filter(Boolean)
+    )
+  ]
+}
+
+export function speciesWeightFromPayload(payload, field, speciesOption) {
+  return (
+    payload[`${field}-${speciesOption.id}`] ??
+    payload[`${field}-${speciesOption.code.toLowerCase()}`]
   )
 }
 

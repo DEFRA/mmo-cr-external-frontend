@@ -2,6 +2,19 @@ import { load } from 'cheerio'
 
 import { createServer } from '#/server/server.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
+import {
+  mockSpeciesReferenceData,
+  restoreSpeciesReferenceDataMock
+} from '#/test-helpers/mock-species-reference-data.js'
+import { mockPortsReferenceData } from '#/test-helpers/mock-ports-reference-data.js'
+import { mockGearsReferenceData } from '#/test-helpers/mock-gears-reference-data.js'
+
+beforeEach(() => {
+  mockSpeciesReferenceData()
+  mockPortsReferenceData()
+  mockGearsReferenceData()
+})
+afterEach(() => restoreSpeciesReferenceDataMock())
 
 describe('#checkAnswersController', () => {
   let server

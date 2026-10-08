@@ -2,6 +2,14 @@ import { load } from 'cheerio'
 
 import { createServer } from '#/server/server.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
+import {
+  mockSpeciesReferenceData,
+  restoreSpeciesReferenceDataMock,
+  SPECIES_IDS
+} from '#/test-helpers/mock-species-reference-data.js'
+
+beforeEach(() => mockSpeciesReferenceData())
+afterEach(() => restoreSpeciesReferenceDataMock())
 
 describe('#speciesNotLandedController', () => {
   let server
@@ -51,9 +59,9 @@ describe('#speciesNotLandedController', () => {
 
     expect(checkboxes).toHaveLength(3)
     expect(checkboxes.map((_, el) => $(el).attr('value')).get()).toEqual([
-      'cod',
-      'had',
-      'sal'
+      SPECIES_IDS.cod,
+      SPECIES_IDS.haddock,
+      SPECIES_IDS.mackerel
     ])
   })
 
@@ -122,7 +130,7 @@ describe('#speciesNotLandedSubmitController', () => {
 
     expect(statusCode).toBe(statusCodes.badRequest)
     expect($('.govuk-error-summary').text()).toContain(
-      'Enter a weight for atlantic cod (cod)'
+      'Enter a weight for atlantic cod (COD)'
     )
   })
 
@@ -136,7 +144,7 @@ describe('#speciesNotLandedSubmitController', () => {
 
     expect(statusCode).toBe(statusCodes.badRequest)
     expect($('.govuk-error-summary').text()).toContain(
-      'Enter a weight for atlantic cod (cod)'
+      'Enter a weight for atlantic cod (COD)'
     )
   })
 
@@ -191,7 +199,7 @@ describe('#speciesNotLandedSubmitController', () => {
     })
     const $ = load(result)
 
-    expect($('input[value="cod"]').prop('checked')).toBe(true)
-    expect($('#weightAboveMinimum-cod').attr('value')).toBe('5')
+    expect($(`input[value="${SPECIES_IDS.cod}"]`).prop('checked')).toBe(true)
+    expect($(`#weightAboveMinimum-${SPECIES_IDS.cod}`).attr('value')).toBe('5')
   })
 })

@@ -60,6 +60,8 @@ services:
       SESSION_COOKIE_SECURE: false
       USE_SINGLE_INSTANCE_CACHE: true
       REDIS_TLS: false
+      REFERENCE_DATA_SERVICE_URL: ${REFERENCE_DATA_SERVICE_URL:-http://mmo-cr-reference-data-service:3001}
+      REFERENCE_DATA_SERVICE_TOKEN: ${REFERENCE_DATA_SERVICE_TOKEN:-}
     networks:
       - cdp-tenant
 
@@ -91,4 +93,5 @@ volumes:
 
 networks:
   cdp-tenant:
-    driver: bridge
+    external: true
+    name: cdp-tenant

@@ -5,7 +5,6 @@ import { offlineMapSubrectangleCodes } from '#/server/common/data/offline-map-su
 
 const RETURN_TO_CHECK_ANSWERS = '?return=/check-answers'
 const MESH_HINT_PATTERN = /mm mesh/i
-const SPECIES_CODE_SUFFIX = /\s*\([A-Z]+\)$/
 
 function joinWithAnd(items) {
   if (items.length < 2) {
@@ -14,8 +13,12 @@ function joinWithAnd(items) {
   return `${items.slice(0, -1).join(', ')} and ${items[items.length - 1]}`
 }
 
-function resolvePortName(ports, code, fallbackName) {
-  return ports.find((port) => port.code === code)?.name ?? fallbackName
+function resolvePortName(ports, code, fallbackName, portNamesByCode) {
+  return (
+    portNamesByCode?.[code] ??
+    ports.find((port) => port.code === code)?.name ??
+    fallbackName
+  )
 }
 
 function resolveStatisticalSubArea(journeyState, fallback) {
@@ -48,12 +51,14 @@ function tripsDetailsSection(
   const departurePortName = resolvePortName(
     ports,
     journeyState.departurePort,
-    fallback.departurePort
+    fallback.departurePort,
+    journeyState.portNamesByCode
   )
   const returnPortName = resolvePortName(
     ports,
     journeyState.returnPort,
-    fallback.returnPort
+    fallback.returnPort,
+    journeyState.portNamesByCode
   )
   const statisticalSubArea = resolveStatisticalSubArea(journeyState, fallback)
 
@@ -71,7 +76,7 @@ function tripsDetailsSection(
     rows: [
       {
         key: 'Vessel',
-        value: getData('selectVessel').name,
+        value: journeyState.selectedVesselName || getData('selectVessel').name,
         changeHref: hideVesselChange ? null : buildChangeHref('/select-vessel')
       },
       {
@@ -109,9 +114,9 @@ function gearUsedSection(
   journeyState,
   fallback,
   meshSizeDefault,
-  buildChangeHref
+  buildChangeHref,
+  gearCatalogue
 ) {
-  const gearOptions = getData('gearSelection')
   const selectedGearIds = journeyState.selectedGearIds
   const hasSelection =
     Array.isArray(selectedGearIds) && selectedGearIds.length > 0
@@ -122,95 +127,135 @@ function gearUsedSection(
   const gearLabel = hasSelection
     ? joinWithAnd(
         selectedGearIds
-          .map((id) => gearOptions.find((option) => option.id === id)?.label)
+          .map(
+            (id) =>
+              gearCatalogue.find((option) => option.id === id)?.name ||
+              gearCatalogue.find((option) => option.id === id)?.label
+          )
           .filter(Boolean)
       )
     : fallback.gear
 
   const meshHints = hasSelection
     ? selectedGearIds
-        .map((id) => gearOptions.find((option) => option.id === id)?.hint)
+        .map((id) => gearCatalogue.find((option) => option.id === id)?.hint)
         .filter((hint) => hint && MESH_HINT_PATTERN.test(hint))
     : []
-  const meshSize =
-    meshHints.length > 0
-      ? meshHints.join(', ')
-      : potsSelected
-        ? meshSizeDefault
-        : null
+  const meshSize = resolveMeshSize(meshHints, potsSelected, meshSizeDefault)
 
-  const rows = [{ key: 'Gear type', value: gearLabel, changeHref }]
-
-  if (potsSelected) {
-    rows.push({
-      key: 'Total pots or traps hauled',
-      value: potsDetails.potsHauled ?? fallback.potsHauled,
-      changeHref
-    })
-    rows.push({
-      key: 'Total pots or traps left in water',
-      value: potsDetails.potsInWater ?? fallback.potsInWater,
-      changeHref
-    })
-  }
-
-  if (meshSize) {
-    rows.push({ key: 'Mesh size', value: meshSize, changeHref })
-  }
+  const rows = [
+    { key: 'Gear type', value: gearLabel, changeHref },
+    ...(potsSelected
+      ? [
+          {
+            key: 'Total pots or traps hauled',
+            value: potsDetails.potsHauled ?? fallback.potsHauled,
+            changeHref
+          },
+          {
+            key: 'Total pots or traps left in water',
+            value: potsDetails.potsInWater ?? fallback.potsInWater,
+            changeHref
+          }
+        ]
+      : []),
+    ...(meshSize ? [{ key: 'Mesh size', value: meshSize, changeHref }] : [])
+  ]
 
   return { heading: 'Gear used', rows }
 }
 
-function speciesCaughtSection(journeyState, fallback, buildChangeHref) {
-  const selectedSpeciesIds = journeyState.selectedSpeciesIds
-  const hasSession = Array.isArray(selectedSpeciesIds)
-  const hasCod = hasSession ? selectedSpeciesIds.includes('cod') : true
+function resolveMeshSize(meshHints, potsSelected, meshSizeDefault) {
+  if (meshHints.length > 0) {
+    return meshHints.join(', ')
+  }
+  return potsSelected ? meshSizeDefault : null
+}
 
-  if (!hasCod) {
+function speciesCaughtSection(
+  journeyState,
+  fallback,
+  buildChangeHref,
+  speciesCatalogue
+) {
+  const hasSession = Array.isArray(journeyState.selectedSpeciesIds)
+  const selectedIds = hasSession
+    ? journeyState.selectedSpeciesIds
+    : [speciesCatalogue.find((species) => species.code === 'COD')?.id].filter(
+        Boolean
+      )
+  const selectedSpecies = speciesCatalogue.filter((species) =>
+    selectedIds.includes(species.id)
+  )
+
+  if (selectedSpecies.length === 0) {
     return null
   }
 
-  const codWeights = journeyState.speciesWeights?.cod || {}
-  const showBelowMinimum = hasSession
-    ? Boolean(codWeights.weightBelowMinimum)
-    : true
-  const showLegallyDiscarded = hasSession
-    ? Boolean(codWeights.weightDiscarded)
-    : true
-  const speciesName = getData('speciesSelection')
-    .find((species) => species.id === 'cod')
-    .text.replace(SPECIES_CODE_SUFFIX, '')
   const changeHref = buildChangeHref('/species-selection')
-
-  const rows = [
-    { key: 'Species', value: speciesName, changeHref },
-    {
-      key: 'Weight above minimum size retained',
-      value: `${codWeights.weightAboveMinimum ?? fallback.weightAboveMinimumRetained} ${fallback.weightUnit}`,
-      changeHref
-    }
-  ]
-
-  if (showBelowMinimum) {
-    rows.push({
-      key: 'Weight below minimum size retained',
-      value: `${codWeights.weightBelowMinimum ?? fallback.weightBelowMinimumRetained} ${fallback.weightUnit}`,
-      changeHref
-    })
-  }
-
-  if (showLegallyDiscarded) {
-    rows.push({
-      key: 'Weight legally discard',
-      value: `${codWeights.weightDiscarded ?? fallback.weightLegallyDiscarded} ${fallback.weightUnit}`,
-      changeHref
-    })
-  }
+  const hasMultipleSpecies = selectedSpecies.length > 1
+  const rows = selectedSpecies.flatMap((species) => {
+    const weights = journeyState.speciesWeights?.[species.id] || {}
+    const useExampleWeights = !hasSession && species.code === 'COD'
+    const codeSuffix = hasMultipleSpecies ? ` (${species.code})` : ''
+    return speciesCaughtRows(
+      species,
+      weights,
+      fallback,
+      changeHref,
+      codeSuffix,
+      useExampleWeights
+    )
+  })
 
   return { heading: 'Species caught', rows }
 }
 
-function speciesNotLandedSection(journeyState, fallback, buildChangeHref) {
+function speciesCaughtRows(
+  species,
+  weights,
+  fallback,
+  changeHref,
+  codeSuffix,
+  useExampleWeights
+) {
+  const rows = [
+    {
+      key: `Species${codeSuffix}`,
+      value: species.displayName,
+      changeHref
+    },
+    {
+      key: `Weight above minimum size retained${codeSuffix}`,
+      value: `${weights.weightAboveMinimum ?? (useExampleWeights ? fallback.weightAboveMinimumRetained : '')} ${fallback.weightUnit}`,
+      changeHref
+    }
+  ]
+
+  if (weights.weightBelowMinimum || useExampleWeights) {
+    rows.push({
+      key: `Weight below minimum size retained${codeSuffix}`,
+      value: `${weights.weightBelowMinimum ?? fallback.weightBelowMinimumRetained} ${fallback.weightUnit}`,
+      changeHref
+    })
+  }
+  if (weights.weightDiscarded || useExampleWeights) {
+    rows.push({
+      key: `Weight legally discard${codeSuffix}`,
+      value: `${weights.weightDiscarded ?? fallback.weightLegallyDiscarded} ${fallback.weightUnit}`,
+      changeHref
+    })
+  }
+
+  return rows
+}
+
+function speciesNotLandedSection(
+  journeyState,
+  fallback,
+  buildChangeHref,
+  speciesCatalogue
+) {
   const hasAnswer = typeof journeyState.catchNotLanded === 'boolean'
   const catchNotLanded = hasAnswer
     ? journeyState.catchNotLanded
@@ -230,20 +275,36 @@ function speciesNotLandedSection(journeyState, fallback, buildChangeHref) {
   }
 
   const changeHref = buildChangeHref('/species-not-landed')
-  const codNotLanded = journeyState.speciesNotLanded?.cod
-  const speciesName = codNotLanded
-    ? getData('speciesSelection').find((species) => species.id === 'cod').text
-    : fallback.notLandedSpecies
-  const weightAboveMinimum = codNotLanded
-    ? codNotLanded.weightAboveMinimum
-    : fallback.notLandedWeightAboveMinimumKept
-
-  rows.push({ key: 'Species', value: speciesName, changeHref })
-  rows.push({
-    key: 'Weight above minimum size kept onboard or in keep pots (kg)',
-    value: weightAboveMinimum,
-    changeHref
+  const savedSpecies = journeyState.speciesNotLanded || {}
+  const hasSavedSpecies = Object.keys(savedSpecies).length > 0
+  const notLandedSpecies = hasSavedSpecies
+    ? speciesCatalogue.filter((species) =>
+        Object.hasOwn(savedSpecies, species.id)
+      )
+    : [speciesCatalogue.find((species) => species.code === 'COD')].filter(
+        Boolean
+      )
+  const hasMultipleSpecies = notLandedSpecies.length > 1
+  const speciesRows = notLandedSpecies.flatMap((species) => {
+    const details = savedSpecies[species.id]
+    const codeSuffix = hasMultipleSpecies ? ` (${species.code})` : ''
+    return [
+      {
+        key: `Species${codeSuffix}`,
+        value: species.text,
+        changeHref
+      },
+      {
+        key: `Weight above minimum size kept onboard or in keep pots (kg)${codeSuffix}`,
+        value:
+          details?.weightAboveMinimum ??
+          fallback.notLandedWeightAboveMinimumKept,
+        changeHref
+      }
+    ]
   })
+
+  rows.push(...speciesRows)
 
   return { heading: 'Species not landed', rows }
 }
@@ -275,6 +336,8 @@ export function buildCheckAnswersViewModel(request, options = {}) {
     options.buildChangeHref ??
     ((wizardPath) => `${wizardPath}${RETURN_TO_CHECK_ANSWERS}`)
   const journeyState = getJourneyState(request)
+  const speciesCatalogue = options.speciesCatalogue || []
+  const gearCatalogue = options.gearCatalogue || getData('gearSelection')
   const fallback = getData('catchRecordDetails')
   const { potsMeshSize } = getData('checkAnswersDefaults')
 
@@ -285,9 +348,25 @@ export function buildCheckAnswersViewModel(request, options = {}) {
       buildChangeHref,
       options.hideVesselChange
     ),
-    gearUsedSection(journeyState, fallback, potsMeshSize, buildChangeHref),
-    speciesCaughtSection(journeyState, fallback, buildChangeHref),
-    speciesNotLandedSection(journeyState, fallback, buildChangeHref)
+    gearUsedSection(
+      journeyState,
+      fallback,
+      potsMeshSize,
+      buildChangeHref,
+      gearCatalogue
+    ),
+    speciesCaughtSection(
+      journeyState,
+      fallback,
+      buildChangeHref,
+      speciesCatalogue
+    ),
+    speciesNotLandedSection(
+      journeyState,
+      fallback,
+      buildChangeHref,
+      speciesCatalogue
+    )
   ].filter(Boolean)
 
   return {

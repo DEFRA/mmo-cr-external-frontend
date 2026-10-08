@@ -3,6 +3,14 @@ import { load } from 'cheerio'
 import { createServer } from '#/server/server.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 import { getData } from '#/server/common/data/get-data.js'
+import {
+  mockVesselsReferenceData,
+  restoreVesselsReferenceDataMock,
+  VESSEL_IDS
+} from '#/test-helpers/mock-vessels-reference-data.js'
+
+beforeEach(() => mockVesselsReferenceData())
+afterEach(() => restoreVesselsReferenceDataMock())
 
 describe('#selectVesselController', () => {
   let server
@@ -49,7 +57,7 @@ describe('#selectVesselController', () => {
     ).toBe('/draft')
   })
 
-  test('Should render OLGA as a radio option using the stable vessel id', async () => {
+  test('Should render active API vessels with GUIDs and display names', async () => {
     const { result } = await server.inject({
       method: 'GET',
       url: '/select-vessel'
@@ -57,10 +65,11 @@ describe('#selectVesselController', () => {
     const $ = load(result)
     const radios = $('input[type="radio"]')
 
-    expect(radios).toHaveLength(1)
+    expect(radios).toHaveLength(2)
     expect(radios.eq(0).attr('name')).toBe('vesselId')
-    expect(radios.eq(0).attr('value')).toBe('olga')
-    expect($('label').eq(0).text().trim()).toBe('OLGA')
+    expect(radios.eq(0).attr('value')).toBe(VESSEL_IDS.achilles)
+    expect($('label').eq(0).text().trim()).toBe('ACHILLES PH1234')
+    expect(radios.eq(1).attr('value')).toBe(VESSEL_IDS.seaSpray)
   })
 
   test('Should render the Save and continue button', async () => {
@@ -112,7 +121,7 @@ describe('#selectVesselSubmitController', () => {
     const { statusCode, headers } = await server.inject({
       method: 'POST',
       url: '/select-vessel',
-      payload: { vesselId: 'olga' }
+      payload: { vesselId: VESSEL_IDS.achilles }
     })
 
     expect(statusCode).toBe(303)
@@ -124,11 +133,31 @@ describe('#selectVesselSubmitController', () => {
     const { statusCode, headers } = await server.inject({
       method: 'POST',
       url: '/select-vessel?return=/check-answers',
-      payload: { vesselId: 'olga' }
+      payload: { vesselId: VESSEL_IDS.achilles }
     })
 
     expect(statusCode).toBe(303)
     expect(headers.location).toBe('/check-answers')
+  })
+
+  test('Should restore the selected API vessel on the selection page', async () => {
+    const saved = await server.inject({
+      method: 'POST',
+      url: '/select-vessel',
+      payload: { vesselId: VESSEL_IDS.seaSpray }
+    })
+    const cookie = saved.headers['set-cookie'][0].split(';')[0]
+    const response = await server.inject({
+      method: 'GET',
+      url: '/select-vessel',
+      headers: { cookie }
+    })
+
+    expect(
+      load(response.result)(`input[value="${VESSEL_IDS.seaSpray}"]`).attr(
+        'checked'
+      )
+    ).toBeDefined()
   })
 
   test('Should reject an unknown vessel id', async () => {

@@ -7,6 +7,7 @@ import {
   clearAmendmentState
 } from '#/server/common/helpers/journey/amendment.js'
 import { buildCheckAnswersViewModel } from '#/server/routes/check-answers/view-model.js'
+import { getSpeciesPageData } from '#/server/common/helpers/species/species-list.js'
 import { formatDate } from '#/config/nunjucks/filters/format-date.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 
@@ -24,12 +25,14 @@ function findRecord(recordId) {
   return record
 }
 
-function viewContext(request, recordId, overrides = {}) {
+async function viewContext(request, recordId, overrides = {}) {
   const record = findRecord(recordId)
   const details = record.details || getData('catchRecordDetails')
+  const { catalogue } = await getSpeciesPageData(request)
   const { sections } = buildCheckAnswersViewModel(request, {
     buildChangeHref: () => AMENDMENT_CHANGE_HREF,
-    hideVesselChange: true
+    hideVesselChange: true,
+    speciesCatalogue: catalogue
   })
   const heading =
     record.recordId === 'late-1'
@@ -71,7 +74,7 @@ export const editCatchRecordReviewController = {
       })
     }
   },
-  handler(request, h) {
+  async handler(request, h) {
     const { recordId } = request.params
     findRecord(recordId)
 
@@ -81,7 +84,7 @@ export const editCatchRecordReviewController = {
 
     return h.view(
       'edit-catch-record-review/index',
-      viewContext(request, recordId)
+      await viewContext(request, recordId)
     )
   }
 }
@@ -95,7 +98,7 @@ export const editCatchRecordReviewSubmitController = {
       payload: Joi.object({
         confirmAccurate: Joi.string().valid('true').required()
       }),
-      failAction(request, h) {
+      async failAction(request, h) {
         const { recordId } = request.params
         findRecord(recordId)
 
@@ -112,7 +115,7 @@ export const editCatchRecordReviewSubmitController = {
         return h
           .view(
             'edit-catch-record-review/index',
-            viewContext(request, recordId, {
+            await viewContext(request, recordId, {
               errorSummary: {
                 titleText: 'There is a problem',
                 errorList: [{ text: errorText, href: '#confirmAccurate' }]

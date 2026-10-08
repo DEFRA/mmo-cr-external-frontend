@@ -2,6 +2,19 @@ import { load } from 'cheerio'
 
 import { createServer } from '#/server/server.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
+import {
+  mockSpeciesReferenceData,
+  restoreSpeciesReferenceDataMock
+} from '#/test-helpers/mock-species-reference-data.js'
+import { mockPortsReferenceData } from '#/test-helpers/mock-ports-reference-data.js'
+import { mockGearsReferenceData } from '#/test-helpers/mock-gears-reference-data.js'
+
+beforeEach(() => {
+  mockSpeciesReferenceData()
+  mockPortsReferenceData()
+  mockGearsReferenceData()
+})
+afterEach(() => restoreSpeciesReferenceDataMock())
 
 describe('#addPortController', () => {
   let server
@@ -38,6 +51,18 @@ describe('#addPortController', () => {
     expect($('h1').text().trim()).toBe(
       'Enter the port or closest port you returned to'
     )
+  })
+
+  test('Should use the return-port page as the Back destination outside first entry', async () => {
+    const { result } = await server.inject({
+      method: 'GET',
+      url: '/add-port?for=return'
+    })
+    const $ = load(result)
+
+    expect(
+      $('[data-testid="app-page-navigation-back-link"]').attr('href')
+    ).toBe('/return-port')
   })
 
   test('Should render the search input and Save and continue button', async () => {
@@ -108,6 +133,33 @@ describe('#addPortSubmitController', () => {
     expect($('input[value="hastings"]')).toHaveLength(1)
   })
 
+  test('Should save canonical API codes and resolve the confirmation by GUID', async () => {
+    const response = await server.inject({
+      method: 'POST',
+      url: '/add-port?for=departure&entry=1',
+      payload: { port: 'Plymouth' }
+    })
+    const cookie = response.headers['set-cookie'][0].split(';')[0]
+
+    expect(response.statusCode).toBe(303)
+    expect(response.headers.location).toBe('/confirm-same-port?port=GBPLY')
+
+    const confirmation = await server.inject({
+      method: 'GET',
+      url: response.headers.location,
+      headers: { cookie }
+    })
+    expect(confirmation.statusCode).toBe(200)
+    expect(confirmation.result).toContain('Was Plymouth the port')
+
+    const selection = await server.inject({
+      method: 'GET',
+      url: '/departure-port',
+      headers: { cookie }
+    })
+    expect(load(selection.result)('input[value="GBPLY"]')).toHaveLength(1)
+  })
+
   test('Should redirect back to the departure select screen when adding another port', async () => {
     const { statusCode, headers } = await server.inject({
       method: 'POST',
@@ -128,6 +180,28 @@ describe('#addPortSubmitController', () => {
 
     expect(statusCode).toBe(303)
     expect(headers.location).toBe('/return-port')
+  })
+
+  test('Should honor a safe return destination when adding another port', async () => {
+    const { statusCode, headers } = await server.inject({
+      method: 'POST',
+      url: '/add-port?for=return&return=/check-answers',
+      payload: { port: 'Rye' }
+    })
+
+    expect(statusCode).toBe(statusCodes.seeOther)
+    expect(headers.location).toBe('/check-answers')
+  })
+
+  test('Should ignore an unsafe return destination and continue to port selection', async () => {
+    const { statusCode, headers } = await server.inject({
+      method: 'POST',
+      url: '/add-port?for=departure&return=https://example.com',
+      payload: { port: 'Newhaven' }
+    })
+
+    expect(statusCode).toBe(statusCodes.seeOther)
+    expect(headers.location).toBe('/departure-port')
   })
 
   test('Should re-render with an error when no port is entered', async () => {
@@ -154,6 +228,19 @@ describe('#addPortSubmitController', () => {
 
     expect(statusCode).toBe(statusCodes.badRequest)
     expect($('.govuk-error-summary').text()).toContain(
+      'Select a port from the list'
+    )
+  })
+
+  test('Should re-render with an error when the submitted port is not text', async () => {
+    const { statusCode, result } = await server.inject({
+      method: 'POST',
+      url: '/add-port?for=departure',
+      payload: { port: 123 }
+    })
+
+    expect(statusCode).toBe(statusCodes.badRequest)
+    expect(load(result)('.govuk-error-summary').text()).toContain(
       'Select a port from the list'
     )
   })

@@ -41,26 +41,168 @@ export function resizeCanvas(canvas) {
   canvas.height = Math.max(1, Math.round(bounds.height * ratio))
 }
 
-export async function loadOfflineMapData() {
-  const [landResponse, subrectangleResponse, portResponse] = await Promise.all([
-    fetch('/public/offline-map/land.json'),
-    fetch('/public/offline-map/subrectangles.json'),
-    fetch('/public/offline-map/ports.json')
-  ])
-  if (
-    ![landResponse, subrectangleResponse, portResponse].every(
-      (response) => response.ok
+function boundsForCoordinates(coordinates) {
+  const points = coordinates.flat(1)
+  return points.reduce(
+    (bounds, [longitude, latitude]) => ({
+      minLongitude: Math.min(bounds.minLongitude, longitude),
+      maxLongitude: Math.max(bounds.maxLongitude, longitude),
+      minLatitude: Math.min(bounds.minLatitude, latitude),
+      maxLatitude: Math.max(bounds.maxLatitude, latitude)
+    }),
+    {
+      minLongitude: Infinity,
+      maxLongitude: -Infinity,
+      minLatitude: Infinity,
+      maxLatitude: -Infinity
+    }
+  )
+}
+
+function isValidRing(ring) {
+  return (
+    Array.isArray(ring) &&
+    ring.length >= 4 &&
+    ring.every(
+      (coordinate) =>
+        Array.isArray(coordinate) &&
+        Number.isFinite(coordinate[0]) &&
+        Number.isFinite(coordinate[1])
     )
+  )
+}
+
+function toLandPolygon(rings) {
+  if (!Array.isArray(rings) || !isValidRing(rings[0])) {
+    return undefined
+  }
+  return { exterior: rings[0], holes: rings.slice(1).filter(isValidRing) }
+}
+
+function polygonCoordinatesForGeometry(geometry) {
+  if (geometry?.type === 'Polygon') {
+    return [geometry.coordinates]
+  }
+  if (geometry?.type === 'MultiPolygon') {
+    return geometry.coordinates
+  }
+  return []
+}
+
+export function mapLandGeoJsonToCanvasData(featureCollection) {
+  if (
+    featureCollection?.type !== 'FeatureCollection' ||
+    !Array.isArray(featureCollection.features)
   ) {
+    return undefined
+  }
+  const land = featureCollection.features.flatMap((feature) => {
+    const polygonCoordinates = polygonCoordinatesForGeometry(feature.geometry)
+    const polygons = polygonCoordinates.map(toLandPolygon).filter(Boolean)
+    if (polygons.length === 0) {
+      return []
+    }
+    const allCoordinates = polygons.flatMap((polygon) => [
+      polygon.exterior,
+      ...polygon.holes
+    ])
+    return [{ polygons, bounds: boundsForCoordinates(allCoordinates) }]
+  })
+  return land.length > 0 ? land : undefined
+}
+
+export function mapSubrectanglesGeoJsonToCanvasData(featureCollection) {
+  if (
+    featureCollection?.type !== 'FeatureCollection' ||
+    !Array.isArray(featureCollection.features)
+  ) {
+    return []
+  }
+
+  return featureCollection.features.flatMap((feature) => {
+    if (
+      feature.properties?.areaType !== 'ices-subrectangle' ||
+      typeof feature.properties.code !== 'string'
+    ) {
+      return []
+    }
+    const polygons = polygonCoordinatesForGeometry(feature.geometry)
+      .map(toLandPolygon)
+      .filter(Boolean)
+    if (polygons.length === 0) {
+      return []
+    }
+    const allCoordinates = polygons.flatMap((polygon) => [
+      polygon.exterior,
+      ...polygon.holes
+    ])
+    const bounds = boundsForCoordinates(allCoordinates)
+    const centroid = feature.properties.centroid
+
+    return [
+      {
+        subCode: feature.properties.code.toUpperCase(),
+        polygons,
+        bounds,
+        labelCoordinate:
+          Number.isFinite(centroid?.longitude) &&
+          Number.isFinite(centroid?.latitude)
+            ? [centroid.longitude, centroid.latitude]
+            : [
+                (bounds.minLongitude + bounds.maxLongitude) / 2,
+                (bounds.minLatitude + bounds.maxLatitude) / 2
+              ],
+        overlapsSea: feature.properties.overlapsSea !== false
+      }
+    ]
+  })
+}
+
+async function fetchJson(url) {
+  try {
+    const response = await fetch(url)
+    return response.ok ? await response.json() : undefined
+  } catch {
+    return undefined
+  }
+}
+
+export async function loadOfflineMapData() {
+  const [bundledLand, bundledSubrectangleData, portData, apiSubrectangles] =
+    await Promise.all([
+      fetchJson('/public/offline-map/land.json'),
+      fetchJson('/public/offline-map/subrectangles.json'),
+      fetchJson('/public/offline-map/ports.json'),
+      fetchJson('/map-data/statistical-areas')
+    ])
+  if (!bundledSubrectangleData || !portData) {
     return null
   }
 
-  const [{ land }, { subrectangles: allSubrectangles }, { ports }] =
-    await Promise.all([
-      landResponse.json(),
-      subrectangleResponse.json(),
-      portResponse.json()
+  const land = bundledLand?.land
+  if (!Array.isArray(land) || land.length === 0) {
+    return null
+  }
+  const apiAreas = mapSubrectanglesGeoJsonToCanvasData(apiSubrectangles)
+  const subrectanglesByCode = new Map(
+    (bundledSubrectangleData.subrectangles || []).map((area) => [
+      area.subCode,
+      area
     ])
+  )
+  for (const area of apiAreas) {
+    const bundledArea = subrectanglesByCode.get(area.subCode)
+    if (bundledArea && !boundsIntersect(bundledArea.bounds, area.bounds)) {
+      continue
+    }
+    subrectanglesByCode.set(area.subCode, {
+      ...bundledArea,
+      ...area,
+      overlapsSea: bundledArea?.overlapsSea ?? area.overlapsSea
+    })
+  }
+  const allSubrectangles = [...subrectanglesByCode.values()]
+  const { ports } = portData
   // A rectangle entirely on land has no fishing area and must never be shown, selectable or not.
   const subrectangles = allSubrectangles.filter(
     (subrectangle) => subrectangle.overlapsSea
@@ -70,6 +212,19 @@ export async function loadOfflineMapData() {
 }
 
 export function findDeparturePort(ports, map) {
+  let coordinate
+  try {
+    coordinate = JSON.parse(map.dataset.departurePortCoordinate || 'null')
+  } catch {
+    coordinate = null
+  }
+  if (
+    Array.isArray(coordinate) &&
+    coordinate.length === 2 &&
+    coordinate.every(Number.isFinite)
+  ) {
+    return { name: map.dataset.departurePort, coordinate }
+  }
   return ports.find(
     (port) =>
       port.name.toLowerCase() === map.dataset.departurePort.toLowerCase()

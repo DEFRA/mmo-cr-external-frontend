@@ -2,11 +2,18 @@ import { load } from 'cheerio'
 
 import { createServer } from '#/server/server.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
+import {
+  mockGearsReferenceData,
+  restoreGearsReferenceDataMock
+} from '#/test-helpers/mock-gears-reference-data.js'
 
 function nextCookie(response, previousCookie) {
   const setCookie = response.headers['set-cookie']
   return setCookie ? setCookie[0].split(';')[0] : previousCookie
 }
+
+beforeEach(() => mockGearsReferenceData())
+afterEach(() => restoreGearsReferenceDataMock())
 
 describe('#addGearController', () => {
   let server
@@ -343,29 +350,9 @@ describe('#addGearSubmitController', () => {
       url: '/add-gear',
       payload: { gear: 'Miscellaneous gear (diving)' }
     })
-    let cookie = nextCookie(addResponse)
-
-    const { result } = await server.inject({
-      method: 'GET',
-      url: addResponse.headers.location,
-      headers: { cookie }
-    })
-    const $ = load(result)
-
-    expect($('[data-testid="app-no-measurements-needed"]').text()).toBe(
-      'No details required for this type of gear.'
-    )
-
-    const confirmResponse = await server.inject({
-      method: 'POST',
-      url: '/add-gear',
-      payload: {},
-      headers: { cookie }
-    })
-    cookie = nextCookie(confirmResponse, cookie)
-
-    expect(confirmResponse.statusCode).toBe(303)
-    expect(confirmResponse.headers.location).toBe('/gear-selection')
+    const cookie = nextCookie(addResponse)
+    expect(addResponse.statusCode).toBe(303)
+    expect(addResponse.headers.location).toBe('/gear-selection')
 
     const gearSelectionResponse = await server.inject({
       method: 'GET',
@@ -399,6 +386,25 @@ describe('#addGearSubmitController', () => {
     expect($('.govuk-error-summary').text()).toContain(
       'Number of rods and lines must be a whole number greater than 0'
     )
+  })
+
+  test('Should reject fields that do not belong to the pending gear measurements', async () => {
+    const addResponse = await server.inject({
+      method: 'POST',
+      url: '/add-gear',
+      payload: { gear: 'Dredge' }
+    })
+    const cookie = nextCookie(addResponse)
+
+    const response = await server.inject({
+      method: 'POST',
+      url: '/add-gear',
+      payload: { numberOfDredges: '2', unexpectedField: 'value' },
+      headers: { cookie }
+    })
+
+    expect(response.statusCode).toBe(statusCodes.badRequest)
+    expect(load(response.result)('.govuk-error-summary')).toHaveLength(1)
   })
 
   test.each([

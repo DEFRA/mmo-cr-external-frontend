@@ -7,7 +7,6 @@ import { getAccountPortsUsed } from '#/server/common/helpers/account/account-por
 import { getData } from '#/server/common/data/get-data.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 
-const { name: vesselName } = getData('selectVessel')
 const headingLine1 = 'Remove ports from vessel'
 
 function portCheckboxItems(portsUsed) {
@@ -16,6 +15,8 @@ function portCheckboxItems(portsUsed) {
 
 function viewContext(request, overrides = {}) {
   const portsUsed = getAccountPortsUsed(getJourneyState(request))
+  const vesselName =
+    getJourneyState(request).selectedVesselName || getData('selectVessel').name
 
   return {
     pageTitle: `${headingLine1} ${vesselName}`,

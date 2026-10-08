@@ -4,15 +4,24 @@ import {
   setJourneyState,
   resolveNextPath
 } from '#/server/common/helpers/journey/navigation.js'
-import { getData } from '#/server/common/data/get-data.js'
+import {
+  findPortByCode,
+  getPortCatalogue,
+  getPortItem,
+  rememberPortName
+} from '#/server/common/helpers/ports/ports-list.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 
-const ports = getData('ports')
 const departurePortPath = '/departure-port'
 
-function resolvePort(request) {
+async function resolvePort(request) {
   const code = request.query.port
-  return ports.find((port) => port.code === code)
+  if (!code) {
+    return undefined
+  }
+  const ports = await getPortCatalogue()
+  const port = findPortByCode(code, ports)
+  return port ? getPortItem(port.id) : undefined
 }
 
 function heading(portName) {
@@ -34,8 +43,8 @@ function viewContext(_request, port, overrides = {}) {
 }
 
 export const confirmSamePortController = {
-  handler(request, h) {
-    const port = resolvePort(request)
+  async handler(request, h) {
+    const port = await resolvePort(request)
     if (!port) {
       return h.redirect(departurePortPath).code(statusCodes.seeOther)
     }
@@ -50,8 +59,8 @@ export const confirmSamePortSubmitController = {
       payload: Joi.object({
         confirmSamePort: Joi.string().valid('yes', 'no').required()
       }),
-      failAction(request, h) {
-        const port = resolvePort(request)
+      async failAction(request, h) {
+        const port = await resolvePort(request)
         if (!port) {
           return h
             .redirect(departurePortPath)
@@ -77,13 +86,14 @@ export const confirmSamePortSubmitController = {
       }
     }
   },
-  handler(request, h) {
-    const port = resolvePort(request)
+  async handler(request, h) {
+    const port = await resolvePort(request)
     if (!port) {
       return h.redirect(departurePortPath).code(statusCodes.seeOther)
     }
 
     if (request.payload.confirmSamePort === 'yes') {
+      rememberPortName(request, port)
       setJourneyState(request, {
         departurePort: port.code,
         returnPort: port.code

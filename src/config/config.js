@@ -226,6 +226,29 @@ export const config = convict({
       default: 'x-cdp-request-id',
       env: 'TRACING_HEADER'
     }
+  },
+  referenceData: {
+    serviceUrl: {
+      doc: 'Base URL of the Reference Data Service',
+      format: String,
+      nullable: true,
+      default: isProduction ? null : 'http://localhost:3002',
+      env: 'REFERENCE_DATA_SERVICE_URL'
+    },
+    token: {
+      doc: 'Bearer token used by the frontend server to read reference data',
+      format: String,
+      nullable: true,
+      default: null,
+      sensitive: true,
+      env: 'REFERENCE_DATA_SERVICE_TOKEN'
+    },
+    timeoutMs: {
+      doc: 'Maximum time in milliseconds to wait for reference data',
+      format: 'nat',
+      default: 3000,
+      env: 'REFERENCE_DATA_SERVICE_TIMEOUT_MS'
+    }
   }
 })
 

@@ -2,6 +2,13 @@ import { load } from 'cheerio'
 
 import { createServer } from '#/server/server.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
+import {
+  mockPortsReferenceData,
+  restorePortsReferenceDataMock
+} from '#/test-helpers/mock-ports-reference-data.js'
+
+beforeEach(() => mockPortsReferenceData())
+afterEach(() => restorePortsReferenceDataMock())
 
 async function withFavourite(server, code) {
   const response = await server.inject({

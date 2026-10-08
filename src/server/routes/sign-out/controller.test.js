@@ -1,4 +1,11 @@
 import { createServer } from '#/server/server.js'
+import {
+  mockPortsReferenceData,
+  restorePortsReferenceDataMock
+} from '#/test-helpers/mock-ports-reference-data.js'
+
+beforeEach(() => mockPortsReferenceData())
+afterEach(() => restorePortsReferenceDataMock())
 
 describe('#signOutController', () => {
   let server

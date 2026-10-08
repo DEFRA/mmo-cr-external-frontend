@@ -6,10 +6,14 @@ import {
 } from '#/server/common/helpers/journey/navigation.js'
 import { addFavouritePortCode } from '#/server/common/helpers/journey/favourite-ports.js'
 import { addAccountPortName } from '#/server/common/helpers/account/account-ports.js'
-import { getData } from '#/server/common/data/get-data.js'
+import {
+  findPortByName,
+  getPortCatalogue,
+  portSearchLabel,
+  rememberPortName
+} from '#/server/common/helpers/ports/ports-list.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 
-const ports = getData('ports')
 const selectionErrorText = 'Select a port from the list'
 const returnPhase = 'return'
 const departurePortPath = '/departure-port'
@@ -54,7 +58,7 @@ function formAction(request) {
   return `/add-port?for=${phase}${entrySuffix}${returnSuffix}`
 }
 
-function viewContext(request, overrides = {}) {
+function viewContext(request, ports, overrides = {}) {
   const heading = headingByPhase[resolvePhase(request)]
 
   return {
@@ -66,23 +70,25 @@ function viewContext(request, overrides = {}) {
       text: 'Back'
     },
     formAction: formAction(request),
-    portNames: ports.map(({ name }) => name),
+    portNames: ports.map((port) => portSearchLabel(port, ports)),
     port: '',
     ...overrides
   }
 }
 
 export const addPortController = {
-  handler(request, h) {
-    return h.view('add-port/index', viewContext(request))
+  async handler(request, h) {
+    const ports = await getPortCatalogue()
+    return h.view('add-port/index', viewContext(request, ports))
   }
 }
 
-function renderError(request, h, submittedValue) {
+async function renderError(request, h, submittedValue, catalogue) {
+  const ports = catalogue || (await getPortCatalogue())
   return h
     .view(
       'add-port/index',
-      viewContext(request, {
+      viewContext(request, ports, {
         errorSummary: {
           titleText: 'There is a problem',
           errorList: [{ text: selectionErrorText, href: '#port' }]
@@ -101,19 +107,18 @@ export const addPortSubmitController = {
       payload: Joi.object({
         port: Joi.string().trim().allow('').default('')
       }),
-      failAction(request, h) {
+      async failAction(request, h) {
         return renderError(request, h, request.payload.port)
       }
     }
   },
-  handler(request, h) {
+  async handler(request, h) {
+    const ports = await getPortCatalogue()
     const { port } = request.payload
-    const matchedPort = ports.find(
-      ({ name }) => name.toLowerCase() === port.trim().toLowerCase()
-    )
+    const matchedPort = findPortByName(port, ports)
 
     if (!matchedPort) {
-      return renderError(request, h, port)
+      return renderError(request, h, port, ports)
     }
 
     if (isAccountReturn(request)) {
@@ -122,6 +127,7 @@ export const addPortSubmitController = {
     }
 
     addFavouritePortCode(request, matchedPort.code)
+    rememberPortName(request, matchedPort)
 
     if (isEntry(request)) {
       return h

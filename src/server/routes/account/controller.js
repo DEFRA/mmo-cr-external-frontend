@@ -4,12 +4,10 @@ import { getJourneyState } from '#/server/common/helpers/journey/navigation.js'
 import { getAccountPortsUsed } from '#/server/common/helpers/account/account-ports.js'
 import {
   getFavouriteGearIds,
-  getFavouriteGearOptions
+  getFavouriteGearOptions,
+  getGearCatalogue
 } from '#/server/common/helpers/gear/favourite-gear.js'
-import {
-  getAvailableSpeciesIds,
-  getSpeciesOptionsByIds
-} from '#/server/common/helpers/species/species-list.js'
+import { getSpeciesPageData } from '#/server/common/helpers/species/species-list.js'
 
 const NOT_IMPLEMENTED_HREF = '/not-implemented?return=/account'
 
@@ -205,7 +203,7 @@ function buildVesselDetailsSection(
 }
 
 export const accountController = {
-  handler(request, h) {
+  async handler(request, h) {
     if (!isSignedIn(request)) {
       return h.redirect('/sign-in').code(302)
     }
@@ -216,12 +214,13 @@ export const accountController = {
     const journeyState = getJourneyState(request)
     const skipper = journeyState.skipper
     const portsUsed = getAccountPortsUsed(journeyState)
+    const gearCatalogue = await getGearCatalogue()
     const favouriteGearOptions = getFavouriteGearOptions(
-      getFavouriteGearIds(journeyState)
+      getFavouriteGearIds(journeyState, gearCatalogue),
+      gearCatalogue
     )
-    const speciesCaught = getSpeciesOptionsByIds(
-      getAvailableSpeciesIds(journeyState)
-    ).map((species) => species.text)
+    const { speciesOptions } = await getSpeciesPageData(request)
+    const speciesCaught = speciesOptions.map((species) => species.text)
 
     return h.view('account/index', {
       pageTitle: 'Your account',

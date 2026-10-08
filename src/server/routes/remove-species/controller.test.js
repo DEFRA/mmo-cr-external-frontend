@@ -2,6 +2,14 @@ import { load } from 'cheerio'
 
 import { createServer } from '#/server/server.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
+import {
+  mockSpeciesReferenceData,
+  restoreSpeciesReferenceDataMock,
+  SPECIES_IDS
+} from '#/test-helpers/mock-species-reference-data.js'
+
+beforeEach(() => mockSpeciesReferenceData())
+afterEach(() => restoreSpeciesReferenceDataMock())
 
 describe('#removeSpeciesController', () => {
   let server
@@ -75,7 +83,9 @@ describe('#removeSpeciesController', () => {
     const removeResponse = await server.inject({
       method: 'POST',
       url: '/remove-species',
-      payload: { speciesIds: ['cod', 'had', 'sal'] }
+      payload: {
+        speciesIds: [SPECIES_IDS.cod, SPECIES_IDS.haddock, SPECIES_IDS.mackerel]
+      }
     })
     const cookie = removeResponse.headers['set-cookie'][0].split(';')[0]
     const { result } = await server.inject({
@@ -166,8 +176,8 @@ describe('#removeSpeciesSubmitController', () => {
     })
     const $ = load(result)
 
-    expect($('input[value="had"]')).toHaveLength(0)
-    expect($('input[value="cod"]').prop('checked')).toBe(true)
+    expect($(`input[value="${SPECIES_IDS.haddock}"]`)).toHaveLength(0)
+    expect($(`input[value="${SPECIES_IDS.cod}"]`).prop('checked')).toBe(true)
   })
 
   test('Should no longer show a removed species as a checkbox on species selection', async () => {
@@ -185,7 +195,7 @@ describe('#removeSpeciesSubmitController', () => {
     })
     const $ = load(result)
 
-    expect($('input[value="had"]')).toHaveLength(0)
+    expect($(`input[value="${SPECIES_IDS.haddock}"]`)).toHaveLength(0)
     expect($('input[type="checkbox"][name="speciesIds"]')).toHaveLength(2)
   })
 
@@ -193,7 +203,7 @@ describe('#removeSpeciesSubmitController', () => {
     const { statusCode, headers } = await server.inject({
       method: 'POST',
       url: '/remove-species',
-      payload: { speciesIds: ['cod', 'had', 'sal'] }
+      payload: { speciesIds: ['cod', 'had', 'mac'] }
     })
 
     expect(statusCode).toBe(303)

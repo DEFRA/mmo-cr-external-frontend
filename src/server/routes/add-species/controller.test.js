@@ -2,6 +2,14 @@ import { load } from 'cheerio'
 
 import { createServer } from '#/server/server.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
+import {
+  mockSpeciesReferenceData,
+  restoreSpeciesReferenceDataMock,
+  SPECIES_IDS
+} from '#/test-helpers/mock-species-reference-data.js'
+
+beforeEach(() => mockSpeciesReferenceData())
+afterEach(() => restoreSpeciesReferenceDataMock())
 
 describe('#addSpeciesController', () => {
   let server
@@ -172,14 +180,14 @@ describe('#addSpeciesSubmitController', () => {
     })
     const $ = load(result)
 
-    expect($('input[value="her"]')).toHaveLength(1)
+    expect($(`input[value="${SPECIES_IDS.herring}"]`)).toHaveLength(1)
   })
 
   test('Should redirect back to check your answers when a return query is supplied', async () => {
     const { statusCode, headers } = await server.inject({
       method: 'POST',
       url: '/add-species?return=/check-answers',
-      payload: { species: 'Mackerel (MAC)' }
+      payload: { species: 'Herring (HER)' }
     })
 
     expect(statusCode).toBe(303)

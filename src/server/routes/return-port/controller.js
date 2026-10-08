@@ -9,28 +9,33 @@ import {
   addFavouritePortCode,
   getFavouritePortCodes
 } from '#/server/common/helpers/journey/favourite-ports.js'
-import { getData } from '#/server/common/data/get-data.js'
+import {
+  findPortByCode,
+  getPortCatalogue,
+  migratePortJourneyState,
+  rememberPortName
+} from '#/server/common/helpers/ports/ports-list.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 
 const pageTitle = 'Select the port you returned to'
+const templatePath = 'return-port/index'
+const errorSummaryTitle = 'There is a problem'
 const hintText =
   'Select the port name, or the nearest port to where you returned.'
-const ports = getData('ports')
-
-function favouritePorts(request) {
+function favouritePorts(request, ports) {
   const codes = getFavouritePortCodes(request)
   return ports.filter((port) => codes.includes(port.code))
 }
 
-function portOptions(request, selectedCode) {
-  return favouritePorts(request).map(({ code, name }) => ({
+function portOptions(request, selectedCode, ports) {
+  return favouritePorts(request, ports).map(({ code, name }) => ({
     value: code,
     text: name,
     checked: code === selectedCode
   }))
 }
 
-function viewContext(request, overrides = {}) {
+function viewContext(request, ports, overrides = {}) {
   return {
     pageTitle,
     heading: pageTitle,
@@ -41,18 +46,24 @@ function viewContext(request, overrides = {}) {
       text: 'Back'
     },
     addPortHref: '/add-port?for=return',
-    portOptions: portOptions(request, getJourneyState(request).returnPort),
+    portOptions: portOptions(
+      request,
+      getJourneyState(request).returnPort,
+      ports
+    ),
     ...overrides
   }
 }
 
 export const returnPortController = {
-  handler(request, h) {
-    if (getFavouritePortCodes(request).length === 0) {
+  async handler(request, h) {
+    const ports = await getPortCatalogue()
+    migratePortJourneyState(request, ports)
+    if (favouritePorts(request, ports).length === 0) {
       return h.redirect('/add-port?for=return').code(statusCodes.seeOther)
     }
 
-    return h.view('return-port/index', viewContext(request))
+    return h.view(templatePath, viewContext(request, ports))
   }
 }
 
@@ -60,19 +71,18 @@ export const returnPortSubmitController = {
   options: {
     validate: {
       payload: Joi.object({
-        returnPort: Joi.string()
-          .valid(...ports.map(({ code }) => code))
-          .required()
+        returnPort: Joi.string().required()
       }),
-      failAction(request, h) {
-        const errorText = 'Select the port you returned to'
+      async failAction(request, h) {
+        const ports = await getPortCatalogue()
+        const errorText = pageTitle
 
         return h
           .view(
-            'return-port/index',
-            viewContext(request, {
+            templatePath,
+            viewContext(request, ports, {
               errorSummary: {
-                titleText: 'There is a problem',
+                titleText: errorSummaryTitle,
                 errorList: [{ text: errorText, href: '#returnPort' }]
               },
               fieldErrors: { returnPort: errorText }
@@ -83,11 +93,29 @@ export const returnPortSubmitController = {
       }
     }
   },
-  handler(request, h) {
+  async handler(request, h) {
+    const ports = await getPortCatalogue()
     const { returnPort } = request.payload
+    const port = findPortByCode(returnPort, ports)
+    if (!port) {
+      const errorText = pageTitle
+      return h
+        .view(
+          templatePath,
+          viewContext(request, ports, {
+            errorSummary: {
+              titleText: errorSummaryTitle,
+              errorList: [{ text: errorText, href: '#returnPort' }]
+            },
+            fieldErrors: { returnPort: errorText }
+          })
+        )
+        .code(statusCodes.badRequest)
+    }
 
-    addFavouritePortCode(request, returnPort)
-    setJourneyState(request, { returnPort })
+    addFavouritePortCode(request, port.code)
+    rememberPortName(request, port)
+    setJourneyState(request, { returnPort: port.code })
 
     return h
       .redirect(resolveNextPath(request, '/gear-selection'))

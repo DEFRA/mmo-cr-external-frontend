@@ -2,6 +2,7 @@ const minimumSearchLength = 2
 const maximumResults = 10
 const collapsedState = 'false'
 const ariaExpandedAttribute = 'aria-expanded'
+const subrectangleCodePattern = /^\d{2}[A-Z]\d{2}$/
 
 function queryElements() {
   return {
@@ -139,6 +140,40 @@ function attachEventListeners(elements, subrectangles) {
   )
 }
 
+function apiSubrectangles(featureCollection) {
+  if (featureCollection?.type !== 'FeatureCollection') {
+    return []
+  }
+  return featureCollection.features
+    .filter(
+      (feature) =>
+        feature.properties?.areaType === 'ices-subrectangle' &&
+        subrectangleCodePattern.test(feature.properties.code || '')
+    )
+    .map((feature) => ({
+      subCode: feature.properties.code.toUpperCase(),
+      labelCoordinate: feature.properties.centroid
+        ? [
+            feature.properties.centroid.longitude,
+            feature.properties.centroid.latitude
+          ]
+        : undefined,
+      apiId: feature.id
+    }))
+}
+
+async function fetchApiSubrectangles() {
+  try {
+    const response = await fetch('/map-data/statistical-areas')
+    if (!response.ok) {
+      return []
+    }
+    return apiSubrectangles(await response.json())
+  } catch {
+    return []
+  }
+}
+
 export async function initialiseStatisticalAreaSearch() {
   const elements = queryElements()
   if (!elements.input) {
@@ -146,12 +181,20 @@ export async function initialiseStatisticalAreaSearch() {
   }
 
   try {
-    const response = await fetch('/public/offline-map/subrectangles.json')
-    if (!response.ok) {
-      return
+    const [apiAreas, offlineResponse] = await Promise.all([
+      fetchApiSubrectangles(),
+      fetch('/public/offline-map/subrectangles.json').catch(() => undefined)
+    ])
+    const offlineData = offlineResponse?.ok
+      ? await offlineResponse.json()
+      : { subrectangles: [] }
+    const byCode = new Map(
+      (offlineData.subrectangles || []).map((area) => [area.subCode, area])
+    )
+    for (const area of apiAreas) {
+      byCode.set(area.subCode, area)
     }
-
-    const { subrectangles } = await response.json()
+    const subrectangles = [...byCode.values()]
     attachEventListeners(elements, subrectangles)
   } catch {
     elements.results.hidden = true

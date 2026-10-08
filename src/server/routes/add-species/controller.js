@@ -7,22 +7,18 @@ import {
 } from '#/server/common/helpers/journey/navigation.js'
 import {
   findSpeciesOptionByLabel,
-  getAvailableSpeciesIds,
-  getSpeciesCatalogue
+  getSpeciesPageData
 } from '#/server/common/helpers/species/species-list.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 
-const pageTitle = 'Add species to your vessel OLGA'
-
-function speciesOptionLabels(availableSpeciesIds) {
-  return getSpeciesCatalogue()
+function speciesOptionLabels(availableSpeciesIds, catalogue) {
+  return catalogue
     .filter((species) => !availableSpeciesIds.includes(species.id))
     .map((species) => species.text)
 }
 
-function viewContext(request, overrides = {}) {
-  const availableSpeciesIds = getAvailableSpeciesIds(getJourneyState(request))
-
+function viewContext(request, speciesData, overrides = {}) {
+  const pageTitle = `Add species to your vessel ${getJourneyState(request).selectedVesselName || 'OLGA'}`
   return {
     pageTitle,
     heading: pageTitle,
@@ -31,16 +27,20 @@ function viewContext(request, overrides = {}) {
       href: resolveNextPath(request, '/species-selection'),
       text: 'Back'
     },
-    speciesOptionLabels: speciesOptionLabels(availableSpeciesIds),
+    speciesOptionLabels: speciesOptionLabels(
+      speciesData.availableSpeciesIds,
+      speciesData.catalogue
+    ),
     ...overrides
   }
 }
 
-function renderError(request, h, errorText) {
+async function renderError(request, h, errorText, speciesData) {
+  const data = speciesData || (await getSpeciesPageData(request))
   return h
     .view(
       'add-species/index',
-      viewContext(request, {
+      viewContext(request, data, {
         errorSummary: {
           titleText: 'There is a problem',
           errorList: [{ text: errorText, href: '#species' }]
@@ -53,8 +53,9 @@ function renderError(request, h, errorText) {
 }
 
 export const addSpeciesController = {
-  handler(request, h) {
-    return h.view('add-species/index', viewContext(request))
+  async handler(request, h) {
+    const speciesData = await getSpeciesPageData(request)
+    return h.view('add-species/index', viewContext(request, speciesData))
   }
 }
 
@@ -64,29 +65,48 @@ export const addSpeciesSubmitController = {
       payload: Joi.object({
         species: Joi.string().allow('').optional()
       }),
-      failAction(request, h) {
-        return renderError(request, h, 'Enter the species you want to add')
+      async failAction(request, h) {
+        const speciesData = await getSpeciesPageData(request)
+        return renderError(
+          request,
+          h,
+          'Enter the species you want to add',
+          speciesData
+        )
       }
     }
   },
-  handler(request, h) {
+  async handler(request, h) {
+    const speciesData = await getSpeciesPageData(request)
     const speciesLabel = (request.payload.species || '').trim()
 
     if (!speciesLabel) {
-      return renderError(request, h, 'Enter the species you want to add')
+      return renderError(
+        request,
+        h,
+        'Enter the species you want to add',
+        speciesData
+      )
     }
 
-    const matchedSpecies = findSpeciesOptionByLabel(speciesLabel)
+    const matchedSpecies = findSpeciesOptionByLabel(
+      speciesLabel,
+      speciesData.catalogue
+    )
 
     if (!matchedSpecies) {
-      return renderError(request, h, 'Select a species to add')
+      return renderError(request, h, 'Select a species to add', speciesData)
     }
 
-    const journeyState = getJourneyState(request)
-    const availableSpeciesIds = getAvailableSpeciesIds(journeyState)
+    const { availableSpeciesIds } = speciesData
 
     if (availableSpeciesIds.includes(matchedSpecies.id)) {
-      return renderError(request, h, 'This species has already been added.')
+      return renderError(
+        request,
+        h,
+        'This species has already been added.',
+        speciesData
+      )
     }
 
     setJourneyState(request, {
