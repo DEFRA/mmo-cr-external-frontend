@@ -21,7 +21,7 @@ function viewContext(request, vessels, overrides = {}) {
     heading: errorText,
     caption: 'New catch record',
     backLink: {
-      href: '/draft',
+      href: '/records',
       text: 'Back'
     },
     vesselOptions: vessels.map((vessel) => ({
