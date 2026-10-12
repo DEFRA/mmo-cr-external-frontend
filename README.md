@@ -107,6 +107,13 @@ To run the application in `development` mode run:
 npm run dev
 ```
 
+### Catch record navigation
+
+From `/records`, **Create a new catch record** opens `/select-vessel` directly.
+The vessel selection page's **Back** link returns to `/records`.
+An existing **Unsent** record link opens `/draft` to show the complete or delete
+options; this page is not part of the new-record journey.
+
 ### Reference Data Service
 
 Species, vessel, gear, port and map-land reads use the Reference Data Service from the frontend

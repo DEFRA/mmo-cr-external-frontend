@@ -2,6 +2,13 @@ import { load } from 'cheerio'
 
 import { createServer } from '#/server/server.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
+import {
+  mockVesselsReferenceData,
+  restoreVesselsReferenceDataMock
+} from '#/test-helpers/mock-vessels-reference-data.js'
+
+beforeEach(() => mockVesselsReferenceData())
+afterEach(() => restoreVesselsReferenceDataMock())
 
 describe('#recordsController', () => {
   let server
@@ -113,12 +120,48 @@ describe('#recordsController', () => {
       $ = load(result)
     })
 
-    test('Should link the create action button to the draft page', () => {
-      expect($('.govuk-button[href="/draft"]')).toHaveLength(1)
+    test('Should link the create action button directly to vessel selection', () => {
+      expect($('.govuk-button[href="/select-vessel"]')).toHaveLength(1)
+      expect($('.govuk-button[href="/draft"]')).toHaveLength(0)
+    })
+
+    test('Should open vessel selection when following the create action', async () => {
+      const { result, statusCode } = await server.inject({
+        method: 'GET',
+        url: $('.govuk-button').attr('href')
+      })
+      const $vesselPage = load(result)
+
+      expect(statusCode).toBe(statusCodes.ok)
+      expect($vesselPage('h1').text()).toContain('Select your vessel')
+      expect($vesselPage('input[name="vesselId"]')).toHaveLength(2)
+      expect($vesselPage('input[name="draftAction"]')).toHaveLength(0)
+      expect(
+        $vesselPage('[data-testid="app-page-navigation-back-link"]').attr(
+          'href'
+        )
+      ).toBe('/records')
     })
 
     test('Should link a draft (unsent) record to the draft action page', () => {
-      expect($('a[href="/draft"]')).toHaveLength(2)
+      const $draftLink = $('[data-testid="app-records-row"] a[href="/draft"]')
+      expect($draftLink).toHaveLength(1)
+      expect($draftLink.closest('tr').find('.govuk-tag').text().trim()).toBe(
+        'Unsent'
+      )
+      expect($('a[href="/draft"]')).toHaveLength(1)
+    })
+
+    test('Should open the draft actions when following a draft record link', async () => {
+      const { result, statusCode } = await server.inject({
+        method: 'GET',
+        url: $('[data-testid="app-records-row"] a[href="/draft"]').attr('href')
+      })
+
+      expect(statusCode).toBe(statusCodes.ok)
+      expect(load(result)('h1').text()).toContain(
+        'What do you want to do with your draft record?'
+      )
     })
 
     test('Should link every other record to its details page', () => {
@@ -128,8 +171,8 @@ describe('#recordsController', () => {
       expect($('a[href="/records/unsent-1"]')).toHaveLength(0)
     })
 
-    test('Should render a Create a new catch record button linking to draft', () => {
-      const $createButton = $('.govuk-button[href="/draft"]')
+    test('Should render a Create a new catch record button linking to vessel selection', () => {
+      const $createButton = $('.govuk-button[href="/select-vessel"]')
       expect($createButton).toHaveLength(1)
       expect($createButton.text().trim()).toBe('Create a new catch record')
     })
