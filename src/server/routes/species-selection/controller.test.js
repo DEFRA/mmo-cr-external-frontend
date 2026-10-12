@@ -243,6 +243,37 @@ describe('#speciesSelectionSubmitController', () => {
     ).toBe('Add weight legally discarded (kg)')
   })
 
+  test.each(['', '8.2', 'invalid'])(
+    'Should place optional weight links below their inputs when the value is "%s"',
+    async (weight) => {
+      const { result } = await server.inject({
+        method: 'POST',
+        url: '/species-selection',
+        payload: {
+          speciesIds: 'cod',
+          speciesAction: 'continue',
+          'weightBelowMinimum-cod': weight,
+          'weightDiscarded-cod': weight
+        }
+      })
+      const $ = load(result)
+
+      for (const field of ['weightBelowMinimum', 'weightDiscarded']) {
+        const groupId = `${field}-${SPECIES_IDS.cod}-group`
+        const $group = $(`#${groupId}`)
+        const $link = $group.next('.app-weight-toggle').find('a')
+
+        expect($group.find(`#${field}-${SPECIES_IDS.cod}`)).toHaveLength(1)
+        expect($link).toHaveLength(1)
+        expect($link.attr('data-target')).toBe(groupId)
+        expect($link.text()).toBe(
+          $link.attr(weight ? 'data-remove-text' : 'data-add-text')
+        )
+        expect($group.hasClass('govuk-visually-hidden')).toBe(!weight)
+      }
+    }
+  )
+
   test('Should redirect to catch not landed when the below-minimum and legally-discarded weights are both provided', async () => {
     const { statusCode, headers } = await server.inject({
       method: 'POST',

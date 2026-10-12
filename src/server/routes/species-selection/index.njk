@@ -50,9 +50,6 @@
                     errorMessage: { text: item.fieldErrors.weightAboveMinimum } if item.fieldErrors.weightAboveMinimum else false
                   }) }}
 
-                  <p class="govuk-body app-weight-toggle">
-                    <a href="#" class="govuk-link js-weight-toggle" data-target="weightBelowMinimum-{{ item.value }}-group" data-add-text="Add weight below minimum size retained (kg)" data-remove-text="Remove weight below minimum size retained (kg)">{{ 'Remove' if item.weightFieldsVisible.belowMinimum else 'Add' }} weight below minimum size retained (kg)</a>
-                  </p>
                   <div class="{{ '' if item.weightFieldsVisible.belowMinimum else 'govuk-visually-hidden' }}" id="weightBelowMinimum-{{ item.value }}-group">
                     {{ govukInput({
                       id: "weightBelowMinimum-" + item.value,
@@ -64,10 +61,10 @@
                       errorMessage: { text: item.fieldErrors.weightBelowMinimum } if item.fieldErrors.weightBelowMinimum else false
                     }) }}
                   </div>
-
                   <p class="govuk-body app-weight-toggle">
-                    <a href="#" class="govuk-link js-weight-toggle" data-target="weightDiscarded-{{ item.value }}-group" data-add-text="Add weight legally discarded (kg)" data-remove-text="Remove weight legally discarded (kg)">{{ 'Remove' if item.weightFieldsVisible.legallyDiscarded else 'Add' }} weight legally discarded (kg)</a>
+                    <a href="#" class="govuk-link js-weight-toggle" data-target="weightBelowMinimum-{{ item.value }}-group" data-add-text="Add weight below minimum size retained (kg)" data-remove-text="Remove weight below minimum size retained (kg)">{{ 'Remove' if item.weightFieldsVisible.belowMinimum else 'Add' }} weight below minimum size retained (kg)</a>
                   </p>
+
                   <div class="{{ '' if item.weightFieldsVisible.legallyDiscarded else 'govuk-visually-hidden' }}" id="weightDiscarded-{{ item.value }}-group">
                     {{ govukInput({
                       id: "weightDiscarded-" + item.value,
@@ -79,6 +76,9 @@
                       errorMessage: { text: item.fieldErrors.weightDiscarded } if item.fieldErrors.weightDiscarded else false
                     }) }}
                   </div>
+                  <p class="govuk-body app-weight-toggle">
+                    <a href="#" class="govuk-link js-weight-toggle" data-target="weightDiscarded-{{ item.value }}-group" data-add-text="Add weight legally discarded (kg)" data-remove-text="Remove weight legally discarded (kg)">{{ 'Remove' if item.weightFieldsVisible.legallyDiscarded else 'Add' }} weight legally discarded (kg)</a>
+                  </p>
                 </div>
               {% endfor %}
             </div>
@@ -100,4 +100,3 @@
     </div>
   </div>
 {% endblock %}
-
