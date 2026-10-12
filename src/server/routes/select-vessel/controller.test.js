@@ -45,7 +45,7 @@ describe('#selectVesselController', () => {
     expect($('h1 .govuk-caption-l').text().trim()).toBe('New catch record')
   })
 
-  test('Should render the Back link to the draft page', async () => {
+  test('Should render the Back link to the records page', async () => {
     const { result } = await server.inject({
       method: 'GET',
       url: '/select-vessel'
@@ -54,7 +54,7 @@ describe('#selectVesselController', () => {
 
     expect(
       $('[data-testid="app-page-navigation-back-link"]').attr('href')
-    ).toBe('/draft')
+    ).toBe('/records')
   })
 
   test('Should render active API vessels with GUIDs and display names', async () => {
