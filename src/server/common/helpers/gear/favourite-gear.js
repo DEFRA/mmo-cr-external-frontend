@@ -98,12 +98,7 @@ export function getFavouriteGearIds(journeyState, catalogue) {
     ]
     return migrated
   }
-  const migratedDefaults = legacyDefaultFavouriteIds
-    .map((id) => migratedGearId(id, catalogue))
-    .filter(Boolean)
-  return migratedDefaults.length
-    ? [...new Set(migratedDefaults)]
-    : catalogue.map((gear) => gear.id)
+  return []
 }
 
 export function getFavouriteGearOptions(favouriteGearIds, catalogue) {
