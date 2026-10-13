@@ -7,6 +7,7 @@ import {
   restoreSpeciesReferenceDataMock
 } from '#/test-helpers/mock-species-reference-data.js'
 import { mockGearsReferenceData } from '#/test-helpers/mock-gears-reference-data.js'
+import { seedFavouriteGears } from '#/test-helpers/seed-favourite-gears.js'
 
 beforeEach(() => {
   mockSpeciesReferenceData()
@@ -253,7 +254,11 @@ describe('#accountController', () => {
   })
 
   test('Should show saved measurements under the favourite gear they belong to', async () => {
-    const signInCookie = await signedInCookie()
+    const signInCookie = await seedFavouriteGears(
+      server,
+      undefined,
+      await signedInCookie()
+    )
     const removeResponse = await server.inject({
       method: 'POST',
       url: '/remove-gear?return=/account',
@@ -296,7 +301,11 @@ describe('#accountController', () => {
   })
 
   test('Should reflect a gear removal on the account page', async () => {
-    const signInCookie = await signedInCookie()
+    const signInCookie = await seedFavouriteGears(
+      server,
+      undefined,
+      await signedInCookie()
+    )
     const removeResponse = await server.inject({
       method: 'POST',
       url: '/remove-gear?return=/account',

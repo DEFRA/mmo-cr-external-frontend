@@ -14,9 +14,6 @@ const client = createGearsReferenceDataClient({
   timeoutMs: config.get('referenceData.timeoutMs')
 })
 const legacyGearCatalogue = getData('gearCatalogue')
-const legacyDefaultFavouriteIds = getData('gearSelection').map(
-  (gear) => gear.id
-)
 const legacyPotsOption = legacyGearCatalogue.find((gear) => gear.id === 'pots')
 
 function withMeasurementMessages(gear) {
@@ -66,7 +63,10 @@ export async function getGearCatalogue(filters = {}) {
   try {
     const { items } = await client.getGears(filters)
     const catalogue =
-      legacyPotsOption && !items.some((gear) => gear.id === 'pots')
+      legacyPotsOption &&
+      !items.some(
+        (gear) => gear.id === 'pots' || normalized(gear.name) === 'pots'
+      )
         ? [...items, legacyPotsOption]
         : items
     return catalogue.map(withMeasurementMessages)
@@ -88,17 +88,12 @@ export async function getGearItem(id, options) {
 }
 
 export function getFavouriteGearIds(journeyState, catalogue) {
-  if (Array.isArray(journeyState?.favouriteGearIds)) {
-    const migrated = [
-      ...new Set(
-        journeyState.favouriteGearIds
-          .map((id) => migratedGearId(id, catalogue))
-          .filter(Boolean)
-      )
-    ]
-    return migrated
-  }
-  return []
+  const ids = Array.isArray(journeyState?.favouriteGearIds)
+    ? journeyState.favouriteGearIds
+    : []
+  return [
+    ...new Set(ids.map((id) => migratedGearId(id, catalogue)).filter(Boolean))
+  ]
 }
 
 export function getFavouriteGearOptions(favouriteGearIds, catalogue) {

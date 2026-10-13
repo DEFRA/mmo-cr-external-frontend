@@ -6,6 +6,7 @@ import {
   mockGearsReferenceData,
   restoreGearsReferenceDataMock
 } from '#/test-helpers/mock-gears-reference-data.js'
+import { seedFavouriteGears } from '#/test-helpers/seed-favourite-gears.js'
 
 function nextCookie(response, previousCookie) {
   const setCookie = response.headers['set-cookie']
@@ -97,15 +98,15 @@ describe('#addGearController', () => {
     ).toBe('/account')
   })
 
-  test('Should list catalogue gear not already favourited in the datalist', async () => {
+  test('Should list catalogue gear not already favourited in the search data', async () => {
+    const favouriteCookie = await seedFavouriteGears(server)
     const { result } = await server.inject({
       method: 'GET',
-      url: '/add-gear'
+      url: '/add-gear',
+      headers: { cookie: favouriteCookie }
     })
     const $ = load(result)
-    const labels = $('#gear-options option')
-      .map((_, el) => $(el).attr('value'))
-      .get()
+    const labels = JSON.parse($('[data-port-search-data]').text())
 
     expect(labels).toContain('Set net')
     expect(labels).toContain('Drifting longlines')
