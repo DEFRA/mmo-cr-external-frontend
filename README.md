@@ -107,6 +107,9 @@ To run the application in `development` mode run:
 npm run dev
 ```
 
+On `/species-selection`, each optional weight's add/remove link appears below
+its corresponding input when expanded.
+
 ### Reference Data Service
 
 Species, vessel, gear, port and map-land reads use the Reference Data Service from the frontend
