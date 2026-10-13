@@ -6,6 +6,7 @@ import {
   setJourneyState
 } from '#/server/common/helpers/journey/navigation.js'
 import {
+  formatGearMeasurements,
   getFavouriteGearIds,
   getFavouriteGearMeasurements,
   getFavouriteGearOptions,
@@ -49,20 +50,29 @@ function gearCheckboxItems(
   selectedGearIds,
   favouriteOptions,
   catalogue,
-  measurementDetailsByGearId
+  measurementDetailsByGearId,
+  favouriteGearMeasurements = {}
 ) {
   const details = measurementDetailsByGearId || {}
-  return favouriteOptions.map((option) => ({
-    value: option.id,
-    text: option.label,
-    hint: option.hint,
-    checked: selectedGearIds.includes(option.id),
-    measurements: gearMeasurementItems(
-      option.id,
-      details[option.id] || {},
-      catalogue
+  return favouriteOptions.map((option) => {
+    const savedMeasurements = formatGearMeasurements(
+      option,
+      favouriteGearMeasurements[option.id]
     )
-  }))
+    return {
+      value: option.id,
+      text: option.label,
+      hint: savedMeasurements.length
+        ? savedMeasurements.join(', ')
+        : option.hint,
+      checked: selectedGearIds.includes(option.id),
+      measurements: gearMeasurementItems(
+        option.id,
+        details[option.id] || {},
+        catalogue
+      )
+    }
+  })
 }
 
 function defaultMeasurementDetails(journeyState) {
@@ -92,7 +102,8 @@ function viewContext(request, catalogue, overrides = {}) {
       selectedGearIds,
       favouriteOptions,
       catalogue,
-      defaultMeasurementDetails(journeyState)
+      defaultMeasurementDetails(journeyState),
+      getFavouriteGearMeasurements(journeyState)
     ),
     potsDetails: journeyState.potsDetails || {},
     ...overrides
@@ -137,7 +148,8 @@ function renderWithErrors(
             favouriteOptions,
             catalogue,
             measurementDetailsByGearId ||
-              defaultMeasurementDetails(journeyState)
+              defaultMeasurementDetails(journeyState),
+            getFavouriteGearMeasurements(journeyState)
           )
         }),
         ...(potsDetails && { potsDetails })
@@ -311,10 +323,15 @@ export const gearSelectionSubmitController = {
       })
     }
 
+    // Keep previously saved values for unticked gear so they pre-fill again
+    // when that gear is selected later; check answers only shows ticked gear.
     setJourneyState(request, {
       selectedGearIds: gearIds,
-      potsDetails: potsSelected ? potsValues : undefined,
-      gearMeasurementDetails: measurementDetailsByGearId,
+      potsDetails: potsSelected ? potsValues : currentState.potsDetails,
+      gearMeasurementDetails: {
+        ...currentState.gearMeasurementDetails,
+        ...measurementDetailsByGearId
+      },
       favouriteGearIds: getFavouriteGearIds(currentState, catalogue)
     })
 

@@ -39,24 +39,24 @@
                 <span class="govuk-visually-hidden">Error:</span> {{ fieldErrors.gear }}
               </p>
             {% endif %}
-            <div class="app-autocomplete">
+            <div class="app-statistical-area-search__control govuk-input--width-30">
               <input
-                class="govuk-input app-autocomplete__input{{ ' govuk-input--error' if fieldErrors.gear }}"
+                class="govuk-input app-statistical-area-search__input{{ ' govuk-input--error' if fieldErrors.gear }}"
                 id="gear"
                 name="gear"
                 type="text"
-                list="gear-options"
                 autocomplete="off"
                 placeholder="Start typing to display the list"
+                data-min-length="1"
+                aria-autocomplete="list"
+                aria-controls="gear-results"
+                aria-expanded="false"
+                data-port-search
                 {% if fieldErrors.gear %}aria-describedby="gear-error"{% endif %}
               >
-              <span class="app-autocomplete__arrow" aria-hidden="true"></span>
             </div>
-            <datalist id="gear-options">
-              {% for label in gearOptionLabels %}
-                <option value="{{ label }}"></option>
-              {% endfor %}
-            </datalist>
+            <ul id="gear-results" class="govuk-list app-statistical-area-search__results govuk-input--width-30" role="listbox" hidden data-port-results></ul>
+            <script type="application/json" data-port-search-data>{{ gearOptionLabels | dump | safe }}</script>
           </div>
 
           {{ govukButton({ text: "Save and continue" }) }}
