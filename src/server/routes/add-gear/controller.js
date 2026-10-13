@@ -190,6 +190,17 @@ async function handleGearSearchSubmission(request, h, journeyState, catalogue) {
     )
   }
 
+  const favouriteGearIds = getFavouriteGearIds(journeyState, catalogue)
+
+  if (favouriteGearIds.includes(matchedOption.id)) {
+    return renderSearchError(
+      request,
+      h,
+      catalogue,
+      `${matchedOption.label} has already been added to your gear`
+    )
+  }
+
   await getGearItem(matchedOption.id)
   if (matchedOption.measurements?.length) {
     setJourneyState(request, { addGearPendingId: matchedOption.id })
@@ -198,13 +209,9 @@ async function handleGearSearchSubmission(request, h, journeyState, catalogue) {
       .code(statusCodes.seeOther)
   }
 
-  const favouriteGearIds = getFavouriteGearIds(journeyState, catalogue)
-
-  if (!favouriteGearIds.includes(matchedOption.id)) {
-    setJourneyState(request, {
-      favouriteGearIds: [...favouriteGearIds, matchedOption.id]
-    })
-  }
+  setJourneyState(request, {
+    favouriteGearIds: [...favouriteGearIds, matchedOption.id]
+  })
 
   return h
     .redirect(resolveNextPath(request, gearSelectionPath))

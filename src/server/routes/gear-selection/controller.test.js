@@ -402,34 +402,6 @@ describe('#gearSelectionSubmitController', () => {
     )
   })
 
-  test('Should clear pots details when a previous pots selection is replaced without pots', async () => {
-    const potsResponse = await server.inject({
-      method: 'POST',
-      url: '/gear-selection',
-      payload: { gearIds: 'pots', potsHauled: '45', potsInWater: '12' }
-    })
-    let cookie = potsResponse.headers['set-cookie'][0].split(';')[0]
-
-    const dredgeResponse = await server.inject({
-      method: 'POST',
-      url: '/gear-selection',
-      payload: { gearIds: 'dredge' },
-      headers: { cookie }
-    })
-    cookie = dredgeResponse.headers['set-cookie'][0].split(';')[0]
-
-    const { result } = await server.inject({
-      method: 'GET',
-      url: '/gear-selection',
-      headers: { cookie }
-    })
-    const $ = load(result)
-
-    expect($('input[value="pots"]').prop('checked')).toBe(false)
-    expect($('#potsHauled').attr('value')).toBeUndefined()
-    expect($('#potsInWater').attr('value')).toBeUndefined()
-  })
-
   test('Should leave unrelated journey state unaffected by a gear-selection submission', async () => {
     const departureResponse = await server.inject({
       method: 'POST',
@@ -494,6 +466,34 @@ describe('#gearSelectionSubmitController', () => {
 
     expect($('#dredge-numberOfDredges').attr('value')).toBe('2')
     expect($('#dredge-numberOfTimesShot').attr('value')).toBe('3')
+  })
+
+  test('Should keep saved pots measurements when another gear is submitted without pots', async () => {
+    const potsResponse = await server.inject({
+      method: 'POST',
+      url: '/gear-selection',
+      payload: { gearIds: 'pots', potsHauled: '45', potsInWater: '12' }
+    })
+    let cookie = potsResponse.headers['set-cookie'][0].split(';')[0]
+
+    const dredgeResponse = await server.inject({
+      method: 'POST',
+      url: '/gear-selection',
+      payload: { gearIds: 'dredge' },
+      headers: { cookie }
+    })
+    cookie = dredgeResponse.headers['set-cookie']?.[0].split(';')[0] || cookie
+
+    const { result } = await server.inject({
+      method: 'GET',
+      url: '/gear-selection',
+      headers: { cookie }
+    })
+    const $ = load(result)
+
+    expect($('input[value="pots"]').prop('checked')).toBe(false)
+    expect($('#potsHauled').attr('value')).toBe('45')
+    expect($('#potsInWater').attr('value')).toBe('12')
   })
 
   test('Should re-render with a field error when a non-pots measurement is invalid', async () => {

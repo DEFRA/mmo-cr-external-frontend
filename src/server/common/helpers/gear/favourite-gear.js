@@ -129,6 +129,15 @@ export function getFavouriteGearMeasurements(journeyState) {
   return journeyState?.favouriteGearMeasurements || {}
 }
 
+export function formatGearMeasurements(option, values) {
+  return (option?.measurements || [])
+    .filter(
+      ({ id }) =>
+        values?.[id] !== undefined && values[id] !== null && values[id] !== ''
+    )
+    .map(({ id, label }) => `${label}: ${values[id]}`)
+}
+
 export function migrateGearJourneyState(request, catalogue) {
   const state = getJourneyState(request)
   const patch = {}
