@@ -45,11 +45,50 @@ export const removeSpeciesController = {
   }
 }
 
+function withoutRemovedSpecies(data, idsToRemove) {
+  return Object.fromEntries(
+    Object.entries(data || {}).filter(([id]) => !idsToRemove.includes(id))
+  )
+}
+
+function remainingCatchAnswers(answers, idsToRemove) {
+  return {
+    ...answers,
+    selectedSpeciesIds: (answers.selectedSpeciesIds || []).filter(
+      (id) => !idsToRemove.includes(id)
+    ),
+    speciesWeights: withoutRemovedSpecies(answers.speciesWeights, idsToRemove),
+    speciesNotLanded: withoutRemovedSpecies(
+      answers.speciesNotLanded,
+      idsToRemove
+    )
+  }
+}
+
+function removeSpeciesFromJourney(request, availableSpeciesIds, idsToRemove) {
+  const state = getJourneyState(request)
+  const patch = {
+    ...remainingCatchAnswers(state, idsToRemove),
+    availableSpeciesIds: availableSpeciesIds.filter(
+      (id) => !idsToRemove.includes(id)
+    )
+  }
+  if (state.catchDetailsByGearId) {
+    patch.catchDetailsByGearId = Object.fromEntries(
+      Object.entries(state.catchDetailsByGearId).map(([gearId, answers]) => [
+        gearId,
+        remainingCatchAnswers(answers, idsToRemove)
+      ])
+    )
+  }
+  setJourneyState(request, patch)
+  return patch.availableSpeciesIds
+}
+
 export const removeSpeciesSubmitController = {
   async handler(request, h) {
     const speciesData = await getSpeciesPageData(request)
     const { availableSpeciesIds } = speciesData
-    const journeyState = getJourneyState(request)
 
     if (availableSpeciesIds.length === 0) {
       return h
@@ -81,58 +120,11 @@ export const removeSpeciesSubmitController = {
         .takeover()
     }
 
-    const remainingSpeciesIds = availableSpeciesIds.filter(
-      (id) => !idsToRemove.includes(id)
+    const remainingSpeciesIds = removeSpeciesFromJourney(
+      request,
+      availableSpeciesIds,
+      idsToRemove
     )
-    const remainingSelectedSpeciesIds = (
-      journeyState.selectedSpeciesIds || []
-    ).filter((id) => !idsToRemove.includes(id))
-
-    const patch = {
-      availableSpeciesIds: remainingSpeciesIds,
-      selectedSpeciesIds: remainingSelectedSpeciesIds
-    }
-
-    // Removing a species removes its catch-weight data too (BR1).
-    const speciesWeights = { ...journeyState.speciesWeights }
-
-    idsToRemove.forEach((id) => {
-      delete speciesWeights[id]
-    })
-
-    patch.speciesWeights = speciesWeights
-    patch.speciesNotLanded = Object.fromEntries(
-      Object.entries(journeyState.speciesNotLanded || {}).filter(
-        ([id]) => !idsToRemove.includes(id)
-      )
-    )
-    if (journeyState.catchDetailsByGearId) {
-      patch.catchDetailsByGearId = Object.fromEntries(
-        Object.entries(journeyState.catchDetailsByGearId).map(
-          ([gearId, answers]) => [
-            gearId,
-            {
-              ...answers,
-              selectedSpeciesIds: (answers.selectedSpeciesIds || []).filter(
-                (id) => !idsToRemove.includes(id)
-              ),
-              speciesWeights: Object.fromEntries(
-                Object.entries(answers.speciesWeights || {}).filter(
-                  ([id]) => !idsToRemove.includes(id)
-                )
-              ),
-              speciesNotLanded: Object.fromEntries(
-                Object.entries(answers.speciesNotLanded || {}).filter(
-                  ([id]) => !idsToRemove.includes(id)
-                )
-              )
-            }
-          ]
-        )
-      )
-    }
-
-    setJourneyState(request, patch)
 
     if (remainingSpeciesIds.length === 0) {
       return h

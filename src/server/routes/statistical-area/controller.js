@@ -115,9 +115,9 @@ export const statisticalAreaSubmitController = {
     setJourneyState(request, {
       statAreaBranch: isOther ? 'other' : 'direct',
       selectedStatisticalArea: statisticalArea,
-      selectedAlternativeAreaOption: undefined,
-      alternativeStatisticalArea: undefined,
-      alternativeStatisticalAreaCoordinates: undefined
+      selectedAlternativeAreaOption: null,
+      alternativeStatisticalArea: null,
+      alternativeStatisticalAreaCoordinates: null
     })
 
     return h

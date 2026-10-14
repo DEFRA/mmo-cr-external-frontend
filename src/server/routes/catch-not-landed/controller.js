@@ -65,16 +65,13 @@ export const catchNotLandedSubmitController = {
       ...(catchNotLanded === 'no' && { speciesNotLanded: {} })
     })
 
-    return h
-      .redirect(
-        catchNotLanded === 'no'
-          ? incompleteGearPath(request) ||
-              resolveNextPath(request, '/check-answers')
-          : '/species-not-landed' +
-              (request.query?.return === '/check-answers'
-                ? '?return=/check-answers'
-                : '')
-      )
-      .code(statusCodes.seeOther)
+    const returnQuery =
+      request.query?.return === '/check-answers' ? '?return=/check-answers' : ''
+    const nextPath =
+      catchNotLanded === 'no'
+        ? incompleteGearPath(request) ||
+          resolveNextPath(request, '/check-answers')
+        : '/species-not-landed' + returnQuery
+    return h.redirect(nextPath).code(statusCodes.seeOther)
   }
 }

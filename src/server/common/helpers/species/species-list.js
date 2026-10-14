@@ -58,8 +58,7 @@ function migrateSpeciesDataById(speciesData, catalogue) {
   }, {})
 }
 
-export function getSpeciesJourneyState(request, catalogue) {
-  const journeyState = getJourneyState(request)
+function speciesMigrationPatch(journeyState, catalogue) {
   const patch = {}
 
   for (const key of ['selectedSpeciesIds', 'availableSpeciesIds']) {
@@ -79,32 +78,25 @@ export function getSpeciesJourneyState(request, catalogue) {
       }
     }
   }
+  return patch
+}
+
+function migrateGearSpeciesAnswers(answers, catalogue) {
+  return {
+    ...answers,
+    ...speciesMigrationPatch(answers, catalogue)
+  }
+}
+
+export function getSpeciesJourneyState(request, catalogue) {
+  const journeyState = getJourneyState(request)
+  const patch = speciesMigrationPatch(journeyState, catalogue)
   if (journeyState.catchDetailsByGearId) {
     const migrated = Object.fromEntries(
       Object.entries(journeyState.catchDetailsByGearId).map(
         ([gearId, answers]) => [
           gearId,
-          {
-            ...answers,
-            ...(answers.selectedSpeciesIds && {
-              selectedSpeciesIds: migrateIds(
-                answers.selectedSpeciesIds,
-                catalogue
-              )
-            }),
-            ...(answers.speciesWeights && {
-              speciesWeights: migrateSpeciesDataById(
-                answers.speciesWeights,
-                catalogue
-              )
-            }),
-            ...(answers.speciesNotLanded && {
-              speciesNotLanded: migrateSpeciesDataById(
-                answers.speciesNotLanded,
-                catalogue
-              )
-            })
-          }
+          migrateGearSpeciesAnswers(answers, catalogue)
         ]
       )
     )

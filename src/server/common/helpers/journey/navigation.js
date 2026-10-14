@@ -2,6 +2,13 @@ import Boom from '@hapi/boom'
 
 // Journey state helpers backed by the @hapi/yar session cache (no persistence beyond the session).
 const JOURNEY_SESSION_KEY = 'journey'
+const GEAR_SELECTION_PATH = '/gear-selection'
+const STATISTICAL_AREA_PATH = '/statistical-area'
+const STATISTICAL_AREA_OTHER_PATH = '/statistical-area-other'
+const SPECIES_SELECTION_PATH = '/species-selection'
+const CATCH_NOT_LANDED_PATH = '/catch-not-landed'
+const SPECIES_NOT_LANDED_PATH = '/species-not-landed'
+const CHECK_ANSWERS_PATH = '/check-answers'
 
 // Allowlist of known internal route paths. Exact string match only — used to
 // prevent an open redirect via the Empty Page's `return` query parameter.
@@ -19,17 +26,17 @@ const SAFE_RETURN_PATHS = [
   '/return-port',
   '/add-port',
   '/confirm-same-port',
-  '/gear-selection',
+  GEAR_SELECTION_PATH,
   '/add-gear',
   '/remove-gear',
-  '/statistical-area',
-  '/statistical-area-other',
-  '/species-selection',
+  STATISTICAL_AREA_PATH,
+  STATISTICAL_AREA_OTHER_PATH,
+  SPECIES_SELECTION_PATH,
   '/add-species',
   '/remove-species',
-  '/catch-not-landed',
-  '/species-not-landed',
-  '/check-answers',
+  CATCH_NOT_LANDED_PATH,
+  SPECIES_NOT_LANDED_PATH,
+  CHECK_ANSWERS_PATH,
   '/confirmation',
   '/account',
   '/remove-port',
@@ -58,8 +65,8 @@ export function backForSpeciesSelection(request) {
   return gearPath(
     request,
     getGearJourneyState(request).statAreaBranch === 'other'
-      ? '/statistical-area-other'
-      : '/statistical-area',
+      ? STATISTICAL_AREA_OTHER_PATH
+      : STATISTICAL_AREA_PATH,
     undefined,
     request.query?.return
   )
@@ -67,7 +74,7 @@ export function backForSpeciesSelection(request) {
 
 export function backForCheckAnswers(request) {
   const state = getJourneyState(request)
-  return state.catchNotLanded ? '/species-not-landed' : '/catch-not-landed'
+  return state.catchNotLanded ? SPECIES_NOT_LANDED_PATH : CATCH_NOT_LANDED_PATH
 }
 
 export function safeReturnPath(candidate) {
@@ -79,8 +86,8 @@ export function safeReturnPath(candidate) {
 export function resolveNextPath(request, defaultPath) {
   const candidate = request.query && request.query.return
   if (
-    candidate === '/check-answers' &&
-    defaultPath === '/statistical-area-other'
+    candidate === CHECK_ANSWERS_PATH &&
+    defaultPath === STATISTICAL_AREA_OTHER_PATH
   ) {
     return gearPath(request, defaultPath, undefined, candidate)
   }
@@ -90,9 +97,9 @@ export function resolveNextPath(request, defaultPath) {
 }
 
 const GEAR_PATHS = new Set([
-  '/statistical-area',
-  '/statistical-area-other',
-  '/species-selection',
+  STATISTICAL_AREA_PATH,
+  STATISTICAL_AREA_OTHER_PATH,
+  SPECIES_SELECTION_PATH,
   '/add-species',
   '/remove-species'
 ])
@@ -165,12 +172,7 @@ export function setGearJourneyState(request, patch) {
   })
 }
 
-export function gearPath(
-  request,
-  path,
-  gearId = undefined,
-  returnPath = undefined
-) {
+export function gearPath(request, path, gearId, returnPath) {
   if (typeof path !== 'string') {
     return path
   }
@@ -183,11 +185,14 @@ export function gearPath(
   if (id) {
     params.set('gearId', id)
   }
-  if (returnPath === '/check-answers') {
+  if (returnPath === CHECK_ANSWERS_PATH) {
     params.set('return', returnPath)
   }
   // Keep the existing unescaped return-path convention.
-  return `${base}${params.size ? `?${params.toString().replaceAll('%2F', '/')}` : ''}`
+  const querySuffix = params.size
+    ? '?' + params.toString().replaceAll('%2F', '/')
+    : ''
+  return `${base}${querySuffix}`
 }
 
 export function gearPageContext(request) {
@@ -206,78 +211,95 @@ export function gearPageContext(request) {
 }
 
 export function speciesSelectionReturnPath(request) {
-  if (request.query?.return !== '/check-answers' || !currentGearId(request)) {
-    return resolveNextPath(request, '/species-selection')
+  if (request.query?.return !== CHECK_ANSWERS_PATH || !currentGearId(request)) {
+    return resolveNextPath(request, SPECIES_SELECTION_PATH)
   }
   return gearPath(
     request,
-    '/species-selection',
+    SPECIES_SELECTION_PATH,
     undefined,
     request.query?.return
   )
 }
 
 export function backForStatisticalArea(request) {
-  if (request.query?.return === '/check-answers') {
-    return '/check-answers'
+  if (request.query?.return === CHECK_ANSWERS_PATH) {
+    return CHECK_ANSWERS_PATH
   }
   const state = getJourneyState(request)
   const index = state.selectedGearIds?.indexOf(currentGearId(request)) ?? -1
   if (index <= 0) {
-    return '/gear-selection'
+    return GEAR_SELECTION_PATH
   }
   const previousId = state.selectedGearIds[index - 1]
-  return gearPath(request, '/species-selection', previousId)
+  return gearPath(request, SPECIES_SELECTION_PATH, previousId)
+}
+
+function incompleteCatchPath(answers) {
+  if (!answers.selectedStatisticalArea) {
+    return STATISTICAL_AREA_PATH
+  }
+  if (
+    answers.statAreaBranch === 'other' &&
+    incompleteAlternativeArea(answers)
+  ) {
+    return STATISTICAL_AREA_OTHER_PATH
+  }
+  if (
+    !answers.selectedSpeciesIds?.length ||
+    answers.selectedSpeciesIds.some(
+      (id) => !Number.isFinite(answers.speciesWeights?.[id]?.weightAboveMinimum)
+    )
+  ) {
+    return SPECIES_SELECTION_PATH
+  }
+  return null
+}
+
+function incompleteAlternativeArea(answers) {
+  return (
+    !answers.selectedAlternativeAreaOption ||
+    (answers.selectedAlternativeAreaOption === 'other' &&
+      !answers.alternativeStatisticalArea)
+  )
+}
+
+function incompleteUnlandedPath(request, state) {
+  if (!state.selectedGearIds?.length) {
+    return null
+  }
+  if (typeof state.catchNotLanded !== 'boolean') {
+    return CATCH_NOT_LANDED_PATH
+  }
+  const caughtIds = caughtSpeciesIds(request)
+  const entries = Object.entries(state.speciesNotLanded || {})
+  if (
+    state.catchNotLanded &&
+    (!entries.length ||
+      entries.some(
+        ([id, weights]) =>
+          !caughtIds.includes(id) ||
+          !Number.isFinite(weights.weightAboveMinimum)
+      ))
+  ) {
+    return SPECIES_NOT_LANDED_PATH
+  }
+  return null
 }
 
 export function incompleteGearPath(request) {
   const state = getJourneyState(request)
   if (Array.isArray(state.selectedGearIds) && !state.selectedGearIds.length) {
-    return '/gear-selection'
+    return GEAR_SELECTION_PATH
   }
   for (const gearId of state.selectedGearIds || []) {
-    const scoped = { ...request, query: { gearId } }
-    const answers = getGearJourneyState(scoped)
-    if (!answers.selectedStatisticalArea) {
-      return gearPath(request, '/statistical-area', gearId)
-    }
-
-    if (
-      answers.statAreaBranch === 'other' &&
-      (!answers.selectedAlternativeAreaOption ||
-        (answers.selectedAlternativeAreaOption === 'other' &&
-          !answers.alternativeStatisticalArea))
-    ) {
-      return gearPath(request, '/statistical-area-other', gearId)
-    }
-    if (
-      !answers.selectedSpeciesIds?.length ||
-      answers.selectedSpeciesIds.some(
-        (id) =>
-          !Number.isFinite(answers.speciesWeights?.[id]?.weightAboveMinimum)
-      )
-    ) {
-      return gearPath(request, '/species-selection', gearId)
+    const answers = getGearJourneyState({ ...request, query: { gearId } })
+    const path = incompleteCatchPath(answers)
+    if (path) {
+      return gearPath(request, path, gearId)
     }
   }
-  if (state.selectedGearIds?.length) {
-    if (typeof state.catchNotLanded !== 'boolean') {
-      return '/catch-not-landed'
-    }
-    const caughtIds = caughtSpeciesIds(request)
-    if (
-      state.catchNotLanded &&
-      (!Object.keys(state.speciesNotLanded || {}).length ||
-        Object.entries(state.speciesNotLanded).some(
-          ([id, weights]) =>
-            !caughtIds.includes(id) ||
-            !Number.isFinite(weights.weightAboveMinimum)
-        ))
-    ) {
-      return '/species-not-landed'
-    }
-  }
-  return null
+  return incompleteUnlandedPath(request, state)
 }
 
 export function catchDetailsForSelectedGears(request, gearIds) {
@@ -298,14 +320,14 @@ export function catchDetailsForSelectedGears(request, gearIds) {
 
 export function nextAfterGear(request) {
   const state = getJourneyState(request)
-  if (request.query?.return === '/check-answers') {
-    return incompleteGearPath(request) || '/check-answers'
+  if (request.query?.return === CHECK_ANSWERS_PATH) {
+    return incompleteGearPath(request) || CHECK_ANSWERS_PATH
   }
   const index = state.selectedGearIds?.indexOf(currentGearId(request)) ?? -1
   const nextId = state.selectedGearIds?.[index + 1]
   return nextId
-    ? gearPath(request, '/statistical-area', nextId)
-    : '/catch-not-landed'
+    ? gearPath(request, STATISTICAL_AREA_PATH, nextId)
+    : CATCH_NOT_LANDED_PATH
 }
 
 export function caughtSpeciesIds(request) {
@@ -327,7 +349,7 @@ export function backForCatchNotLanded(request) {
   const state = getJourneyState(request)
   return gearPath(
     request,
-    '/species-selection',
+    SPECIES_SELECTION_PATH,
     state.selectedGearIds?.at(-1),
     request.query?.return
   )
