@@ -257,10 +257,10 @@ describe('#gearSelectionSubmitController', () => {
     })
 
     expect(statusCode).toBe(303)
-    expect(headers.location).toBe('/statistical-area')
+    expect(headers.location).toBe('/statistical-area?gearId=dredge')
   })
 
-  test('Should redirect back to check your answers when a return query is supplied', async () => {
+  test('Should collect catch answers for a newly selected gear even when a return query is supplied', async () => {
     const { statusCode, headers } = await server.inject({
       method: 'POST',
       url: '/gear-selection?return=/check-answers',
@@ -268,7 +268,7 @@ describe('#gearSelectionSubmitController', () => {
     })
 
     expect(statusCode).toBe(303)
-    expect(headers.location).toBe('/check-answers')
+    expect(headers.location).toBe('/statistical-area?gearId=dredge')
   })
 
   test('Should save the selected gear ids and leave pots details absent for a non-pots selection', async () => {
@@ -299,7 +299,7 @@ describe('#gearSelectionSubmitController', () => {
     })
 
     expect(statusCode).toBe(303)
-    expect(headers.location).toBe('/statistical-area')
+    expect(headers.location).toBe('/statistical-area?gearId=pots')
   })
 
   test('Should save pots details matching the submitted numbers', async () => {
@@ -545,6 +545,6 @@ describe('#gearSelectionSubmitController', () => {
     })
 
     expect(statusCode).toBe(303)
-    expect(headers.location).toBe('/statistical-area')
+    expect(headers.location).toBe('/statistical-area?gearId=dredge')
   })
 })

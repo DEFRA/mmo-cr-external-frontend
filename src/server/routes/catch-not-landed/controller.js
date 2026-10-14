@@ -1,6 +1,9 @@
 import Joi from 'joi'
 
 import {
+  backForCatchNotLanded,
+  getJourneyState,
+  incompleteGearPath,
   resolveNextPath,
   setJourneyState
 } from '#/server/common/helpers/journey/navigation.js'
@@ -8,13 +11,14 @@ import { statusCodes } from '#/server/common/constants/status-codes.js'
 
 const pageTitle = 'Is there any catch you won\u2019t be landing straight away?'
 
-function viewContext(overrides = {}) {
+function viewContext(request, overrides = {}) {
   return {
     pageTitle,
     heading: pageTitle,
+    catchNotLanded: getJourneyState(request).catchNotLanded,
     caption: 'New catch record',
     backLink: {
-      href: '/species-selection',
+      href: backForCatchNotLanded(request),
       text: 'Back'
     },
     ...overrides
@@ -22,8 +26,8 @@ function viewContext(overrides = {}) {
 }
 
 export const catchNotLandedController = {
-  handler(_request, h) {
-    return h.view('catch-not-landed/index', viewContext())
+  handler(request, h) {
+    return h.view('catch-not-landed/index', viewContext(request))
   }
 }
 
@@ -33,14 +37,14 @@ export const catchNotLandedSubmitController = {
       payload: Joi.object({
         catchNotLanded: Joi.string().valid('yes', 'no').required()
       }),
-      failAction(_request, h) {
+      failAction(request, h) {
         const errorText =
           'Select yes if any catch will not be landed straight away'
 
         return h
           .view(
             'catch-not-landed/index',
-            viewContext({
+            viewContext(request, {
               errorSummary: {
                 titleText: 'There is a problem',
                 errorList: [{ text: errorText, href: '#catchNotLanded' }]
@@ -56,13 +60,20 @@ export const catchNotLandedSubmitController = {
   handler(request, h) {
     const { catchNotLanded } = request.payload
 
-    setJourneyState(request, { catchNotLanded: catchNotLanded === 'yes' })
+    setJourneyState(request, {
+      catchNotLanded: catchNotLanded === 'yes',
+      ...(catchNotLanded === 'no' && { speciesNotLanded: {} })
+    })
 
     return h
       .redirect(
         catchNotLanded === 'no'
-          ? resolveNextPath(request, '/check-answers')
-          : resolveNextPath(request, '/species-not-landed')
+          ? incompleteGearPath(request) ||
+              resolveNextPath(request, '/check-answers')
+          : '/species-not-landed' +
+              (request.query?.return === '/check-answers'
+                ? '?return=/check-answers'
+                : '')
       )
       .code(statusCodes.seeOther)
   }

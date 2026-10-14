@@ -1,6 +1,9 @@
 import Joi from 'joi'
 
 import {
+  caughtSpeciesIds,
+  getJourneyState,
+  incompleteGearPath,
   resolveNextPath,
   setJourneyState
 } from '#/server/common/helpers/journey/navigation.js'
@@ -34,7 +37,7 @@ function speciesCheckboxItems(
   }))
 }
 
-function viewContext(speciesData, overrides = {}) {
+function viewContext(request, speciesData, overrides = {}) {
   const { journeyState, speciesOptions } = speciesData
   const speciesNotLanded = journeyState.speciesNotLanded || {}
   const selectedSpeciesIds = Object.keys(speciesNotLanded)
@@ -44,7 +47,11 @@ function viewContext(speciesData, overrides = {}) {
     heading: pageTitle,
     caption: 'New catch record',
     backLink: {
-      href: '/catch-not-landed',
+      href:
+        '/catch-not-landed' +
+        (request.query?.return === '/check-answers'
+          ? '?return=/check-answers'
+          : ''),
       text: 'Back'
     },
     speciesCheckboxItems: speciesCheckboxItems(
@@ -57,9 +64,12 @@ function viewContext(speciesData, overrides = {}) {
   }
 }
 
-function renderPage(h, speciesData, overrides, code = statusCodes.ok) {
+function renderPage(request, h, speciesData, overrides, code = statusCodes.ok) {
   const response = h
-    .view('species-not-landed/index', viewContext(speciesData, overrides))
+    .view(
+      'species-not-landed/index',
+      viewContext(request, speciesData, overrides)
+    )
     .code(code)
 
   return code === statusCodes.ok ? response : response.takeover()
@@ -123,8 +133,8 @@ function persistSpeciesNotLanded(request, speciesIds, speciesWeights) {
 
 export const speciesNotLandedController = {
   async handler(request, h) {
-    const speciesData = await getSpeciesPageData(request)
-    return h.view('species-not-landed/index', viewContext(speciesData))
+    const speciesData = await notLandedPageData(request)
+    return h.view('species-not-landed/index', viewContext(request, speciesData))
   }
 }
 
@@ -141,11 +151,12 @@ export const speciesNotLandedSubmitController = {
         const selectedSpeciesIds = normalizeSpeciesIds(
           request.payload.speciesIds
         )
-        const speciesData = await getSpeciesPageData(request)
+        const speciesData = await notLandedPageData(request)
         const { journeyState, speciesOptions } = speciesData
         const errorText = 'There was a problem with your submission'
 
         return renderPage(
+          request,
           h,
           speciesData,
           {
@@ -166,7 +177,7 @@ export const speciesNotLandedSubmitController = {
     }
   },
   async handler(request, h) {
-    const speciesData = await getSpeciesPageData(request)
+    const speciesData = await notLandedPageData(request)
     const { speciesOptions } = speciesData
     const speciesIds = filterKnownSpeciesIds(
       normalizeSpeciesIds(request.payload.speciesIds),
@@ -179,6 +190,7 @@ export const speciesNotLandedSubmitController = {
 
     function rerender(extraOverrides, code = statusCodes.ok) {
       return renderPage(
+        request,
         h,
         speciesData,
         {
@@ -217,7 +229,23 @@ export const speciesNotLandedSubmitController = {
     persistSpeciesNotLanded(request, speciesIds, speciesWeights)
 
     return h
-      .redirect(resolveNextPath(request, '/check-answers'))
+      .redirect(
+        incompleteGearPath(request) ||
+          resolveNextPath(request, '/check-answers')
+      )
       .code(statusCodes.seeOther)
+  }
+}
+
+async function notLandedPageData(request) {
+  const data = await getSpeciesPageData(request)
+  const journeyState = getJourneyState(request)
+  const caughtIds = caughtSpeciesIds(request)
+  return {
+    ...data,
+    journeyState,
+    speciesOptions: journeyState.selectedGearIds?.length
+      ? data.catalogue.filter((species) => caughtIds.includes(species.id))
+      : data.speciesOptions
   }
 }

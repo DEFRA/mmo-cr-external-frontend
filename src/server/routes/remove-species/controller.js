@@ -1,5 +1,7 @@
 import {
   resolveNextPath,
+  getJourneyState,
+  speciesSelectionReturnPath,
   setJourneyState
 } from '#/server/common/helpers/journey/navigation.js'
 import { filterKnownSpeciesIds } from '#/server/common/helpers/species/species-form.js'
@@ -7,8 +9,6 @@ import { getSpeciesPageData } from '#/server/common/helpers/species/species-list
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 
 const pageTitle = 'Remove a species'
-const SPECIES_SELECTION_PATH = '/species-selection'
-
 function speciesCheckboxItems(speciesOptions) {
   return speciesOptions.map((species) => ({
     value: species.id,
@@ -22,7 +22,7 @@ function viewContext(request, speciesData, overrides = {}) {
     heading: pageTitle,
     caption: 'New catch record',
     backLink: {
-      href: resolveNextPath(request, SPECIES_SELECTION_PATH),
+      href: speciesSelectionReturnPath(request),
       text: 'Back'
     },
     speciesCheckboxItems: speciesCheckboxItems(speciesData.speciesOptions),
@@ -48,7 +48,8 @@ export const removeSpeciesController = {
 export const removeSpeciesSubmitController = {
   async handler(request, h) {
     const speciesData = await getSpeciesPageData(request)
-    const { journeyState, availableSpeciesIds } = speciesData
+    const { availableSpeciesIds } = speciesData
+    const journeyState = getJourneyState(request)
 
     if (availableSpeciesIds.length === 0) {
       return h
@@ -100,6 +101,36 @@ export const removeSpeciesSubmitController = {
     })
 
     patch.speciesWeights = speciesWeights
+    patch.speciesNotLanded = Object.fromEntries(
+      Object.entries(journeyState.speciesNotLanded || {}).filter(
+        ([id]) => !idsToRemove.includes(id)
+      )
+    )
+    if (journeyState.catchDetailsByGearId) {
+      patch.catchDetailsByGearId = Object.fromEntries(
+        Object.entries(journeyState.catchDetailsByGearId).map(
+          ([gearId, answers]) => [
+            gearId,
+            {
+              ...answers,
+              selectedSpeciesIds: (answers.selectedSpeciesIds || []).filter(
+                (id) => !idsToRemove.includes(id)
+              ),
+              speciesWeights: Object.fromEntries(
+                Object.entries(answers.speciesWeights || {}).filter(
+                  ([id]) => !idsToRemove.includes(id)
+                )
+              ),
+              speciesNotLanded: Object.fromEntries(
+                Object.entries(answers.speciesNotLanded || {}).filter(
+                  ([id]) => !idsToRemove.includes(id)
+                )
+              )
+            }
+          ]
+        )
+      )
+    }
 
     setJourneyState(request, patch)
 
@@ -110,7 +141,7 @@ export const removeSpeciesSubmitController = {
     }
 
     return h
-      .redirect(resolveNextPath(request, SPECIES_SELECTION_PATH))
+      .redirect(speciesSelectionReturnPath(request))
       .code(statusCodes.seeOther)
   }
 }

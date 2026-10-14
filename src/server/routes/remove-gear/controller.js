@@ -105,6 +105,16 @@ export const removeGearSubmitController = {
     setJourneyState(request, {
       favouriteGearIds: remainingFavouriteGearIds,
       selectedGearIds: remainingSelectedGearIds,
+      catchDetailsByGearId: Object.fromEntries(
+        Object.entries(journeyState.catchDetailsByGearId || {}).filter(([id]) =>
+          remainingSelectedGearIds.includes(id)
+        )
+      ),
+      gearMeasurementDetails: Object.fromEntries(
+        Object.entries(journeyState.gearMeasurementDetails || {}).filter(
+          ([id]) => remainingSelectedGearIds.includes(id)
+        )
+      ),
       ...(idsToRemove.includes('pots') && { potsDetails: null })
     })
 

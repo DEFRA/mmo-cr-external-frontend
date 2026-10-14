@@ -2,7 +2,9 @@ import Joi from 'joi'
 
 import {
   getJourneyState,
-  resolveNextPath,
+  gearPath,
+  incompleteGearPath,
+  catchDetailsForSelectedGears,
   setJourneyState
 } from '#/server/common/helpers/journey/navigation.js'
 import {
@@ -249,7 +251,9 @@ export const gearSelectionSubmitController = {
     const catalogue = await getGearCatalogue({ vesselLengthMetres })
     const currentState = migrateGearJourneyState(request, catalogue)
     const { gearIds: rawGearIds, potsHauled, potsInWater } = request.payload
-    const gearIds = Array.isArray(rawGearIds) ? rawGearIds : [rawGearIds]
+    const gearIds = [
+      ...new Set(Array.isArray(rawGearIds) ? rawGearIds : [rawGearIds])
+    ]
     const validGearIds = new Set(catalogue.map((gear) => gear.id))
     if (!gearIds.length || gearIds.some((id) => !validGearIds.has(id))) {
       const errorText = 'Select the gear you used'
@@ -313,11 +317,23 @@ export const gearSelectionSubmitController = {
 
     setJourneyState(request, {
       selectedGearIds: gearIds,
+      gearLabelsById: Object.fromEntries(
+        gearIds.map((id) => [
+          id,
+          catalogue.find((gear) => gear.id === id).label ||
+            catalogue.find((gear) => gear.id === id).name
+        ])
+      ),
+      catchDetailsByGearId: catchDetailsForSelectedGears(request, gearIds),
       potsDetails: potsSelected ? potsValues : undefined,
       gearMeasurementDetails: measurementDetailsByGearId,
       favouriteGearIds: getFavouriteGearIds(currentState, catalogue)
     })
 
-    return h.redirect(resolveNextPath(request, '/statistical-area')).code(303)
+    const nextPath =
+      request.query?.return === '/check-answers'
+        ? incompleteGearPath(request) || '/check-answers'
+        : gearPath(request, '/statistical-area', gearIds[0])
+    return h.redirect(nextPath).code(303)
   }
 }
