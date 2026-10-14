@@ -2,7 +2,9 @@ import Joi from 'joi'
 
 import {
   getJourneyState,
-  resolveNextPath,
+  gearPath,
+  incompleteGearPath,
+  catchDetailsForSelectedGears,
   setJourneyState
 } from '#/server/common/helpers/journey/navigation.js'
 import {
@@ -206,6 +208,52 @@ function rawGearMeasurementDetails(gearIds, payload, catalogue) {
   return details
 }
 
+function validatePots(payload, catalogue) {
+  const errorList = []
+  const fieldErrors = {}
+  const potsValues = {}
+  const measurements = catalogue.find((gear) => gear.id === 'pots').measurements
+  for (const [index, field] of ['potsHauled', 'potsInWater'].entries()) {
+    const { value, error } = validateMeasurement(
+      payload[field],
+      measurements[index]
+    )
+    potsValues[field] = value
+    if (error) {
+      errorList.push({ text: error, href: `#${field}` })
+      fieldErrors[field] = error
+    }
+  }
+  return { errorList, fieldErrors, potsValues }
+}
+
+function validateSelectedGearDetails(gearIds, payload, catalogue) {
+  const result = validateGearMeasurements(gearIds, payload, catalogue)
+  if (!gearIds.includes('pots')) {
+    return result
+  }
+  const pots = validatePots(payload, catalogue)
+  result.errorList.unshift(...pots.errorList)
+  result.fieldErrors = { ...pots.fieldErrors, ...result.fieldErrors }
+  return { ...result, potsValues: pots.potsValues }
+}
+
+function saveSelectedGears(request, gearIds, catalogue, currentState, details) {
+  setJourneyState(request, {
+    selectedGearIds: gearIds,
+    gearLabelsById: Object.fromEntries(
+      gearIds.map((id) => {
+        const gear = catalogue.find((item) => item.id === id)
+        return [id, gear.label || gear.name]
+      })
+    ),
+    catchDetailsByGearId: catchDetailsForSelectedGears(request, gearIds),
+    potsDetails: details.potsValues,
+    gearMeasurementDetails: details.measurementDetailsByGearId,
+    favouriteGearIds: getFavouriteGearIds(currentState, catalogue)
+  })
+}
+
 export const gearSelectionController = {
   async handler(request, h) {
     const vesselLengthMetres =
@@ -234,7 +282,7 @@ export const gearSelectionSubmitController = {
 
         return renderWithErrors(request, h, catalogue, {
           errorSummary: {
-            titleText: titleText,
+            titleText,
             errorList: [{ text: errorText, href: '#gearIds' }]
           },
           fieldErrors: { gearIds: errorText },
@@ -249,13 +297,15 @@ export const gearSelectionSubmitController = {
     const catalogue = await getGearCatalogue({ vesselLengthMetres })
     const currentState = migrateGearJourneyState(request, catalogue)
     const { gearIds: rawGearIds, potsHauled, potsInWater } = request.payload
-    const gearIds = Array.isArray(rawGearIds) ? rawGearIds : [rawGearIds]
+    const gearIds = [
+      ...new Set(Array.isArray(rawGearIds) ? rawGearIds : [rawGearIds])
+    ]
     const validGearIds = new Set(catalogue.map((gear) => gear.id))
     if (!gearIds.length || gearIds.some((id) => !validGearIds.has(id))) {
       const errorText = 'Select the gear you used'
       return renderWithErrors(request, h, catalogue, {
         errorSummary: {
-          titleText: titleText,
+          titleText,
           errorList: [{ text: errorText, href: '#gearIds' }]
         },
         fieldErrors: { gearIds: errorText },
@@ -264,42 +314,16 @@ export const gearSelectionSubmitController = {
     }
     const potsSelected = gearIds.includes('pots')
 
-    const errorList = []
-    const fieldErrors = {}
-    let potsValues
-
-    if (potsSelected) {
-      const [hauledMeasurement, inWaterMeasurement] = catalogue.find(
-        (gear) => gear.id === 'pots'
-      ).measurements
-      const hauled = validateMeasurement(potsHauled, hauledMeasurement)
-      const inWater = validateMeasurement(potsInWater, inWaterMeasurement)
-
-      if (hauled.error) {
-        errorList.push({ text: hauled.error, href: '#potsHauled' })
-        fieldErrors.potsHauled = hauled.error
-      }
-
-      if (inWater.error) {
-        errorList.push({ text: inWater.error, href: '#potsInWater' })
-        fieldErrors.potsInWater = inWater.error
-      }
-
-      potsValues = { potsHauled: hauled.value, potsInWater: inWater.value }
-    }
-
-    const {
-      errorList: gearMeasurementErrors,
-      fieldErrors: gearMeasurementFieldErrors,
-      measurementDetailsByGearId
-    } = validateGearMeasurements(gearIds, request.payload, catalogue)
-
-    errorList.push(...gearMeasurementErrors)
-    Object.assign(fieldErrors, gearMeasurementFieldErrors)
+    const details = validateSelectedGearDetails(
+      gearIds,
+      request.payload,
+      catalogue
+    )
+    const { errorList, fieldErrors } = details
 
     if (errorList.length) {
       return renderWithErrors(request, h, catalogue, {
-        errorSummary: { titleText: titleText, errorList },
+        errorSummary: { titleText, errorList },
         fieldErrors,
         selectedGearIds: gearIds,
         potsDetails: potsSelected ? { potsHauled, potsInWater } : undefined,
@@ -311,13 +335,12 @@ export const gearSelectionSubmitController = {
       })
     }
 
-    setJourneyState(request, {
-      selectedGearIds: gearIds,
-      potsDetails: potsSelected ? potsValues : undefined,
-      gearMeasurementDetails: measurementDetailsByGearId,
-      favouriteGearIds: getFavouriteGearIds(currentState, catalogue)
-    })
+    saveSelectedGears(request, gearIds, catalogue, currentState, details)
 
-    return h.redirect(resolveNextPath(request, '/statistical-area')).code(303)
+    const nextPath =
+      request.query?.return === '/check-answers'
+        ? incompleteGearPath(request) || '/check-answers'
+        : gearPath(request, '/statistical-area', gearIds[0])
+    return h.redirect(nextPath).code(statusCodes.seeOther)
   }
 }

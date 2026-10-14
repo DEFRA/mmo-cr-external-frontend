@@ -1,6 +1,16 @@
 import { createServer } from '#/server/server.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 import * as cheerio from 'cheerio'
+import * as data from '#/server/common/data/get-data.js'
+import {
+  SPECIES_IDS,
+  mockSpeciesReferenceData,
+  restoreSpeciesReferenceDataMock
+} from '#/test-helpers/mock-species-reference-data.js'
+import {
+  mockGearsReferenceData,
+  restoreGearsReferenceDataMock
+} from '#/test-helpers/mock-gears-reference-data.js'
 
 describe('#recordDetailsController', () => {
   let server
@@ -74,6 +84,58 @@ describe('#recordDetailsController', () => {
     })
 
     expect(statusCode).toBe(statusCodes.ok)
+  })
+
+  test('Should render stored gear groups read-only without borrowing current journey answers', async () => {
+    const originalGetData = data.getData
+    const details = {
+      ...originalGetData('catchRecordDetails'),
+      vesselName: 'ACHILLES',
+      selectedGearIds: ['pots', 'dredge'],
+      catchDetailsByGearId: {
+        pots: {
+          statAreaBranch: 'direct',
+          selectedStatisticalArea: '38E95',
+          selectedSpeciesIds: [SPECIES_IDS.cod],
+          speciesWeights: { [SPECIES_IDS.cod]: { weightAboveMinimum: 15 } },
+          catchNotLanded: false
+        },
+        dredge: {
+          statAreaBranch: 'direct',
+          selectedStatisticalArea: '38E96',
+          selectedSpeciesIds: [SPECIES_IDS.cod],
+          speciesWeights: { [SPECIES_IDS.cod]: { weightAboveMinimum: 30 } },
+          catchNotLanded: false
+        }
+      }
+    }
+    const spy = vi
+      .spyOn(data, 'getData')
+      .mockImplementation((key) =>
+        key === 'allRecords'
+          ? [{ recordId: 'grouped-record', status: 'Submitted', details }]
+          : originalGetData(key)
+      )
+    mockSpeciesReferenceData()
+    mockGearsReferenceData()
+    try {
+      const response = await server.inject({
+        method: 'GET',
+        url: '/records/grouped-record'
+      })
+      expect(response.statusCode).toBe(200)
+      const $ = cheerio.load(response.result)
+      const groups = $('section[aria-labelledby^="gear-summary-"]')
+      expect(groups).toHaveLength(2)
+      expect(groups.eq(0).text()).toContain('15 kg')
+      expect(groups.eq(1).text()).toContain('30 kg')
+      expect(groups.find('.govuk-summary-list__actions a')).toHaveLength(0)
+      expect($('dt:contains("Vessel")').next().text().trim()).toBe('ACHILLES')
+    } finally {
+      spy.mockRestore()
+      restoreGearsReferenceDataMock()
+      restoreSpeciesReferenceDataMock()
+    }
   })
 
   test('Should render the Figma late record detail and edit action', async () => {

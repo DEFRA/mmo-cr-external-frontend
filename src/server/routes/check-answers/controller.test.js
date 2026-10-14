@@ -34,49 +34,38 @@ describe('#checkAnswersController', () => {
       url: '/check-answers'
     })
 
-    expect(result).toEqual(expect.stringContaining('Check your catch record |'))
+    expect(result).toEqual(expect.stringContaining('Check your answers |'))
     expect(statusCode).toBe(statusCodes.ok)
   })
 
-  test('Should render the heading with caption and all four sections in order', async () => {
+  test('Should render only the mobile review headings without a caption', async () => {
     const { result } = await server.inject({
       method: 'GET',
       url: '/check-answers'
     })
     const $ = load(result)
 
-    expect($('h1').text()).toContain('Check your catch record')
-    expect($('[data-testid="app-check-answers-caption"]').text().trim()).toBe(
-      'New catch record'
-    )
+    expect($('h1').text()).toContain('Check your answers')
+    expect($('[data-testid="app-check-answers-caption"]')).toHaveLength(0)
     expect(
       $('h2.govuk-heading-l')
         .map((_, el) => $(el).text().trim())
         .get()
-    ).toEqual([
-      'Trips details',
-      'Gear used',
-      'Species caught',
-      'Species not landed',
-      'Trips details'
-    ])
+    ).toEqual(['Trip', 'Pot', 'Species not landed'])
   })
 
-  test('Should render the declaration warning, bullets, checkbox and button', async () => {
+  test('Should show Save and continue without extra declaration content', async () => {
     const { result } = await server.inject({
       method: 'GET',
       url: '/check-answers'
     })
     const $ = load(result)
 
-    expect($('.govuk-warning-text__text').text()).toContain(
-      "By submitting this record, you agree that the information you've given is complete and correct."
-    )
-    expect($('.govuk-list--bullet li')).toHaveLength(3)
-    expect($('input[name="confirmAccurate"][type="checkbox"]')).toHaveLength(1)
-    expect($('.govuk-button').text().trim()).toBe(
-      'Accept and submit trip details'
-    )
+    expect($('.govuk-warning-text')).toHaveLength(0)
+    expect($('.govuk-list--bullet')).toHaveLength(0)
+    expect($('input[name="confirmAccurate"]')).toHaveLength(0)
+    expect($('.govuk-button').text().trim()).toBe('Save and continue')
+    expect($('dt').text()).not.toMatch(/Departure date|Return date|Not landed/)
   })
 
   test('Should render the illustrative example values when no journey state exists', async () => {
@@ -134,7 +123,8 @@ describe('#checkAnswersController', () => {
     expect(text).toContain('Newhaven')
     expect(text).toContain('Rye')
     expect(text).toContain('Dredge')
-    expect($('dt:contains("Not landed")').next().text().trim()).toBe('No')
+    expect($('dt:contains("Not landed")')).toHaveLength(0)
+    expect($('h2').text()).not.toContain('Species not landed')
   })
 })
 
@@ -150,32 +140,15 @@ describe('#checkAnswersSubmitController', () => {
     await server.stop({ timeout: 0 })
   })
 
-  test('Should redirect to the confirmation page when the declaration is confirmed', async () => {
+  test('Should continue to confirmation without a declaration payload', async () => {
     const { statusCode, headers } = await server.inject({
-      method: 'POST',
-      url: '/check-answers',
-      payload: { confirmAccurate: 'true' }
-    })
-
-    expect(statusCode).toBe(303)
-    expect(headers.location).toBe('/confirmation')
-  })
-
-  test('Should re-render the page with an accessible error when the declaration is not confirmed', async () => {
-    const { statusCode, result } = await server.inject({
       method: 'POST',
       url: '/check-answers',
       payload: {}
     })
-    const $ = load(result)
 
-    expect(statusCode).toBe(statusCodes.badRequest)
-    expect($('.govuk-error-summary')).toHaveLength(1)
-    expect($('.govuk-error-summary').text()).toContain(
-      'Select I confirm the information is complete and accurate'
-    )
-    expect($('.govuk-error-summary a').attr('href')).toBe('#confirmAccurate')
-    expect($('.govuk-error-message')).toHaveLength(1)
+    expect(statusCode).toBe(303)
+    expect(headers.location).toBe('/confirmation')
   })
 })
 
@@ -202,7 +175,7 @@ describe('#checkAnswers change loop', () => {
     expect(headers.location).toBe('/check-answers')
   })
 
-  test('Should return to Check Your Answers after changing the gear used', async () => {
+  test('Should collect answers before returning to Check Your Answers for a newly selected gear', async () => {
     const { statusCode, headers } = await server.inject({
       method: 'POST',
       url: '/gear-selection?return=/check-answers',
@@ -210,7 +183,7 @@ describe('#checkAnswers change loop', () => {
     })
 
     expect(statusCode).toBe(303)
-    expect(headers.location).toBe('/check-answers')
+    expect(headers.location).toBe('/statistical-area?gearId=dredge')
   })
 
   test('Should ignore an unsafe return destination and continue the default journey', async () => {

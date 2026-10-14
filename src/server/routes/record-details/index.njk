@@ -1,6 +1,7 @@
 {% extends 'layouts/page.njk' %}
 {% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "catch-record-summary-sections/macro.njk" import appCatchRecordSummarySections %}
 
 {% block pageContent %}
   <div class="govuk-grid-row">
@@ -11,6 +12,9 @@
       <p class="govuk-body govuk-!-font-weight-bold govuk-!-margin-bottom-1">Record status:</p>
       <strong class="govuk-tag govuk-tag--grey">{{ status | capitalize }}</strong>
 
+      {% if gearGroups %}
+        {{ appCatchRecordSummarySections(sections, gearGroups, trailingSections) }}
+      {% else %}
       <h2 class="govuk-heading-l">Trips details</h2>
       {{ govukSummaryList({ rows: [
         { key: { text: "Vessel" }, value: { text: details.vesselName } },
@@ -43,6 +47,7 @@
         { key: { text: "Weight above minimum size kept onboard or in keep pots (kg)" }, value: { text: details.notLandedWeightAboveMinimumKept } }
       ] }) }}
 
+      {% endif %}
       <div class="govuk-button-group">
         {{ govukButton({
           text: "Edit catch record",

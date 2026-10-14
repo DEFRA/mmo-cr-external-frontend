@@ -1,8 +1,19 @@
 {% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
 
-{% macro appCatchRecordSummarySections(sections) %}
+{% macro appCatchRecordSummarySections(sections, gearGroups = [], trailingSections = []) %}
+  {% set summaryClasses = "app-catch-summary-list" if gearGroups.length else "" %}
   {% for section in sections %}
     <h2 class="govuk-heading-l">{{ section.heading }}</h2>
-    {{ govukSummaryList({ rows: section.rows }) }}
+    {{ govukSummaryList({ rows: section.rows, classes: summaryClasses }) }}
+  {% endfor %}
+  {% for gear in gearGroups %}
+    <section aria-labelledby="gear-summary-{{ loop.index }}" class="govuk-!-margin-top-8">
+      <h2 id="gear-summary-{{ loop.index }}" class="govuk-heading-l">{{ gear.heading }}</h2>
+      {{ govukSummaryList({ rows: gear.rows, classes: summaryClasses }) }}
+    </section>
+  {% endfor %}
+  {% for section in trailingSections %}
+    <h2 class="govuk-heading-l">{{ section.heading }}</h2>
+    {{ govukSummaryList({ rows: section.rows, classes: summaryClasses }) }}
   {% endfor %}
 {% endmacro %}

@@ -1,9 +1,11 @@
 import Joi from 'joi'
 
 import {
-  getJourneyState,
+  getGearJourneyState as getJourneyState,
+  gearPageContext,
+  gearPath,
   resolveNextPath,
-  setJourneyState
+  setGearJourneyState as setJourneyState
 } from '#/server/common/helpers/journey/navigation.js'
 import { getData } from '#/server/common/data/get-data.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
@@ -93,6 +95,10 @@ function resolveSelectedAreaCoordinatesText(
 
 function viewContext(request, overrides = {}) {
   const journeyState = getJourneyState(request)
+  const gearContext = gearPageContext(request)
+  const heading = gearContext.gearLabel
+    ? `Select the statistical sub area where the majority of your catch was caught using ${gearContext.gearLabel}?`
+    : pageTitle
   const alternativeStatisticalArea =
     journeyState.alternativeStatisticalArea || ''
   const departurePort = getData('ports').find(
@@ -113,15 +119,21 @@ function viewContext(request, overrides = {}) {
   const selectedArea = journeyState.selectedAlternativeAreaOption
 
   return {
-    pageTitle,
-    heading: pageTitle,
+    ...gearContext,
+    pageTitle: heading,
+    heading,
     caption: 'New catch record',
     bodyText: [
       'The statistical areas nearest to your departure port are shown below. Select the area where most of your catch was caught.',
       "If it is not listed, select 'Other' to enter it."
     ],
     backLink: {
-      href: '/statistical-area',
+      href: gearPath(
+        request,
+        '/statistical-area',
+        undefined,
+        request.query?.return
+      ),
       text: 'Back'
     },
     areaOptions: areaRadioItems(nearbyAreaCodes, selectedArea),
