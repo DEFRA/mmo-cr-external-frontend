@@ -27,57 +27,74 @@
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
       <form method="post" novalidate>
-        <div class="govuk-form-group{{ ' govuk-form-group--error' if fieldErrors.gearIds }}">
-          <fieldset class="govuk-fieldset" aria-describedby="gearIds-hint{{ ' gearIds-error' if fieldErrors.gearIds }}">
-            <legend class="govuk-fieldset__legend govuk-fieldset__legend--xl">
-              <h1 class="govuk-fieldset__heading"><span class="govuk-caption-l">{{ caption }}</span>{{ heading }}</h1>
-            </legend>
-            <div id="gearIds-hint" class="govuk-hint">Select all that apply</div>
-            {% if fieldErrors.gearIds %}
+        {% if gearCheckboxItems.length %}
+          <div class="govuk-form-group{{ ' govuk-form-group--error' if fieldErrors.gearIds }}">
+            <fieldset class="govuk-fieldset" aria-describedby="gearIds-hint{{ ' gearIds-error' if fieldErrors.gearIds }}">
+              <legend class="govuk-fieldset__legend govuk-fieldset__legend--xl">
+                <h1 class="govuk-fieldset__heading"><span class="govuk-caption-l">{{ caption }}</span>{{ heading }}</h1>
+              </legend>
+              <div id="gearIds-hint" class="govuk-hint">Select all that apply</div>
+              {% if fieldErrors.gearIds %}
+                <p id="gearIds-error" class="govuk-error-message">
+                  <span class="govuk-visually-hidden">Error:</span> {{ fieldErrors.gearIds }}
+                </p>
+              {% endif %}
+              <div class="govuk-checkboxes" data-module="govuk-checkboxes">
+                {% for item in gearCheckboxItems %}
+                  <div class="govuk-checkboxes__item">
+                    <input
+                      class="govuk-checkboxes__input"
+                      id="gearIds-{{ loop.index }}"
+                      name="gearIds"
+                      type="checkbox"
+                      value="{{ item.value }}"
+                      {{ 'checked' if item.checked }}
+                      {% if item.value == 'pots' or item.measurements.length %}data-aria-controls="gearIds-conditional-{{ loop.index }}"{% endif %}
+                    >
+                    <label class="govuk-label govuk-checkboxes__label" for="gearIds-{{ loop.index }}">{{ item.text }}</label>
+                    {% if item.hint %}
+                      <div id="gearIds-{{ loop.index }}-item-hint" class="govuk-hint govuk-checkboxes__hint">{{ item.hint }}</div>
+                    {% endif %}
+                  </div>
+                  {% if item.value == 'pots' %}
+                    <div class="govuk-checkboxes__conditional{{ '' if item.checked else ' govuk-checkboxes__conditional--hidden' }}" id="gearIds-conditional-{{ loop.index }}">
+                      {{ potsFieldsHtml | safe }}
+                    </div>
+                  {% elif item.measurements.length %}
+                    <div class="govuk-checkboxes__conditional{{ '' if item.checked else ' govuk-checkboxes__conditional--hidden' }}" id="gearIds-conditional-{{ loop.index }}">
+                      {% for measurement in item.measurements %}
+                        {{ govukInput({
+                          id: measurement.id,
+                          name: measurement.id,
+                          label: { text: measurement.label },
+                          classes: "govuk-input--width-10",
+                          inputmode: "numeric",
+                          value: measurement.value,
+                          errorMessage: { text: fieldErrors[measurement.id] } if fieldErrors[measurement.id] else false
+                        }) }}
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                {% endfor %}
+              </div>
+            </fieldset>
+          </div>
+        {% else %}
+          {% if fieldErrors.gearIds %}
+            <div class="govuk-form-group govuk-form-group--error">
+              <span class="govuk-caption-l">{{ caption }}</span>
+              <h1 class="govuk-heading-xl">{{ heading }}</h1>
               <p id="gearIds-error" class="govuk-error-message">
                 <span class="govuk-visually-hidden">Error:</span> {{ fieldErrors.gearIds }}
               </p>
-            {% endif %}
-            <div class="govuk-checkboxes" data-module="govuk-checkboxes">
-              {% for item in gearCheckboxItems %}
-                <div class="govuk-checkboxes__item">
-                  <input
-                    class="govuk-checkboxes__input"
-                    id="gearIds-{{ loop.index }}"
-                    name="gearIds"
-                    type="checkbox"
-                    value="{{ item.value }}"
-                    {{ 'checked' if item.checked }}
-                    {% if item.value == 'pots' or item.measurements.length %}data-aria-controls="gearIds-conditional-{{ loop.index }}"{% endif %}
-                  >
-                  <label class="govuk-label govuk-checkboxes__label" for="gearIds-{{ loop.index }}">{{ item.text }}</label>
-                  {% if item.hint %}
-                    <div id="gearIds-{{ loop.index }}-item-hint" class="govuk-hint govuk-checkboxes__hint">{{ item.hint }}</div>
-                  {% endif %}
-                </div>
-                {% if item.value == 'pots' %}
-                  <div class="govuk-checkboxes__conditional{{ '' if item.checked else ' govuk-checkboxes__conditional--hidden' }}" id="gearIds-conditional-{{ loop.index }}">
-                    {{ potsFieldsHtml | safe }}
-                  </div>
-                {% elif item.measurements.length %}
-                  <div class="govuk-checkboxes__conditional{{ '' if item.checked else ' govuk-checkboxes__conditional--hidden' }}" id="gearIds-conditional-{{ loop.index }}">
-                    {% for measurement in item.measurements %}
-                      {{ govukInput({
-                        id: measurement.id,
-                        name: measurement.id,
-                        label: { text: measurement.label },
-                        classes: "govuk-input--width-10",
-                        inputmode: "numeric",
-                        value: measurement.value,
-                        errorMessage: { text: fieldErrors[measurement.id] } if fieldErrors[measurement.id] else false
-                      }) }}
-                    {% endfor %}
-                  </div>
-                {% endif %}
-              {% endfor %}
+              <p class="govuk-body">You need to add the gear you used</p>
             </div>
-          </fieldset>
-        </div>
+          {% else %}
+            <span class="govuk-caption-l">{{ caption }}</span>
+            <h1 class="govuk-heading-xl">{{ heading }}</h1>
+            <p class="govuk-body">You need to add the gear you used</p>
+          {% endif %}
+        {% endif %}
 
         <p><a class="govuk-link" href="/add-gear">Add gear</a></p>
         {% if gearCheckboxItems.length %}

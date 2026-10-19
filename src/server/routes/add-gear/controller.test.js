@@ -6,10 +6,21 @@ import {
   mockGearsReferenceData,
   restoreGearsReferenceDataMock
 } from '#/test-helpers/mock-gears-reference-data.js'
+import { seedFavouriteGears } from '#/test-helpers/seed-favourite-gears.js'
 
 function nextCookie(response, previousCookie) {
   const setCookie = response.headers['set-cookie']
   return setCookie ? setCookie[0].split(';')[0] : previousCookie
+}
+
+// Default favourites cannot be added again, so remove one before re-adding it.
+async function cookieWithoutFavourite(server, gearIds) {
+  const response = await server.inject({
+    method: 'POST',
+    url: '/remove-gear',
+    payload: { gearIds }
+  })
+  return nextCookie(response)
 }
 
 beforeEach(() => mockGearsReferenceData())
@@ -87,15 +98,15 @@ describe('#addGearController', () => {
     ).toBe('/account')
   })
 
-  test('Should list catalogue gear not already favourited in the datalist', async () => {
+  test('Should list catalogue gear not already favourited in the search data', async () => {
+    const favouriteCookie = await seedFavouriteGears(server)
     const { result } = await server.inject({
       method: 'GET',
-      url: '/add-gear'
+      url: '/add-gear',
+      headers: { cookie: favouriteCookie }
     })
     const $ = load(result)
-    const labels = $('#gear-options option')
-      .map((_, el) => $(el).attr('value'))
-      .get()
+    const labels = JSON.parse($('[data-port-search-data]').text())
 
     expect(labels).toContain('Set net')
     expect(labels).toContain('Drifting longlines')
@@ -213,7 +224,8 @@ describe('#addGearSubmitController', () => {
     const addResponse = await server.inject({
       method: 'POST',
       url: '/add-gear',
-      payload: { gear: 'Dredge' }
+      payload: { gear: 'Dredge' },
+      headers: { cookie: await cookieWithoutFavourite(server, 'dredge') }
     })
 
     expect(addResponse.statusCode).toBe(303)
@@ -236,7 +248,13 @@ describe('#addGearSubmitController', () => {
     const firstAdd = await server.inject({
       method: 'POST',
       url: '/add-gear',
-      payload: { gear: 'Dredge' }
+      payload: { gear: 'Dredge' },
+      headers: {
+        cookie: await cookieWithoutFavourite(server, [
+          'dredge',
+          'bottom-otter-trawl'
+        ])
+      }
     })
     let cookie = nextCookie(firstAdd)
 
@@ -348,7 +366,13 @@ describe('#addGearSubmitController', () => {
     const addResponse = await server.inject({
       method: 'POST',
       url: '/add-gear',
-      payload: { gear: 'Miscellaneous gear (diving)' }
+      payload: { gear: 'Miscellaneous gear (diving)' },
+      headers: {
+        cookie: await cookieWithoutFavourite(
+          server,
+          'miscellaneous-gear-diving'
+        )
+      }
     })
     const cookie = nextCookie(addResponse)
     expect(addResponse.statusCode).toBe(303)
@@ -370,7 +394,10 @@ describe('#addGearSubmitController', () => {
     const addResponse = await server.inject({
       method: 'POST',
       url: '/add-gear',
-      payload: { gear: 'Handlines and pole lines (hand operated)' }
+      payload: { gear: 'Handlines and pole lines (hand operated)' },
+      headers: {
+        cookie: await cookieWithoutFavourite(server, 'handlines-pole-lines')
+      }
     })
     const cookie = nextCookie(addResponse)
 
@@ -392,7 +419,8 @@ describe('#addGearSubmitController', () => {
     const addResponse = await server.inject({
       method: 'POST',
       url: '/add-gear',
-      payload: { gear: 'Dredge' }
+      payload: { gear: 'Dredge' },
+      headers: { cookie: await cookieWithoutFavourite(server, 'dredge') }
     })
     const cookie = nextCookie(addResponse)
 
@@ -416,7 +444,10 @@ describe('#addGearSubmitController', () => {
       const addResponse = await server.inject({
         method: 'POST',
         url: '/add-gear',
-        payload: { gear: 'Handlines and pole lines (hand operated)' }
+        payload: { gear: 'Handlines and pole lines (hand operated)' },
+        headers: {
+          cookie: await cookieWithoutFavourite(server, 'handlines-pole-lines')
+        }
       })
       const cookie = nextCookie(addResponse)
 
@@ -445,7 +476,10 @@ describe('#addGearSubmitController', () => {
       const addResponse = await server.inject({
         method: 'POST',
         url: '/add-gear',
-        payload: { gear: 'Bottom otter trawl' }
+        payload: { gear: 'Bottom otter trawl' },
+        headers: {
+          cookie: await cookieWithoutFavourite(server, 'bottom-otter-trawl')
+        }
       })
       const cookie = nextCookie(addResponse)
 
@@ -469,7 +503,10 @@ describe('#addGearSubmitController', () => {
     const addResponse = await server.inject({
       method: 'POST',
       url: '/add-gear',
-      payload: { gear: 'Bottom otter trawl' }
+      payload: { gear: 'Bottom otter trawl' },
+      headers: {
+        cookie: await cookieWithoutFavourite(server, 'bottom-otter-trawl')
+      }
     })
     let cookie = nextCookie(addResponse)
 
@@ -492,13 +529,21 @@ describe('#addGearSubmitController', () => {
     const $ = load(result)
 
     expect($('input[value="bottom-otter-trawl"]')).toHaveLength(1)
+    expect(
+      $('input[value="bottom-otter-trawl"]')
+        .closest('.govuk-checkboxes__item')
+        .find('.govuk-checkboxes__hint')
+        .text()
+        .trim()
+    ).toBe('Number of trawl nets: 2, Mesh size (mm): 80')
   })
 
   test('Should preserve a return query across the measurement step', async () => {
     const addResponse = await server.inject({
       method: 'POST',
       url: '/add-gear?return=/check-answers',
-      payload: { gear: 'Dredge' }
+      payload: { gear: 'Dredge' },
+      headers: { cookie: await cookieWithoutFavourite(server, 'dredge') }
     })
     const cookie = nextCookie(addResponse)
 
@@ -517,11 +562,53 @@ describe('#addGearSubmitController', () => {
     expect(confirmResponse.headers.location).toBe('/check-answers')
   })
 
+  test('Should reject a gear that is already a favourite without creating a duplicate', async () => {
+    const addResponse = await server.inject({
+      method: 'POST',
+      url: '/add-gear?return=/account',
+      payload: { gear: 'Dredge' },
+      headers: { cookie: await cookieWithoutFavourite(server, 'dredge') }
+    })
+    let cookie = nextCookie(addResponse)
+    const confirmResponse = await server.inject({
+      method: 'POST',
+      url: '/add-gear?return=/account',
+      payload: { numberOfDredges: '2', numberOfTimesShot: '3' },
+      headers: { cookie }
+    })
+    cookie = nextCookie(confirmResponse, cookie)
+
+    const repeatResponse = await server.inject({
+      method: 'POST',
+      url: '/add-gear?return=/account',
+      payload: { gear: 'Dredge' },
+      headers: { cookie }
+    })
+    cookie = nextCookie(repeatResponse, cookie)
+    const $error = load(repeatResponse.result)
+
+    expect(repeatResponse.statusCode).toBe(statusCodes.badRequest)
+    expect($error('.govuk-error-summary').text()).toContain(
+      'Dredge has already been added to your gear'
+    )
+
+    const { result } = await server.inject({
+      method: 'GET',
+      url: '/gear-selection',
+      headers: { cookie }
+    })
+    const $ = load(result)
+
+    expect($('input[value="dredge"]')).toHaveLength(1)
+    expect($('#numberOfDredges')).toHaveLength(0)
+  })
+
   test('Should return to the account after adding measured gear from the account', async () => {
     const addResponse = await server.inject({
       method: 'POST',
       url: '/add-gear?return=/account',
-      payload: { gear: 'Dredge' }
+      payload: { gear: 'Dredge' },
+      headers: { cookie: await cookieWithoutFavourite(server, 'dredge') }
     })
     const cookie = nextCookie(addResponse)
     const { result: measurementPage } = await server.inject({
