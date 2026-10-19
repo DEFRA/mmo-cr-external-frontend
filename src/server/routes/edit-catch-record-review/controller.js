@@ -8,6 +8,7 @@ import {
 } from '#/server/common/helpers/journey/amendment.js'
 import { buildCheckAnswersViewModel } from '#/server/routes/check-answers/view-model.js'
 import { getSpeciesPageData } from '#/server/common/helpers/species/species-list.js'
+import { getGearCatalogue } from '#/server/common/helpers/gear/favourite-gear.js'
 import { formatDate } from '#/config/nunjucks/filters/format-date.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 
@@ -29,11 +30,18 @@ async function viewContext(request, recordId, overrides = {}) {
   const record = findRecord(recordId)
   const details = record.details || getData('catchRecordDetails')
   const { catalogue } = await getSpeciesPageData(request)
-  const { sections } = buildCheckAnswersViewModel(request, {
-    buildChangeHref: () => AMENDMENT_CHANGE_HREF,
-    hideVesselChange: true,
-    speciesCatalogue: catalogue
-  })
+  const { sections, gearGroups, trailingSections } = buildCheckAnswersViewModel(
+    request,
+    {
+      buildChangeHref: () => AMENDMENT_CHANGE_HREF,
+      hideVesselChange: true,
+      speciesCatalogue: catalogue,
+      ...(details.selectedGearIds && {
+        journeyState: details,
+        gearCatalogue: await getGearCatalogue()
+      })
+    }
+  )
   const heading =
     record.recordId === 'late-1'
       ? `Edit the record for ${details.vesselName}`
@@ -56,6 +64,8 @@ async function viewContext(request, recordId, overrides = {}) {
       text: 'Back'
     },
     sections,
+    gearGroups,
+    trailingSections,
     ...overrides
   }
 }

@@ -146,5 +146,22 @@ export function migrateGearJourneyState(request, catalogue) {
       }
     }
   }
+  for (const key of [
+    'catchDetailsByGearId',
+    'gearMeasurementDetails',
+    'gearLabelsById'
+  ]) {
+    if (state[key]) {
+      const migrated = Object.fromEntries(
+        Object.entries(state[key]).map(([id, value]) => [
+          migratedGearId(id, catalogue) || id,
+          value
+        ])
+      )
+      if (JSON.stringify(migrated) !== JSON.stringify(state[key])) {
+        patch[key] = migrated
+      }
+    }
+  }
   return Object.keys(patch).length ? setJourneyState(request, patch) : state
 }

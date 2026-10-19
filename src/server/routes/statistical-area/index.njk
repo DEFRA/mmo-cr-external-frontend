@@ -6,6 +6,9 @@
       <form method="post" novalidate>
         <span class="govuk-caption-l">{{ caption }}</span>
         <h1 class="govuk-heading-xl app-statistical-area-map__heading">{{ heading }}</h1>
+        {% if legacyCatchNotice %}
+          <p class="govuk-body">{{ legacyCatchNotice }}</p>
+        {% endif %}
 
         {% for paragraph in bodyText %}
           <p class="govuk-body govuk-!-margin-bottom-5">{{ paragraph }}</p>

@@ -2,8 +2,13 @@ import Joi from 'joi'
 
 import {
   backForSpeciesSelection,
-  resolveNextPath,
-  setJourneyState
+  gearPageContext,
+  gearPath,
+  caughtSpeciesIds,
+  getJourneyState,
+  setJourneyState as setTripJourneyState,
+  nextAfterGear,
+  setGearJourneyState as setJourneyState
 } from '#/server/common/helpers/journey/navigation.js'
 import { getSpeciesPageData } from '#/server/common/helpers/species/species-list.js'
 import {
@@ -240,8 +245,12 @@ function speciesCheckboxItems(
       // client-side, but start expanded if they already hold a value (e.g. after
       // a validation failure or when restoring a previously-answered journey).
       weightFieldsVisible: {
-        belowMinimum: Boolean(weights.weightBelowMinimum),
-        legallyDiscarded: Boolean(weights.weightDiscarded)
+        belowMinimum:
+          weights.weightBelowMinimum !== undefined &&
+          weights.weightBelowMinimum !== '',
+        legallyDiscarded:
+          weights.weightDiscarded !== undefined &&
+          weights.weightDiscarded !== ''
       },
       weights,
       fieldErrors: fieldErrorsBySpecies[species.id] || {}
@@ -253,10 +262,27 @@ function viewContext(request, speciesData, overrides = {}) {
   const { journeyState, speciesOptions } = speciesData
   const selectedSpeciesIds = journeyState.selectedSpeciesIds || []
   const speciesWeights = journeyState.speciesWeights || {}
+  const gearContext = gearPageContext(request)
+  const heading = gearContext.gearLabel
+    ? `What species did you catch using ${gearContext.gearLabel}?`
+    : pageTitle
 
   return {
-    pageTitle,
-    heading: pageTitle,
+    ...gearContext,
+    pageTitle: heading,
+    heading,
+    addSpeciesHref: gearPath(
+      request,
+      '/add-species?return=/species-selection',
+      undefined,
+      request.query?.return
+    ),
+    removeSpeciesHref: gearPath(
+      request,
+      '/remove-species?return=/species-selection',
+      undefined,
+      request.query?.return
+    ),
     caption: 'New catch record',
     backLink: {
       href: backForSpeciesSelection(request),
@@ -376,9 +402,18 @@ export const speciesSelectionSubmitController = {
       selectedSpeciesIds: speciesIds,
       speciesWeights: persistedSpeciesWeights(speciesIds, speciesWeights)
     })
+    const caughtIds = caughtSpeciesIds(request)
+    const savedNotLanded = getJourneyState(request).speciesNotLanded
+    if (savedNotLanded) {
+      setTripJourneyState(request, {
+        speciesNotLanded: Object.fromEntries(
+          Object.entries(savedNotLanded).filter(([id]) =>
+            caughtIds.includes(id)
+          )
+        )
+      })
+    }
 
-    return h
-      .redirect(resolveNextPath(request, '/catch-not-landed'))
-      .code(statusCodes.seeOther)
+    return h.redirect(nextAfterGear(request)).code(statusCodes.seeOther)
   }
 }

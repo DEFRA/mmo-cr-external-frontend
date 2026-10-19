@@ -290,10 +290,10 @@ describe('#gearSelectionSubmitController', () => {
     })
 
     expect(statusCode).toBe(303)
-    expect(headers.location).toBe('/statistical-area')
+    expect(headers.location).toBe('/statistical-area?gearId=dredge')
   })
 
-  test('Should redirect back to check your answers when a return query is supplied', async () => {
+  test('Should collect catch answers for a newly selected gear even when a return query is supplied', async () => {
     const { statusCode, headers } = await server.inject({
       method: 'POST',
       url: '/gear-selection?return=/check-answers',
@@ -301,7 +301,7 @@ describe('#gearSelectionSubmitController', () => {
     })
 
     expect(statusCode).toBe(303)
-    expect(headers.location).toBe('/check-answers')
+    expect(headers.location).toBe('/statistical-area?gearId=dredge')
   })
 
   test('Should save the selected gear ids and leave pots details absent for a non-pots selection', async () => {
@@ -335,7 +335,7 @@ describe('#gearSelectionSubmitController', () => {
     })
 
     expect(statusCode).toBe(303)
-    expect(headers.location).toBe('/statistical-area')
+    expect(headers.location).toBe('/statistical-area?gearId=pots')
   })
 
   test('Should save pots details matching the submitted numbers', async () => {
@@ -541,6 +541,72 @@ describe('#gearSelectionSubmitController', () => {
     expect($('#potsInWater').attr('value')).toBe('12')
   })
 
+  test('Should retain unticked gear measurements and continue the per-gear flow when reselected', async () => {
+    let cookie = await seedFavouriteGears(server)
+    for (const [payload, expectedPath] of [
+      [
+        {
+          gearIds: ['pots', 'dredge'],
+          potsHauled: '45',
+          potsInWater: '12',
+          'dredge-numberOfDredges': '2',
+          'dredge-numberOfTimesShot': '3'
+        },
+        '/statistical-area?gearId=pots'
+      ],
+      [{ gearIds: 'beam-trawl' }, '/statistical-area?gearId=beam-trawl']
+    ]) {
+      const response = await server.inject({
+        method: 'POST',
+        url: '/gear-selection',
+        payload,
+        headers: { cookie }
+      })
+      expect(response.statusCode).toBe(statusCodes.seeOther)
+      expect(response.headers.location).toBe(expectedPath)
+      cookie = response.headers['set-cookie']?.[0]?.split(';')[0] || cookie
+    }
+
+    const saved = await server.inject({
+      method: 'GET',
+      url: '/gear-selection',
+      headers: { cookie }
+    })
+    const $saved = load(saved.result)
+    expect($saved('input[value="pots"]').prop('checked')).toBe(false)
+    expect($saved('input[value="dredge"]').prop('checked')).toBe(false)
+    expect($saved('#potsHauled').attr('value')).toBe('45')
+    expect($saved('#potsInWater').attr('value')).toBe('12')
+    expect($saved('#dredge-numberOfDredges').attr('value')).toBe('2')
+    expect($saved('#dredge-numberOfTimesShot').attr('value')).toBe('3')
+    cookie = saved.headers['set-cookie']?.[0]?.split(';')[0] || cookie
+
+    const reselected = await server.inject({
+      method: 'POST',
+      url: '/gear-selection',
+      headers: { cookie },
+      payload: {
+        gearIds: 'dredge',
+        'dredge-numberOfDredges': '4',
+        'dredge-numberOfTimesShot': '5'
+      }
+    })
+    expect(reselected.statusCode).toBe(statusCodes.seeOther)
+    expect(reselected.headers.location).toBe('/statistical-area?gearId=dredge')
+    cookie = reselected.headers['set-cookie']?.[0]?.split(';')[0] || cookie
+
+    const updated = await server.inject({
+      method: 'GET',
+      url: '/gear-selection',
+      headers: { cookie }
+    })
+    const $updated = load(updated.result)
+    expect($updated('input[value="dredge"]').prop('checked')).toBe(true)
+    expect($updated('#dredge-numberOfDredges').attr('value')).toBe('4')
+    expect($updated('#dredge-numberOfTimesShot').attr('value')).toBe('5')
+    expect($updated('#potsHauled').attr('value')).toBe('45')
+  })
+
   test('Should re-render with a field error when a non-pots measurement is invalid', async () => {
     const { statusCode, result } = await server.inject({
       method: 'POST',
@@ -590,6 +656,6 @@ describe('#gearSelectionSubmitController', () => {
     })
 
     expect(statusCode).toBe(303)
-    expect(headers.location).toBe('/statistical-area')
+    expect(headers.location).toBe('/statistical-area?gearId=dredge')
   })
 })

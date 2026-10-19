@@ -110,6 +110,58 @@ npm run dev
 On `/species-selection`, each optional weight's add/remove link appears below
 its corresponding input when expanded.
 
+### Catch answers per gear
+
+After gear selection, the web journey repeats statistical area, species and live
+weights for each selected gear in selection order. Saving species proceeds
+directly to the next gear's statistical area. After the final gear, the
+catch-not-landed question is asked once for the trip, followed by one
+species-not-landed page when the answer is Yes. That page offers the distinct
+species caught across all selected gears and records one trip-level weight per
+species. Trip dates, vessel and ports also remain shared.
+Gear-scoped screens carry a validated `gearId` query parameter; forms post to the
+same URL so Back, refresh, and separate tabs retain the intended gear.
+
+The `journey` session stores area, caught-species and weight answers in
+`catchDetailsByGearId`, keyed by the reference-data gear ID. `catchNotLanded` and
+`speciesNotLanded` remain at the trip level; older per-gear unlanded answers are
+not used as trip-level answers. Gear measurements remain in `gearMeasurementDetails`
+(with the existing dedicated `potsDetails` fields). Vessel species favourites
+remain shared; removing a vessel species clears its selections and weights from
+every gear. Removing or deselecting a gear removes its catch answers from the trip.
+
+Check answers shows shared trip details once, followed by a separate group named
+after each gear containing its measurements, statistical area and caught species.
+On tablet and desktop, the preview uses standard GOV.UK summary-list rows with
+bold labels, separate value and Change columns, and horizontal row dividers.
+On mobile, it uses stacked label/value rows with right-aligned Change links, without
+additional gear-details, area or species subsection headings. Trip-level
+species-not-landed answers appear once after all gear groups, not duplicated
+under each gear.
+Change links target the relevant gear and return to the review; dependent answers
+and newly added gears must be completed before confirmation. The check-answers
+content matches the mobile review: vessel and ports, gear measurements with
+concise labels, area, species and all recorded weights, followed by
+species and weight kept onboard when applicable, and Save and continue. Trip
+dates and declaration text are not
+displayed on this page; captured answers remain stored. Record details and
+amendment review retain their existing content and declaration. Existing
+positive-weight validation is unchanged.
+Every selected gear shows all its recorded measurements, including length/width.
+Dimension labels omit explanatory examples: "Gear dimension by number" and
+"Gear dimension by length or width of the gear". Optional below-minimum and
+discarded weights appear only when recorded, separately for each gear.
+
+Legacy single-gear session answers can be assigned to that one gear. Legacy
+multi-gear trip-level answers are not copied or arbitrarily assigned: the area
+page explains that the fisher must complete each gear's catch answers. Read-only
+record details support the grouped structure while retaining legacy record display.
+
+This remains a session-backed walkthrough: final submission redirects to
+confirmation, and the draft screen does not implement durable record storage.
+The per-gear schema will need a corresponding catch-record API/storage contract
+when that integration is implemented.
+
 ### Reference Data Service
 
 Species, vessel, gear, port and map-land reads use the Reference Data Service from the frontend
