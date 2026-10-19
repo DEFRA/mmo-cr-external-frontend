@@ -35,12 +35,12 @@ async function viewContext(request, recordId, overrides = {}) {
       ? await getGearCatalogue()
       : undefined
   const vesselName = journeyState.selectedVesselName || details.vesselName
+  let summaryJourneyState = journeyState
+  if (!journeyState.selectedGearIds?.length && details.selectedGearIds) {
+    summaryJourneyState = details
+  }
   const summary = buildCheckAnswersViewModel(request, {
-    journeyState: journeyState.selectedGearIds?.length
-      ? journeyState
-      : details.selectedGearIds
-        ? details
-        : journeyState,
+    journeyState: summaryJourneyState,
     buildChangeHref: () => AMENDMENT_CHANGE_HREF,
     hideVesselChange: true,
     speciesCatalogue: catalogue,

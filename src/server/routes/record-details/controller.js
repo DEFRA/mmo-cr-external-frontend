@@ -47,7 +47,9 @@ export const recordDetailsController = {
         fallbackDetails: details,
         buildChangeHref: () => null
       })
-    } else if (details.selectedGearIds) {
+    }
+
+    if (record.status !== 'amended' && details.selectedGearIds) {
       summary = buildCheckAnswersViewModel(request, {
         journeyState: details,
         speciesCatalogue: await getSpeciesCatalogue(request),
