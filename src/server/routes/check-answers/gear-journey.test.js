@@ -1,5 +1,6 @@
 import { load } from 'cheerio'
 import { createServer } from '#/server/server.js'
+import { seedFavouriteGears } from '#/test-helpers/seed-favourite-gears.js'
 import {
   SPECIES_IDS,
   mockSpeciesReferenceData,
@@ -384,6 +385,7 @@ describe('per-gear catch journey', () => {
   })
 
   test('removes a favourite gear and its trip answers without affecting another gear', async () => {
+    cookie = await seedFavouriteGears(server, ['pots', 'dredge'], cookie)
     await start()
     await catchFor('pots', '38E95', '15')
     await catchFor('dredge', '38E96', '30')

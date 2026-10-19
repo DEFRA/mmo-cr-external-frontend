@@ -6,6 +6,7 @@ import {
   mockGearsReferenceData,
   restoreGearsReferenceDataMock
 } from '#/test-helpers/mock-gears-reference-data.js'
+import { seedFavouriteGears } from '#/test-helpers/seed-favourite-gears.js'
 
 beforeEach(() => mockGearsReferenceData())
 afterEach(() => restoreGearsReferenceDataMock())
@@ -47,9 +48,11 @@ describe('#removeGearController', () => {
   })
 
   test('Should render the "Select all that apply" hint below the heading', async () => {
+    const favouriteCookie = await seedFavouriteGears(server)
     const { result } = await server.inject({
       method: 'GET',
-      url: '/remove-gear'
+      url: '/remove-gear',
+      headers: { cookie: favouriteCookie }
     })
     const $ = load(result)
 
@@ -69,9 +72,11 @@ describe('#removeGearController', () => {
   })
 
   test('Should render the default favourite gear as unchecked checkboxes', async () => {
+    const favouriteCookie = await seedFavouriteGears(server)
     const { result } = await server.inject({
       method: 'GET',
-      url: '/remove-gear'
+      url: '/remove-gear',
+      headers: { cookie: favouriteCookie }
     })
     const $ = load(result)
     const checkboxes = $('input[type="checkbox"][name="gearIds"]')
@@ -81,9 +86,11 @@ describe('#removeGearController', () => {
   })
 
   test('Should show the empty state and return to account when no gear remains', async () => {
+    const favouriteCookie = await seedFavouriteGears(server)
     const removeResponse = await server.inject({
       method: 'POST',
       url: '/remove-gear',
+      headers: { cookie: favouriteCookie },
       payload: {
         gearIds: [
           'beam-trawl',
@@ -98,7 +105,8 @@ describe('#removeGearController', () => {
         ]
       }
     })
-    const cookie = removeResponse.headers['set-cookie'][0].split(';')[0]
+    const cookie =
+      removeResponse.headers['set-cookie']?.[0].split(';')[0] || favouriteCookie
     const { result } = await server.inject({
       method: 'GET',
       url: '/remove-gear?return=/account',
@@ -135,9 +143,11 @@ describe('#removeGearSubmitController', () => {
   })
 
   test('Should re-render with an error summary when nothing is selected', async () => {
+    const favouriteCookie = await seedFavouriteGears(server)
     const { statusCode, result } = await server.inject({
       method: 'POST',
       url: '/remove-gear',
+      headers: { cookie: favouriteCookie },
       payload: {}
     })
     const $ = load(result)
@@ -149,16 +159,19 @@ describe('#removeGearSubmitController', () => {
   })
 
   test('Should remove the selected gear from favourites and redirect to gear selection', async () => {
+    const favouriteCookie = await seedFavouriteGears(server)
     const setResponse = await server.inject({
       method: 'POST',
       url: '/remove-gear',
+      headers: { cookie: favouriteCookie },
       payload: { gearIds: 'traps' }
     })
 
     expect(setResponse.statusCode).toBe(303)
     expect(setResponse.headers.location).toBe('/gear-selection')
 
-    const cookie = setResponse.headers['set-cookie'][0].split(';')[0]
+    const cookie =
+      setResponse.headers['set-cookie']?.[0].split(';')[0] || favouriteCookie
     const { result } = await server.inject({
       method: 'GET',
       url: '/gear-selection',
@@ -170,12 +183,15 @@ describe('#removeGearSubmitController', () => {
   })
 
   test('Should clear pots details when pots is removed', async () => {
+    const favouriteCookie = await seedFavouriteGears(server)
     const withPots = await server.inject({
       method: 'POST',
       url: '/gear-selection',
+      headers: { cookie: favouriteCookie },
       payload: { gearIds: 'pots', potsHauled: '10', potsInWater: '5' }
     })
-    const setupCookie = withPots.headers['set-cookie'][0].split(';')[0]
+    const setupCookie =
+      withPots.headers['set-cookie']?.[0].split(';')[0] || favouriteCookie
 
     const removeResponse = await server.inject({
       method: 'POST',
@@ -183,7 +199,8 @@ describe('#removeGearSubmitController', () => {
       payload: { gearIds: 'pots' },
       headers: { cookie: setupCookie }
     })
-    const cookie = removeResponse.headers['set-cookie'][0].split(';')[0]
+    const cookie =
+      removeResponse.headers['set-cookie']?.[0].split(';')[0] || favouriteCookie
 
     const { result } = await server.inject({
       method: 'GET',

@@ -49,7 +49,7 @@ describe('#gear favourite reference migration', () => {
     expect(getFavouriteGearIds(state, catalogue)).toEqual([])
   })
 
-  test('Should use only legacy defaults that match active API names uniquely', () => {
-    expect(getFavouriteGearIds({}, catalogue)).toEqual(['api-guid-2'])
+  test('Should return no favourites when none have been saved', () => {
+    expect(getFavouriteGearIds({}, catalogue)).toEqual([])
   })
 })

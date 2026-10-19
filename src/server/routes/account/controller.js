@@ -3,7 +3,9 @@ import { isSignedIn } from '#/server/common/helpers/auth/session.js'
 import { getJourneyState } from '#/server/common/helpers/journey/navigation.js'
 import { getAccountPortsUsed } from '#/server/common/helpers/account/account-ports.js'
 import {
+  formatGearMeasurements,
   getFavouriteGearIds,
+  getFavouriteGearMeasurements,
   getFavouriteGearOptions,
   getGearCatalogue
 } from '#/server/common/helpers/gear/favourite-gear.js'
@@ -131,15 +133,27 @@ function portsUsedRow(portsUsed) {
   }
 }
 
-function gearOnboardRow(favouriteGearOptions) {
-  const gearOnboardLines = favouriteGearOptions.flatMap((option) =>
-    option.hint
-      ? [
-          option.label,
-          `<span class="govuk-hint govuk-!-margin-bottom-0">${option.hint}</span>`
-        ]
-      : [option.label]
+function hintLine(text) {
+  return `<span class="govuk-hint govuk-!-margin-bottom-0">${text}</span>`
+}
+
+function savedMeasurementLines(option, measurementValues) {
+  return formatGearMeasurements(option, measurementValues).map((line) =>
+    hintLine(escapeHtml(line))
   )
+}
+
+function gearOnboardRow(favouriteGearOptions, favouriteGearMeasurements = {}) {
+  const gearOnboardLines = favouriteGearOptions.flatMap((option) => {
+    const measurementLines = savedMeasurementLines(
+      option,
+      favouriteGearMeasurements[option.id]
+    )
+    if (measurementLines.length) {
+      return [option.label, ...measurementLines]
+    }
+    return option.hint ? [option.label, hintLine(option.hint)] : [option.label]
+  })
 
   return {
     key: { text: 'Gear onboard' },
@@ -188,7 +202,8 @@ function buildVesselDetailsSection(
   speciesCaught,
   skipper,
   portsUsed,
-  favouriteGearOptions
+  favouriteGearOptions,
+  favouriteGearMeasurements
 ) {
   return {
     heading: 'Vessel details',
@@ -196,7 +211,7 @@ function buildVesselDetailsSection(
     rows: [
       skippersRow(account, skipper),
       portsUsedRow(portsUsed),
-      gearOnboardRow(favouriteGearOptions),
+      gearOnboardRow(favouriteGearOptions, favouriteGearMeasurements),
       speciesCaughtRow(speciesCaught)
     ]
   }
@@ -237,7 +252,8 @@ export const accountController = {
           speciesCaught,
           skipper,
           portsUsed,
-          favouriteGearOptions
+          favouriteGearOptions,
+          getFavouriteGearMeasurements(journeyState)
         )
       ]
     })
