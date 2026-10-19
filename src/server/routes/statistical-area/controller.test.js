@@ -8,6 +8,8 @@ import {
 } from '#/test-helpers/mock-species-reference-data.js'
 import { mockPortsReferenceData } from '#/test-helpers/mock-ports-reference-data.js'
 import { statisticalAreaController } from './controller.js'
+import { statisticalAreaOtherController } from '../statistical-area-other/controller.js'
+import { getData } from '#/server/common/data/get-data.js'
 
 beforeEach(() => {
   mockSpeciesReferenceData()
@@ -99,7 +101,7 @@ describe('#statisticalAreaController', () => {
 
     expect(result).toEqual(
       expect.stringContaining(
-        'Where was most of your catch caught using pots? |'
+        'Select the statistical sub area where the majority of your catch was caught |'
       )
     )
     expect(statusCode).toBe(statusCodes.ok)
@@ -116,9 +118,57 @@ describe('#statisticalAreaController', () => {
     const $ = load(result)
 
     expect($('h1').text()).toContain(
-      'Where was most of your catch caught using pots?'
+      'Select the statistical sub area where the majority of your catch was caught'
     )
     expect($('.govuk-caption-l').first().text().trim()).toBe('New catch record')
+  })
+
+  test.each(getData('gearCatalogue'))(
+    'Should render matching content on both area pages for $label',
+    async ({ id, label }) => {
+      const state = {
+        selectedGearIds: [id],
+        departurePort: 'hastings',
+        portCoordinatesByCode: { hastings: [0.58, 50.85] }
+      }
+      const request = { yar: { get: () => state } }
+      const h = { view: vi.fn() }
+
+      await statisticalAreaController.handler(request, h)
+      await statisticalAreaOtherController.handler(request, h)
+
+      const mapContext = h.view.mock.calls[0][1]
+      const otherContext = h.view.mock.calls[1][1]
+      expect(mapContext.heading).toBe(
+        `Select the statistical sub area where the majority of your catch was caught using ${label.toLowerCase()}`
+      )
+      expect(otherContext.heading).toBe(mapContext.heading)
+      expect(otherContext.pageTitle).toBe(mapContext.pageTitle)
+      expect(otherContext.bodyText).toEqual(mapContext.bodyText)
+    }
+  )
+
+  test('Should use saved reference-data names for multiple selected gears on both pages', async () => {
+    const state = {
+      selectedGearIds: ['api-pots', 'api-seine'],
+      selectedGearNamesById: {
+        'api-pots': 'Pots',
+        'api-seine': 'Seine nets'
+      },
+      departurePort: 'hastings',
+      portCoordinatesByCode: { hastings: [0.58, 50.85] }
+    }
+    const request = { yar: { get: () => state } }
+    const h = { view: vi.fn() }
+
+    await statisticalAreaController.handler(request, h)
+    await statisticalAreaOtherController.handler(request, h)
+
+    for (const [, context] of h.view.mock.calls) {
+      expect(context.heading).toBe(
+        'Select the statistical sub area where the majority of your catch was caught using pots and seine nets'
+      )
+    }
   })
 
   test('Should render the offline map and the Other action', async () => {

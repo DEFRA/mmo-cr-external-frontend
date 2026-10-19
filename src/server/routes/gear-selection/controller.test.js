@@ -260,6 +260,37 @@ describe('#gearSelectionSubmitController', () => {
     expect(headers.location).toBe('/statistical-area')
   })
 
+  test.each([
+    [{ gearIds: 'dredge' }, 'dredge'],
+    [{ gearIds: 'seine-nets' }, 'seine nets (not specified)'],
+    [{ gearIds: 'pots', potsHauled: '10', potsInWater: '2' }, 'pots']
+  ])(
+    'Should carry selected gear content into the Other page for %s',
+    async (payload, gearName) => {
+      const response = await server.inject({
+        method: 'POST',
+        url: '/gear-selection',
+        payload
+      })
+      expect(response.statusCode).toBe(statusCodes.seeOther)
+      const cookie = response.headers['set-cookie'][0].split(';')[0]
+      const expectedHeading = `Select the statistical sub area where the majority of your catch was caught using ${gearName}`
+
+      for (const method of ['GET', 'POST']) {
+        const { result, statusCode } = await server.inject({
+          method,
+          url: '/statistical-area-other',
+          headers: { cookie },
+          ...(method === 'POST' && { payload: {} })
+        })
+        expect(statusCode).toBe(
+          method === 'GET' ? statusCodes.ok : statusCodes.badRequest
+        )
+        expect(load(result)('h1').text().trim()).toBe(expectedHeading)
+      }
+    }
+  )
+
   test('Should redirect back to check your answers when a return query is supplied', async () => {
     const { statusCode, headers } = await server.inject({
       method: 'POST',

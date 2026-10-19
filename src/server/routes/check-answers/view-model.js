@@ -4,7 +4,7 @@ import { formatDate } from '#/config/nunjucks/filters/format-date.js'
 import { offlineMapSubrectangleCodes } from '#/server/common/data/offline-map-subrectangle-codes.js'
 
 const RETURN_TO_CHECK_ANSWERS = '?return=/check-answers'
-const MESH_HINT_PATTERN = /mm mesh/i
+const MESH_HINT_PATTERN = /(\d+(?:\.\d+)?)\s*mm mesh/i
 
 function joinWithAnd(items) {
   if (items.length < 2) {
@@ -31,6 +31,13 @@ function resolveStatisticalSubArea(journeyState, fallback) {
         )?.code ?? fallback.statisticalSubArea)
   }
   if (journeyState.statAreaBranch === 'other') {
+    if (
+      offlineMapSubrectangleCodes.has(
+        journeyState.selectedAlternativeAreaOption
+      )
+    ) {
+      return journeyState.selectedAlternativeAreaOption
+    }
     return journeyState.selectedAlternativeAreaOption === 'other'
       ? (journeyState.alternativeStatisticalArea ?? fallback.statisticalSubArea)
       : (getData('statisticalAreas').find(
@@ -76,7 +83,10 @@ function tripsDetailsSection(
     rows: [
       {
         key: 'Vessel',
-        value: journeyState.selectedVesselName || getData('selectVessel').name,
+        value:
+          journeyState.selectedVesselName ||
+          fallback.vesselName ||
+          getData('selectVessel').name,
         changeHref: hideVesselChange ? null : buildChangeHref('/select-vessel')
       },
       {
@@ -136,12 +146,26 @@ function gearUsedSection(
       )
     : fallback.gear
 
-  const meshHints = hasSelection
+  const meshSizes = hasSelection
     ? selectedGearIds
-        .map((id) => gearCatalogue.find((option) => option.id === id)?.hint)
-        .filter((hint) => hint && MESH_HINT_PATTERN.test(hint))
+        .map((id) => {
+          const measurement =
+            journeyState.gearMeasurementDetails?.[id]?.meshSize ??
+            journeyState.favouriteGearMeasurements?.[id]?.meshSize
+          if (
+            measurement !== undefined &&
+            measurement !== null &&
+            measurement !== ''
+          ) {
+            return `${measurement} mm`
+          }
+          const hint = gearCatalogue.find((option) => option.id === id)?.hint
+          const match = hint?.match(MESH_HINT_PATTERN)
+          return match ? `${match[1]} mm` : null
+        })
+        .filter(Boolean)
     : []
-  const meshSize = resolveMeshSize(meshHints, potsSelected, meshSizeDefault)
+  const meshSize = resolveMeshSize(meshSizes, potsSelected, meshSizeDefault)
 
   const rows = [
     { key: 'Gear type', value: gearLabel, changeHref },
@@ -165,9 +189,9 @@ function gearUsedSection(
   return { heading: 'Gear used', rows }
 }
 
-function resolveMeshSize(meshHints, potsSelected, meshSizeDefault) {
-  if (meshHints.length > 0) {
-    return meshHints.join(', ')
+function resolveMeshSize(meshSizes, potsSelected, meshSizeDefault) {
+  if (meshSizes.length > 0) {
+    return meshSizes.join(', ')
   }
   return potsSelected ? meshSizeDefault : null
 }
@@ -338,7 +362,7 @@ export function buildCheckAnswersViewModel(request, options = {}) {
   const journeyState = getJourneyState(request)
   const speciesCatalogue = options.speciesCatalogue || []
   const gearCatalogue = options.gearCatalogue || getData('gearSelection')
-  const fallback = getData('catchRecordDetails')
+  const fallback = options.fallbackDetails || getData('catchRecordDetails')
   const { potsMeshSize } = getData('checkAnswersDefaults')
 
   const sections = [

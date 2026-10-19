@@ -313,6 +313,12 @@ export const gearSelectionSubmitController = {
 
     setJourneyState(request, {
       selectedGearIds: gearIds,
+      selectedGearNamesById: Object.fromEntries(
+        gearIds.map((id) => {
+          const gear = catalogue.find((option) => option.id === id)
+          return [id, gear.name || gear.label]
+        })
+      ),
       potsDetails: potsSelected ? potsValues : undefined,
       gearMeasurementDetails: measurementDetailsByGearId,
       favouriteGearIds: getFavouriteGearIds(currentState, catalogue)

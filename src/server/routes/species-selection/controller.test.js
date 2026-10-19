@@ -2,6 +2,7 @@ import { load } from 'cheerio'
 
 import { createServer } from '#/server/server.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
+import { speciesSelectionController } from './controller.js'
 import {
   mockSpeciesReferenceData,
   restoreSpeciesReferenceDataMock,
@@ -30,10 +31,36 @@ describe('#speciesSelectionController', () => {
     })
 
     expect(result).toEqual(
-      expect.stringContaining('What species did you catch using pots? |')
+      expect.stringContaining('What species did you catch? |')
     )
     expect(statusCode).toBe(statusCodes.ok)
   })
+
+  test.each([
+    ['pots', 'pots'],
+    ['dredge', 'dredge'],
+    ['api-seine', 'seine nets']
+  ])(
+    'Should use the selected gear in the question for %s',
+    async (id, name) => {
+      const state = {
+        selectedGearIds: [id],
+        selectedGearNamesById: { [id]: name }
+      }
+      const request = { yar: { get: () => state, set: vi.fn() } }
+      const h = { view: vi.fn() }
+
+      await speciesSelectionController.handler(request, h)
+
+      expect(h.view).toHaveBeenCalledWith(
+        'species-selection/index',
+        expect.objectContaining({
+          heading: `What species did you catch using ${name}?`,
+          pageTitle: `What species did you catch using ${name}?`
+        })
+      )
+    }
+  )
 
   test('Should default the Back link to statistical area when no journey state exists', async () => {
     const { result } = await server.inject({

@@ -29,27 +29,36 @@
           Coordinates: <span data-statistical-area-coordinates-value>{{ selectedAreaCoordinatesText }}</span>
         </p>
 
-        <div{% if selectedArea != 'other' %} hidden{% endif %} data-statistical-area-search-panel>
-          <div class="app-statistical-area-search__control govuk-input--width-30">
+        <div class="govuk-!-margin-bottom-9"{% if selectedArea != 'other' %} hidden{% endif %} data-statistical-area-search-panel>
+          <div class="app-statistical-area-search__control govuk-input--width-30 govuk-!-margin-bottom-0">
             {{ govukInput({
               id: "alternativeStatisticalArea",
               name: "alternativeStatisticalArea",
-              label: { text: "Statistical sub area - For example, 46E45" },
-              classes: "app-statistical-area-search__input",
+              label: {
+                text: "Statistical sub area - For example, 46E45",
+                classes: "govuk-!-margin-bottom-4"
+              },
+              classes: "app-statistical-area-search__input app-autocomplete__input",
+              inputWrapper: { classes: "app-autocomplete" },
+              formGroup: {
+                afterInput: {
+                  html: '<span class="app-autocomplete__arrow" aria-hidden="true"></span>'
+                }
+              },
               value: alternativeStatisticalArea,
               errorMessage: { text: fieldErrors.alternativeStatisticalArea } if fieldErrors.alternativeStatisticalArea else false,
               attributes: {
                 autocomplete: "off",
-                 placeholder: "Type to search (minimum 2 characters)",
+                placeholder: "Start typing to display the list",
                 "aria-autocomplete": "list",
                 "aria-controls": "statistical-area-results",
-                 "aria-expanded": "false",
+                "aria-expanded": "false",
                 "data-statistical-area-search": ""
               }
             }) }}
           </div>
 
-        <ul id="statistical-area-results" class="govuk-list app-statistical-area-search__results govuk-input--width-30" role="listbox" hidden data-statistical-area-results></ul>
+          <ul id="statistical-area-results" class="govuk-list app-statistical-area-search__results govuk-input--width-30" role="listbox" hidden data-statistical-area-results></ul>
         </div>
 
         {{ govukButton({ text: "Save and continue" }) }}

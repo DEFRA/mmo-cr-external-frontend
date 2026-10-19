@@ -6,9 +6,20 @@ import {
   mockSpeciesReferenceData,
   restoreSpeciesReferenceDataMock
 } from '#/test-helpers/mock-species-reference-data.js'
+import {
+  mockVesselsReferenceData,
+  restoreVesselsReferenceDataMock,
+  VESSEL_IDS
+} from '#/test-helpers/mock-vessels-reference-data.js'
 
-beforeEach(() => mockSpeciesReferenceData())
-afterEach(() => restoreSpeciesReferenceDataMock())
+beforeEach(() => {
+  mockSpeciesReferenceData()
+  mockVesselsReferenceData()
+})
+afterEach(() => {
+  restoreVesselsReferenceDataMock()
+  restoreSpeciesReferenceDataMock()
+})
 
 describe('#editCatchRecordReviewController', () => {
   let server
@@ -22,11 +33,12 @@ describe('#editCatchRecordReviewController', () => {
     await server.stop({ timeout: 0 })
   })
 
-  async function cookieWithReasonSubmitted(recordId) {
+  async function cookieWithReasonSubmitted(recordId, cookie) {
     const response = await server.inject({
       method: 'POST',
       url: `/records/${recordId}/edit-reason`,
-      payload: { editReason: 'Corrected the recorded weight' }
+      payload: { editReason: 'Corrected the recorded weight' },
+      ...(cookie && { headers: { cookie } })
     })
     return response.headers['set-cookie'][0].split(';')[0]
   }
@@ -79,7 +91,18 @@ describe('#editCatchRecordReviewController', () => {
   })
 
   test('Should render the Figma edit-review heading for a late record', async () => {
-    const cookie = await cookieWithReasonSubmitted('late-1')
+    const selection = await server.inject({
+      method: 'POST',
+      url: '/select-vessel',
+      payload: { vesselId: VESSEL_IDS.achilles }
+    })
+    expect(selection.statusCode).toBe(statusCodes.seeOther)
+    const selectedVesselCookie =
+      selection.headers['set-cookie'][0].split(';')[0]
+    const cookie = await cookieWithReasonSubmitted(
+      'late-1',
+      selectedVesselCookie
+    )
 
     const { result, statusCode } = await server.inject({
       method: 'GET',
@@ -94,6 +117,56 @@ describe('#editCatchRecordReviewController', () => {
     )
     expect($('h1').text().trim()).toBe('Edit the record for ACHILLES')
   })
+
+  test.each([
+    ['submitted-1', 'Catch record for'],
+    ['amended-1', 'Catch record for'],
+    ['late-1', 'Edit the record for']
+  ])(
+    'Should follow the selected vessel throughout review and validation for %s',
+    async (recordId, headingPrefix) => {
+      let cookie
+      for (const [vesselId, vesselName] of [
+        [VESSEL_IDS.achilles, 'ACHILLES'],
+        [VESSEL_IDS.seaSpray, 'SEA SPRAY']
+      ]) {
+        const selection = await server.inject({
+          method: 'POST',
+          url: '/select-vessel',
+          payload: { vesselId },
+          ...(cookie && { headers: { cookie } })
+        })
+        expect(selection.statusCode).toBe(statusCodes.seeOther)
+        cookie = selection.headers['set-cookie'][0].split(';')[0]
+        cookie = await cookieWithReasonSubmitted(recordId, cookie)
+
+        for (const method of ['GET', 'POST']) {
+          const response = await server.inject({
+            method,
+            url: `/records/${recordId}/edit-review`,
+            headers: { cookie },
+            ...(method === 'POST' && { payload: {} })
+          })
+          const $ = load(response.result)
+          const vesselRow = $('.govuk-summary-list__row').filter(
+            (_, element) =>
+              $(element).find('.govuk-summary-list__key').text().trim() ===
+              'Vessel'
+          )
+
+          expect(response.statusCode).toBe(
+            method === 'GET' ? statusCodes.ok : statusCodes.badRequest
+          )
+          expect($('h1').text().trim()).toBe(`${headingPrefix} ${vesselName}`)
+          expect($('title').text()).toContain(`${headingPrefix} ${vesselName}`)
+          expect(
+            vesselRow.find('.govuk-summary-list__value').text().trim()
+          ).toBe(vesselName)
+          cookie = response.headers['set-cookie']?.[0]?.split(';')[0] || cookie
+        }
+      }
+    }
+  )
 
   test('Should reuse the same summary sections and data as Check Your Answers', async () => {
     const cookie = await cookieWithReasonSubmitted('submitted-1')

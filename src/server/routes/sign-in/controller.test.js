@@ -25,6 +25,19 @@ describe('#signInController', () => {
     expect(statusCode).toBe(statusCodes.ok)
   })
 
+  test('Should render a Back link to the guidance page', async () => {
+    const { result } = await server.inject({
+      method: 'GET',
+      url: '/sign-in'
+    })
+    const $ = load(result)
+    const $backLink = $('[data-testid="app-page-navigation-back-link"]')
+
+    expect($backLink).toHaveLength(1)
+    expect($backLink.attr('href')).toBe('/guidance')
+    expect($backLink.text().trim()).toBe('Back')
+  })
+
   test('Should link the unsupported actions to the Empty Page with a return path', async () => {
     const { result } = await server.inject({
       method: 'GET',
@@ -32,7 +45,7 @@ describe('#signInController', () => {
     })
     const $ = load(result)
 
-    expect($('a[href="/not-implemented?return=/sign-in"]')).toHaveLength(2)
+    expect($('a[href="/not-implemented?return=/sign-in"]')).toHaveLength(1)
   })
 
   describe('Sign in form', () => {
@@ -84,6 +97,19 @@ describe('#signInController', () => {
           (_i, el) => $(el).text().trim() === 'Having trouble signing in?'
         )
       ).toHaveLength(1)
+    })
+
+    test('Should show the account registration guidance expanded', () => {
+      const $details = $('details.govuk-details')
+
+      expect($details.attr('open')).toBeDefined()
+      expect($details.find('summary').text().trim()).toBe('Create an account')
+      expect($details.text()).toContain(
+        'You will receive an email invitation to register when your vessel is added to the system.'
+      )
+      expect($details.text()).toContain(
+        'Ask your vessel owner to add you. They can do this from their account.'
+      )
     })
   })
 })

@@ -7,10 +7,8 @@ const SIGN_OUT_HTML =
   '<button type="submit" class="govuk-service-navigation__link app-sign-out-form__button">Sign out</button>' +
   '</form>'
 
-// No signed-out header design was supplied, so no navigation items are shown
-// when signed out rather than inventing a signed-out menu state.
-export function buildNavigation(request) {
-  if (!request || !isSignedIn(request)) {
+export function buildNavigation(request, { showWhenSignedOut = false } = {}) {
+  if (!request || (!showWhenSignedOut && !isSignedIn(request))) {
     return []
   }
 

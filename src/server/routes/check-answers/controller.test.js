@@ -62,6 +62,47 @@ describe('#checkAnswersController', () => {
     ])
   })
 
+  test('Should render the Gear used design with trip values and a Change link for each row', async () => {
+    const selection = await server.inject({
+      method: 'POST',
+      url: '/gear-selection',
+      payload: { gearIds: 'pots', potsHauled: '7', potsInWater: '5' }
+    })
+    const cookie = selection.headers['set-cookie'][0].split(';')[0]
+    const { result, statusCode } = await server.inject({
+      method: 'GET',
+      url: '/check-answers',
+      headers: { cookie }
+    })
+    const $ = load(result)
+    const section = $('h2')
+      .filter((_, element) => $(element).text().trim() === 'Gear used')
+      .next('dl')
+
+    expect(statusCode).toBe(statusCodes.ok)
+    expect(section.hasClass('govuk-summary-list')).toBe(true)
+    expect(
+      section
+        .find('dt')
+        .map((_, element) => $(element).text().trim())
+        .get()
+    ).toEqual([
+      'Gear type',
+      'Total pots or traps hauled',
+      'Total pots or traps left in water',
+      'Mesh size'
+    ])
+    expect(
+      section
+        .find('.govuk-summary-list__value')
+        .map((_, element) => $(element).text().trim())
+        .get()
+    ).toEqual(['Pots', '7', '5', '50 mm'])
+    expect(
+      section.find('a[href="/gear-selection?return=/check-answers"]')
+    ).toHaveLength(4)
+  })
+
   test('Should render the declaration warning, bullets, checkbox and button', async () => {
     const { result } = await server.inject({
       method: 'GET',

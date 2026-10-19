@@ -24,7 +24,7 @@ describe('#statisticalAreaOtherController', () => {
 
     expect(result).toEqual(
       expect.stringContaining(
-        'Select the statistical sub area where the majority of your catch was caught using seine nets (mesh size 100mm)? |'
+        'Select the statistical sub area where the majority of your catch was caught |'
       )
     )
     expect(statusCode).toBe(statusCodes.ok)
@@ -41,8 +41,15 @@ describe('#statisticalAreaOtherController', () => {
       'Statistical sub area - For example, 46E45'
     )
     expect($('#alternativeStatisticalArea').attr('placeholder')).toBe(
-      'Type to search (minimum 2 characters)'
+      'Start typing to display the list'
     )
+    expect(
+      $('#alternativeStatisticalArea').hasClass('app-autocomplete__input')
+    ).toBe(true)
+    expect($('.app-autocomplete__arrow').attr('aria-hidden')).toBe('true')
+    expect(
+      $('[data-statistical-area-search-panel]').attr('hidden')
+    ).toBeDefined()
     expect($('#statistical-area-results').attr('role')).toBe('listbox')
     expect($('input[type="radio"]')).toHaveLength(10)
     expect($('input[type="radio"]:checked')).toHaveLength(0)
@@ -70,6 +77,10 @@ describe('#statisticalAreaOtherController', () => {
     const $ = load(result)
 
     expect($('#alternativeStatisticalArea').attr('value')).toBe('30F04')
+    expect(
+      $('[data-statistical-area-search-panel]').attr('hidden')
+    ).toBeUndefined()
+    expect($('input[value="other"]').prop('checked')).toBe(true)
   })
 
   test('Should render coordinates for a previously-saved manual entry without JavaScript', async () => {

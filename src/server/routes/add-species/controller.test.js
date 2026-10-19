@@ -7,9 +7,20 @@ import {
   restoreSpeciesReferenceDataMock,
   SPECIES_IDS
 } from '#/test-helpers/mock-species-reference-data.js'
+import {
+  mockVesselsReferenceData,
+  restoreVesselsReferenceDataMock,
+  VESSEL_IDS
+} from '#/test-helpers/mock-vessels-reference-data.js'
 
-beforeEach(() => mockSpeciesReferenceData())
-afterEach(() => restoreSpeciesReferenceDataMock())
+beforeEach(() => {
+  mockSpeciesReferenceData()
+  mockVesselsReferenceData()
+})
+afterEach(() => {
+  restoreVesselsReferenceDataMock()
+  restoreSpeciesReferenceDataMock()
+})
 
 describe('#addSpeciesController', () => {
   let server
@@ -30,10 +41,36 @@ describe('#addSpeciesController', () => {
     })
 
     expect(result).toEqual(
-      expect.stringContaining('Add species to your vessel OLGA |')
+      expect.stringContaining('Add species to your vessel |')
     )
     expect(statusCode).toBe(statusCodes.ok)
   })
+
+  test.each([
+    [VESSEL_IDS.achilles, 'ACHILLES'],
+    [VESSEL_IDS.seaSpray, 'SEA SPRAY']
+  ])(
+    'Should show the selected vessel %s on its own heading line',
+    async (vesselId, vesselName) => {
+      const selection = await server.inject({
+        method: 'POST',
+        url: '/select-vessel',
+        payload: { vesselId }
+      })
+      const cookie = selection.headers['set-cookie'][0].split(';')[0]
+      const { result } = await server.inject({
+        method: 'GET',
+        url: '/add-species?return=/species-selection',
+        headers: { cookie }
+      })
+      const $ = load(result)
+
+      expect($('h1 [class~="govuk-!-display-block"]').text()).toBe(vesselName)
+      expect($('title').text()).toContain(
+        `Add species to your vessel ${vesselName}`
+      )
+    }
+  )
 
   test('Should render the Back link to the species selection page', async () => {
     const { result } = await server.inject({
@@ -69,20 +106,20 @@ describe('#addSpeciesController', () => {
     expect($('.govuk-caption-l').text().trim()).toBe('New catch record')
   })
 
-  test('Should render a search input with a datalist that excludes already-added species', async () => {
+  test('Should render a progressively enhanced species list that excludes already-added species', async () => {
     const { result } = await server.inject({
       method: 'GET',
       url: '/add-species'
     })
     const $ = load(result)
 
-    expect($('#species').attr('placeholder')).toBe(
+    expect($('#species option[value=""]').text()).toBe(
       'Start typing to display the list'
     )
-    expect($('#species-options option[value="Herring (HER)"]')).toHaveLength(1)
-    expect(
-      $('#species-options option[value="Atlantic cod (COD)"]')
-    ).toHaveLength(0)
+    expect($('select[data-species-search][name="species"]')).toHaveLength(1)
+    expect($('datalist')).toHaveLength(0)
+    expect($('#species option[value="Herring (HER)"]')).toHaveLength(1)
+    expect($('#species option[value="Atlantic cod (COD)"]')).toHaveLength(0)
   })
 })
 

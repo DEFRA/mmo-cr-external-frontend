@@ -28,16 +28,18 @@ function findRecord(recordId) {
 async function viewContext(request, recordId, overrides = {}) {
   const record = findRecord(recordId)
   const details = record.details || getData('catchRecordDetails')
-  const { catalogue } = await getSpeciesPageData(request)
+  const { catalogue, journeyState } = await getSpeciesPageData(request)
+  const vesselName = journeyState.selectedVesselName || details.vesselName
   const { sections } = buildCheckAnswersViewModel(request, {
     buildChangeHref: () => AMENDMENT_CHANGE_HREF,
     hideVesselChange: true,
-    speciesCatalogue: catalogue
+    speciesCatalogue: catalogue,
+    fallbackDetails: details
   })
   const heading =
     record.recordId === 'late-1'
-      ? `Edit the record for ${details.vesselName}`
-      : `Catch record for ${details.vesselName}`
+      ? `Edit the record for ${vesselName}`
+      : `Catch record for ${vesselName}`
 
   return {
     pageTitle: heading,

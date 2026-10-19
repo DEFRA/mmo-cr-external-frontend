@@ -2,7 +2,6 @@ import { load } from 'cheerio'
 
 import { createServer } from '#/server/server.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
-import { getData } from '#/server/common/data/get-data.js'
 import {
   mockVesselsReferenceData,
   restoreVesselsReferenceDataMock,
@@ -30,7 +29,9 @@ describe('#selectVesselController', () => {
       url: '/select-vessel'
     })
 
-    expect(result).toEqual(expect.stringContaining('Select your vessel |'))
+    expect(result).toEqual(
+      expect.stringContaining('Which vessel did you use? |')
+    )
     expect(statusCode).toBe(statusCodes.ok)
   })
 
@@ -41,8 +42,11 @@ describe('#selectVesselController', () => {
     })
     const $ = load(result)
 
-    expect($('h1').text()).toContain('Select your vessel')
-    expect($('h1 .govuk-caption-l').text().trim()).toBe('New catch record')
+    expect($('h1').text()).toContain('Which vessel did you use?')
+    expect($('[data-testid="app-catch-reference"]').text().trim()).toBe(
+      'A1234520260727150815'
+    )
+    expect($('h1 .govuk-caption-l')).toHaveLength(0)
   })
 
   test('Should render the Back link to the records page', async () => {
@@ -57,7 +61,7 @@ describe('#selectVesselController', () => {
     ).toBe('/records')
   })
 
-  test('Should render active API vessels with GUIDs and display names', async () => {
+  test('Should render vessel options from the reference-data catalogue', async () => {
     const { result } = await server.inject({
       method: 'GET',
       url: '/select-vessel'
@@ -70,6 +74,19 @@ describe('#selectVesselController', () => {
     expect(radios.eq(0).attr('value')).toBe(VESSEL_IDS.achilles)
     expect($('label').eq(0).text().trim()).toBe('ACHILLES PH1234')
     expect(radios.eq(1).attr('value')).toBe(VESSEL_IDS.seaSpray)
+  })
+
+  test('Should display Home, Your account, and Sign out navigation links', async () => {
+    const { result } = await server.inject({
+      method: 'GET',
+      url: '/select-vessel'
+    })
+    const $ = load(result)
+    const navigation = $('.govuk-service-navigation').text()
+
+    expect(navigation).toContain('Home')
+    expect(navigation).toContain('Your account')
+    expect(navigation).toContain('Sign out')
   })
 
   test('Should render the Save and continue button', async () => {
@@ -116,8 +133,6 @@ describe('#selectVesselSubmitController', () => {
   })
 
   test('Should redirect to the trip date question for the known vessel', async () => {
-    const beforeVessel = getData('selectVessel')
-
     const { statusCode, headers } = await server.inject({
       method: 'POST',
       url: '/select-vessel',
@@ -126,7 +141,6 @@ describe('#selectVesselSubmitController', () => {
 
     expect(statusCode).toBe(303)
     expect(headers.location).toBe('/trip-date')
-    expect(getData('selectVessel')).toEqual(beforeVessel)
   })
 
   test('Should redirect back to check your answers when a return query is supplied', async () => {
@@ -160,7 +174,7 @@ describe('#selectVesselSubmitController', () => {
     ).toBeDefined()
   })
 
-  test('Should reject an unknown vessel id', async () => {
+  test('Should reject a vessel that is not assigned to the account', async () => {
     const { statusCode } = await server.inject({
       method: 'POST',
       url: '/select-vessel',
@@ -179,7 +193,11 @@ describe('#selectVesselSubmitController', () => {
 
     expect(statusCode).toBe(statusCodes.badRequest)
     const $ = load(result)
-    expect($('.govuk-error-summary').text()).toContain('Select your vessel')
-    expect($('.govuk-error-message').text()).toContain('Select your vessel')
+    expect($('.govuk-error-summary').text()).toContain(
+      'Which vessel did you use?'
+    )
+    expect($('.govuk-error-message').text()).toContain(
+      'Which vessel did you use?'
+    )
   })
 })

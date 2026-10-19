@@ -180,6 +180,9 @@ export async function initialiseStatisticalAreaSearch() {
     return
   }
 
+  const subrectangles = []
+  attachEventListeners(elements, subrectangles)
+
   try {
     const [apiAreas, offlineResponse] = await Promise.all([
       fetchApiSubrectangles(),
@@ -194,8 +197,10 @@ export async function initialiseStatisticalAreaSearch() {
     for (const area of apiAreas) {
       byCode.set(area.subCode, area)
     }
-    const subrectangles = [...byCode.values()]
-    attachEventListeners(elements, subrectangles)
+    subrectangles.push(...byCode.values())
+    if (elements.input.value.trim()) {
+      renderResults(elements, subrectangles)
+    }
   } catch {
     elements.results.hidden = true
   }

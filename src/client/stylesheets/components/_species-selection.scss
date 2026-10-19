@@ -1,4 +1,5 @@
 @use 'govuk-frontend' as *;
+@use 'accessible-autocomplete/dist/accessible-autocomplete.min.css';
 
 // The default 4px conditional border reads too heavy against Figma's thin connector line.
 .app-species-checkboxes .govuk-checkboxes__conditional {
@@ -7,4 +8,44 @@
 
 .app-weight-toggle {
   margin-top: govuk-spacing(3);
+}
+
+.app-species-search .autocomplete__input,
+.app-species-search .autocomplete__option {
+  @include govuk-font(19);
+}
+
+.app-species-search .autocomplete__status {
+  @include govuk-visually-hidden;
+}
+
+.app-species-search .autocomplete__dropdown-arrow-down {
+  z-index: 1;
+  pointer-events: none;
+}
+
+.app-species-search .autocomplete__menu {
+  box-sizing: border-box;
+  width: 100%;
+  max-height: 19.25rem;
+  margin: 0;
+  border: 1px solid govuk-colour('black');
+  border-top: 0;
+}
+
+.app-species-search .autocomplete__option {
+  min-height: 2.75rem;
+  box-sizing: border-box;
+  padding: govuk-spacing(2) govuk-spacing(3);
+  color: govuk-colour('black');
+  background: govuk-colour('white');
+  border-bottom: 1px solid govuk-colour('black');
+}
+
+.app-species-search .autocomplete__option--focused,
+.app-species-search .autocomplete__option:hover {
+  color: govuk-colour('white');
+  background: govuk-colour('blue');
+  outline: $govuk-focus-width solid $govuk-focus-colour;
+  outline-offset: -$govuk-focus-width;
 }

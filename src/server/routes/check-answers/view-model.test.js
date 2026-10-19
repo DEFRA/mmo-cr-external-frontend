@@ -146,6 +146,19 @@ describe('#buildCheckAnswersViewModel', () => {
     expect(rowValue(rows, 'Statistical sub area')).toBe('30F05')
   })
 
+  test('Should preserve a real subrectangle code selected from the Other list', () => {
+    const viewModel = buildCheckAnswersViewModel(
+      fakeRequest({
+        statAreaBranch: 'other',
+        selectedAlternativeAreaOption: '27D86'
+      })
+    )
+
+    expect(
+      rowValue(rowsFor(viewModel, 'Trips details'), 'Statistical sub area')
+    ).toBe('27D86')
+  })
+
   test('Should fall back to the illustrative sub area when the "direct" selection does not match a nearby area', () => {
     const fallback = getData('catchRecordDetails')
     const viewModel = buildCheckAnswersViewModel(
@@ -204,6 +217,18 @@ describe('#buildCheckAnswersViewModel', () => {
     expect(rowValue(rows, 'Total pots or traps hauled')).toBe('7')
     expect(rowValue(rows, 'Total pots or traps left in water')).toBe('5')
     expect(rowValue(rows, 'Mesh size')).toBe('50 mm')
+    expect(rows.map((row) => row.key.text)).toEqual([
+      'Gear type',
+      'Total pots or traps hauled',
+      'Total pots or traps left in water',
+      'Mesh size'
+    ])
+    for (const row of rows) {
+      expect(row.actions.items[0].href).toBe(
+        '/gear-selection?return=/check-answers'
+      )
+      expect(row.actions.items[0].text).toBe('Change')
+    }
   })
 
   test('Should use the gear hint as the mesh size for non-pots gear and omit pots rows', () => {
@@ -212,7 +237,7 @@ describe('#buildCheckAnswersViewModel', () => {
     )
     const rows = rowsFor(viewModel, 'Gear used')
 
-    expect(rowValue(rows, 'Mesh size')).toBe('80mm mesh')
+    expect(rowValue(rows, 'Mesh size')).toBe('80 mm')
     expect(
       rows.find((row) => row.key.text === 'Total pots or traps hauled')
     ).toBeUndefined()
@@ -225,6 +250,31 @@ describe('#buildCheckAnswersViewModel', () => {
     const rows = rowsFor(viewModel, 'Gear used')
 
     expect(rows.find((row) => row.key.text === 'Mesh size')).toBeUndefined()
+  })
+
+  test('Should display the entered mesh size rather than the catalogue hint', () => {
+    const viewModel = buildCheckAnswersViewModel(
+      fakeRequest({
+        selectedGearIds: ['bottom-otter-trawl'],
+        gearMeasurementDetails: { 'bottom-otter-trawl': { meshSize: 125 } },
+        favouriteGearMeasurements: { 'bottom-otter-trawl': { meshSize: 100 } }
+      })
+    )
+
+    expect(rowValue(rowsFor(viewModel, 'Gear used'), 'Mesh size')).toBe(
+      '125 mm'
+    )
+  })
+
+  test('Should display the saved favourite mesh size when no trip measurement was entered', () => {
+    const viewModel = buildCheckAnswersViewModel(
+      fakeRequest({
+        selectedGearIds: ['seine-nets'],
+        favouriteGearMeasurements: { 'seine-nets': { meshSize: 90 } }
+      })
+    )
+
+    expect(rowValue(rowsFor(viewModel, 'Gear used'), 'Mesh size')).toBe('90 mm')
   })
 
   test('Should join multiple selected gear types', () => {

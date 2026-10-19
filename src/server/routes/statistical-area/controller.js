@@ -8,12 +8,12 @@ import {
 import { getData } from '#/server/common/data/get-data.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 import { offlineMapSubrectangleCodes } from '#/server/common/data/offline-map-subrectangle-codes.js'
+import { statisticalAreaContent } from '#/server/common/helpers/journey/statistical-area-content.js'
 import {
   getPortCatalogue,
   migratePortJourneyState
 } from '#/server/common/helpers/ports/ports-list.js'
 
-const pageTitle = 'Where was most of your catch caught using pots?'
 const nearbyStatisticalAreas = getData('nearbyStatisticalAreas')
 const departurePorts = getData('ports')
 const validAreaIds = [
@@ -24,7 +24,7 @@ const validAreaIds = [
   ])
 ]
 
-function viewContext(request, overrides = {}) {
+async function viewContext(request, overrides = {}) {
   const journeyState = getJourneyState(request)
   const selectedStatisticalArea = journeyState.selectedStatisticalArea
   const departurePort = departurePorts.find(
@@ -32,13 +32,8 @@ function viewContext(request, overrides = {}) {
   )
 
   return {
-    pageTitle,
-    heading: pageTitle,
+    ...(await statisticalAreaContent(journeyState)),
     caption: 'New catch record',
-    bodyText: [
-      'The statistical areas nearest to your departure port are shown below. Select the area where most of your catch was caught.',
-      "If it is not listed, select 'Other' to enter it."
-    ],
     backLink: {
       href: '/gear-selection',
       text: 'Back'
@@ -69,7 +64,7 @@ export const statisticalAreaController = {
       }
     }
 
-    return h.view('statistical-area/index', viewContext(request))
+    return h.view('statistical-area/index', await viewContext(request))
   }
 }
 
@@ -81,13 +76,13 @@ export const statisticalAreaSubmitController = {
           .valid(...validAreaIds)
           .required()
       }),
-      failAction(request, h) {
+      async failAction(request, h) {
         const errorText = 'Select the area where most of your catch was caught'
 
         return h
           .view(
             'statistical-area/index',
-            viewContext(request, {
+            await viewContext(request, {
               errorSummary: {
                 titleText: 'There is a problem',
                 errorList: [{ text: errorText, href: '#statisticalArea' }]
