@@ -4,7 +4,7 @@ import { formatDate } from '#/config/nunjucks/filters/format-date.js'
 import { offlineMapSubrectangleCodes } from '#/server/common/data/offline-map-subrectangle-codes.js'
 
 const RETURN_TO_CHECK_ANSWERS = '?return=/check-answers'
-const MESH_HINT_PATTERN = /(\d+(?:\.\d+)?)\s*mm mesh/i
+const MESH_HINT_PATTERN = /^(\d+(?:\.\d+)?)\s*mm mesh$/i
 
 function joinWithAnd(items) {
   if (items.length < 2) {
@@ -160,7 +160,7 @@ function gearUsedSection(
             return `${measurement} mm`
           }
           const hint = gearCatalogue.find((option) => option.id === id)?.hint
-          const match = hint?.match(MESH_HINT_PATTERN)
+          const match = hint?.trim().match(MESH_HINT_PATTERN)
           return match ? `${match[1]} mm` : null
         })
         .filter(Boolean)

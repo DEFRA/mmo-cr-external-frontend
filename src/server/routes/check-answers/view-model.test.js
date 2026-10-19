@@ -243,6 +243,38 @@ describe('#buildCheckAnswersViewModel', () => {
     ).toBeUndefined()
   })
 
+  test.each([
+    ['80mm mesh', '80 mm'],
+    ['80.5 mm mesh', '80.5 mm'],
+    [' 125 MM MESH ', '125 mm']
+  ])('Should parse a complete mesh hint %s', (hint, expected) => {
+    const viewModel = buildCheckAnswersViewModel(
+      fakeRequest({ selectedGearIds: ['test-gear'] }),
+      { gearCatalogue: [{ id: 'test-gear', name: 'Test gear', hint }] }
+    )
+
+    expect(rowValue(rowsFor(viewModel, 'Gear used'), 'Mesh size')).toBe(
+      expected
+    )
+  })
+
+  test('Should reject a long invalid mesh hint without retrying each numeric suffix', () => {
+    const viewModel = buildCheckAnswersViewModel(
+      fakeRequest({ selectedGearIds: ['test-gear'] }),
+      {
+        gearCatalogue: [
+          { id: 'test-gear', name: 'Test gear', hint: `${'9'.repeat(100000)}x` }
+        ]
+      }
+    )
+
+    expect(
+      rowsFor(viewModel, 'Gear used').find(
+        (row) => row.key.text === 'Mesh size'
+      )
+    ).toBeUndefined()
+  })
+
   test('Should omit the Mesh size row when the selected gear has no mesh data', () => {
     const viewModel = buildCheckAnswersViewModel(
       fakeRequest({ selectedGearIds: ['dredge'] })

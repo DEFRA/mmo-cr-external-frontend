@@ -1,5 +1,7 @@
 import accessibleAutocomplete from 'accessible-autocomplete'
 
+const ariaDescribedByAttribute = 'aria-describedby'
+
 export function initialiseSpeciesSearch() {
   const select = document.querySelector('[data-species-search]')
   if (!select) {
@@ -7,7 +9,7 @@ export function initialiseSpeciesSearch() {
   }
 
   const id = select.id
-  const describedBy = select.getAttribute('aria-describedby')
+  const describedBy = select.getAttribute(ariaDescribedByAttribute)
   accessibleAutocomplete.enhanceSelectElement({
     selectElement: select,
     name: '',
@@ -35,8 +37,8 @@ export function initialiseSpeciesSearch() {
 
   if (describedBy) {
     input.setAttribute(
-      'aria-describedby',
-      [input.getAttribute('aria-describedby'), describedBy]
+      ariaDescribedByAttribute,
+      [input.getAttribute(ariaDescribedByAttribute), describedBy]
         .filter(Boolean)
         .join(' ')
     )

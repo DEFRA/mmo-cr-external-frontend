@@ -35,7 +35,8 @@ export async function selectedGearDescription(journeyState) {
 
 export async function statisticalAreaContent(journeyState) {
   const gears = await selectedGearDescription(journeyState)
-  const heading = `Select the statistical sub area where the majority of your catch was caught${gears ? ` using ${gears}` : ''}`
+  const gearSuffix = gears ? ` using ${gears}` : ''
+  const heading = `Select the statistical sub area where the majority of your catch was caught${gearSuffix}`
 
   return {
     pageTitle: heading,

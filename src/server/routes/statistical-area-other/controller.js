@@ -13,6 +13,7 @@ import { config } from '#/config/config.js'
 import { createMapStatisticalAreasReferenceDataClient } from '#/server/common/clients/map-statistical-areas-reference-data.js'
 import { statisticalAreaContent } from '#/server/common/helpers/journey/statistical-area-content.js'
 
+const templatePath = 'statistical-area-other/index'
 const subrectangleFormat = /^\d{2}[A-Z]\d{2}$/i
 const selectionErrorText = 'Select a statistical subrectangle'
 const subrectangleFormatErrorText =
@@ -131,7 +132,7 @@ async function viewContext(request, overrides = {}) {
 
 export const statisticalAreaOtherController = {
   async handler(request, h) {
-    return h.view('statistical-area-other/index', await viewContext(request))
+    return h.view(templatePath, await viewContext(request))
   }
 }
 
@@ -163,7 +164,7 @@ async function handleManualAreaSubmission(request, h) {
   if (!subrectangleFormat.test(submitted)) {
     return h
       .view(
-        'statistical-area-other/index',
+        templatePath,
         await viewContext(request, {
           errorSummary: {
             titleText: errorSummaryTitle,
@@ -191,7 +192,7 @@ async function handleManualAreaSubmission(request, h) {
   if (!coordinate) {
     return h
       .view(
-        'statistical-area-other/index',
+        templatePath,
         await viewContext(request, {
           errorSummary: {
             titleText: errorSummaryTitle,
@@ -251,7 +252,7 @@ export const statisticalAreaOtherSubmitController = {
 
         return h
           .view(
-            'statistical-area-other/index',
+            templatePath,
             await viewContext(request, {
               errorSummary: {
                 titleText: errorSummaryTitle,

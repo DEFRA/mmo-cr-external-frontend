@@ -251,7 +251,8 @@ function speciesCheckboxItems(
 async function viewContext(request, speciesData, overrides = {}) {
   const { journeyState, speciesOptions } = speciesData
   const gears = await selectedGearDescription(journeyState)
-  const pageTitle = `What species did you catch${gears ? ` using ${gears}` : ''}?`
+  const gearSuffix = gears ? ` using ${gears}` : ''
+  const pageTitle = `What species did you catch${gearSuffix}?`
   const selectedSpeciesIds = journeyState.selectedSpeciesIds || []
   const speciesWeights = journeyState.speciesWeights || {}
 

@@ -20,7 +20,7 @@ function speciesOptionLabels(availableSpeciesIds, catalogue) {
 function viewContext(request, speciesData, overrides = {}) {
   const vesselName = getJourneyState(request).selectedVesselName || ''
   const heading = 'Add species to your vessel'
-  const pageTitle = `${heading}${vesselName ? ` ${vesselName}` : ''}`
+  const pageTitle = vesselName ? `${heading} ${vesselName}` : heading
   return {
     pageTitle,
     heading,

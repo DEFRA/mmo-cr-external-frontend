@@ -18,7 +18,7 @@ function speciesCheckboxItems(speciesOptions) {
 function viewContext(request, speciesData, overrides = {}) {
   const vesselName = speciesData.journeyState.selectedVesselName || ''
   const heading = 'Remove species from vessel'
-  const pageTitle = `${heading}${vesselName ? ` ${vesselName}` : ''}`
+  const pageTitle = vesselName ? `${heading} ${vesselName}` : heading
   return {
     pageTitle,
     heading,
