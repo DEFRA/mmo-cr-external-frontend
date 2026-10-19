@@ -10,6 +10,7 @@ import {
   mockGearsReferenceData,
   restoreGearsReferenceDataMock
 } from '#/test-helpers/mock-gears-reference-data.js'
+import { seedFavouriteGears } from '#/test-helpers/seed-favourite-gears.js'
 
 beforeEach(() => {
   mockPortsReferenceData()
@@ -43,9 +44,11 @@ describe('#gearSelectionController', () => {
   })
 
   test('Should render the question as the page heading with caption and hint', async () => {
+    const favouriteCookie = await seedFavouriteGears(server)
     const { result } = await server.inject({
       method: 'GET',
-      url: '/gear-selection'
+      url: '/gear-selection',
+      headers: { cookie: favouriteCookie }
     })
     const $ = load(result)
 
@@ -55,9 +58,11 @@ describe('#gearSelectionController', () => {
   })
 
   test('Should render 9 gear checkboxes with the stable ids', async () => {
+    const favouriteCookie = await seedFavouriteGears(server)
     const { result } = await server.inject({
       method: 'GET',
-      url: '/gear-selection'
+      url: '/gear-selection',
+      headers: { cookie: favouriteCookie }
     })
     const $ = load(result)
     const checkboxes = $('input[type="checkbox"][name="gearIds"]')
@@ -77,9 +82,11 @@ describe('#gearSelectionController', () => {
   })
 
   test('Should always render the pots conditional fields in the DOM (progressive enhancement)', async () => {
+    const favouriteCookie = await seedFavouriteGears(server)
     const { result } = await server.inject({
       method: 'GET',
-      url: '/gear-selection'
+      url: '/gear-selection',
+      headers: { cookie: favouriteCookie }
     })
     const $ = load(result)
 
@@ -88,9 +95,11 @@ describe('#gearSelectionController', () => {
   })
 
   test('Should always render the other gear types conditional measurement fields in the DOM too', async () => {
+    const favouriteCookie = await seedFavouriteGears(server)
     const { result } = await server.inject({
       method: 'GET',
-      url: '/gear-selection'
+      url: '/gear-selection',
+      headers: { cookie: favouriteCookie }
     })
     const $ = load(result)
 
@@ -117,9 +126,11 @@ describe('#gearSelectionController', () => {
   })
 
   test('Should render Add gear and Remove gear links', async () => {
+    const favouriteCookie = await seedFavouriteGears(server)
     const { result } = await server.inject({
       method: 'GET',
-      url: '/gear-selection'
+      url: '/gear-selection',
+      headers: { cookie: favouriteCookie }
     })
     const $ = load(result)
 
@@ -128,9 +139,11 @@ describe('#gearSelectionController', () => {
   })
 
   test('Should hide Remove gear when there are no favourite gears', async () => {
+    const favouriteCookie = await seedFavouriteGears(server)
     const removeResponse = await server.inject({
       method: 'POST',
       url: '/remove-gear',
+      headers: { cookie: favouriteCookie },
       payload: {
         gearIds: [
           'beam-trawl',
@@ -145,7 +158,8 @@ describe('#gearSelectionController', () => {
         ]
       }
     })
-    const cookie = removeResponse.headers['set-cookie'][0].split(';')[0]
+    const cookie =
+      removeResponse.headers['set-cookie']?.[0].split(';')[0] || favouriteCookie
 
     const { result } = await server.inject({
       method: 'GET',
@@ -159,12 +173,15 @@ describe('#gearSelectionController', () => {
   })
 
   test('Should restore previously-selected gear ids as checked', async () => {
+    const favouriteCookie = await seedFavouriteGears(server)
     const setResponse = await server.inject({
       method: 'POST',
       url: '/gear-selection',
+      headers: { cookie: favouriteCookie },
       payload: { gearIds: ['dredge', 'traps'] }
     })
-    const cookie = setResponse.headers['set-cookie'][0].split(';')[0]
+    const cookie =
+      setResponse.headers['set-cookie']?.[0].split(';')[0] || favouriteCookie
 
     const { result } = await server.inject({
       method: 'GET',
@@ -179,12 +196,15 @@ describe('#gearSelectionController', () => {
   })
 
   test('Should pre-fill pots fields when pots was previously selected', async () => {
+    const favouriteCookie = await seedFavouriteGears(server)
     const setResponse = await server.inject({
       method: 'POST',
       url: '/gear-selection',
+      headers: { cookie: favouriteCookie },
       payload: { gearIds: 'pots', potsHauled: '45', potsInWater: '12' }
     })
-    const cookie = setResponse.headers['set-cookie'][0].split(';')[0]
+    const cookie =
+      setResponse.headers['set-cookie']?.[0].split(';')[0] || favouriteCookie
 
     const { result } = await server.inject({
       method: 'GET',
@@ -205,6 +225,19 @@ describe('#gearSelectionController', () => {
     })
 
     expect(statusCode).toBe(statusCodes.notFound)
+  })
+
+  test('Should not tick any gear until the user selects one', async () => {
+    const favouriteCookie = await seedFavouriteGears(server)
+    const { result } = await server.inject({
+      method: 'GET',
+      url: '/gear-selection',
+      headers: { cookie: favouriteCookie }
+    })
+    const $ = load(result)
+
+    expect($('input[name="gearIds"]').length).toBeGreaterThan(0)
+    expect($('input[name="gearIds"][checked]').length).toBe(0)
   })
 })
 
@@ -257,7 +290,7 @@ describe('#gearSelectionSubmitController', () => {
     })
 
     expect(statusCode).toBe(303)
-    expect(headers.location).toBe('/statistical-area')
+    expect(headers.location).toBe('/statistical-area?gearId=dredge')
   })
 
   test.each([
@@ -291,7 +324,7 @@ describe('#gearSelectionSubmitController', () => {
     }
   )
 
-  test('Should redirect back to check your answers when a return query is supplied', async () => {
+  test('Should collect catch answers for a newly selected gear even when a return query is supplied', async () => {
     const { statusCode, headers } = await server.inject({
       method: 'POST',
       url: '/gear-selection?return=/check-answers',
@@ -299,16 +332,19 @@ describe('#gearSelectionSubmitController', () => {
     })
 
     expect(statusCode).toBe(303)
-    expect(headers.location).toBe('/check-answers')
+    expect(headers.location).toBe('/statistical-area?gearId=dredge')
   })
 
   test('Should save the selected gear ids and leave pots details absent for a non-pots selection', async () => {
+    const favouriteCookie = await seedFavouriteGears(server)
     const setResponse = await server.inject({
       method: 'POST',
       url: '/gear-selection',
+      headers: { cookie: favouriteCookie },
       payload: { gearIds: 'dredge' }
     })
-    const cookie = setResponse.headers['set-cookie'][0].split(';')[0]
+    const cookie =
+      setResponse.headers['set-cookie']?.[0].split(';')[0] || favouriteCookie
 
     const { result } = await server.inject({
       method: 'GET',
@@ -330,16 +366,19 @@ describe('#gearSelectionSubmitController', () => {
     })
 
     expect(statusCode).toBe(303)
-    expect(headers.location).toBe('/statistical-area')
+    expect(headers.location).toBe('/statistical-area?gearId=pots')
   })
 
   test('Should save pots details matching the submitted numbers', async () => {
+    const favouriteCookie = await seedFavouriteGears(server)
     const setResponse = await server.inject({
       method: 'POST',
       url: '/gear-selection',
+      headers: { cookie: favouriteCookie },
       payload: { gearIds: 'pots', potsHauled: '30', potsInWater: '7' }
     })
-    const cookie = setResponse.headers['set-cookie'][0].split(';')[0]
+    const cookie =
+      setResponse.headers['set-cookie']?.[0].split(';')[0] || favouriteCookie
 
     const { result } = await server.inject({
       method: 'GET',
@@ -433,34 +472,6 @@ describe('#gearSelectionSubmitController', () => {
     )
   })
 
-  test('Should clear pots details when a previous pots selection is replaced without pots', async () => {
-    const potsResponse = await server.inject({
-      method: 'POST',
-      url: '/gear-selection',
-      payload: { gearIds: 'pots', potsHauled: '45', potsInWater: '12' }
-    })
-    let cookie = potsResponse.headers['set-cookie'][0].split(';')[0]
-
-    const dredgeResponse = await server.inject({
-      method: 'POST',
-      url: '/gear-selection',
-      payload: { gearIds: 'dredge' },
-      headers: { cookie }
-    })
-    cookie = dredgeResponse.headers['set-cookie'][0].split(';')[0]
-
-    const { result } = await server.inject({
-      method: 'GET',
-      url: '/gear-selection',
-      headers: { cookie }
-    })
-    const $ = load(result)
-
-    expect($('input[value="pots"]').prop('checked')).toBe(false)
-    expect($('#potsHauled').attr('value')).toBeUndefined()
-    expect($('#potsInWater').attr('value')).toBeUndefined()
-  })
-
   test('Should leave unrelated journey state unaffected by a gear-selection submission', async () => {
     const departureResponse = await server.inject({
       method: 'POST',
@@ -505,16 +516,19 @@ describe('#gearSelectionSubmitController', () => {
   })
 
   test('Should save and pre-fill measurements for a non-pots gear type', async () => {
+    const favouriteCookie = await seedFavouriteGears(server)
     const setResponse = await server.inject({
       method: 'POST',
       url: '/gear-selection',
+      headers: { cookie: favouriteCookie },
       payload: {
         gearIds: 'dredge',
         'dredge-numberOfDredges': '2',
         'dredge-numberOfTimesShot': '3'
       }
     })
-    const cookie = setResponse.headers['set-cookie'][0].split(';')[0]
+    const cookie =
+      setResponse.headers['set-cookie']?.[0].split(';')[0] || favouriteCookie
 
     const { result } = await server.inject({
       method: 'GET',
@@ -525,6 +539,103 @@ describe('#gearSelectionSubmitController', () => {
 
     expect($('#dredge-numberOfDredges').attr('value')).toBe('2')
     expect($('#dredge-numberOfTimesShot').attr('value')).toBe('3')
+  })
+
+  test('Should keep saved pots measurements when another gear is submitted without pots', async () => {
+    const favouriteCookie = await seedFavouriteGears(server)
+    const potsResponse = await server.inject({
+      method: 'POST',
+      url: '/gear-selection',
+      headers: { cookie: favouriteCookie },
+      payload: { gearIds: 'pots', potsHauled: '45', potsInWater: '12' }
+    })
+    let cookie =
+      potsResponse.headers['set-cookie']?.[0].split(';')[0] || favouriteCookie
+
+    const dredgeResponse = await server.inject({
+      method: 'POST',
+      url: '/gear-selection',
+      payload: { gearIds: 'dredge' },
+      headers: { cookie }
+    })
+    cookie = dredgeResponse.headers['set-cookie']?.[0].split(';')[0] || cookie
+
+    const { result } = await server.inject({
+      method: 'GET',
+      url: '/gear-selection',
+      headers: { cookie }
+    })
+    const $ = load(result)
+
+    expect($('input[value="pots"]').prop('checked')).toBe(false)
+    expect($('#potsHauled').attr('value')).toBe('45')
+    expect($('#potsInWater').attr('value')).toBe('12')
+  })
+
+  test('Should retain unticked gear measurements and continue the per-gear flow when reselected', async () => {
+    let cookie = await seedFavouriteGears(server)
+    for (const [payload, expectedPath] of [
+      [
+        {
+          gearIds: ['pots', 'dredge'],
+          potsHauled: '45',
+          potsInWater: '12',
+          'dredge-numberOfDredges': '2',
+          'dredge-numberOfTimesShot': '3'
+        },
+        '/statistical-area?gearId=pots'
+      ],
+      [{ gearIds: 'beam-trawl' }, '/statistical-area?gearId=beam-trawl']
+    ]) {
+      const response = await server.inject({
+        method: 'POST',
+        url: '/gear-selection',
+        payload,
+        headers: { cookie }
+      })
+      expect(response.statusCode).toBe(statusCodes.seeOther)
+      expect(response.headers.location).toBe(expectedPath)
+      cookie = response.headers['set-cookie']?.[0]?.split(';')[0] || cookie
+    }
+
+    const saved = await server.inject({
+      method: 'GET',
+      url: '/gear-selection',
+      headers: { cookie }
+    })
+    const $saved = load(saved.result)
+    expect($saved('input[value="pots"]').prop('checked')).toBe(false)
+    expect($saved('input[value="dredge"]').prop('checked')).toBe(false)
+    expect($saved('#potsHauled').attr('value')).toBe('45')
+    expect($saved('#potsInWater').attr('value')).toBe('12')
+    expect($saved('#dredge-numberOfDredges').attr('value')).toBe('2')
+    expect($saved('#dredge-numberOfTimesShot').attr('value')).toBe('3')
+    cookie = saved.headers['set-cookie']?.[0]?.split(';')[0] || cookie
+
+    const reselected = await server.inject({
+      method: 'POST',
+      url: '/gear-selection',
+      headers: { cookie },
+      payload: {
+        gearIds: 'dredge',
+        'dredge-numberOfDredges': '4',
+        'dredge-numberOfTimesShot': '5'
+      }
+    })
+    expect(reselected.statusCode).toBe(statusCodes.seeOther)
+    expect(reselected.headers.location).toBe('/statistical-area?gearId=dredge')
+    cookie = reselected.headers['set-cookie']?.[0]?.split(';')[0] || cookie
+
+    const updated = await server.inject({
+      method: 'GET',
+      url: '/gear-selection',
+      headers: { cookie }
+    })
+    const $updated = load(updated.result)
+    expect($updated('input[value="dredge"]').prop('checked')).toBe(true)
+    expect($updated('#dredge-numberOfDredges').attr('value')).toBe('4')
+    expect($updated('#dredge-numberOfTimesShot').attr('value')).toBe('5')
+    expect($updated('#potsHauled').attr('value')).toBe('45')
   })
 
   test('Should re-render with a field error when a non-pots measurement is invalid', async () => {
@@ -576,6 +687,6 @@ describe('#gearSelectionSubmitController', () => {
     })
 
     expect(statusCode).toBe(303)
-    expect(headers.location).toBe('/statistical-area')
+    expect(headers.location).toBe('/statistical-area?gearId=dredge')
   })
 })

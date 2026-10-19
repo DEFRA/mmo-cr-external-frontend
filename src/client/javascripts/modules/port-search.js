@@ -9,6 +9,7 @@ export function initialisePortSearch() {
     return
   }
 
+  const minimumLength = Number(input.dataset.minLength) || minimumSearchLength
   const results = document.querySelector('[data-port-results]')
   const dataScript = document.querySelector('[data-port-search-data]')
 
@@ -30,7 +31,7 @@ export function initialisePortSearch() {
     const query = input.value.trim().toLowerCase()
     results.replaceChildren()
 
-    if (query.length < minimumSearchLength) {
+    if (query.length < minimumLength) {
       results.hidden = true
       input.setAttribute(ariaExpandedAttribute, collapsedState)
       return

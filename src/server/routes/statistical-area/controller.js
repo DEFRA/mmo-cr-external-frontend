@@ -1,9 +1,11 @@
 import Joi from 'joi'
 
 import {
-  getJourneyState,
+  getGearJourneyState as getJourneyState,
+  gearPageContext,
+  backForStatisticalArea,
   resolveNextPath,
-  setJourneyState
+  setGearJourneyState as setJourneyState
 } from '#/server/common/helpers/journey/navigation.js'
 import { getData } from '#/server/common/data/get-data.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
@@ -26,6 +28,7 @@ const validAreaIds = [
 
 async function viewContext(request, overrides = {}) {
   const journeyState = getJourneyState(request)
+  const gearContext = gearPageContext(request)
   const selectedStatisticalArea = journeyState.selectedStatisticalArea
   const departurePort = departurePorts.find(
     (port) => port.code === journeyState.departurePort
@@ -33,9 +36,10 @@ async function viewContext(request, overrides = {}) {
 
   return {
     ...(await statisticalAreaContent(journeyState)),
+    ...gearContext,
     caption: 'New catch record',
     backLink: {
-      href: '/gear-selection',
+      href: backForStatisticalArea(request),
       text: 'Back'
     },
     departurePortName:
@@ -102,7 +106,10 @@ export const statisticalAreaSubmitController = {
 
     setJourneyState(request, {
       statAreaBranch: isOther ? 'other' : 'direct',
-      selectedStatisticalArea: statisticalArea
+      selectedStatisticalArea: statisticalArea,
+      selectedAlternativeAreaOption: null,
+      alternativeStatisticalArea: null,
+      alternativeStatisticalAreaCoordinates: null
     })
 
     return h

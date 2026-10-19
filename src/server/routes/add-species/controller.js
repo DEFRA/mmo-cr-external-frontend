@@ -2,7 +2,7 @@ import Joi from 'joi'
 
 import {
   getJourneyState,
-  resolveNextPath,
+  speciesSelectionReturnPath,
   setJourneyState
 } from '#/server/common/helpers/journey/navigation.js'
 import {
@@ -27,7 +27,7 @@ function viewContext(request, speciesData, overrides = {}) {
     vesselName,
     caption: 'New catch record',
     backLink: {
-      href: resolveNextPath(request, '/species-selection'),
+      href: speciesSelectionReturnPath(request),
       text: 'Back'
     },
     speciesOptionLabels: speciesOptionLabels(
@@ -117,7 +117,7 @@ export const addSpeciesSubmitController = {
     })
 
     return h
-      .redirect(resolveNextPath(request, '/species-selection'))
+      .redirect(speciesSelectionReturnPath(request))
       .code(statusCodes.seeOther)
   }
 }

@@ -70,6 +70,18 @@ describe('context and cache', () => {
         })
       })
 
+      test('Should preserve gear and review context in the language link', () => {
+        const result = contextImport.context({
+          ...mockRequest,
+          path: '/species-selection',
+          query: { gearId: 'gear-2', return: '/check-answers', lang: 'en' }
+        })
+        const url = new URL(result.languageToggle.href, 'http://localhost')
+        expect(url.searchParams.get('gearId')).toBe('gear-2')
+        expect(url.searchParams.get('return')).toBe('/check-answers')
+        expect(url.searchParams.get('lang')).toBe('cy')
+      })
+
       describe('With valid asset path', () => {
         test('Should provide expected asset path', () => {
           expect(contextResult.getAssetPath('application.js')).toBe(

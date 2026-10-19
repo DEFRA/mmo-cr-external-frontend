@@ -4,6 +4,7 @@ import { config } from '#/config/config.js'
 import { createSpeciesReferenceDataClient } from '#/server/common/clients/species-reference-data.js'
 import {
   getJourneyState,
+  getGearJourneyState,
   setJourneyState
 } from '#/server/common/helpers/journey/navigation.js'
 
@@ -57,8 +58,7 @@ function migrateSpeciesDataById(speciesData, catalogue) {
   }, {})
 }
 
-export function getSpeciesJourneyState(request, catalogue) {
-  const journeyState = getJourneyState(request)
+function speciesMigrationPatch(journeyState, catalogue) {
   const patch = {}
 
   for (const key of ['selectedSpeciesIds', 'availableSpeciesIds']) {
@@ -78,10 +78,40 @@ export function getSpeciesJourneyState(request, catalogue) {
       }
     }
   }
+  return patch
+}
 
-  return Object.keys(patch).length > 0
-    ? setJourneyState(request, patch)
-    : journeyState
+function migrateGearSpeciesAnswers(answers, catalogue) {
+  return {
+    ...answers,
+    ...speciesMigrationPatch(answers, catalogue)
+  }
+}
+
+export function getSpeciesJourneyState(request, catalogue) {
+  const journeyState = getJourneyState(request)
+  const patch = speciesMigrationPatch(journeyState, catalogue)
+  if (journeyState.catchDetailsByGearId) {
+    const migrated = Object.fromEntries(
+      Object.entries(journeyState.catchDetailsByGearId).map(
+        ([gearId, answers]) => [
+          gearId,
+          migrateGearSpeciesAnswers(answers, catalogue)
+        ]
+      )
+    )
+    if (
+      JSON.stringify(migrated) !==
+      JSON.stringify(journeyState.catchDetailsByGearId)
+    ) {
+      patch.catchDetailsByGearId = migrated
+    }
+  }
+
+  if (Object.keys(patch).length > 0) {
+    setJourneyState(request, patch)
+  }
+  return getGearJourneyState(request)
 }
 
 export function getAvailableSpeciesIds(journeyState, catalogue) {

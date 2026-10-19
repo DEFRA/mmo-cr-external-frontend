@@ -7,6 +7,7 @@ import {
   restoreSpeciesReferenceDataMock
 } from '#/test-helpers/mock-species-reference-data.js'
 import { mockGearsReferenceData } from '#/test-helpers/mock-gears-reference-data.js'
+import { seedFavouriteGears } from '#/test-helpers/seed-favourite-gears.js'
 
 beforeEach(() => {
   mockSpeciesReferenceData()
@@ -252,8 +253,59 @@ describe('#accountController', () => {
     expect($('a[href="/remove-species?return=/account"]')).toHaveLength(1)
   })
 
+  test('Should show saved measurements under the favourite gear they belong to', async () => {
+    const signInCookie = await seedFavouriteGears(
+      server,
+      undefined,
+      await signedInCookie()
+    )
+    const removeResponse = await server.inject({
+      method: 'POST',
+      url: '/remove-gear?return=/account',
+      headers: { cookie: signInCookie },
+      payload: { gearIds: 'dredge' }
+    })
+    let cookie = removeResponse.headers['set-cookie'][0].split(';')[0]
+
+    const addResponse = await server.inject({
+      method: 'POST',
+      url: '/add-gear?return=/account',
+      headers: { cookie },
+      payload: { gear: 'Dredge' }
+    })
+    cookie = addResponse.headers['set-cookie']?.[0].split(';')[0] || cookie
+
+    const confirmResponse = await server.inject({
+      method: 'POST',
+      url: '/add-gear?return=/account',
+      headers: { cookie },
+      payload: { numberOfDredges: '2', numberOfTimesShot: '3' }
+    })
+    expect(confirmResponse.headers.location).toBe('/account')
+    cookie = confirmResponse.headers['set-cookie']?.[0].split(';')[0] || cookie
+
+    const { result } = await server.inject({
+      method: 'GET',
+      url: '/account',
+      headers: { cookie }
+    })
+    const $ = load(result)
+    const gearValue = $('.govuk-summary-list__row')
+      .filter((_, el) => $(el).find('dt').text().trim() === 'Gear onboard')
+      .find('.govuk-summary-list__value')
+      .html()
+
+    expect(gearValue).toMatch(
+      /Dredge<br><span class="govuk-hint[^"]*">Number of dredges: 2<\/span><br><span class="govuk-hint[^"]*">Number of times shot: 3<\/span>/
+    )
+  })
+
   test('Should reflect a gear removal on the account page', async () => {
-    const signInCookie = await signedInCookie()
+    const signInCookie = await seedFavouriteGears(
+      server,
+      undefined,
+      await signedInCookie()
+    )
     const removeResponse = await server.inject({
       method: 'POST',
       url: '/remove-gear?return=/account',

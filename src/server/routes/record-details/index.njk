@@ -12,8 +12,8 @@
       <p class="govuk-body govuk-!-font-weight-bold govuk-!-margin-bottom-1">Record status:</p>
       <strong class="govuk-tag govuk-tag--grey">{{ status | capitalize }}</strong>
 
-      {% if sections %}
-        {{ appCatchRecordSummarySections(sections) }}
+      {% if sections or gearGroups %}
+        {{ appCatchRecordSummarySections(sections, gearGroups, trailingSections) }}
       {% else %}
       <h2 class="govuk-heading-l">Trips details</h2>
       {{ govukSummaryList({ rows: [
@@ -47,7 +47,6 @@
         { key: { text: "Weight above minimum size kept onboard or in keep pots (kg)" }, value: { text: details.notLandedWeightAboveMinimumKept } }
       ] }) }}
       {% endif %}
-
       <div class="govuk-button-group">
         {{ govukButton({
           text: "Edit catch record",

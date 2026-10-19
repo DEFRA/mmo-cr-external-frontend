@@ -1,9 +1,11 @@
 import Joi from 'joi'
 
 import {
-  getJourneyState,
+  getGearJourneyState as getJourneyState,
+  gearPageContext,
+  gearPath,
   resolveNextPath,
-  setJourneyState
+  setGearJourneyState as setJourneyState
 } from '#/server/common/helpers/journey/navigation.js'
 import { getData } from '#/server/common/data/get-data.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
@@ -93,6 +95,7 @@ function resolveSelectedAreaCoordinatesText(
 
 async function viewContext(request, overrides = {}) {
   const journeyState = getJourneyState(request)
+  const gearContext = gearPageContext(request)
   const alternativeStatisticalArea =
     journeyState.alternativeStatisticalArea || ''
   const departurePort = getData('ports').find(
@@ -114,9 +117,15 @@ async function viewContext(request, overrides = {}) {
 
   return {
     ...(await statisticalAreaContent(journeyState)),
+    ...gearContext,
     caption: 'New catch record',
     backLink: {
-      href: '/statistical-area',
+      href: gearPath(
+        request,
+        '/statistical-area',
+        undefined,
+        request.query?.return
+      ),
       text: 'Back'
     },
     areaOptions: areaRadioItems(nearbyAreaCodes, selectedArea),

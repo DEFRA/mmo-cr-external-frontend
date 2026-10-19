@@ -1,12 +1,12 @@
 import {
   resolveNextPath,
+  getJourneyState,
+  speciesSelectionReturnPath,
   setJourneyState
 } from '#/server/common/helpers/journey/navigation.js'
 import { filterKnownSpeciesIds } from '#/server/common/helpers/species/species-form.js'
 import { getSpeciesPageData } from '#/server/common/helpers/species/species-list.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
-
-const SPECIES_SELECTION_PATH = '/species-selection'
 
 function speciesCheckboxItems(speciesOptions) {
   return speciesOptions.map((species) => ({
@@ -25,7 +25,7 @@ function viewContext(request, speciesData, overrides = {}) {
     vesselName,
     caption: 'New catch record',
     backLink: {
-      href: resolveNextPath(request, SPECIES_SELECTION_PATH),
+      href: speciesSelectionReturnPath(request),
       text: 'Back'
     },
     speciesCheckboxItems: speciesCheckboxItems(speciesData.speciesOptions),
@@ -48,10 +48,50 @@ export const removeSpeciesController = {
   }
 }
 
+function withoutRemovedSpecies(data, idsToRemove) {
+  return Object.fromEntries(
+    Object.entries(data || {}).filter(([id]) => !idsToRemove.includes(id))
+  )
+}
+
+function remainingCatchAnswers(answers, idsToRemove) {
+  return {
+    ...answers,
+    selectedSpeciesIds: (answers.selectedSpeciesIds || []).filter(
+      (id) => !idsToRemove.includes(id)
+    ),
+    speciesWeights: withoutRemovedSpecies(answers.speciesWeights, idsToRemove),
+    speciesNotLanded: withoutRemovedSpecies(
+      answers.speciesNotLanded,
+      idsToRemove
+    )
+  }
+}
+
+function removeSpeciesFromJourney(request, availableSpeciesIds, idsToRemove) {
+  const state = getJourneyState(request)
+  const patch = {
+    ...remainingCatchAnswers(state, idsToRemove),
+    availableSpeciesIds: availableSpeciesIds.filter(
+      (id) => !idsToRemove.includes(id)
+    )
+  }
+  if (state.catchDetailsByGearId) {
+    patch.catchDetailsByGearId = Object.fromEntries(
+      Object.entries(state.catchDetailsByGearId).map(([gearId, answers]) => [
+        gearId,
+        remainingCatchAnswers(answers, idsToRemove)
+      ])
+    )
+  }
+  setJourneyState(request, patch)
+  return patch.availableSpeciesIds
+}
+
 export const removeSpeciesSubmitController = {
   async handler(request, h) {
     const speciesData = await getSpeciesPageData(request)
-    const { journeyState, availableSpeciesIds } = speciesData
+    const { availableSpeciesIds } = speciesData
 
     if (availableSpeciesIds.length === 0) {
       return h
@@ -83,28 +123,11 @@ export const removeSpeciesSubmitController = {
         .takeover()
     }
 
-    const remainingSpeciesIds = availableSpeciesIds.filter(
-      (id) => !idsToRemove.includes(id)
+    const remainingSpeciesIds = removeSpeciesFromJourney(
+      request,
+      availableSpeciesIds,
+      idsToRemove
     )
-    const remainingSelectedSpeciesIds = (
-      journeyState.selectedSpeciesIds || []
-    ).filter((id) => !idsToRemove.includes(id))
-
-    const patch = {
-      availableSpeciesIds: remainingSpeciesIds,
-      selectedSpeciesIds: remainingSelectedSpeciesIds
-    }
-
-    // Removing a species removes its catch-weight data too (BR1).
-    const speciesWeights = { ...journeyState.speciesWeights }
-
-    idsToRemove.forEach((id) => {
-      delete speciesWeights[id]
-    })
-
-    patch.speciesWeights = speciesWeights
-
-    setJourneyState(request, patch)
 
     if (remainingSpeciesIds.length === 0) {
       return h
@@ -113,7 +136,7 @@ export const removeSpeciesSubmitController = {
     }
 
     return h
-      .redirect(resolveNextPath(request, SPECIES_SELECTION_PATH))
+      .redirect(speciesSelectionReturnPath(request))
       .code(statusCodes.seeOther)
   }
 }

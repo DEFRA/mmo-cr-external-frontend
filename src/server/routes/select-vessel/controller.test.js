@@ -61,7 +61,7 @@ describe('#selectVesselController', () => {
     ).toBe('/records')
   })
 
-  test('Should render vessel options from the reference-data catalogue', async () => {
+  test('Should render active API vessels with GUIDs and names without registration marks', async () => {
     const { result } = await server.inject({
       method: 'GET',
       url: '/select-vessel'
@@ -72,8 +72,9 @@ describe('#selectVesselController', () => {
     expect(radios).toHaveLength(2)
     expect(radios.eq(0).attr('name')).toBe('vesselId')
     expect(radios.eq(0).attr('value')).toBe(VESSEL_IDS.achilles)
-    expect($('label').eq(0).text().trim()).toBe('ACHILLES PH1234')
+    expect($('label').eq(0).text().trim()).toBe('ACHILLES')
     expect(radios.eq(1).attr('value')).toBe(VESSEL_IDS.seaSpray)
+    expect($('label').eq(1).text().trim()).toBe('SEA SPRAY')
   })
 
   test('Should display Home, Your account, and Sign out navigation links', async () => {
@@ -199,5 +200,10 @@ describe('#selectVesselSubmitController', () => {
     expect($('.govuk-error-message').text()).toContain(
       'Which vessel did you use?'
     )
+    expect(
+      $('label.govuk-radios__label')
+        .map((_, el) => $(el).text().trim())
+        .get()
+    ).toEqual(['ACHILLES', 'SEA SPRAY'])
   })
 })

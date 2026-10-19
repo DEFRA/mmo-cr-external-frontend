@@ -15,13 +15,20 @@ const manifestPath = path.join(
 let viteManifest
 
 // Non-functional integration point for a future localisation step: the Cymraeg link only
-// preserves the current path via ?lang=cy and does not perform real translation/switching.
+// preserves journey context and does not perform real translation/switching.
 function buildLanguageToggle(request) {
   const currentPath = request?.path ?? '/'
+  const params = new URLSearchParams()
+  for (const key of ['gearId', 'return']) {
+    if (typeof request?.query?.[key] === 'string') {
+      params.set(key, request.query[key])
+    }
+  }
+  params.set('lang', 'cy')
 
   return {
     current: config.get('defaultLocale'),
-    href: `${currentPath}?lang=cy`
+    href: `${currentPath}?${params.toString()}`
   }
 }
 

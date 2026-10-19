@@ -34,6 +34,272 @@ function rowChangeHref(rows, keyText) {
 }
 
 describe('#buildCheckAnswersViewModel', () => {
+  test('Should show every recorded gear detail with short labels without changing stored answers', () => {
+    const state = {
+      selectedGearIds: ['beam'],
+      gearMeasurementDetails: { beam: { length: 3, mesh: 2, count: 2 } },
+      catchDetailsByGearId: {
+        beam: {
+          statAreaBranch: 'direct',
+          selectedStatisticalArea: '38E95',
+          selectedSpeciesIds: [SPECIES_IDS.cod],
+          speciesWeights: {
+            [SPECIES_IDS.cod]: {
+              weightAboveMinimum: 12,
+              weightBelowMinimum: 12,
+              weightDiscarded: 11
+            }
+          }
+        }
+      },
+      catchNotLanded: true,
+      speciesNotLanded: {
+        [SPECIES_IDS.cod]: { weightAboveMinimum: 2 }
+      }
+    }
+    const original = structuredClone(state)
+    const gearCatalogue = [
+      {
+        id: 'beam',
+        code: 'TBB',
+        label: 'Beam trawl',
+        measurements: [
+          { id: 'length', code: 'GM', label: 'Long dimension description' },
+          { id: 'mesh', code: 'ME', label: 'Mesh size' },
+          { id: 'count', code: 'GN', label: 'Long count description' }
+        ]
+      }
+    ]
+    const model = buildCheckAnswersViewModel(fakeRequest(state), {
+      gearCatalogue,
+      compactSummary: true
+    })
+    expect(model.sections[0].rows.map((row) => row.key.text)).toEqual([
+      'Vessel',
+      'Departure port',
+      'Return port'
+    ])
+    expect(model.gearGroups[0].rows.map((row) => row.key.text)).toEqual([
+      'Gear',
+      'Gear dimension by length or width of the gear',
+      'Mesh size (mm)',
+      'Gear dimension by number',
+      'Statistical area / sub area',
+      'Species',
+      'Weight above minimum size retained',
+      'Weight below minimum size retained',
+      'Weight legally discard'
+    ])
+    expect(rowValue(model.gearGroups[0].rows, 'Gear dimension by number')).toBe(
+      '2'
+    )
+    expect(
+      rowValue(
+        model.gearGroups[0].rows,
+        'Gear dimension by length or width of the gear'
+      )
+    ).toBe('3')
+    expect(
+      rowValue(model.gearGroups[0].rows, 'Weight below minimum size retained')
+    ).toBe('12 kg')
+    expect(rowValue(model.gearGroups[0].rows, 'Weight legally discard')).toBe(
+      '11 kg'
+    )
+    expect(rowValue(model.gearGroups[0].rows, 'Species')).toBe(
+      'Atlantic cod (COD)'
+    )
+    expect(model.trailingSections[0].rows.map((row) => row.key.text)).toEqual([
+      'Species',
+      'Weight kept onboard or in keep pots'
+    ])
+    expect(
+      rowValue(
+        model.trailingSections[0].rows,
+        'Weight kept onboard or in keep pots'
+      )
+    ).toBe('2 kg')
+    const full = buildCheckAnswersViewModel(fakeRequest(state), {
+      gearCatalogue
+    })
+    expect(
+      rowValue(full.gearGroups[0].rows, 'Long dimension description')
+    ).toBe('3')
+    expect(rowValue(full.gearGroups[0].rows, 'Weight legally discard')).toBe(
+      '11 kg'
+    )
+    expect(state).toEqual(original)
+  })
+
+  test('Should show all selected gears and shorten dimension labels for each without merging values', () => {
+    const measurements = [
+      {
+        id: 'count',
+        label:
+          'Gear dimension by number. For example: number of trawls, number of beams, number of dredges, number of pots, number of hooks'
+      },
+      {
+        id: 'length',
+        label:
+          'Gear dimension by length or width of the gear - in metres: length of beams, trawl perimeter of opening'
+      }
+    ]
+    const model = buildCheckAnswersViewModel(
+      fakeRequest({
+        selectedGearIds: ['beam', 'dredge'],
+        gearMeasurementDetails: {
+          beam: { count: 2, length: 3 },
+          dredge: { count: 4, length: 5 }
+        },
+        catchDetailsByGearId: {
+          beam: {
+            statAreaBranch: 'direct',
+            selectedStatisticalArea: '38E95',
+            selectedSpeciesIds: [SPECIES_IDS.cod],
+            speciesWeights: {
+              [SPECIES_IDS.cod]: {
+                weightAboveMinimum: 12,
+                weightBelowMinimum: 0
+              }
+            }
+          },
+          dredge: {
+            statAreaBranch: 'direct',
+            selectedStatisticalArea: '38E96',
+            selectedSpeciesIds: [SPECIES_IDS.cod],
+            speciesWeights: { [SPECIES_IDS.cod]: { weightAboveMinimum: 15 } }
+          }
+        }
+      }),
+      {
+        compactSummary: true,
+        gearCatalogue: [
+          { id: 'beam', label: 'Beam trawl', measurements },
+          { id: 'dredge', label: 'Dredge', measurements }
+        ]
+      }
+    )
+    expect(model.gearGroups.map((group) => group.heading)).toEqual([
+      'Beam trawl',
+      'Dredge'
+    ])
+    for (const [index, group] of model.gearGroups.entries()) {
+      expect(rowValue(group.rows, 'Gear dimension by number')).toBe(
+        index === 0 ? '2' : '4'
+      )
+      expect(
+        rowValue(group.rows, 'Gear dimension by length or width of the gear')
+      ).toBe(index === 0 ? '3' : '5')
+      expect(rowValue(group.rows, 'Statistical area / sub area')).toBe(
+        index === 0 ? '38E95' : '38E96'
+      )
+      expect(rowValue(group.rows, 'Weight above minimum size retained')).toBe(
+        index === 0 ? '12 kg' : '15 kg'
+      )
+      expect(rowChangeHref(group.rows, 'Species')).toContain(
+        `gearId=${group.gearId}`
+      )
+    }
+    expect(
+      rowValue(model.gearGroups[0].rows, 'Weight below minimum size retained')
+    ).toBe('0 kg')
+    expect(
+      model.gearGroups[1].rows.some(
+        (row) => row.key.text === 'Weight below minimum size retained'
+      )
+    ).toBe(false)
+  })
+
+  test('Should omit the unlanded section when no species are kept onboard', () => {
+    const model = buildCheckAnswersViewModel(
+      fakeRequest({ selectedGearIds: ['pots'], catchNotLanded: false }),
+      { compactSummary: true }
+    )
+    expect(model.trailingSections).toEqual([])
+  })
+
+  test('Should use the same compact grouping for legacy preview answers', () => {
+    const model = buildCheckAnswersViewModel(
+      fakeRequest({ selectedSpeciesIds: [], catchNotLanded: false }),
+      { compactSummary: true }
+    )
+    expect(model.sections[0].heading).toBe('Trip')
+    expect(model.gearGroups).toHaveLength(1)
+    expect(model.gearGroups[0].rows.map((row) => row.key.text)).not.toContain(
+      'Species'
+    )
+    expect(model.trailingSections).toEqual([])
+  })
+
+  test('Should render stored zero weights and gear-specific species headings without merging catches', () => {
+    const answers = (weight) => ({
+      selectedSpeciesIds: [SPECIES_IDS.cod, SPECIES_IDS.haddock],
+      speciesWeights: {
+        [SPECIES_IDS.cod]: {
+          weightAboveMinimum: weight,
+          weightBelowMinimum: 0,
+          weightDiscarded: 0
+        },
+        [SPECIES_IDS.haddock]: { weightAboveMinimum: 5 }
+      },
+      catchNotLanded: false
+    })
+    const viewModel = buildCheckAnswersViewModel(
+      fakeRequest({
+        selectedGearIds: ['pots', 'dredge'],
+        catchDetailsByGearId: { pots: answers(15), dredge: answers(30) }
+      })
+    )
+    const pots = viewModel.gearGroups[0].rows
+    const dredge = viewModel.gearGroups[1].rows
+    expect(
+      pots
+        .filter((row) => row.key.text === 'Species')
+        .map((row) => row.value.text)
+    ).toEqual(['Atlantic cod (COD)', 'Haddock (HAD)'])
+    expect(rowValue(pots, 'Weight above minimum size retained')).toBe('15 kg')
+    expect(rowValue(dredge, 'Weight above minimum size retained')).toBe('30 kg')
+    expect(rowValue(pots, 'Weight below minimum size retained')).toBe('0 kg')
+    expect(rowValue(pots, 'Weight legally discard')).toBe('0 kg')
+  })
+
+  test('Should not manufacture example catch answers for a selected gear', () => {
+    const viewModel = buildCheckAnswersViewModel(
+      fakeRequest({ selectedGearIds: ['pots'], catchDetailsByGearId: {} })
+    )
+    const rows = viewModel.gearGroups[0].rows
+    expect(rowValue(rows, 'Statistical area / sub area')).toBe('Not entered')
+    expect(rows.filter((row) => row.key.text === 'Species')).toEqual([])
+    expect(rowValue(viewModel.trailingSections[0].rows, 'Not landed')).toBe(
+      'Not entered'
+    )
+  })
+
+  test('Should render stored multi-gear records without using the current journey or Change links', () => {
+    const record = {
+      vesselName: 'ACHILLES',
+      selectedGearIds: ['pots', 'dredge'],
+      catchDetailsByGearId: {
+        pots: { statAreaBranch: 'direct', selectedStatisticalArea: '38E95' },
+        dredge: {
+          statAreaBranch: 'other',
+          selectedAlternativeAreaOption: '38E96'
+        }
+      }
+    }
+    const viewModel = buildCheckAnswersViewModel(
+      fakeRequest({ selectedVesselName: 'Wrong vessel' }),
+      {
+        journeyState: record,
+        buildChangeHref: () => null
+      }
+    )
+    expect(rowValue(viewModel.sections[0].rows, 'Vessel')).toBe('ACHILLES')
+    expect(
+      rowValue(viewModel.gearGroups[1].rows, 'Statistical area / sub area')
+    ).toBe('38E96')
+    expect(viewModel.gearGroups[1].rows[0].actions.items).toEqual([])
+  })
+
   test('Should produce all four sections in PNG order when no journey state exists', () => {
     const viewModel = buildCheckAnswersViewModel(fakeRequest(undefined))
 
@@ -204,40 +470,31 @@ describe('#buildCheckAnswersViewModel', () => {
     )
   })
 
-  test('Should render pots hauled/left-in-water and the mock mesh size when pots is selected', () => {
+  test('Should render pots measurements without inventing a mesh size', () => {
     const viewModel = buildCheckAnswersViewModel(
       fakeRequest({
         selectedGearIds: ['pots'],
         potsDetails: { potsHauled: 7, potsInWater: 5 }
       })
     )
-    const rows = rowsFor(viewModel, 'Gear used')
+    const rows = viewModel.gearGroups[0].rows
 
-    expect(rowValue(rows, 'Gear type')).toBe('Pots')
+    expect(rowValue(rows, 'Gear')).toBe('Pots')
     expect(rowValue(rows, 'Total pots or traps hauled')).toBe('7')
     expect(rowValue(rows, 'Total pots or traps left in water')).toBe('5')
-    expect(rowValue(rows, 'Mesh size')).toBe('50 mm')
-    expect(rows.map((row) => row.key.text)).toEqual([
-      'Gear type',
-      'Total pots or traps hauled',
-      'Total pots or traps left in water',
-      'Mesh size'
-    ])
-    for (const row of rows) {
-      expect(row.actions.items[0].href).toBe(
-        '/gear-selection?return=/check-answers'
-      )
-      expect(row.actions.items[0].text).toBe('Change')
-    }
+    expect(rows.find((row) => row.key.text === 'Mesh size')).toBeUndefined()
   })
 
-  test('Should use the gear hint as the mesh size for non-pots gear and omit pots rows', () => {
+  test('Should use the recorded mesh measurement for non-pots gear and omit pots rows', () => {
     const viewModel = buildCheckAnswersViewModel(
-      fakeRequest({ selectedGearIds: ['bottom-otter-trawl'] })
+      fakeRequest({
+        selectedGearIds: ['bottom-otter-trawl'],
+        gearMeasurementDetails: { 'bottom-otter-trawl': { meshSize: 90 } }
+      })
     )
-    const rows = rowsFor(viewModel, 'Gear used')
+    const rows = viewModel.gearGroups[0].rows
 
-    expect(rowValue(rows, 'Mesh size')).toBe('80 mm')
+    expect(rowValue(rows, 'Mesh size (mm)')).toBe('90')
     expect(
       rows.find((row) => row.key.text === 'Total pots or traps hauled')
     ).toBeUndefined()
@@ -253,9 +510,7 @@ describe('#buildCheckAnswersViewModel', () => {
       { gearCatalogue: [{ id: 'test-gear', name: 'Test gear', hint }] }
     )
 
-    expect(rowValue(rowsFor(viewModel, 'Gear used'), 'Mesh size')).toBe(
-      expected
-    )
+    expect(rowValue(viewModel.gearGroups[0].rows, 'Mesh size')).toBe(expected)
   })
 
   test('Should reject a long invalid mesh hint without retrying each numeric suffix', () => {
@@ -269,22 +524,11 @@ describe('#buildCheckAnswersViewModel', () => {
     )
 
     expect(
-      rowsFor(viewModel, 'Gear used').find(
-        (row) => row.key.text === 'Mesh size'
-      )
+      viewModel.gearGroups[0].rows.find((row) => row.key.text === 'Mesh size')
     ).toBeUndefined()
   })
 
-  test('Should omit the Mesh size row when the selected gear has no mesh data', () => {
-    const viewModel = buildCheckAnswersViewModel(
-      fakeRequest({ selectedGearIds: ['dredge'] })
-    )
-    const rows = rowsFor(viewModel, 'Gear used')
-
-    expect(rows.find((row) => row.key.text === 'Mesh size')).toBeUndefined()
-  })
-
-  test('Should display the entered mesh size rather than the catalogue hint', () => {
+  test('Should display entered measurements before saved favourite measurements', () => {
     const viewModel = buildCheckAnswersViewModel(
       fakeRequest({
         selectedGearIds: ['bottom-otter-trawl'],
@@ -293,12 +537,10 @@ describe('#buildCheckAnswersViewModel', () => {
       })
     )
 
-    expect(rowValue(rowsFor(viewModel, 'Gear used'), 'Mesh size')).toBe(
-      '125 mm'
-    )
+    expect(rowValue(viewModel.gearGroups[0].rows, 'Mesh size (mm)')).toBe('125')
   })
 
-  test('Should display the saved favourite mesh size when no trip measurement was entered', () => {
+  test('Should display saved favourite measurements when no trip measurement was entered', () => {
     const viewModel = buildCheckAnswersViewModel(
       fakeRequest({
         selectedGearIds: ['seine-nets'],
@@ -306,16 +548,32 @@ describe('#buildCheckAnswersViewModel', () => {
       })
     )
 
-    expect(rowValue(rowsFor(viewModel, 'Gear used'), 'Mesh size')).toBe('90 mm')
+    expect(rowValue(viewModel.gearGroups[0].rows, 'Mesh size (mm)')).toBe('90')
   })
 
-  test('Should join multiple selected gear types', () => {
+  test('Should omit the Mesh size row when the selected gear has no mesh data', () => {
+    const viewModel = buildCheckAnswersViewModel(
+      fakeRequest({ selectedGearIds: ['dredge'] })
+    )
+    const rows = viewModel.gearGroups[0].rows
+
+    expect(rows.find((row) => row.key.text === 'Mesh size')).toBeUndefined()
+  })
+
+  test('Should render separate groups in selected gear order', () => {
     const viewModel = buildCheckAnswersViewModel(
       fakeRequest({ selectedGearIds: ['dredge', 'traps', 'pots'] })
     )
-    const rows = rowsFor(viewModel, 'Gear used')
-
-    expect(rowValue(rows, 'Gear type')).toBe('Dredge, Traps and Pots')
+    expect(viewModel.gearGroups.map((group) => group.heading)).toEqual([
+      'Dredge',
+      'Traps',
+      'Pots'
+    ])
+    expect(
+      viewModel.sections[0].rows.some(
+        (row) => row.key.text === 'Statistical sub area'
+      )
+    ).toBe(false)
   })
 
   test('Should show another selected species when cod was not selected', () => {

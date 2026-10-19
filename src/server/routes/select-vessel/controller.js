@@ -29,7 +29,7 @@ function viewContext(request, vessels, overrides = {}) {
     },
     vesselOptions: vessels.map((vessel) => ({
       value: vessel.id,
-      text: vessel.displayName || vessel.name,
+      text: vessel.name,
       checked: vessel.id === selectedId
     })),
     ...overrides

@@ -2,7 +2,10 @@ import Joi from 'joi'
 import Boom from '@hapi/boom'
 
 import { getData } from '#/server/common/data/get-data.js'
-import { getSpeciesPageData } from '#/server/common/helpers/species/species-list.js'
+import {
+  getSpeciesCatalogue,
+  getSpeciesPageData
+} from '#/server/common/helpers/species/species-list.js'
 import { getGearCatalogue } from '#/server/common/helpers/gear/favourite-gear.js'
 import { buildCheckAnswersViewModel } from '#/server/routes/check-answers/view-model.js'
 
@@ -29,20 +32,30 @@ export const recordDetailsController = {
     }
 
     let details = record.details || getData('catchRecordDetails')
-    let sections
+    let summary = {}
     if (record.status === 'amended') {
-      const { journeyState, catalogue } = await getSpeciesPageData(request)
+      const { journeyState, catalogue: speciesCatalogue } =
+        await getSpeciesPageData(request)
       const gearCatalogue = await getGearCatalogue()
       details = {
         ...details,
         vesselName: journeyState.selectedVesselName || details.vesselName
       }
-      sections = buildCheckAnswersViewModel(request, {
-        speciesCatalogue: catalogue,
+      summary = buildCheckAnswersViewModel(request, {
+        speciesCatalogue,
         gearCatalogue,
         fallbackDetails: details,
         buildChangeHref: () => null
-      }).sections
+      })
+    } else if (details.selectedGearIds) {
+      summary = buildCheckAnswersViewModel(request, {
+        journeyState: details,
+        speciesCatalogue: await getSpeciesCatalogue(request),
+        gearCatalogue: await getGearCatalogue(),
+        buildChangeHref: () => null,
+        fallbackDetails: details,
+        hideVesselChange: true
+      })
     }
 
     return h.view('record-details/index', {
@@ -53,7 +66,7 @@ export const recordDetailsController = {
         text: 'Back'
       },
       details,
-      sections,
+      ...summary,
       status: record.status,
       recordId
     })

@@ -14,9 +14,6 @@ const client = createGearsReferenceDataClient({
   timeoutMs: config.get('referenceData.timeoutMs')
 })
 const legacyGearCatalogue = getData('gearCatalogue')
-const legacyDefaultFavouriteIds = getData('gearSelection').map(
-  (gear) => gear.id
-)
 const legacyPotsOption = legacyGearCatalogue.find((gear) => gear.id === 'pots')
 
 function withMeasurementMessages(gear) {
@@ -66,7 +63,10 @@ export async function getGearCatalogue(filters = {}) {
   try {
     const { items } = await client.getGears(filters)
     const catalogue =
-      legacyPotsOption && !items.some((gear) => gear.id === 'pots')
+      legacyPotsOption &&
+      !items.some(
+        (gear) => gear.id === 'pots' || normalized(gear.name) === 'pots'
+      )
         ? [...items, legacyPotsOption]
         : items
     return catalogue.map(withMeasurementMessages)
@@ -88,22 +88,12 @@ export async function getGearItem(id, options) {
 }
 
 export function getFavouriteGearIds(journeyState, catalogue) {
-  if (Array.isArray(journeyState?.favouriteGearIds)) {
-    const migrated = [
-      ...new Set(
-        journeyState.favouriteGearIds
-          .map((id) => migratedGearId(id, catalogue))
-          .filter(Boolean)
-      )
-    ]
-    return migrated
-  }
-  const migratedDefaults = legacyDefaultFavouriteIds
-    .map((id) => migratedGearId(id, catalogue))
-    .filter(Boolean)
-  return migratedDefaults.length
-    ? [...new Set(migratedDefaults)]
-    : catalogue.map((gear) => gear.id)
+  const ids = Array.isArray(journeyState?.favouriteGearIds)
+    ? journeyState.favouriteGearIds
+    : []
+  return [
+    ...new Set(ids.map((id) => migratedGearId(id, catalogue)).filter(Boolean))
+  ]
 }
 
 export function getFavouriteGearOptions(favouriteGearIds, catalogue) {
@@ -129,6 +119,15 @@ export function getFavouriteGearMeasurements(journeyState) {
   return journeyState?.favouriteGearMeasurements || {}
 }
 
+export function formatGearMeasurements(option, values) {
+  return (option?.measurements || [])
+    .filter(
+      ({ id }) =>
+        values?.[id] !== undefined && values[id] !== null && values[id] !== ''
+    )
+    .map(({ id, label }) => `${label}: ${values[id]}`)
+}
+
 export function migrateGearJourneyState(request, catalogue) {
   const state = getJourneyState(request)
   const patch = {}
@@ -144,6 +143,23 @@ export function migrateGearJourneyState(request, catalogue) {
         JSON.stringify(ids) !== JSON.stringify(state[key])
       ) {
         patch[key] = ids
+      }
+    }
+  }
+  for (const key of [
+    'catchDetailsByGearId',
+    'gearMeasurementDetails',
+    'gearLabelsById'
+  ]) {
+    if (state[key]) {
+      const migrated = Object.fromEntries(
+        Object.entries(state[key]).map(([id, value]) => [
+          migratedGearId(id, catalogue) || id,
+          value
+        ])
+      )
+      if (JSON.stringify(migrated) !== JSON.stringify(state[key])) {
+        patch[key] = migrated
       }
     }
   }

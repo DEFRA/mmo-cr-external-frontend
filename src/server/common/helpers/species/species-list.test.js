@@ -75,6 +75,43 @@ describe('#findSpeciesOptionByLabel', () => {
 })
 
 describe('#getSpeciesJourneyState', () => {
+  test('Should migrate species IDs inside every gear without mixing their answers', () => {
+    let state = {
+      selectedGearIds: ['pots', 'dredge'],
+      catchDetailsByGearId: {
+        pots: {
+          selectedSpeciesIds: ['cod'],
+          speciesWeights: { cod: { weightAboveMinimum: 12 } },
+          speciesNotLanded: { cod: { weightAboveMinimum: 4 } }
+        },
+        dredge: {
+          selectedSpeciesIds: ['had'],
+          speciesWeights: { had: { weightAboveMinimum: 30 } }
+        }
+      }
+    }
+    const request = {
+      query: { gearId: 'dredge' },
+      yar: {
+        get: () => state,
+        set: (_key, next) => {
+          state = next
+        }
+      }
+    }
+    const scoped = getSpeciesJourneyState(request, catalogue)
+    expect(scoped.selectedSpeciesIds).toEqual(['guid-had'])
+    expect(scoped.speciesWeights).toEqual({
+      'guid-had': { weightAboveMinimum: 30 }
+    })
+    expect(state.catchDetailsByGearId.pots.speciesWeights).toEqual({
+      'guid-cod': { weightAboveMinimum: 12 }
+    })
+    expect(state.catchDetailsByGearId.pots.speciesNotLanded).toEqual({
+      'guid-cod': { weightAboveMinimum: 4 }
+    })
+  })
+
   test('Should migrate legacy FAO-code IDs and weight keys to backend GUIDs', () => {
     let state = {
       selectedSpeciesIds: ['cod'],

@@ -24,7 +24,11 @@ describe('#gear favourite reference migration', () => {
   test('Should migrate unique legacy gear labels to API IDs', () => {
     const request = createRequest({
       favouriteGearIds: ['miscellaneous-gear-diving'],
-      selectedGearIds: ['miscellaneous-gear-diving']
+      selectedGearIds: ['miscellaneous-gear-diving'],
+      catchDetailsByGearId: {
+        'miscellaneous-gear-diving': { selectedStatisticalArea: '38E95' }
+      },
+      gearMeasurementDetails: { 'miscellaneous-gear-diving': {} }
     })
 
     const state = migrateGearJourneyState(request, catalogue)
@@ -32,6 +36,10 @@ describe('#gear favourite reference migration', () => {
     expect(state.favouriteGearIds).toEqual(['api-guid-2'])
     expect(state.selectedGearIds).toEqual(['api-guid-2'])
     expect(getFavouriteGearIds(state, catalogue)).toEqual(['api-guid-2'])
+    expect(state.catchDetailsByGearId).toEqual({
+      'api-guid-2': { selectedStatisticalArea: '38E95' }
+    })
+    expect(state.gearMeasurementDetails).toEqual({ 'api-guid-2': {} })
   })
 
   test('Should not expose unknown saved IDs as valid API gears', () => {
@@ -41,7 +49,7 @@ describe('#gear favourite reference migration', () => {
     expect(getFavouriteGearIds(state, catalogue)).toEqual([])
   })
 
-  test('Should use only legacy defaults that match active API names uniquely', () => {
-    expect(getFavouriteGearIds({}, catalogue)).toEqual(['api-guid-2'])
+  test('Should return no favourites when none have been saved', () => {
+    expect(getFavouriteGearIds({}, catalogue)).toEqual([])
   })
 })

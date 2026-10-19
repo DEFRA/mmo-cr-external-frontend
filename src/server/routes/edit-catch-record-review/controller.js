@@ -8,6 +8,7 @@ import {
 } from '#/server/common/helpers/journey/amendment.js'
 import { buildCheckAnswersViewModel } from '#/server/routes/check-answers/view-model.js'
 import { getSpeciesPageData } from '#/server/common/helpers/species/species-list.js'
+import { getGearCatalogue } from '#/server/common/helpers/gear/favourite-gear.js'
 import { formatDate } from '#/config/nunjucks/filters/format-date.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 
@@ -29,11 +30,21 @@ async function viewContext(request, recordId, overrides = {}) {
   const record = findRecord(recordId)
   const details = record.details || getData('catchRecordDetails')
   const { catalogue, journeyState } = await getSpeciesPageData(request)
+  const gearCatalogue =
+    journeyState.selectedGearIds?.length || details.selectedGearIds
+      ? await getGearCatalogue()
+      : undefined
   const vesselName = journeyState.selectedVesselName || details.vesselName
-  const { sections } = buildCheckAnswersViewModel(request, {
+  const summary = buildCheckAnswersViewModel(request, {
+    journeyState: journeyState.selectedGearIds?.length
+      ? journeyState
+      : details.selectedGearIds
+        ? details
+        : journeyState,
     buildChangeHref: () => AMENDMENT_CHANGE_HREF,
     hideVesselChange: true,
     speciesCatalogue: catalogue,
+    gearCatalogue,
     fallbackDetails: details
   })
   const heading =
@@ -57,7 +68,7 @@ async function viewContext(request, recordId, overrides = {}) {
       href: `/records/${recordId}`,
       text: 'Back'
     },
-    sections,
+    ...summary,
     ...overrides
   }
 }

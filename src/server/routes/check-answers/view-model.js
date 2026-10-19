@@ -1,402 +1,310 @@
 import { getData } from '#/server/common/data/get-data.js'
-import { getJourneyState } from '#/server/common/helpers/journey/navigation.js'
-import { formatDate } from '#/config/nunjucks/filters/format-date.js'
-import { offlineMapSubrectangleCodes } from '#/server/common/data/offline-map-subrectangle-codes.js'
+import {
+  getJourneyState,
+  getGearJourneyState,
+  gearPath
+} from '#/server/common/helpers/journey/navigation.js'
+import {
+  STATISTICAL_SUB_AREA,
+  SPECIES_NOT_LANDED,
+  NOT_LANDED,
+  NOT_ENTERED,
+  SPECIES_NOT_LANDED_PATH,
+  KEPT_WEIGHT,
+  resolveStatisticalSubArea,
+  tripsDetailsSection,
+  speciesCaughtSection,
+  speciesCaughtRows,
+  speciesNotLandedSection,
+  compactNotLandedRows,
+  isCompactRow,
+  toSummaryListRow
+} from './summary-sections.js'
+import {
+  gearUsedSection,
+  gearSummaryRows,
+  summaryGearCatalogue
+} from './gear-summary.js'
 
 const RETURN_TO_CHECK_ANSWERS = '?return=/check-answers'
-const MESH_HINT_PATTERN = /^(\d+(?:\.\d+)?)\s*mm mesh$/i
 
-function joinWithAnd(items) {
-  if (items.length < 2) {
-    return items.join('')
-  }
-  return `${items.slice(0, -1).join(', ')} and ${items[items.length - 1]}`
-}
-
-function resolvePortName(ports, code, fallbackName, portNamesByCode) {
-  return (
-    portNamesByCode?.[code] ??
-    ports.find((port) => port.code === code)?.name ??
-    fallbackName
-  )
-}
-
-function resolveStatisticalSubArea(journeyState, fallback) {
-  if (journeyState.statAreaBranch === 'direct') {
-    // Map selections save the real ICES code directly; only legacy sessions need the id lookup.
-    return offlineMapSubrectangleCodes.has(journeyState.selectedStatisticalArea)
-      ? journeyState.selectedStatisticalArea
-      : (getData('nearbyStatisticalAreas').find(
-          (area) => area.id === journeyState.selectedStatisticalArea
-        )?.code ?? fallback.statisticalSubArea)
-  }
-  if (journeyState.statAreaBranch === 'other') {
-    if (
-      offlineMapSubrectangleCodes.has(
-        journeyState.selectedAlternativeAreaOption
-      )
-    ) {
-      return journeyState.selectedAlternativeAreaOption
-    }
-    return journeyState.selectedAlternativeAreaOption === 'other'
-      ? (journeyState.alternativeStatisticalArea ?? fallback.statisticalSubArea)
-      : (getData('statisticalAreas').find(
-          (area) => area.id === journeyState.selectedAlternativeAreaOption
-        )?.code ?? fallback.statisticalSubArea)
-  }
-  return fallback.statisticalSubArea
-}
-
-function tripsDetailsSection(
-  journeyState,
-  fallback,
-  buildChangeHref,
-  hideVesselChange
-) {
-  const ports = getData('ports')
-  const isSameDayTrip = journeyState.tripSameDate !== false
-  const departurePortName = resolvePortName(
-    ports,
-    journeyState.departurePort,
-    fallback.departurePort,
-    journeyState.portNamesByCode
-  )
-  const returnPortName = resolvePortName(
-    ports,
-    journeyState.returnPort,
-    fallback.returnPort,
-    journeyState.portNamesByCode
-  )
-  const statisticalSubArea = resolveStatisticalSubArea(journeyState, fallback)
-
-  const dateChangeHref = isSameDayTrip ? '/trip-date' : '/trip-departure-date'
-  const returnDateChangeHref = isSameDayTrip
-    ? '/trip-date'
-    : '/trip-return-date'
-  const statisticalAreaChangeHref =
-    journeyState.statAreaBranch === 'other'
-      ? '/statistical-area-other'
-      : '/statistical-area'
-
+function viewModelContext(request, options) {
   return {
-    heading: 'Trips details',
-    rows: [
-      {
-        key: 'Vessel',
-        value:
-          journeyState.selectedVesselName ||
-          fallback.vesselName ||
-          getData('selectVessel').name,
-        changeHref: hideVesselChange ? null : buildChangeHref('/select-vessel')
-      },
-      {
-        key: 'Departure date',
-        value: journeyState.departureDate ?? fallback.departureDate,
-        isDate: true,
-        changeHref: buildChangeHref(dateChangeHref)
-      },
-      {
-        key: 'Return date',
-        value: journeyState.returnDate ?? fallback.returnDate,
-        isDate: true,
-        changeHref: buildChangeHref(returnDateChangeHref)
-      },
-      {
-        key: 'Departure port',
-        value: departurePortName,
-        changeHref: buildChangeHref('/departure-port')
-      },
-      {
-        key: 'Return port',
-        value: returnPortName,
-        changeHref: buildChangeHref('/return-port')
-      },
-      {
-        key: 'Statistical sub area',
-        value: statisticalSubArea,
-        changeHref: buildChangeHref(statisticalAreaChangeHref)
-      }
-    ]
+    ...options,
+    request,
+    buildChangeHref:
+      options.buildChangeHref ??
+      ((path) => `${path}${RETURN_TO_CHECK_ANSWERS}`),
+    journeyState: options.journeyState || getJourneyState(request),
+    speciesCatalogue: options.speciesCatalogue || [],
+    gearCatalogue: options.gearCatalogue || getData('gearSelection'),
+    fallback: options.fallbackDetails || getData('catchRecordDetails')
   }
 }
 
-function gearUsedSection(
-  journeyState,
-  fallback,
-  meshSizeDefault,
-  buildChangeHref,
-  gearCatalogue
-) {
-  const selectedGearIds = journeyState.selectedGearIds
-  const hasSelection =
-    Array.isArray(selectedGearIds) && selectedGearIds.length > 0
-  const potsSelected = hasSelection ? selectedGearIds.includes('pots') : true
-  const potsDetails = journeyState.potsDetails || {}
-  const changeHref = buildChangeHref('/gear-selection')
-
-  const gearLabel = hasSelection
-    ? joinWithAnd(
-        selectedGearIds
-          .map(
-            (id) =>
-              gearCatalogue.find((option) => option.id === id)?.name ||
-              gearCatalogue.find((option) => option.id === id)?.label
-          )
-          .filter(Boolean)
-      )
-    : fallback.gear
-
-  const meshSizes = hasSelection
-    ? selectedGearIds
-        .map((id) => {
-          const measurement =
-            journeyState.gearMeasurementDetails?.[id]?.meshSize ??
-            journeyState.favouriteGearMeasurements?.[id]?.meshSize
-          if (
-            measurement !== undefined &&
-            measurement !== null &&
-            measurement !== ''
-          ) {
-            return `${measurement} mm`
-          }
-          const hint = gearCatalogue.find((option) => option.id === id)?.hint
-          const match = hint?.trim().match(MESH_HINT_PATTERN)
-          return match ? `${match[1]} mm` : null
-        })
-        .filter(Boolean)
-    : []
-  const meshSize = resolveMeshSize(meshSizes, potsSelected, meshSizeDefault)
-
-  const rows = [
-    { key: 'Gear type', value: gearLabel, changeHref },
-    ...(potsSelected
-      ? [
-          {
-            key: 'Total pots or traps hauled',
-            value: potsDetails.potsHauled ?? fallback.potsHauled,
-            changeHref
-          },
-          {
-            key: 'Total pots or traps left in water',
-            value: potsDetails.potsInWater ?? fallback.potsInWater,
-            changeHref
-          }
-        ]
-      : []),
-    ...(meshSize ? [{ key: 'Mesh size', value: meshSize, changeHref }] : [])
-  ]
-
-  return { heading: 'Gear used', rows }
+function summaryRows(rows, compactSummary, context = '') {
+  const mapped = rows.map((row) => toSummaryListRow(row, context))
+  return compactSummary ? mapped.filter(isCompactRow) : mapped
 }
 
-function resolveMeshSize(meshSizes, potsSelected, meshSizeDefault) {
-  if (meshSizes.length > 0) {
-    return meshSizes.join(', ')
-  }
-  return potsSelected ? meshSizeDefault : null
-}
-
-function speciesCaughtSection(
-  journeyState,
-  fallback,
-  buildChangeHref,
-  speciesCatalogue
-) {
-  const hasSession = Array.isArray(journeyState.selectedSpeciesIds)
-  const selectedIds = hasSession
-    ? journeyState.selectedSpeciesIds
-    : [speciesCatalogue.find((species) => species.code === 'COD')?.id].filter(
-        Boolean
-      )
-  const selectedSpecies = speciesCatalogue.filter((species) =>
-    selectedIds.includes(species.id)
-  )
-
-  if (selectedSpecies.length === 0) {
-    return null
-  }
-
-  const changeHref = buildChangeHref('/species-selection')
-  const hasMultipleSpecies = selectedSpecies.length > 1
-  const rows = selectedSpecies.flatMap((species) => {
-    const weights = journeyState.speciesWeights?.[species.id] || {}
-    const useExampleWeights = !hasSession && species.code === 'COD'
-    const codeSuffix = hasMultipleSpecies ? ` (${species.code})` : ''
-    return speciesCaughtRows(
-      species,
-      weights,
-      fallback,
-      changeHref,
-      codeSuffix,
-      useExampleWeights
+function gearAreaRow(answers, changeHref) {
+  return {
+    key: 'Statistical area / sub area',
+    value: resolveStatisticalSubArea(answers, {
+      statisticalSubArea: NOT_ENTERED
+    }),
+    changeHref: changeHref(
+      answers.statAreaBranch === 'other'
+        ? '/statistical-area-other'
+        : '/statistical-area'
     )
-  })
-
-  return { heading: 'Species caught', rows }
+  }
 }
 
-function speciesCaughtRows(
-  species,
-  weights,
-  fallback,
-  changeHref,
-  codeSuffix,
-  useExampleWeights
-) {
-  const rows = [
-    {
-      key: `Species${codeSuffix}`,
-      value: species.displayName,
-      changeHref
-    },
-    {
-      key: `Weight above minimum size retained${codeSuffix}`,
-      value: `${weights.weightAboveMinimum ?? (useExampleWeights ? fallback.weightAboveMinimumRetained : '')} ${fallback.weightUnit}`,
-      changeHref
-    }
-  ]
-
-  if (weights.weightBelowMinimum || useExampleWeights) {
-    rows.push({
-      key: `Weight below minimum size retained${codeSuffix}`,
-      value: `${weights.weightBelowMinimum ?? fallback.weightBelowMinimumRetained} ${fallback.weightUnit}`,
-      changeHref
+function gearCaughtRows(answers, context, changeHref, heading) {
+  const { speciesCatalogue, fallback } = context
+  return speciesCatalogue
+    .filter((species) => answers.selectedSpeciesIds?.includes(species.id))
+    .flatMap((species) => {
+      const rows = speciesCaughtRows(
+        species,
+        answers.speciesWeights?.[species.id] || {},
+        fallback,
+        changeHref('/species-selection'),
+        '',
+        false
+      ).map((row) =>
+        row.key === 'Species' ? { ...row, value: species.text } : row
+      )
+      return summaryRows(
+        rows,
+        context.compactSummary,
+        `${species.text}, ${heading}`
+      )
     })
-  }
-  if (weights.weightDiscarded || useExampleWeights) {
-    rows.push({
-      key: `Weight legally discard${codeSuffix}`,
-      value: `${weights.weightDiscarded ?? fallback.weightLegallyDiscarded} ${fallback.weightUnit}`,
-      changeHref
-    })
-  }
-
-  return rows
 }
 
-function speciesNotLandedSection(
-  journeyState,
-  fallback,
-  buildChangeHref,
-  speciesCatalogue
-) {
-  const hasAnswer = typeof journeyState.catchNotLanded === 'boolean'
-  const catchNotLanded = hasAnswer
-    ? journeyState.catchNotLanded
-    : fallback.catchNotLanded
-  const notLandedChangeHref = buildChangeHref('/catch-not-landed')
-
-  const rows = [
-    {
-      key: 'Not landed',
-      value: catchNotLanded ? 'Yes' : 'No',
-      changeHref: notLandedChangeHref
-    }
-  ]
-
-  if (!catchNotLanded) {
-    return { heading: 'Species not landed', rows }
+function gearGroup(gearId, context) {
+  const { request, journeyState, gearCatalogue, buildChangeHref, fallback } =
+    context
+  const gearRequest = {
+    ...request,
+    yar: { get: () => journeyState },
+    query: { gearId }
   }
+  const answers = getGearJourneyState(gearRequest)
+  const gear = gearCatalogue.find((item) => item.id === gearId)
+  const heading =
+    gear?.label ||
+    gear?.name ||
+    journeyState.gearLabelsById?.[gearId] ||
+    journeyState.selectedGearNamesById?.[gearId] ||
+    gearId
+  const changeHref = (path) =>
+    gearPath(gearRequest, buildChangeHref(path), gearId)
+  const details = gearUsedSection(
+    { ...journeyState, selectedGearIds: [gearId] },
+    { ...fallback, potsHauled: NOT_ENTERED, potsInWater: NOT_ENTERED },
+    null,
+    buildChangeHref,
+    summaryGearCatalogue(gearCatalogue),
+    context.compactSummary
+  )
+  return {
+    gearId,
+    heading,
+    rows: [
+      ...summaryRows(
+        gearSummaryRows([...details.rows, gearAreaRow(answers, changeHref)]),
+        context.compactSummary,
+        heading
+      ),
+      ...gearCaughtRows(answers, context, changeHref, heading)
+    ]
+  }
+}
 
-  const changeHref = buildChangeHref('/species-not-landed')
-  const savedSpecies = journeyState.speciesNotLanded || {}
-  const hasSavedSpecies = Object.keys(savedSpecies).length > 0
-  const notLandedSpecies = hasSavedSpecies
-    ? speciesCatalogue.filter((species) =>
-        Object.hasOwn(savedSpecies, species.id)
-      )
-    : [speciesCatalogue.find((species) => species.code === 'COD')].filter(
-        Boolean
-      )
-  const hasMultipleSpecies = notLandedSpecies.length > 1
-  const speciesRows = notLandedSpecies.flatMap((species) => {
-    const details = savedSpecies[species.id]
-    const codeSuffix = hasMultipleSpecies ? ` (${species.code})` : ''
-    return [
+function unlandedAnswer(value) {
+  if (typeof value !== 'boolean') {
+    return NOT_ENTERED
+  }
+  return value ? 'Yes' : 'No'
+}
+
+function unlandedSpeciesRows(context) {
+  const { journeyState, speciesCatalogue, buildChangeHref } = context
+  if (!journeyState.catchNotLanded) {
+    return []
+  }
+  const saved = journeyState.speciesNotLanded || {}
+  const changeHref = buildChangeHref(SPECIES_NOT_LANDED_PATH)
+  return speciesCatalogue
+    .filter((species) => Object.hasOwn(saved, species.id))
+    .flatMap((species) => [
       {
-        key: `Species${codeSuffix}`,
+        key: 'Species',
         value: species.text,
-        changeHref
+        changeHref,
+        context: species.text
       },
       {
-        key: `Weight above minimum size kept onboard or in keep pots (kg)${codeSuffix}`,
-        value:
-          details?.weightAboveMinimum ??
-          fallback.notLandedWeightAboveMinimumKept,
-        changeHref
+        key: KEPT_WEIGHT,
+        value: `${saved[species.id].weightAboveMinimum} kg`,
+        changeHref,
+        context: species.text
       }
-    ]
-  })
-
-  rows.push(...speciesRows)
-
-  return { heading: 'Species not landed', rows }
+    ])
 }
 
-// Converts a section's raw { key, value, changeHref, isDate } rows into the
-// GOV.UK summary-list row shape, applying date formatting and building the
-// uniquely-accessible Change action. A falsy changeHref omits the action
-// (e.g. the amendment-mode Vessel row, which the design shows with no Change link).
-function toSummaryListRow({ key, value, changeHref, isDate }) {
+function trailingSections(context) {
+  const rows = [
+    {
+      key: NOT_LANDED,
+      value: unlandedAnswer(context.journeyState.catchNotLanded),
+      changeHref: context.buildChangeHref('/catch-not-landed')
+    },
+    ...unlandedSpeciesRows(context)
+  ]
+  const visibleRows = context.compactSummary
+    ? rows.filter((row) => row.key !== NOT_LANDED)
+    : rows
+  if (!visibleRows.length) {
+    return []
+  }
+  return [
+    {
+      heading: SPECIES_NOT_LANDED,
+      rows: visibleRows.map((row) =>
+        toSummaryListRow(row, row.context || 'this trip')
+      )
+    }
+  ]
+}
+
+function groupedViewModel(context) {
+  const { journeyState, fallback, buildChangeHref, hideVesselChange } = context
+  const trip = tripsDetailsSection(
+    {
+      ...journeyState,
+      selectedVesselName:
+        journeyState.selectedVesselName || journeyState.vesselName
+    },
+    fallback,
+    buildChangeHref,
+    hideVesselChange
+  )
   return {
-    key: { text: key },
-    value: { text: isDate ? formatDate(value, 'd MMMM yyyy') : `${value}` },
-    actions: changeHref
-      ? {
-          items: [
-            {
-              href: changeHref,
-              text: 'Change',
-              visuallyHiddenText: key.toLowerCase()
-            }
-          ]
-        }
-      : { items: [] }
+    sections: [
+      {
+        heading: 'Trip',
+        rows: summaryRows(
+          trip.rows.filter((row) => row.key !== STATISTICAL_SUB_AREA),
+          context.compactSummary
+        )
+      }
+    ],
+    gearGroups: journeyState.selectedGearIds.map((id) =>
+      gearGroup(id, context)
+    ),
+    trailingSections: trailingSections(context)
   }
 }
 
-export function buildCheckAnswersViewModel(request, options = {}) {
-  const buildChangeHref =
-    options.buildChangeHref ??
-    ((wizardPath) => `${wizardPath}${RETURN_TO_CHECK_ANSWERS}`)
-  const journeyState = getJourneyState(request)
-  const speciesCatalogue = options.speciesCatalogue || []
-  const gearCatalogue = options.gearCatalogue || getData('gearSelection')
-  const fallback = options.fallbackDetails || getData('catchRecordDetails')
+function legacySections(context) {
+  const { journeyState, fallback, buildChangeHref, speciesCatalogue } = context
   const { potsMeshSize } = getData('checkAnswersDefaults')
-
-  const sections = [
-    tripsDetailsSection(
+  return {
+    trip: tripsDetailsSection(
       journeyState,
       fallback,
       buildChangeHref,
-      options.hideVesselChange
+      context.hideVesselChange
     ),
-    gearUsedSection(
+    gear: gearUsedSection(
       journeyState,
       fallback,
       potsMeshSize,
       buildChangeHref,
-      gearCatalogue
+      context.gearCatalogue,
+      context.compactSummary
     ),
-    speciesCaughtSection(
+    caught: speciesCaughtSection(
       journeyState,
       fallback,
       buildChangeHref,
       speciesCatalogue
     ),
-    speciesNotLandedSection(
+    notLanded: speciesNotLandedSection(
       journeyState,
       fallback,
       buildChangeHref,
       speciesCatalogue
     )
-  ].filter(Boolean)
+  }
+}
 
+function legacyCaughtRows(caught, speciesCatalogue) {
+  return (caught?.rows || []).map((row) => {
+    const species = speciesCatalogue.find(
+      (item) => item.displayName === row.value
+    )
+    return species ? { ...row, value: species.text } : row
+  })
+}
+
+function compactLegacyViewModel(sections, context) {
+  const { trip, gear, caught, notLanded } = sections
+  const area = trip.rows.find((row) => row.key === STATISTICAL_SUB_AREA)
+  const notLandedRows = compactNotLandedRows(notLanded.rows)
   return {
-    sections: sections.map((section) => ({
-      heading: section.heading,
-      rows: section.rows.map(toSummaryListRow)
-    }))
+    sections: [
+      {
+        heading: 'Trip',
+        rows: summaryRows(
+          trip.rows.filter((row) => row !== area),
+          true
+        )
+      }
+    ],
+    gearGroups: [
+      {
+        heading: gear.rows[0].value,
+        rows: summaryRows(
+          [
+            ...gearSummaryRows(gear.rows),
+            { ...area, key: 'Statistical area / sub area' },
+            ...legacyCaughtRows(caught, context.speciesCatalogue)
+          ],
+          true
+        )
+      }
+    ],
+    trailingSections: notLandedRows.length
+      ? [
+          {
+            heading: SPECIES_NOT_LANDED,
+            rows: summaryRows(notLandedRows, false)
+          }
+        ]
+      : []
+  }
+}
+
+export function buildCheckAnswersViewModel(request, options = {}) {
+  const context = viewModelContext(request, options)
+  if (context.journeyState.selectedGearIds?.length) {
+    return groupedViewModel(context)
+  }
+  const sections = legacySections(context)
+  if (context.compactSummary) {
+    return compactLegacyViewModel(sections, context)
+  }
+  return {
+    sections: Object.values(sections)
+      .filter(Boolean)
+      .map((section) => ({
+        heading: section.heading,
+        rows: summaryRows(section.rows, false)
+      }))
   }
 }
