@@ -7,9 +7,20 @@ import {
   restoreSpeciesReferenceDataMock,
   SPECIES_IDS
 } from '#/test-helpers/mock-species-reference-data.js'
+import {
+  mockVesselsReferenceData,
+  restoreVesselsReferenceDataMock,
+  VESSEL_IDS
+} from '#/test-helpers/mock-vessels-reference-data.js'
 
-beforeEach(() => mockSpeciesReferenceData())
-afterEach(() => restoreSpeciesReferenceDataMock())
+beforeEach(() => {
+  mockSpeciesReferenceData()
+  mockVesselsReferenceData()
+})
+afterEach(() => {
+  restoreVesselsReferenceDataMock()
+  restoreSpeciesReferenceDataMock()
+})
 
 describe('#removeSpeciesController', () => {
   let server
@@ -29,8 +40,89 @@ describe('#removeSpeciesController', () => {
       url: '/remove-species'
     })
 
-    expect(result).toEqual(expect.stringContaining('Remove a species |'))
+    expect(result).toEqual(
+      expect.stringContaining('Remove species from vessel |')
+    )
     expect(statusCode).toBe(statusCodes.ok)
+  })
+
+  test.each([
+    [VESSEL_IDS.achilles, 'ACHILLES'],
+    [VESSEL_IDS.seaSpray, 'SEA SPRAY']
+  ])(
+    'Should show the chosen vessel on Add and Remove species for %s',
+    async (vesselId, vesselName) => {
+      const selection = await server.inject({
+        method: 'POST',
+        url: '/select-vessel',
+        payload: { vesselId }
+      })
+      expect(selection.statusCode).toBe(statusCodes.seeOther)
+      const cookie = selection.headers['set-cookie'][0].split(';')[0]
+
+      for (const route of ['add-species', 'remove-species']) {
+        for (const method of ['GET', 'POST']) {
+          const { result, statusCode } = await server.inject({
+            method,
+            url: `/${route}?return=/species-selection`,
+            headers: { cookie },
+            ...(method === 'POST' && { payload: {} })
+          })
+          const $ = load(result)
+          const heading =
+            route === 'add-species'
+              ? 'Add species to your vessel'
+              : 'Remove species from vessel'
+
+          expect(statusCode).toBe(
+            method === 'GET' ? statusCodes.ok : statusCodes.badRequest
+          )
+          expect($('h1 [class~="govuk-!-display-block"]').text()).toBe(
+            vesselName
+          )
+          expect($('title').text()).toContain(`${heading} ${vesselName}`)
+          expect(
+            $('[data-testid="app-page-navigation-back-link"]').attr('href')
+          ).toBe('/species-selection')
+        }
+      }
+    }
+  )
+
+  test('Should update both species headings when the vessel changes in the same journey', async () => {
+    let cookie
+
+    for (const [vesselId, vesselName] of [
+      [VESSEL_IDS.achilles, 'ACHILLES'],
+      [VESSEL_IDS.seaSpray, 'SEA SPRAY']
+    ]) {
+      const selection = await server.inject({
+        method: 'POST',
+        url: '/select-vessel',
+        payload: { vesselId },
+        ...(cookie && { headers: { cookie } })
+      })
+      expect(selection.statusCode).toBe(statusCodes.seeOther)
+      cookie = selection.headers['set-cookie'][0].split(';')[0]
+
+      for (const [route, heading] of [
+        ['add-species', 'Add species to your vessel'],
+        ['remove-species', 'Remove species from vessel']
+      ]) {
+        const response = await server.inject({
+          method: 'GET',
+          url: `/${route}?return=/species-selection`,
+          headers: { cookie }
+        })
+        const $ = load(response.result)
+        expect(response.statusCode).toBe(statusCodes.ok)
+        expect($('h1').text().replace(/\s+/g, ' ').trim()).toBe(
+          `New catch record ${heading} ${vesselName}`
+        )
+        expect($('title').text()).toContain(`${heading} ${vesselName}`)
+        cookie = response.headers['set-cookie']?.[0]?.split(';')[0] || cookie
+      }
+    }
   })
 
   test('Should render the Back link to the species selection page', async () => {

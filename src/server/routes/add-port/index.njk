@@ -14,12 +14,18 @@
             id: "port",
             name: "port",
             label: { text: heading, classes: "govuk-visually-hidden" },
-            classes: "app-statistical-area-search__input",
+            classes: "app-statistical-area-search__input app-autocomplete__input",
+            inputWrapper: { classes: "app-autocomplete" },
+            formGroup: {
+              afterInput: {
+                html: '<span class="app-autocomplete__arrow" aria-hidden="true"></span>'
+              }
+            },
             value: port,
             errorMessage: { text: fieldErrors.port } if fieldErrors.port else false,
             attributes: {
               autocomplete: "off",
-              placeholder: "Type to search (minimum 2 characters)",
+              placeholder: "Start typing to display the list",
               "aria-autocomplete": "list",
               "aria-controls": "port-results",
               "aria-expanded": "false",

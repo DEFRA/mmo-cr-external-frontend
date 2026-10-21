@@ -13,9 +13,9 @@ import { offlineMapSubrectangles } from '#/server/common/data/offline-map-subrec
 import { offlineMapPorts } from '#/server/common/data/offline-map-ports.js'
 import { config } from '#/config/config.js'
 import { createMapStatisticalAreasReferenceDataClient } from '#/server/common/clients/map-statistical-areas-reference-data.js'
+import { statisticalAreaContent } from '#/server/common/helpers/journey/statistical-area-content.js'
 
-const pageTitle =
-  'Select the statistical sub area where the majority of your catch was caught using seine nets (mesh size 100mm)?'
+const templatePath = 'statistical-area-other/index'
 const subrectangleFormat = /^\d{2}[A-Z]\d{2}$/i
 const selectionErrorText = 'Select a statistical subrectangle'
 const subrectangleFormatErrorText =
@@ -93,12 +93,9 @@ function resolveSelectedAreaCoordinatesText(
   return subrectangle ? formatCoordinate(subrectangle.coordinate) : undefined
 }
 
-function viewContext(request, overrides = {}) {
+async function viewContext(request, overrides = {}) {
   const journeyState = getJourneyState(request)
   const gearContext = gearPageContext(request)
-  const heading = gearContext.gearLabel
-    ? `Select the statistical sub area where the majority of your catch was caught using ${gearContext.gearLabel}?`
-    : pageTitle
   const alternativeStatisticalArea =
     journeyState.alternativeStatisticalArea || ''
   const departurePort = getData('ports').find(
@@ -119,14 +116,9 @@ function viewContext(request, overrides = {}) {
   const selectedArea = journeyState.selectedAlternativeAreaOption
 
   return {
+    ...(await statisticalAreaContent(journeyState)),
     ...gearContext,
-    pageTitle: heading,
-    heading,
     caption: 'New catch record',
-    bodyText: [
-      'The statistical areas nearest to your departure port are shown below. Select the area where most of your catch was caught.',
-      "If it is not listed, select 'Other' to enter it."
-    ],
     backLink: {
       href: gearPath(
         request,
@@ -148,8 +140,8 @@ function viewContext(request, overrides = {}) {
 }
 
 export const statisticalAreaOtherController = {
-  handler(request, h) {
-    return h.view('statistical-area-other/index', viewContext(request))
+  async handler(request, h) {
+    return h.view(templatePath, await viewContext(request))
   }
 }
 
@@ -181,8 +173,8 @@ async function handleManualAreaSubmission(request, h) {
   if (!subrectangleFormat.test(submitted)) {
     return h
       .view(
-        'statistical-area-other/index',
-        viewContext(request, {
+        templatePath,
+        await viewContext(request, {
           errorSummary: {
             titleText: errorSummaryTitle,
             errorList: [
@@ -209,8 +201,8 @@ async function handleManualAreaSubmission(request, h) {
   if (!coordinate) {
     return h
       .view(
-        'statistical-area-other/index',
-        viewContext(request, {
+        templatePath,
+        await viewContext(request, {
           errorSummary: {
             titleText: errorSummaryTitle,
             errorList: [
@@ -255,7 +247,7 @@ export const statisticalAreaOtherSubmitController = {
             otherwise: Joi.allow('')
           })
       }),
-      failAction(request, h) {
+      async failAction(request, h) {
         const isManualEntry = request.payload.statisticalArea === 'other'
         const errorText = isManualEntry
           ? subrectangleErrorText
@@ -269,8 +261,8 @@ export const statisticalAreaOtherSubmitController = {
 
         return h
           .view(
-            'statistical-area-other/index',
-            viewContext(request, {
+            templatePath,
+            await viewContext(request, {
               errorSummary: {
                 titleText: errorSummaryTitle,
                 errorList: [{ text: errorText, href: errorHref }]

@@ -54,6 +54,15 @@ describe('#privacyNoticeController', () => {
       )
     })
 
+    test('Should link the footer Privacy policy item to this page', () => {
+      const $privacyPolicyLink = $('.govuk-footer a').filter(
+        (_index, element) => $(element).text().trim() === 'Privacy policy'
+      )
+
+      expect($privacyPolicyLink).toHaveLength(1)
+      expect($privacyPolicyLink.attr('href')).toBe('/privacy-notice')
+    })
+
     test('Should render the Back link with the expected href', () => {
       const $backLink = $('[data-testid="app-page-navigation-back-link"]')
       expect($backLink).toHaveLength(1)

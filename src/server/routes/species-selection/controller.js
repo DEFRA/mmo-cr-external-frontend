@@ -24,8 +24,7 @@ import {
   speciesWeightFromPayload
 } from '#/server/common/helpers/species/species-form.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
-
-const pageTitle = 'What species did you catch using pots?'
+import { selectedGearDescription } from '#/server/common/helpers/journey/statistical-area-content.js'
 
 function isProvided(value) {
   return typeof value === 'string' && value.trim() !== ''
@@ -258,8 +257,11 @@ function speciesCheckboxItems(
   })
 }
 
-function viewContext(request, speciesData, overrides = {}) {
+async function viewContext(request, speciesData, overrides = {}) {
   const { journeyState, speciesOptions } = speciesData
+  const gears = await selectedGearDescription(journeyState)
+  const gearSuffix = gears ? ` using ${gears}` : ''
+  const pageTitle = `What species did you catch${gearSuffix}?`
   const selectedSpeciesIds = journeyState.selectedSpeciesIds || []
   const speciesWeights = journeyState.speciesWeights || {}
   const gearContext = gearPageContext(request)
@@ -298,11 +300,17 @@ function viewContext(request, speciesData, overrides = {}) {
   }
 }
 
-function renderPage(request, h, speciesData, overrides, code = statusCodes.ok) {
+async function renderPage(
+  request,
+  h,
+  speciesData,
+  overrides,
+  code = statusCodes.ok
+) {
   const response = h
     .view(
       'species-selection/index',
-      viewContext(request, speciesData, overrides)
+      await viewContext(request, speciesData, overrides)
     )
     .code(code)
 
@@ -312,7 +320,10 @@ function renderPage(request, h, speciesData, overrides, code = statusCodes.ok) {
 export const speciesSelectionController = {
   async handler(request, h) {
     const speciesData = await getSpeciesPageData(request)
-    return h.view('species-selection/index', viewContext(request, speciesData))
+    return h.view(
+      'species-selection/index',
+      await viewContext(request, speciesData)
+    )
   }
 }
 

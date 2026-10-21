@@ -29,23 +29,28 @@ function findRecord(recordId) {
 async function viewContext(request, recordId, overrides = {}) {
   const record = findRecord(recordId)
   const details = record.details || getData('catchRecordDetails')
-  const { catalogue } = await getSpeciesPageData(request)
-  const { sections, gearGroups, trailingSections } = buildCheckAnswersViewModel(
-    request,
-    {
-      buildChangeHref: () => AMENDMENT_CHANGE_HREF,
-      hideVesselChange: true,
-      speciesCatalogue: catalogue,
-      ...(details.selectedGearIds && {
-        journeyState: details,
-        gearCatalogue: await getGearCatalogue()
-      })
-    }
-  )
+  const { catalogue, journeyState } = await getSpeciesPageData(request)
+  const gearCatalogue =
+    journeyState.selectedGearIds?.length || details.selectedGearIds
+      ? await getGearCatalogue()
+      : undefined
+  const vesselName = journeyState.selectedVesselName || details.vesselName
+  let summaryJourneyState = journeyState
+  if (!journeyState.selectedGearIds?.length && details.selectedGearIds) {
+    summaryJourneyState = details
+  }
+  const summary = buildCheckAnswersViewModel(request, {
+    journeyState: summaryJourneyState,
+    buildChangeHref: () => AMENDMENT_CHANGE_HREF,
+    hideVesselChange: true,
+    speciesCatalogue: catalogue,
+    gearCatalogue,
+    fallbackDetails: details
+  })
   const heading =
     record.recordId === 'late-1'
-      ? `Edit the record for ${details.vesselName}`
-      : `Catch record for ${details.vesselName}`
+      ? `Edit the record for ${vesselName}`
+      : `Catch record for ${vesselName}`
 
   return {
     pageTitle: heading,
@@ -63,9 +68,7 @@ async function viewContext(request, recordId, overrides = {}) {
       href: `/records/${recordId}`,
       text: 'Back'
     },
-    sections,
-    gearGroups,
-    trailingSections,
+    ...summary,
     ...overrides
   }
 }

@@ -26,5 +26,11 @@ describe('Heading Component', () => {
         $heading('[data-testid="app-heading-caption"]').text().trim()
       ).toBe('A page showing available services')
     })
+
+    test('Should render the caption before the heading', () => {
+      expect(
+        $heading('[data-testid="app-heading-caption"]').index()
+      ).toBeLessThan($heading('[data-testid="app-heading-title"]').index())
+    })
   })
 })

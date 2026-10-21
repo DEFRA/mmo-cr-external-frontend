@@ -7,30 +7,30 @@
       <form method="post" novalidate>
         <h1 class="govuk-label-wrapper">
           <span class="govuk-caption-l">{{ caption }}</span>
-          <label class="govuk-label govuk-label--xl" for="species">{{ heading }}</label>
+          <label class="govuk-label govuk-label--xl" for="species">
+            {{ heading }}
+            {% if vesselName %}<span class="govuk-!-display-block">{{ vesselName }}</span>{% endif %}
+          </label>
         </h1>
 
-        <div class="govuk-form-group{{ ' govuk-form-group--error' if fieldErrors.species }}">
+        <div class="govuk-form-group app-species-search{{ ' govuk-form-group--error' if fieldErrors.species }}">
           {% if fieldErrors.species %}
             <p id="species-error" class="govuk-error-message">
               <span class="govuk-visually-hidden">Error:</span> {{ fieldErrors.species }}
             </p>
           {% endif %}
-          <input
-            class="govuk-input"
+          <select
+            class="govuk-select govuk-!-width-full"
             id="species"
             name="species"
-            type="text"
-            list="species-options"
-            autocomplete="off"
-            placeholder="Start typing to display the list"
             {% if fieldErrors.species %}aria-describedby="species-error"{% endif %}
+            data-species-search
           >
-          <datalist id="species-options">
+            <option value="">Start typing to display the list</option>
             {% for label in speciesOptionLabels %}
-              <option value="{{ label }}"></option>
+              <option value="{{ label }}">{{ label }}</option>
             {% endfor %}
-          </datalist>
+          </select>
         </div>
 
         {{ govukButton({

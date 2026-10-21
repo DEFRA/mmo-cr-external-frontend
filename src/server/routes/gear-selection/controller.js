@@ -253,6 +253,12 @@ function validateSelectedGearDetails(gearIds, payload, catalogue) {
 function saveSelectedGears(request, gearIds, catalogue, currentState, details) {
   setJourneyState(request, {
     selectedGearIds: gearIds,
+    selectedGearNamesById: Object.fromEntries(
+      gearIds.map((id) => {
+        const gear = catalogue.find((item) => item.id === id)
+        return [id, gear.name || gear.label]
+      })
+    ),
     gearLabelsById: Object.fromEntries(
       gearIds.map((id) => {
         const gear = catalogue.find((item) => item.id === id)

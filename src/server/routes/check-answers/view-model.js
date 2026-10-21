@@ -38,7 +38,7 @@ function viewModelContext(request, options) {
     journeyState: options.journeyState || getJourneyState(request),
     speciesCatalogue: options.speciesCatalogue || [],
     gearCatalogue: options.gearCatalogue || getData('gearSelection'),
-    fallback: getData('catchRecordDetails')
+    fallback: options.fallbackDetails || getData('catchRecordDetails')
   }
 }
 
@@ -95,7 +95,11 @@ function gearGroup(gearId, context) {
   const answers = getGearJourneyState(gearRequest)
   const gear = gearCatalogue.find((item) => item.id === gearId)
   const heading =
-    gear?.label || gear?.name || journeyState.gearLabelsById?.[gearId] || gearId
+    gear?.label ||
+    gear?.name ||
+    journeyState.gearLabelsById?.[gearId] ||
+    journeyState.selectedGearNamesById?.[gearId] ||
+    gearId
   const changeHref = (path) =>
     gearPath(gearRequest, buildChangeHref(path), gearId)
   const details = gearUsedSection(

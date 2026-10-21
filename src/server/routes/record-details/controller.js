@@ -2,7 +2,10 @@ import Joi from 'joi'
 import Boom from '@hapi/boom'
 
 import { getData } from '#/server/common/data/get-data.js'
-import { getSpeciesCatalogue } from '#/server/common/helpers/species/species-list.js'
+import {
+  getSpeciesCatalogue,
+  getSpeciesPageData
+} from '#/server/common/helpers/species/species-list.js'
 import { getGearCatalogue } from '#/server/common/helpers/gear/favourite-gear.js'
 import { buildCheckAnswersViewModel } from '#/server/routes/check-answers/view-model.js'
 
@@ -28,16 +31,34 @@ export const recordDetailsController = {
       throw Boom.notFound()
     }
 
-    const details = record.details || getData('catchRecordDetails')
-    const summary = details.selectedGearIds
-      ? buildCheckAnswersViewModel(request, {
-          journeyState: details,
-          speciesCatalogue: await getSpeciesCatalogue(request),
-          gearCatalogue: await getGearCatalogue(),
-          buildChangeHref: () => null,
-          hideVesselChange: true
-        })
-      : {}
+    let details = record.details || getData('catchRecordDetails')
+    let summary = {}
+    if (record.status === 'amended') {
+      const { journeyState, catalogue: speciesCatalogue } =
+        await getSpeciesPageData(request)
+      const gearCatalogue = await getGearCatalogue()
+      details = {
+        ...details,
+        vesselName: journeyState.selectedVesselName || details.vesselName
+      }
+      summary = buildCheckAnswersViewModel(request, {
+        speciesCatalogue,
+        gearCatalogue,
+        fallbackDetails: details,
+        buildChangeHref: () => null
+      })
+    }
+
+    if (record.status !== 'amended' && details.selectedGearIds) {
+      summary = buildCheckAnswersViewModel(request, {
+        journeyState: details,
+        speciesCatalogue: await getSpeciesCatalogue(request),
+        gearCatalogue: await getGearCatalogue(),
+        buildChangeHref: () => null,
+        fallbackDetails: details,
+        hideVesselChange: true
+      })
+    }
 
     return h.view('record-details/index', {
       pageTitle: `Catch record for ${details.vesselName}`,

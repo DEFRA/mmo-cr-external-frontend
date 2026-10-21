@@ -8,7 +8,11 @@ export const signInController = {
   handler(_request, h) {
     return h.view('sign-in/index', {
       pageTitle: 'Sign in',
-      heading: 'Sign in'
+      heading: 'Sign in',
+      backLink: {
+        href: '/guidance',
+        text: 'Back'
+      }
     })
   }
 }

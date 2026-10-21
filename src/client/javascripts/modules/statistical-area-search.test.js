@@ -50,6 +50,40 @@ afterEach(() => {
 })
 
 describe('#initialiseStatisticalAreaSearch', () => {
+  test('Should reveal Other immediately while area data is still loading', async () => {
+    setBodyHtml(baseMarkup())
+    const pendingResponse = Promise.withResolvers()
+    vi.stubGlobal('fetch', vi.fn().mockReturnValue(pendingResponse.promise))
+    const initialisation = initialiseStatisticalAreaSearch()
+    const radio = document.createElement('input')
+    radio.type = 'radio'
+    radio.value = 'other'
+    document.querySelector('[data-statistical-area-options]').append(radio)
+
+    radio.dispatchEvent(new Event('change', { bubbles: true }))
+
+    expect(
+      document.querySelector('[data-statistical-area-search-panel]').hidden
+    ).toBe(false)
+    const input = document.querySelector('[data-statistical-area-search]')
+    expect(document.activeElement).toBe(input)
+    input.value = '30'
+    input.dispatchEvent(new Event('input'))
+    pendingResponse.resolve({
+      ok: true,
+      json: async () => ({ subrectangles: [{ subCode: '30F04' }] })
+    })
+    await initialisation
+
+    expect(
+      document.querySelector('[data-statistical-area-results]').hidden
+    ).toBe(false)
+    expect(
+      document.querySelector('[data-statistical-area-results] button')
+        .textContent
+    ).toContain('30F04')
+  })
+
   test('Should add API subrectangles to offline search results and prefer API coordinates', async () => {
     setBodyHtml(baseMarkup())
     mockAreaApiAndOffline(

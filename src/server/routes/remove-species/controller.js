@@ -8,7 +8,6 @@ import { filterKnownSpeciesIds } from '#/server/common/helpers/species/species-f
 import { getSpeciesPageData } from '#/server/common/helpers/species/species-list.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 
-const pageTitle = 'Remove a species'
 function speciesCheckboxItems(speciesOptions) {
   return speciesOptions.map((species) => ({
     value: species.id,
@@ -17,9 +16,13 @@ function speciesCheckboxItems(speciesOptions) {
 }
 
 function viewContext(request, speciesData, overrides = {}) {
+  const vesselName = speciesData.journeyState.selectedVesselName || ''
+  const heading = 'Remove species from vessel'
+  const pageTitle = vesselName ? `${heading} ${vesselName}` : heading
   return {
     pageTitle,
-    heading: pageTitle,
+    heading,
+    vesselName,
     caption: 'New catch record',
     backLink: {
       href: speciesSelectionReturnPath(request),

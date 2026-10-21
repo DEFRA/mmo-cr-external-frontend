@@ -10,8 +10,10 @@ import {
   getVesselItem
 } from '#/server/common/helpers/vessels/vessels-list.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
+import { getData } from '#/server/common/data/get-data.js'
+import { buildNavigation } from '#/config/nunjucks/context/build-navigation.js'
 
-const errorText = 'Select your vessel'
+const errorText = 'Which vessel did you use?'
 const templatePath = 'select-vessel/index'
 
 function viewContext(request, vessels, overrides = {}) {
@@ -19,7 +21,8 @@ function viewContext(request, vessels, overrides = {}) {
   return {
     pageTitle: errorText,
     heading: errorText,
-    caption: 'New catch record',
+    reference: getData('catchRecordDetails').reference,
+    navigation: buildNavigation(request, { showWhenSignedOut: true }),
     backLink: {
       href: '/records',
       text: 'Back'

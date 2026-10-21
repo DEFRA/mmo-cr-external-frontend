@@ -1,4 +1,4 @@
-const MESH_HINT_PATTERN = /mm mesh/i
+const MESH_HINT_PATTERN = /^(\d+(?:\.\d+)?)\s*mm mesh$/i
 const GEAR_TYPE = 'Gear type'
 
 function joinWithAnd(items) {
@@ -30,9 +30,10 @@ function resolveMeshSize(
 ) {
   const hints = (selectedIds || [])
     .map((id) => catalogue.find((gear) => gear.id === id)?.hint)
-    .filter((hint) => hint && MESH_HINT_PATTERN.test(hint))
+    .map((hint) => hint?.trim().match(MESH_HINT_PATTERN)?.[1])
+    .filter(Boolean)
   if (hints.length) {
-    return hints.join(', ')
+    return hints.map((hint) => `${hint} mm`).join(', ')
   }
   return potsSelected ? meshSizeDefault : null
 }
@@ -61,7 +62,10 @@ function recordedMeasurementRows(
 ) {
   const measurements =
     catalogue.find((gear) => gear.id === gearId)?.measurements || []
-  const values = state.gearMeasurementDetails?.[gearId] || {}
+  const values = {
+    ...state.favouriteGearMeasurements?.[gearId],
+    ...state.gearMeasurementDetails?.[gearId]
+  }
   return measurements
     .filter((measurement) => values[measurement.id] !== undefined)
     .map((measurement) => ({

@@ -73,6 +73,16 @@ describe('#addPortController', () => {
     const $ = load(result)
 
     expect($('[data-port-search]')).toHaveLength(1)
+    expect($('[data-port-search]').attr('placeholder')).toBe(
+      'Start typing to display the list'
+    )
+    expect($('[data-port-search]').hasClass('app-autocomplete__input')).toBe(
+      true
+    )
+    expect($('.app-autocomplete__arrow').attr('aria-hidden')).toBe('true')
+    expect($('label[for="port"]').text().trim()).toBe(
+      'Enter the port or closest port you set off from'
+    )
     expect($('.govuk-button').text().trim()).toBe('Save and continue')
   })
 

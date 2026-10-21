@@ -200,7 +200,11 @@ export function gearPageContext(request) {
   const gearId = currentGearId(request)
   return {
     gearId,
-    gearLabel: gearId ? state.gearLabelsById?.[gearId] || gearId : null,
+    gearLabel: gearId
+      ? state.gearLabelsById?.[gearId] ||
+        state.selectedGearNamesById?.[gearId] ||
+        gearId
+      : null,
     legacyCatchNotice:
       state.selectedGearIds?.length > 1 &&
       CATCH_KEYS.some((key) => state[key] !== undefined) &&

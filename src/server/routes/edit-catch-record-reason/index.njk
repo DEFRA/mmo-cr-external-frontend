@@ -1,29 +1,46 @@
 {% extends 'layouts/page.njk' %}
 {% from "govuk/components/textarea/macro.njk" import govukTextarea %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
+{% from "govuk/components/warning-text/macro.njk" import govukWarningText %}
+
+{% block notification %}{% endblock %}
 
 {% block pageContent %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
+      {% if notification %}
+        {{ govukNotificationBanner(notification) }}
+      {% endif %}
+
       <span class="govuk-caption-l" data-testid="app-edit-reason-caption">{{ reference }}</span>
 
       <form method="post" novalidate>
         {{ govukTextarea({
           name: "editReason",
           id: "editReason",
+          rows: 9,
+          formGroup: { classes: "govuk-!-margin-bottom-8" },
           label: {
             text: heading,
-            classes: "govuk-label--xl",
+            classes: "govuk-label--xl govuk-!-margin-bottom-7",
             isPageHeading: true
           },
           hint: {
-            html: '<p class="govuk-body">Include:</p><ul class="govuk-list govuk-list--bullet"><li>what you are changing</li><li>why are you changing it</li><li>which office requested it, if applicable</li><li>the date change was made</li></ul>'
+            classes: "govuk-!-margin-bottom-8",
+            html: '<p class="govuk-body govuk-!-margin-bottom-2">Include:</p><ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-0"><li>what you are changing</li><li>why are you changing it</li><li>which office requested it, if applicable</li><li>the date change was made</li></ul>'
           },
           value: values.editReason if values else "",
           errorMessage: { text: fieldErrors.editReason } if fieldErrors.editReason else false
         }) }}
 
-        {{ govukButton({ text: "Save and continue" }) }}
+        {{ govukWarningText({
+          text: "You must have a valid reason for editing this catch record. Editing a catch record without a valid reason may be an offence and could result in enforcement action.",
+          iconFallbackText: "Warning",
+          classes: "govuk-!-margin-bottom-9"
+        }) }}
+
+        {{ govukButton({ text: "Save and continue", classes: "govuk-!-margin-top-4" }) }}
       </form>
     </div>
   </div>

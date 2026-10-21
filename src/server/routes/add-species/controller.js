@@ -18,10 +18,13 @@ function speciesOptionLabels(availableSpeciesIds, catalogue) {
 }
 
 function viewContext(request, speciesData, overrides = {}) {
-  const pageTitle = `Add species to your vessel ${getJourneyState(request).selectedVesselName || 'OLGA'}`
+  const vesselName = getJourneyState(request).selectedVesselName || ''
+  const heading = 'Add species to your vessel'
+  const pageTitle = vesselName ? `${heading} ${vesselName}` : heading
   return {
     pageTitle,
-    heading: pageTitle,
+    heading,
+    vesselName,
     caption: 'New catch record',
     backLink: {
       href: speciesSelectionReturnPath(request),

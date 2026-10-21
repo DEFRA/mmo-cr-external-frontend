@@ -3,21 +3,30 @@
 {% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
 {% from "govuk/components/tag/macro.njk" import govukTag %}
 {% from "govuk/components/pagination/macro.njk" import govukPagination %}
+{% from "govuk/components/pagination/template.njk" import arrowPrevious, arrowNext %}
 {% from "govuk/components/details/macro.njk" import govukDetails %}
 
-{% block pageContent %}
-  {{ govukNotificationBanner({
-    titleText: notice.title,
-    text: notice.text
-  }) }}
+{% block notification %}{% endblock %}
 
-  {{ appHeading({
-    text: heading,
-    caption: accountRole
-  }) }}
+{% block pageContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {{ govukNotificationBanner({
+        titleText: notice.title,
+        text: notice.text
+      }) }}
+    </div>
+  </div>
+
+  {{ appHeading({ text: heading }) }}
 
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
+      {{ govukButton({
+        text: "Create a new catch record",
+        href: "/select-vessel"
+      }) }}
+
       <table class="govuk-table" data-testid="app-records-table">
         <thead class="govuk-table__head">
           <tr class="govuk-table__row">
@@ -31,11 +40,17 @@
           {% for record in records %}
             <tr class="govuk-table__row" data-testid="app-records-row">
               <td class="govuk-table__cell">
-                <a class="govuk-link" href="{{ record.href }}">{{ record.tripEndDate | formatDate("d MMM yyyy") }}<span class="govuk-visually-hidden"> ({{ record.statusText }} record)</span></a>
+                <a class="govuk-link" href="{{ record.href }}">
+                  {{ record.tripEndDate | formatDate("d MMM yyyy") }}
+                  <span class="govuk-visually-hidden"> ({{ record.statusText }} record)</span>
+                </a>
               </td>
               <td class="govuk-table__cell">{{ record.vesselName }}</td>
               <td class="govuk-table__cell">
-                {{ govukTag({ text: record.statusText, classes: record.statusTagClasses }) }}
+                {{ govukTag({
+                  text: record.statusText,
+                  classes: record.statusTagClasses
+                }) }}
               </td>
               <td class="govuk-table__cell">{{ record.createdBy }}</td>
             </tr>
@@ -43,21 +58,103 @@
         </tbody>
       </table>
 
-      <p class="govuk-body" data-testid="app-records-results">
-        Showing {{ pagination.firstItem }} to {{ pagination.lastItem }} of {{ pagination.total }}
-      </p>
+      <div class="app-records-pagination">
+        <div class="app-records-pagination__summary">
+          {% if pagination.hasPrevious %}
+            <a class="govuk-link app-records-pagination__control"
+               href="/records?page={{ pagination.currentPage - 1 }}"
+               rel="prev">
+              {{ arrowPrevious | safe }}
+              <span class="govuk-visually-hidden">Previous page</span>
+            </a>
+          {% else %}
+            <span class="govuk-link app-records-pagination__control app-records-pagination__control--disabled"
+                  aria-disabled="true">
+              {{ arrowPrevious | safe }}
+              <span class="govuk-visually-hidden">Previous page</span>
+            </span>
+          {% endif %}
 
-      {{ govukPagination({
-        items: paginationItems
-      }) }}
+          <p class="govuk-body govuk-!-font-weight-bold" data-testid="app-records-results">
+            Showing {{ pagination.firstItem }} to {{ pagination.lastItem }} of {{ pagination.total }}
+          </p>
+        </div>
 
-      {{ govukButton({
-        text: "Create a new catch record",
-        href: "/select-vessel"
-      }) }}
+        {{ govukPagination({
+          items: paginationItems
+        }) }}
 
-      {% call govukDetails({ summaryText: "How to record a catch" }) %}
-        {% include "partials/how-to-record-a-catch.njk" %}
+        {% if pagination.hasNext %}
+          <a class="govuk-link app-records-pagination__control app-records-pagination__next"
+             href="/records?page={{ pagination.currentPage + 1 }}"
+             rel="next"><span class="app-records-pagination__label">Next</span>{{ arrowNext | safe }}</a>
+        {% else %}
+          <span class="govuk-link app-records-pagination__control app-records-pagination__control--disabled app-records-pagination__next"
+                aria-disabled="true"><span class="app-records-pagination__label">Next</span>{{ arrowNext | safe }}</span>
+        {% endif %}
+      </div>
+
+      {% call govukDetails({
+        summaryText: "Help with catch recording",
+        open: true,
+        id: "help-with-catch-recording"
+      }) %}
+        <h2 class="govuk-heading-s">What you need to do</h2>
+        <p class="govuk-body">You must record all catches unless an exemption applies.</p>
+        <p class="govuk-body">
+          We’ll ask whether you caught any species subject to catch limits (quota).
+        </p>
+
+        <h2 class="govuk-heading-s">When to create your record</h2>
+        <p class="govuk-body">
+          Create your catch record before moving your catch off the vessel if you:
+        </p>
+        <ul class="govuk-list govuk-list--bullet">
+          <li>caught any species subject to catch limits (quota)</li>
+          <li>caught only non-quota species</li>
+          <li>crossed an ICES area boundary while fishing</li>
+        </ul>
+
+        <h2 class="govuk-heading-s">Special cases: ICES areas</h2>
+        <p class="govuk-body">
+          If you fish in or cross ICES areas 4c, 7d or 7e, you must create a separate
+          catch record each time you cross a boundary.
+        </p>
+        <p class="govuk-body">
+          If you need to record catches without an internet connection, use the
+          mobile app.
+        </p>
+
+        <h2 class="govuk-heading-s">Get help with your record</h2>
+        <p class="govuk-body">Call 0300 020 3788, Monday to Friday, 8am to 6pm.</p>
+        <p class="govuk-body">
+          Calls to 03 numbers cost the same as calls to 01 or 02 numbers.
+        </p>
+        <p class="govuk-body">
+          Outside these hours, leave a catch record on our automated line.
+        </p>
+      {% endcall %}
+
+      {% call govukDetails({
+        summaryText: "Catch record statuses",
+        open: true
+      }) %}
+        <p class="govuk-body"><strong>Unsent:</strong></p>
+        <p class="govuk-body">Saved on your device and not yet submitted.</p>
+        <p class="govuk-body"><strong>Submitted:</strong></p>
+        <p class="govuk-body">Received by the MMO.</p>
+        <p class="govuk-body"><strong>Amended:</strong></p>
+        <p class="govuk-body">This record was changed after it was submitted.</p>
+        <p class="govuk-body"><strong>Late:</strong></p>
+        <p class="govuk-body">
+          This record was submitted and received late by the MMO.
+        </p>
+        <p class="govuk-body">
+          <a class="govuk-link" href="/">
+            Check the How to record a catch tab
+          </a>
+          to make sure this record meets the recording requirements for your catch and fishing area.
+        </p>
       {% endcall %}
     </div>
   </div>

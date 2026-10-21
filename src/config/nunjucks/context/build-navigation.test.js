@@ -8,8 +8,24 @@ function fakeRequest({ signedIn, path } = {}) {
 }
 
 describe('#buildNavigation', () => {
-  test('Should return no navigation items when signed out', () => {
+  test('Should return no navigation items when signed out by default', () => {
     expect(buildNavigation(fakeRequest({ signedIn: false }))).toEqual([])
+  })
+
+  test('Should show the header navigation when explicitly requested signed out', () => {
+    const navigation = buildNavigation(fakeRequest({ signedIn: false }), {
+      showWhenSignedOut: true
+    })
+
+    expect(navigation[0]).toEqual({ text: 'Home', href: '/records' })
+    expect(navigation[1]).toEqual({
+      text: 'Your account',
+      href: '/account',
+      current: false
+    })
+    expect(navigation[2].html).toContain('method="post"')
+    expect(navigation[2].html).toContain('action="/sign-out"')
+    expect(navigation[2].html).toContain('Sign out')
   })
 
   test('Should return no navigation items when there is no request', () => {

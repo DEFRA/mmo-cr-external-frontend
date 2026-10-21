@@ -1,5 +1,6 @@
 {% extends 'layouts/page.njk' %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/details/macro.njk" import govukDetails %}
 {% from "govuk/components/input/macro.njk" import govukInput %}
 
 {% block pageContent %}
@@ -31,9 +32,15 @@
       <p class="govuk-body">
         <a class="govuk-link" href="/not-implemented?return=/sign-in">Forgotten your password?</a>
       </p>
-      <p class="govuk-body">
-        <a class="govuk-link" href="/not-implemented?return=/sign-in">Create an account</a>
-      </p>
+      {% call govukDetails({
+        summaryText: "Create an account",
+        open: true
+      }) %}
+        <p class="govuk-body">Vessel owner:</p>
+        <p class="govuk-body">You will receive an email invitation to register when your vessel is added to the system.</p>
+        <p class="govuk-body">Skipper or agent:</p>
+        <p class="govuk-body">Ask your vessel owner to add you. They can do this from their account.</p>
+      {% endcall %}
     </div>
   </div>
 {% endblock %}

@@ -412,6 +412,19 @@ describe('#buildCheckAnswersViewModel', () => {
     expect(rowValue(rows, 'Statistical sub area')).toBe('30F05')
   })
 
+  test('Should preserve a real subrectangle code selected from the Other list', () => {
+    const viewModel = buildCheckAnswersViewModel(
+      fakeRequest({
+        statAreaBranch: 'other',
+        selectedAlternativeAreaOption: '27D86'
+      })
+    )
+
+    expect(
+      rowValue(rowsFor(viewModel, 'Trips details'), 'Statistical sub area')
+    ).toBe('27D86')
+  })
+
   test('Should fall back to the illustrative sub area when the "direct" selection does not match a nearby area', () => {
     const fallback = getData('catchRecordDetails')
     const viewModel = buildCheckAnswersViewModel(
@@ -485,6 +498,57 @@ describe('#buildCheckAnswersViewModel', () => {
     expect(
       rows.find((row) => row.key.text === 'Total pots or traps hauled')
     ).toBeUndefined()
+  })
+
+  test.each([
+    ['80mm mesh', '80 mm'],
+    ['80.5 mm mesh', '80.5 mm'],
+    [' 125 MM MESH ', '125 mm']
+  ])('Should parse a complete mesh hint %s', (hint, expected) => {
+    const viewModel = buildCheckAnswersViewModel(
+      fakeRequest({ selectedGearIds: ['test-gear'] }),
+      { gearCatalogue: [{ id: 'test-gear', name: 'Test gear', hint }] }
+    )
+
+    expect(rowValue(viewModel.gearGroups[0].rows, 'Mesh size')).toBe(expected)
+  })
+
+  test('Should reject a long invalid mesh hint without retrying each numeric suffix', () => {
+    const viewModel = buildCheckAnswersViewModel(
+      fakeRequest({ selectedGearIds: ['test-gear'] }),
+      {
+        gearCatalogue: [
+          { id: 'test-gear', name: 'Test gear', hint: `${'9'.repeat(100000)}x` }
+        ]
+      }
+    )
+
+    expect(
+      viewModel.gearGroups[0].rows.find((row) => row.key.text === 'Mesh size')
+    ).toBeUndefined()
+  })
+
+  test('Should display entered measurements before saved favourite measurements', () => {
+    const viewModel = buildCheckAnswersViewModel(
+      fakeRequest({
+        selectedGearIds: ['bottom-otter-trawl'],
+        gearMeasurementDetails: { 'bottom-otter-trawl': { meshSize: 125 } },
+        favouriteGearMeasurements: { 'bottom-otter-trawl': { meshSize: 100 } }
+      })
+    )
+
+    expect(rowValue(viewModel.gearGroups[0].rows, 'Mesh size (mm)')).toBe('125')
+  })
+
+  test('Should display saved favourite measurements when no trip measurement was entered', () => {
+    const viewModel = buildCheckAnswersViewModel(
+      fakeRequest({
+        selectedGearIds: ['seine-nets'],
+        favouriteGearMeasurements: { 'seine-nets': { meshSize: 90 } }
+      })
+    )
+
+    expect(rowValue(viewModel.gearGroups[0].rows, 'Mesh size (mm)')).toBe('90')
   })
 
   test('Should omit the Mesh size row when the selected gear has no mesh data', () => {

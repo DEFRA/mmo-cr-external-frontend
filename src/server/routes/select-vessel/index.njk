@@ -6,11 +6,12 @@
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
       <form method="post" novalidate>
+        <span class="govuk-caption-l" data-testid="app-catch-reference">{{ reference }}</span>
         {{ govukRadios({
           name: "vesselId",
           fieldset: {
             legend: {
-              html: '<span class="govuk-caption-l">' ~ caption ~ '</span>' ~ heading,
+              text: heading,
               isPageHeading: true,
               classes: "govuk-fieldset__legend--xl"
             }

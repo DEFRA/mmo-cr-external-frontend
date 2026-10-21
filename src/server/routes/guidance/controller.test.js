@@ -83,16 +83,21 @@ describe('#guidanceController', () => {
       $ = load(result)
     })
 
-    test('Should link to the privacy notice', () => {
-      expect($('a[href="/privacy-notice"]').text().trim()).toBe(
-        'Privacy notice'
-      )
-    })
-
     test('Should render a Start now button linking to sign in', () => {
       const $startButton = $('.govuk-button[href="/sign-in"]')
       expect($startButton).toHaveLength(1)
       expect($startButton.text().trim()).toBe('Start now')
+    })
+
+    test('Should link to the Android and Apple apps', () => {
+      expect(
+        $('a[href^="https://play.google.com/store/apps/details"]').text().trim()
+      ).toBe('Android')
+      expect(
+        $('a[href^="https://apps.apple.com/gb/app/record-your-catch"]')
+          .text()
+          .trim()
+      ).toBe('Apple')
     })
   })
 
@@ -133,9 +138,14 @@ describe('#guidanceController', () => {
       expect($('.govuk-footer')).toHaveLength(1)
     })
 
-    test('Should NOT render an empty Back link control', () => {
-      expect($('[data-testid="app-page-navigation-back-link"]')).toHaveLength(0)
-      expect($('.govuk-back-link')).toHaveLength(0)
+    test('Should render the Back link below the phase banner', () => {
+      const $backLink = $('[data-testid="app-page-navigation-back-link"]')
+      expect($backLink).toHaveLength(1)
+      expect($backLink.attr('href')).toBe('/records')
+      expect($backLink.text().trim()).toBe('Back')
+      expect(
+        $('.govuk-phase-banner').next('.app-page-navigation')
+      ).toHaveLength(1)
     })
 
     test('Should render the page navigation row before the main landmark', () => {
@@ -165,6 +175,64 @@ describe('#guidanceController', () => {
     test('Should render the Beta phase banner', () => {
       expect($('.govuk-phase-banner')).toHaveLength(1)
       expect($('.govuk-phase-banner').text()).toContain('Beta')
+    })
+
+    test('Should render Home, Your account and Sign out in the header', () => {
+      const $navigation = $('.govuk-service-navigation__list')
+      expect($navigation.text()).toContain('Home')
+      expect($navigation.text()).toContain('Your account')
+      expect($navigation.text()).toContain('Sign out')
+    })
+  })
+
+  describe('Guidance design components', () => {
+    let $
+
+    beforeAll(async () => {
+      const { result } = await server.inject({
+        method: 'GET',
+        url: '/'
+      })
+      $ = load(result)
+    })
+
+    test('Should render linked department names followed by a divider', () => {
+      expect(
+        $(
+          'a[href="https://www.gov.uk/government/organisations/department-for-environment-food-rural-affairs"]'
+        )
+          .text()
+          .trim()
+      ).toBe('Department for Environment, Food & Rural Affairs')
+      expect(
+        $(
+          'a[href="https://www.gov.uk/government/organisations/marine-management-organisation"]'
+        )
+          .text()
+          .trim()
+      ).toBe('Marine Management Organisation')
+      expect($('.app-guidance-departments').is('p')).toBe(true)
+    })
+
+    test('Should render the applies-to-England banner', () => {
+      expect($('.app-guidance-applies-to').text().trim()).toBe(
+        'Applies to England'
+      )
+    })
+
+    test('Should render the print button with a print icon', () => {
+      expect($('[data-testid="app-guidance-print-button"]').text()).toContain(
+        'Print this page'
+      )
+      expect(
+        $('[data-testid="app-guidance-print-button"] svg[aria-hidden="true"]')
+      ).toHaveLength(1)
+    })
+
+    test('Should omit the temporary privacy link from guidance while retaining the footer link', () => {
+      expect($('.app-guidance')).toHaveLength(1)
+      expect($('.app-guidance a[href="/privacy-notice"]')).toHaveLength(0)
+      expect($('.govuk-footer a[href="/privacy-notice"]')).toHaveLength(1)
     })
   })
 })

@@ -50,7 +50,6 @@ export const recordsController = {
     }
   },
   handler(request, h) {
-    const account = getData('account')
     const service = getData('service')
     const pagination = buildPagination({
       items: getData('allRecords'),
@@ -59,9 +58,8 @@ export const recordsController = {
     })
 
     return h.view('records/index', {
-      pageTitle: `Catch records for ${account.name}`,
-      heading: `Catch records for ${account.name}`,
-      accountRole: account.role,
+      pageTitle: 'Your catch records',
+      heading: 'Your catch records',
       notice: service.notice,
       records: pagination.pageItems.map(toRowViewModel),
       pagination,

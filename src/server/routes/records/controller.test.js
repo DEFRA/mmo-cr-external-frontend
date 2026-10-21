@@ -2,6 +2,7 @@ import { load } from 'cheerio'
 
 import { createServer } from '#/server/server.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
+import * as data from '#/server/common/data/get-data.js'
 import {
   mockVesselsReferenceData,
   restoreVesselsReferenceDataMock
@@ -28,9 +29,7 @@ describe('#recordsController', () => {
       url: '/records'
     })
 
-    expect(result).toEqual(
-      expect.stringContaining('Catch records for James Smith |')
-    )
+    expect(result).toEqual(expect.stringContaining('Your catch records |'))
     expect(statusCode).toBe(statusCodes.ok)
   })
 
@@ -47,17 +46,15 @@ describe('#recordsController', () => {
 
     test('Should render the page title composed with the service name', () => {
       expect($('head > title').text().trim()).toBe(
-        'Catch records for James Smith | Record your catch'
+        'Your catch records | Record your catch'
       )
     })
 
-    test('Should render the heading and Vessel owner caption', () => {
+    test('Should render the catch records heading without an account role caption', () => {
       expect($('[data-testid="app-heading-title"]').text().trim()).toBe(
-        'Catch records for James Smith'
+        'Your catch records'
       )
-      expect($('[data-testid="app-heading-caption"]').text().trim()).toBe(
-        'Vessel owner'
-      )
+      expect($('[data-testid="app-heading-caption"]')).toHaveLength(0)
     })
 
     test('Should render the Important notification banner', () => {
@@ -73,6 +70,14 @@ describe('#recordsController', () => {
 
     test('Should render exactly 4 record rows', () => {
       expect($('[data-testid="app-records-row"]')).toHaveLength(4)
+    })
+
+    test('Should show the designed vessel name for each record', () => {
+      const vesselNames = $('[data-testid="app-records-row"]')
+        .map((_i, row) => $(row).find('.govuk-table__cell').eq(1).text().trim())
+        .get()
+
+      expect(vesselNames).toEqual(['OLGA', 'OLGA', 'OLGA', 'OLGA'])
     })
 
     test('Should render the table headers in the specified order', () => {
@@ -133,7 +138,7 @@ describe('#recordsController', () => {
       const $vesselPage = load(result)
 
       expect(statusCode).toBe(statusCodes.ok)
-      expect($vesselPage('h1').text()).toContain('Select your vessel')
+      expect($vesselPage('h1').text()).toContain('Which vessel did you use?')
       expect($vesselPage('input[name="vesselId"]')).toHaveLength(2)
       expect($vesselPage('input[name="draftAction"]')).toHaveLength(0)
       expect(
@@ -191,29 +196,112 @@ describe('#recordsController', () => {
       bodyHtml = $.html()
     })
 
-    test('Should render a single current page with no Next link (truthful single page)', () => {
+    test('Should render Previous and Next controls with the current page number', () => {
       const $pagination = $('.govuk-pagination')
       expect($pagination).toHaveLength(1)
       expect($pagination.find('.govuk-pagination__next')).toHaveLength(0)
 
       const $currentItem = $pagination.find('.govuk-pagination__item--current')
       expect($currentItem.text().trim()).toBe('1')
+      expect(
+        $('.app-records-pagination__summary .app-records-pagination__control')
+      ).toHaveLength(1)
+      expect($('.app-records-pagination__next')).toHaveLength(1)
+      expect(
+        $('.app-records-pagination__control--disabled[aria-disabled="true"]')
+          .map((_i, el) => $(el).find('svg').attr('class'))
+          .get()
+      ).toEqual([
+        'govuk-pagination__icon govuk-pagination__icon--prev',
+        'govuk-pagination__icon govuk-pagination__icon--next'
+      ])
+      expect(
+        $(
+          '.app-records-pagination__control svg[aria-hidden="true"][focusable="false"]'
+        )
+      ).toHaveLength(2)
+      expect(
+        $('.app-records-pagination__next .app-records-pagination__label').text()
+      ).toBe('Next')
+      expect(
+        $('.app-records-pagination__summary .app-records-pagination__label')
+      ).toHaveLength(0)
+      expect($('.app-records-pagination__next').hasClass('govuk-link')).toBe(
+        true
+      )
+      expect(
+        $('.app-records-pagination__summary').find(
+          '.app-records-pagination__control'
+        )
+      ).toHaveLength(1)
+      expect(
+        $('[data-testid="app-records-results"]').hasClass(
+          'govuk-!-font-weight-bold'
+        )
+      ).toBe(true)
     })
 
-    test('Should render pagination after the table and results count, and before the create action', () => {
+    test('Should preserve the enabled Next and Previous page destinations with GOV.UK arrows', async () => {
+      const originalGetData = data.getData
+      const records = originalGetData('allRecords')
+      const getDataSpy = vi.spyOn(data, 'getData').mockImplementation((name) =>
+        name === 'allRecords'
+          ? Array.from({ length: 12 }, (_, index) => ({
+              ...records[index % records.length],
+              recordId: `pagination-record-${index}`
+            }))
+          : originalGetData(name)
+      )
+
+      try {
+        const firstPage = await server.inject({
+          method: 'GET',
+          url: '/records'
+        })
+        const $first = load(firstPage.result)
+        expect(
+          $first('.app-records-pagination__next[rel="next"]').attr('href')
+        ).toBe('/records?page=2')
+        expect(
+          $first('.app-records-pagination__next .govuk-pagination__icon--next')
+        ).toHaveLength(1)
+
+        const secondPage = await server.inject({
+          method: 'GET',
+          url: '/records?page=2'
+        })
+        const $second = load(secondPage.result)
+        expect(
+          $second('.app-records-pagination__summary a[rel="prev"]').attr('href')
+        ).toBe('/records?page=1')
+        expect(
+          $second(
+            '.app-records-pagination__summary .govuk-pagination__icon--prev'
+          )
+        ).toHaveLength(1)
+        expect(
+          $second('.app-records-pagination__next[aria-disabled="true"]')
+        ).toHaveLength(1)
+      } finally {
+        getDataSpy.mockRestore()
+      }
+    })
+
+    test('Should render the create action before the table and pagination after it', () => {
       const tableIndex = bodyHtml.indexOf('data-testid="app-records-table"')
       const resultsIndex = bodyHtml.indexOf('data-testid="app-records-results"')
-      const paginationIndex = bodyHtml.indexOf('govuk-pagination')
+      const paginationIndex = bodyHtml.indexOf('class="govuk-pagination"')
       const createButtonIndex = bodyHtml.indexOf('Create a new catch record')
 
+      expect(createButtonIndex).toBeGreaterThan(-1)
+      expect(createButtonIndex).toBeLessThan(tableIndex)
       expect(tableIndex).toBeGreaterThan(-1)
       expect(resultsIndex).toBeGreaterThan(tableIndex)
       expect(paginationIndex).toBeGreaterThan(resultsIndex)
-      expect(createButtonIndex).toBeGreaterThan(paginationIndex)
     })
   })
 
-  describe('How to record a catch', () => {
+  describe('Record help sections', () => {
     let $
 
     beforeAll(async () => {
@@ -224,30 +312,66 @@ describe('#recordsController', () => {
       $ = load(result)
     })
 
-    test('Should render the guidance content inside a collapsible details section', () => {
+    test('Should render both guidance sections expanded', () => {
       const $details = $('details.govuk-details')
-      expect($details).toHaveLength(1)
-      expect($details.find('.govuk-details__summary-text').text().trim()).toBe(
-        'How to record a catch'
-      )
+      expect($details).toHaveLength(2)
+      expect($details.eq(0).attr('open')).toBeDefined()
+      expect($details.eq(1).attr('open')).toBeDefined()
+      expect(
+        $details
+          .find('.govuk-details__summary-text')
+          .map((_i, el) => $(el).text().trim())
+          .get()
+      ).toEqual(['Help with catch recording', 'Catch record statuses'])
     })
 
-    test('Should render the shared subsection headings', () => {
-      const headings = $('.govuk-details h2')
+    test('Should render the catch recording guidance', () => {
+      const headings = $('details')
+        .eq(0)
+        .find('h2')
         .map((_i, el) => $(el).text().trim())
         .get()
 
       expect(headings).toEqual([
-        'What we need from you',
+        'What you need to do',
         'When to create your record',
         'Special cases: ICES areas',
-        'How to create a record',
         'Get help with your record'
       ])
+      expect($('details').eq(0).text()).toContain(
+        'You must record all catches unless an exemption applies.'
+      )
     })
 
-    test('Should NOT render a Start now button (unlike the Guidance page)', () => {
-      expect($('.govuk-details .govuk-button')).toHaveLength(0)
+    test('Should explain the four catch record statuses', () => {
+      const statuses = $('details')
+        .eq(1)
+        .find('strong')
+        .map((_i, el) => $(el).text().trim())
+        .get()
+
+      expect(statuses).toEqual(['Unsent:', 'Submitted:', 'Amended:', 'Late:'])
+      expect($('details').eq(1).text()).toContain(
+        'Saved on your device and not yet submitted.'
+      )
+      expect($('details').eq(1).text()).toContain(
+        'This record was submitted and received late by the MMO.'
+      )
+      const $guidanceLink = $('details').eq(1).find('a')
+      expect($guidanceLink).toHaveLength(1)
+      expect($guidanceLink.attr('href')).toBe('/')
+    })
+
+    test('Should open the How to record your catch page from the guidance link', async () => {
+      const { result, statusCode } = await server.inject({
+        method: 'GET',
+        url: $('details').eq(1).find('a').attr('href')
+      })
+
+      expect(statusCode).toBe(statusCodes.ok)
+      expect(
+        load(result)('[data-testid="app-heading-title"]').text().trim()
+      ).toBe('How to record your catch')
     })
   })
 

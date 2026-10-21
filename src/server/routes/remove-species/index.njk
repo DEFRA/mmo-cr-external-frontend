@@ -8,6 +8,7 @@
         <h1 class="govuk-heading-xl">
           <span class="govuk-caption-l">{{ caption }}</span>
           {{ heading }}
+          {% if vesselName %}<span class="govuk-!-display-block">{{ vesselName }}</span>{% endif %}
         </h1>
         {% if speciesCheckboxItems.length %}
           <div class="govuk-form-group{{ ' govuk-form-group--error' if fieldErrors.speciesIds }}">

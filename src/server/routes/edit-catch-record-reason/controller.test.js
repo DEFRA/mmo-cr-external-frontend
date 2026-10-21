@@ -47,6 +47,29 @@ describe('#editCatchRecordReasonController', () => {
     )
     expect($('h1').text().trim()).toBe('Why are you editing this catch record?')
     expect($('textarea#editReason')).toHaveLength(1)
+    expect($('textarea#editReason').attr('rows')).toBe('9')
+    expect($('.govuk-notification-banner')).toHaveLength(1)
+    expect(
+      $('.govuk-notification-banner').closest('.govuk-grid-column-two-thirds')
+    ).toHaveLength(1)
+    expect(
+      $('#editReason-hint li')
+        .map((_, element) => $(element).text().trim())
+        .get()
+    ).toEqual([
+      'what you are changing',
+      'why are you changing it',
+      'which office requested it, if applicable',
+      'the date change was made'
+    ])
+    expect(
+      $('.govuk-warning-text__text').text().replace(/\s+/g, ' ').trim()
+    ).toBe(
+      'Warning You must have a valid reason for editing this catch record. Editing a catch record without a valid reason may be an offence and could result in enforcement action.'
+    )
+    expect(
+      $('.govuk-warning-text').prev('.govuk-form-group').find('#editReason')
+    ).toHaveLength(1)
     expect($('.govuk-button').text().trim()).toBe('Save and continue')
   })
 
@@ -123,6 +146,11 @@ describe('#editCatchRecordReasonSubmitController', () => {
       'Enter the reason for editing this catch record'
     )
     expect($('.govuk-error-message')).toHaveLength(1)
+    expect($('textarea#editReason').attr('aria-describedby')).toContain(
+      'editReason-error'
+    )
+    expect($('.govuk-error-summary a').attr('href')).toBe('#editReason')
+    expect($('.govuk-warning-text')).toHaveLength(1)
   })
 
   test('Should reject a reason longer than the maximum length', async () => {

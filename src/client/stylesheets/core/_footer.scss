@@ -2,5 +2,19 @@
 
 // Thin grey top border to match the design, replacing the default thick blue one
 .app-footer {
-  border-top: 1px solid govuk-colour('mid-grey');
+  border-top: 1px solid govuk-colour('black', $variant: 'tint-80');
+  background-color: govuk-colour('black', $variant: 'tint-95');
+  @include govuk-font($size: 16);
+}
+
+.app-footer .govuk-footer__crown {
+  display: none;
+}
+
+.app-footer .govuk-footer__link {
+  @include govuk-link-style-text;
+}
+
+.app-footer .govuk-footer__copyright-logo::before {
+  color: govuk-colour('black', $variant: 'tint-50');
 }
