@@ -39,7 +39,7 @@
                 <span class="govuk-visually-hidden">Error:</span> {{ fieldErrors.gear }}
               </p>
             {% endif %}
-            <div class="app-statistical-area-search__control govuk-input--width-30">
+            <div class="app-statistical-area-search__control app-statistical-area-search__control--dropdown govuk-input--width-30">
               <input
                 class="govuk-input app-statistical-area-search__input{{ ' govuk-input--error' if fieldErrors.gear }}"
                 id="gear"
@@ -48,6 +48,7 @@
                 autocomplete="off"
                 placeholder="Start typing to display the list"
                 data-min-length="1"
+                data-show-all-on-focus
                 aria-autocomplete="list"
                 aria-controls="gear-results"
                 aria-expanded="false"

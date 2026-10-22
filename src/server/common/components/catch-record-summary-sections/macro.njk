@@ -1,19 +1,40 @@
 {% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
 
-{% macro appCatchRecordSummarySections(sections, gearGroups = [], trailingSections = []) %}
+{% macro summaryList(rows, classes, readOnly) %}
+  {% if readOnly %}
+    {% set displayRows = [] %}
+    {% for row in rows %}
+      {% set unused = displayRows.push({ key: row.key, value: row.value }) %}
+    {% endfor %}
+  {% else %}
+    {% set displayRows = rows %}
+  {% endif %}
+  {{ govukSummaryList({ rows: displayRows, classes: classes }) }}
+{% endmacro %}
+
+{% macro appCatchRecordSummarySections(sections, gearGroups = [], trailingSections = [], readOnly = false) %}
   {% set summaryClasses = "app-catch-summary-list" if gearGroups.length else "" %}
   {% for section in sections %}
     <h2 class="govuk-heading-l">{{ section.heading }}</h2>
-    {{ govukSummaryList({ rows: section.rows, classes: summaryClasses }) }}
+    {% if section.groups.length %}
+      {% for group in section.groups %}
+        <section aria-labelledby="{{ section.groupIdPrefix }}-{{ loop.index }}" data-gear-id="{{ group.gearId }}">
+          <h3 id="{{ section.groupIdPrefix }}-{{ loop.index }}" class="{{ 'govuk-heading-m' if section.groups.length > 1 else 'govuk-visually-hidden' }}">{{ group.heading }}</h3>
+          {{ summaryList(group.rows, summaryClasses, readOnly) }}
+        </section>
+      {% endfor %}
+    {% else %}
+      {{ summaryList(section.rows, summaryClasses, readOnly) }}
+    {% endif %}
   {% endfor %}
   {% for gear in gearGroups %}
     <section aria-labelledby="gear-summary-{{ loop.index }}" class="govuk-!-margin-top-8">
       <h2 id="gear-summary-{{ loop.index }}" class="govuk-heading-l">{{ gear.heading }}</h2>
-      {{ govukSummaryList({ rows: gear.rows, classes: summaryClasses }) }}
+      {{ summaryList(gear.rows, summaryClasses, readOnly) }}
     </section>
   {% endfor %}
   {% for section in trailingSections %}
     <h2 class="govuk-heading-l">{{ section.heading }}</h2>
-    {{ govukSummaryList({ rows: section.rows, classes: summaryClasses }) }}
+    {{ summaryList(section.rows, summaryClasses, readOnly) }}
   {% endfor %}
 {% endmacro %}

@@ -125,6 +125,16 @@ describe('#recordsController', () => {
       $ = load(result)
     })
 
+    test('Should render a Back link to guidance and page-scoped language styling', () => {
+      const backLink = $('[data-testid="app-page-navigation-back-link"]')
+      expect(backLink.attr('href')).toBe('/')
+      expect(backLink.text().trim()).toBe('Back')
+      expect($('body').hasClass('app-records-page')).toBe(true)
+      expect(
+        $('[data-testid="app-page-navigation-language-link"]').attr('href')
+      ).toBe('/records?lang=cy')
+    })
+
     test('Should link the create action button directly to vessel selection', () => {
       expect($('.govuk-button[href="/select-vessel"]')).toHaveLength(1)
       expect($('.govuk-button[href="/draft"]')).toHaveLength(0)

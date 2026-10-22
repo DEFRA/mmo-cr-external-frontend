@@ -1,35 +1,48 @@
 @use 'govuk-frontend' as *;
 
 .app-guidance {
-  @include govuk-media-query($from: tablet) {
-    .app-heading,
-    .app-guidance-content-row {
-      display: flex;
-      justify-content: center;
-    }
+  .govuk-heading-m {
+    margin-top: govuk-spacing(9);
+    margin-bottom: govuk-spacing(6);
+  }
+
+  .govuk-warning-text {
+    margin-top: govuk-spacing(9);
+    margin-bottom: govuk-spacing(9);
   }
 }
 
 .app-guidance-departments {
-  margin-bottom: govuk-spacing(5);
-  padding-bottom: govuk-spacing(3);
-  border-bottom: 1px solid govuk-colour('black', $variant: 'tint-80');
+  margin-bottom: govuk-spacing(8);
+  padding-top: govuk-spacing(4);
+  border-top: 1px solid govuk-colour('black', $variant: 'tint-80');
+
+  a {
+    font-weight: bold;
+  }
 }
 
 .app-guidance-applies-to {
+  @include govuk-font(19, $weight: bold);
+
   box-sizing: border-box;
-  width: 66.666%;
+  width: 100%;
   margin-bottom: govuk-spacing(4);
-  padding: govuk-spacing(2) govuk-spacing(3);
+  padding: govuk-spacing(4) govuk-spacing(3);
   background-color: govuk-colour('black', $variant: 'tint-95');
-  font-weight: bold;
 }
 
 .app-guidance-contents {
+  @include govuk-font(16);
+
   margin-bottom: govuk-spacing(4);
 
   li {
     margin-bottom: govuk-spacing(1);
+  }
+
+  a:not(:hover):not(:focus) {
+    text-decoration: none;
   }
 
   li::before {
@@ -40,6 +53,8 @@
 }
 
 .app-guidance-print-button {
+  @include govuk-font(16);
+
   display: inline-flex;
   align-items: center;
   gap: govuk-spacing(1);
@@ -47,8 +62,8 @@
   padding: govuk-spacing(1) govuk-spacing(2);
   border: 1px solid govuk-colour('black', $variant: 'tint-80');
   background-color: govuk-colour('white');
-  color: govuk-colour('black');
-  font: inherit;
+  color: $govuk-link-colour;
+  text-decoration: underline;
   cursor: pointer;
 
   &:hover {
@@ -63,12 +78,7 @@
 .app-guidance-print-button__icon {
   width: 16px;
   height: 16px;
-}
-
-@include govuk-media-query($until: tablet) {
-  .app-guidance-applies-to {
-    width: 100%;
-  }
+  color: $govuk-text-colour;
 }
 
 @media print {

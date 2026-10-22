@@ -8,12 +8,21 @@ import {
 } from '#/test-helpers/mock-species-reference-data.js'
 import { mockGearsReferenceData } from '#/test-helpers/mock-gears-reference-data.js'
 import { seedFavouriteGears } from '#/test-helpers/seed-favourite-gears.js'
+import {
+  VESSEL_IDS,
+  mockVesselsReferenceData,
+  restoreVesselsReferenceDataMock
+} from '#/test-helpers/mock-vessels-reference-data.js'
 
 beforeEach(() => {
   mockSpeciesReferenceData()
+  mockVesselsReferenceData()
   mockGearsReferenceData()
 })
-afterEach(() => restoreSpeciesReferenceDataMock())
+afterEach(() => {
+  restoreVesselsReferenceDataMock()
+  restoreSpeciesReferenceDataMock()
+})
 
 describe('#accountController', () => {
   let server
@@ -71,6 +80,36 @@ describe('#accountController', () => {
         .get()
     ).toEqual(['Personal details', 'Vessel details'])
     expect($('h3.govuk-heading-m').text().trim()).toBe('OLGA (FIN-126-U)')
+  })
+
+  test('Should show the selected vessel and update Vessel details when the selection changes', async () => {
+    let cookie = await signedInCookie()
+
+    for (const [vesselId, expectedLabel] of [
+      [VESSEL_IDS.achilles, 'ACHILLES (PH1234)'],
+      [VESSEL_IDS.seaSpray, 'SEA SPRAY (BM45)']
+    ]) {
+      const selected = await server.inject({
+        method: 'POST',
+        url: '/select-vessel',
+        payload: { vesselId },
+        headers: { cookie }
+      })
+      expect(selected.statusCode).toBe(statusCodes.seeOther)
+      cookie = selected.headers['set-cookie'][0].split(';')[0]
+
+      const { result, statusCode } = await server.inject({
+        method: 'GET',
+        url: '/account',
+        headers: { cookie }
+      })
+      const $ = load(result)
+      expect(statusCode).toBe(statusCodes.ok)
+      expect($('h3.govuk-heading-m').text().trim()).toBe(expectedLabel)
+      expect($('dt:contains("Vessel owned")').next().text().trim()).toBe(
+        'OLGA (FIN-126-U)'
+      )
+    }
   })
 
   test('Should render account values from the mock data source, not hard-coded', async () => {

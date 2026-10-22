@@ -116,7 +116,10 @@ async function viewContext(request, overrides = {}) {
   const selectedArea = journeyState.selectedAlternativeAreaOption
 
   return {
-    ...(await statisticalAreaContent(journeyState)),
+    ...(await statisticalAreaContent(journeyState, {
+      manualEntry: true,
+      gearId: gearContext.gearId
+    })),
     ...gearContext,
     caption: 'New catch record',
     backLink: {

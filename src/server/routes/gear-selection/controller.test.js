@@ -294,9 +294,9 @@ describe('#gearSelectionSubmitController', () => {
   })
 
   test.each([
-    [{ gearIds: 'dredge' }, 'dredge'],
-    [{ gearIds: 'seine-nets' }, 'seine nets (not specified)'],
-    [{ gearIds: 'pots', potsHauled: '10', potsInWater: '2' }, 'pots']
+    [{ gearIds: 'dredge' }, 'Dredge'],
+    [{ gearIds: 'seine-nets' }, 'Seine nets (not specified)'],
+    [{ gearIds: 'pots', potsHauled: '10', potsInWater: '2' }, 'Pots']
   ])(
     'Should carry selected gear content into the Other page for %s',
     async (payload, gearName) => {

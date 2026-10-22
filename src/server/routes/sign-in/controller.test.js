@@ -38,14 +38,16 @@ describe('#signInController', () => {
     expect($backLink.text().trim()).toBe('Back')
   })
 
-  test('Should link the unsupported actions to the Empty Page with a return path', async () => {
+  test('Should link to the forgotten-password form', async () => {
     const { result } = await server.inject({
       method: 'GET',
       url: '/sign-in'
     })
     const $ = load(result)
 
-    expect($('a[href="/not-implemented?return=/sign-in"]')).toHaveLength(1)
+    expect($('a[href="/forgotten-password"]').text()).toBe(
+      'Forgotten your password?'
+    )
   })
 
   describe('Sign in form', () => {

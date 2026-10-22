@@ -68,11 +68,16 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    row-gap: govuk-spacing(2);
     margin: 0;
+    padding-block: govuk-spacing(3);
   }
 
   .app-service-navigation .govuk-service-navigation__service-name {
+    @include govuk-font(27, $weight: bold);
+
     margin: 0;
+    padding: 0;
     line-height: 1.2;
   }
 
@@ -83,11 +88,14 @@
 
   .app-service-navigation .govuk-service-navigation__list {
     justify-content: center;
+    column-gap: govuk-spacing(4);
     margin-bottom: 0;
   }
 
   .app-service-navigation .govuk-service-navigation__item {
+    margin-inline-end: 0;
     padding: 0;
+    font-weight: bold;
     line-height: 1.2;
   }
 }

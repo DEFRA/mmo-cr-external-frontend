@@ -1,4 +1,4 @@
-import { signOutController } from './controller.js'
+import { signOutController, signedOutController } from './controller.js'
 
 /**
  * Sets up the route used to simulate signing out. POST-only (a state-changing
@@ -14,6 +14,11 @@ export const signOut = {
           method: 'POST',
           path: '/sign-out',
           ...signOutController
+        },
+        {
+          method: 'GET',
+          path: '/signed-out',
+          ...signedOutController
         }
       ])
     }
