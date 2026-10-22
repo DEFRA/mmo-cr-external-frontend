@@ -47,7 +47,9 @@ function reviewSpeciesGroups(group, speciesCatalogue) {
         gearHeading: group.heading,
         rows: []
       })
-    } else if (row.key.text.startsWith('Weight') && speciesGroups.length) {
+      continue
+    }
+    if (row.key.text.startsWith('Weight') && speciesGroups.length) {
       const speciesGroup = speciesGroups.at(-1)
       speciesGroup.rows.push(reviewWeightRow(row, speciesGroup))
     }

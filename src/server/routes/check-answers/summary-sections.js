@@ -12,12 +12,13 @@ export const SPECIES_NOT_LANDED_PATH = '/species-not-landed'
 const LEGACY_KEPT_WEIGHT =
   'Weight above minimum size kept onboard or in keep pots (kg)'
 export const KEPT_WEIGHT = 'Weight kept onboard or in keep pots'
+const KILOGRAM_UNIT = 'kg'
 
 export function stripKilogramSuffix(value) {
-  if (!value.endsWith('kg')) {
+  if (!value.endsWith(KILOGRAM_UNIT)) {
     return value
   }
-  const weight = value.slice(0, -2)
+  const weight = value.slice(0, value.length - KILOGRAM_UNIT.length)
   const trimmedWeight = weight.trimEnd()
   return weight.length === trimmedWeight.length ? value : trimmedWeight
 }
