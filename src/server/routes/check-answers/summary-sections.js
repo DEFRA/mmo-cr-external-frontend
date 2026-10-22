@@ -3,6 +3,7 @@ import { formatDate } from '#/config/nunjucks/filters/format-date.js'
 import { offlineMapSubrectangleCodes } from '#/server/common/data/offline-map-subrectangle-codes.js'
 
 export const STATISTICAL_SUB_AREA = 'Statistical sub area'
+export const STATISTICAL_AREA_LABEL = 'Statistical area / sub area'
 export const SPECIES_CAUGHT = 'Species caught'
 export const SPECIES_NOT_LANDED = 'Species not landed'
 export const NOT_LANDED = 'Not landed'
@@ -11,6 +12,15 @@ export const SPECIES_NOT_LANDED_PATH = '/species-not-landed'
 const LEGACY_KEPT_WEIGHT =
   'Weight above minimum size kept onboard or in keep pots (kg)'
 export const KEPT_WEIGHT = 'Weight kept onboard or in keep pots'
+
+export function stripKilogramSuffix(value) {
+  if (!value.endsWith('kg')) {
+    return value
+  }
+  const weight = value.slice(0, -2)
+  const trimmedWeight = weight.trimEnd()
+  return weight.length === trimmedWeight.length ? value : trimmedWeight
+}
 
 function resolveAreaCode(selected, catalogueName, fallback) {
   if (offlineMapSubrectangleCodes.has(selected)) {

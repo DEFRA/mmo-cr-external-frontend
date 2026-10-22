@@ -3,6 +3,14 @@ const maximumResults = 10
 const collapsedState = 'false'
 const ariaExpandedAttribute = 'aria-expanded'
 
+function readPortNames(dataScript) {
+  try {
+    return JSON.parse(dataScript?.textContent || '[]')
+  } catch {
+    return []
+  }
+}
+
 export function initialisePortSearch() {
   const input = document.querySelector('[data-port-search]')
   if (!input) {
@@ -10,16 +18,11 @@ export function initialisePortSearch() {
   }
 
   const minimumLength = Number(input.dataset.minLength) || minimumSearchLength
-  const showAllOnFocus = input.hasAttribute('data-show-all-on-focus')
+  const showAllOnFocus = input.dataset.showAllOnFocus !== undefined
   const results = document.querySelector('[data-port-results]')
   const dataScript = document.querySelector('[data-port-search-data]')
 
-  let portNames = []
-  try {
-    portNames = JSON.parse(dataScript?.textContent || '[]')
-  } catch {
-    portNames = []
-  }
+  const portNames = readPortNames(dataScript)
 
   const selectPort = (name) => {
     input.value = name

@@ -1,4 +1,5 @@
 import { buildCheckAnswersViewModel as buildViewModel } from './view-model.js'
+import { stripKilogramSuffix } from './summary-sections.js'
 import { getData } from '#/server/common/data/get-data.js'
 import {
   SPECIES_IDS,
@@ -32,6 +33,26 @@ function rowValue(rows, keyText) {
 function rowChangeHref(rows, keyText) {
   return rows.find((row) => row.key.text === keyText).actions.items[0].href
 }
+
+describe('#stripKilogramSuffix', () => {
+  test.each([
+    ['12 kg', '12'],
+    ['0 kg', '0'],
+    ['12   kg', '12'],
+    ['12\tkg', '12'],
+    ['12kg', '12kg'],
+    ['12 mm', '12 mm'],
+    ['', '']
+  ])('Should convert %j to %j', (value, expected) => {
+    expect(stripKilogramSuffix(value)).toBe(expected)
+  })
+
+  test('Should handle long whitespace without a backtracking expression', () => {
+    const value = `12${' '.repeat(100000)}`
+    expect(stripKilogramSuffix(value)).toBe(value)
+    expect(stripKilogramSuffix(`${value}kg`)).toBe('12')
+  })
+})
 
 describe('#buildCheckAnswersViewModel', () => {
   test('Should use submitted-record section order without row actions in read-only mode', () => {

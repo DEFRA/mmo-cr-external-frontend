@@ -233,8 +233,11 @@ export const accountController = {
       : null
     const selectedVesselName =
       selectedVessel?.name || journeyState.selectedVesselName
+    const selectedVesselRegistration = selectedVessel?.pln
+      ? ` (${selectedVessel.pln})`
+      : ''
     const selectedVesselLabel = selectedVesselName
-      ? `${selectedVesselName}${selectedVessel?.pln ? ` (${selectedVessel.pln})` : ''}`
+      ? `${selectedVesselName}${selectedVesselRegistration}`
       : vesselLabel
     const skipper = journeyState.skipper
     const portsUsed = getAccountPortsUsed(journeyState)
