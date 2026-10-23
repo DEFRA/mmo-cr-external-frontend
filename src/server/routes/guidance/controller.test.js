@@ -196,7 +196,7 @@ describe('#guidanceController', () => {
       $ = load(result)
     })
 
-    test('Should render linked department names followed by a divider', () => {
+    test('Should render linked department names in a full-width attribution row', () => {
       expect(
         $(
           'a[href="https://www.gov.uk/government/organisations/department-for-environment-food-rural-affairs"]'
@@ -212,6 +212,12 @@ describe('#guidanceController', () => {
           .trim()
       ).toBe('Marine Management Organisation')
       expect($('.app-guidance-departments').is('p')).toBe(true)
+      expect($('.app-guidance-departments').hasClass('govuk-body-s')).toBe(true)
+      expect(
+        $('.app-guidance-departments')
+          .parent()
+          .hasClass('govuk-grid-column-full')
+      ).toBe(true)
     })
 
     test('Should render the applies-to-England banner', () => {

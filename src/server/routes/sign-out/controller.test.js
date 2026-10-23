@@ -1,3 +1,4 @@
+import { load } from 'cheerio'
 import { createServer } from '#/server/server.js'
 import {
   mockPortsReferenceData,
@@ -26,7 +27,7 @@ describe('#signOutController', () => {
     })
 
     expect(statusCode).toBe(303)
-    expect(headers.location).toBe('/')
+    expect(headers.location).toBe('/signed-out')
   })
 
   test('Should reject a GET request (sign out is a state change, POST-only)', async () => {
@@ -38,14 +39,14 @@ describe('#signOutController', () => {
     expect(statusCode).toBe(404)
   })
 
-  test('Should ignore an arbitrary query string and always redirect to /', async () => {
+  test('Should ignore an arbitrary query string and always redirect to the confirmation page', async () => {
     const { statusCode, headers } = await server.inject({
       method: 'POST',
       url: '/sign-out?return=https://evil.example'
     })
 
     expect(statusCode).toBe(303)
-    expect(headers.location).toBe('/')
+    expect(headers.location).toBe('/signed-out')
   })
 
   test('Should clear the signed-in flag so Account is guarded again', async () => {
@@ -101,7 +102,6 @@ describe('#signOutController', () => {
       url: '/departure-port',
       headers: { cookie: favouriteCookie }
     })
-    const { load } = await import('cheerio')
     const $ = load(result)
 
     expect(
@@ -116,6 +116,51 @@ describe('#signOutController', () => {
     })
 
     expect(statusCode).toBe(303)
-    expect(headers.location).toBe('/')
+    expect(headers.location).toBe('/signed-out')
+  })
+
+  test('Should show the signed-out confirmation with feedback and a Sign in button', async () => {
+    const { result, statusCode } = await server.inject({
+      method: 'GET',
+      url: '/signed-out'
+    })
+    const $ = load(result)
+
+    expect(statusCode).toBe(200)
+    expect($('h1').text().trim()).toBe('You have been signed out')
+    expect($('title').text()).toContain('You have been signed out |')
+    expect($('main p').text()).toContain('This is a new service')
+    expect($('main a.govuk-link').text()).toBe('feedback')
+    expect($('.govuk-button').text().trim()).toBe('Sign in')
+    expect($('.govuk-button').attr('href')).toBe('/sign-in')
+    expect($('.govuk-back-link')).toHaveLength(0)
+    expect($('.govuk-service-navigation__list')).toHaveLength(0)
+    expect($('.govuk-phase-banner')).toHaveLength(1)
+    expect($('.govuk-footer')).toHaveLength(1)
+  })
+
+  test('Should allow signing in again after following the sign-out confirmation', async () => {
+    const signedIn = await server.inject({ method: 'POST', url: '/sign-in' })
+    let cookie = signedIn.headers['set-cookie'][0].split(';')[0]
+    const signedOut = await server.inject({
+      method: 'POST',
+      url: '/sign-out',
+      headers: { cookie }
+    })
+    cookie = signedOut.headers['set-cookie'][0].split(';')[0]
+    const confirmation = await server.inject({
+      method: 'GET',
+      url: signedOut.headers.location,
+      headers: { cookie }
+    })
+    const signInHref = load(confirmation.result)('.govuk-button').attr('href')
+    const signInPage = await server.inject({
+      method: 'GET',
+      url: signInHref,
+      headers: { cookie }
+    })
+
+    expect(signInPage.statusCode).toBe(200)
+    expect(load(signInPage.result)('h1').text().trim()).toBe('Sign in')
   })
 })

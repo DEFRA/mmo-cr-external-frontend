@@ -1,4 +1,5 @@
 import { buildCheckAnswersViewModel as buildViewModel } from './view-model.js'
+import { stripKilogramSuffix } from './summary-sections.js'
 import { getData } from '#/server/common/data/get-data.js'
 import {
   SPECIES_IDS,
@@ -33,7 +34,222 @@ function rowChangeHref(rows, keyText) {
   return rows.find((row) => row.key.text === keyText).actions.items[0].href
 }
 
+describe('#stripKilogramSuffix', () => {
+  test.each([
+    ['12 kg', '12'],
+    ['0 kg', '0'],
+    ['12   kg', '12'],
+    ['12\tkg', '12'],
+    ['12kg', '12kg'],
+    ['12 mm', '12 mm'],
+    ['', '']
+  ])('Should convert %j to %j', (value, expected) => {
+    expect(stripKilogramSuffix(value)).toBe(expected)
+  })
+
+  test('Should handle long whitespace without a backtracking expression', () => {
+    const value = `12${' '.repeat(100000)}`
+    expect(stripKilogramSuffix(value)).toBe(value)
+    expect(stripKilogramSuffix(`${value}kg`)).toBe('12')
+  })
+})
+
 describe('#buildCheckAnswersViewModel', () => {
+  test('Should use submitted-record section order without row actions in read-only mode', () => {
+    const state = {
+      selectedVesselName: 'SELECTED VESSEL',
+      selectedGearIds: ['beam', 'dredge'],
+      catchNotLanded: false,
+      catchDetailsByGearId: {
+        beam: {
+          statAreaBranch: 'direct',
+          selectedStatisticalArea: '38E95',
+          selectedSpeciesIds: [SPECIES_IDS.cod],
+          speciesWeights: {
+            [SPECIES_IDS.cod]: { weightAboveMinimum: 12, weightBelowMinimum: 0 }
+          }
+        },
+        dredge: {
+          statAreaBranch: 'direct',
+          selectedStatisticalArea: '38E96',
+          selectedSpeciesIds: [SPECIES_IDS.cod],
+          speciesWeights: {
+            [SPECIES_IDS.cod]: { weightAboveMinimum: 25, weightDiscarded: 3 }
+          }
+        }
+      }
+    }
+    const original = structuredClone(state)
+    const model = buildCheckAnswersViewModel(fakeRequest(state), {
+      readOnly: true,
+      gearCatalogue: [
+        { id: 'beam', label: 'Beam trawl', measurements: [] },
+        { id: 'dredge', label: 'Dredge', measurements: [] }
+      ]
+    })
+
+    expect(model.sections.map((section) => section.heading)).toEqual([
+      'Trips details',
+      'Gear used',
+      'Species caught',
+      'Species not landed'
+    ])
+    expect(rowValue(model.sections[0].rows, 'Vessel')).toBe('SELECTED VESSEL')
+    expect(
+      model.sections[0].rows.slice(0, 5).map((row) => row.key.text)
+    ).toEqual([
+      'Vessel',
+      'Departure date',
+      'Return date',
+      'Departure port',
+      'Return port'
+    ])
+    expect(
+      rowValue(model.sections[0].rows, 'Statistical sub area (Beam trawl)')
+    ).toBe('38E95')
+    expect(
+      rowValue(model.sections[0].rows, 'Statistical sub area (Dredge)')
+    ).toBe('38E96')
+    expect(model.sections[1].groups).toHaveLength(2)
+    expect(model.sections[1].groups[0].rows[0].key.text).toBe('Gear type')
+    const catches = model.sections[2].groups
+    expect(catches).toHaveLength(2)
+    expect(rowValue(catches[0].rows, 'Species')).toBe('Atlantic cod (COD)')
+    expect(rowValue(catches[1].rows, 'Species')).toBe('Atlantic cod (COD)')
+    expect(
+      rowValue(catches[0].rows, 'Weight above minimum size retained')
+    ).toBe('12 kg')
+    expect(
+      rowValue(catches[1].rows, 'Weight above minimum size retained')
+    ).toBe('25 kg')
+    expect(
+      rowValue(catches[0].rows, 'Weight below minimum size retained')
+    ).toBe('0 kg')
+    expect(rowValue(catches[1].rows, 'Weight legally discard')).toBe('3 kg')
+    expect(rowValue(model.sections[3].rows, 'Not landed')).toBe('No')
+    for (const section of model.sections) {
+      const rows = [
+        ...(section.rows || []),
+        ...(section.groups || []).flatMap((group) => group.rows)
+      ]
+      expect(rows.every((row) => !(row.actions?.items || []).length)).toBe(true)
+    }
+    expect(state).toEqual(original)
+  })
+
+  test('Should retain separate review entries and Change links for the same species caught with different gears', () => {
+    const state = {
+      selectedGearIds: ['beam', 'dredge'],
+      catchNotLanded: false,
+      catchDetailsByGearId: {
+        beam: {
+          statAreaBranch: 'direct',
+          selectedStatisticalArea: '38E95',
+          selectedSpeciesIds: [SPECIES_IDS.cod],
+          speciesWeights: { [SPECIES_IDS.cod]: { weightAboveMinimum: 12 } }
+        },
+        dredge: {
+          statAreaBranch: 'direct',
+          selectedStatisticalArea: '38E96',
+          selectedSpeciesIds: [SPECIES_IDS.cod],
+          speciesWeights: { [SPECIES_IDS.cod]: { weightAboveMinimum: 25 } }
+        }
+      }
+    }
+    const original = structuredClone(state)
+    const model = buildCheckAnswersViewModel(fakeRequest(state), {
+      reviewLayout: true,
+      gearCatalogue: [
+        { id: 'beam', label: 'Beam trawl', measurements: [] },
+        { id: 'dredge', label: 'Dredge', measurements: [] }
+      ]
+    })
+
+    expect(model.sections[0].heading).toBe('1. Trips details')
+    expect(model.gearGroups).toHaveLength(2)
+    expect(model.speciesGroups.map((group) => group.heading)).toEqual([
+      'Atlantic cod (COD)',
+      'Atlantic cod (COD)'
+    ])
+    expect(
+      model.speciesGroups.map((group) => group.rows[0].value.text)
+    ).toEqual(['12', '25'])
+    expect(model.speciesGroups[0].rows[0].actions.items[0].href).toContain(
+      'gearId=beam'
+    )
+    expect(model.speciesGroups[0].rows[0].actions.items[0].href).toContain(
+      `#weightAboveMinimum-${SPECIES_IDS.cod}`
+    )
+    expect(model.speciesGroups[1].rows[0].actions.items[0].href).toContain(
+      'gearId=dredge'
+    )
+    expect(model.trailingSections[0].heading).toBe('4. Species not landed')
+    expect(model.trailingSections[0].rows[0].value.text).toBe('No')
+    expect(model.trailingSections[0].rows[0].actions.items[0].href).toBe(
+      '/catch-not-landed?return=/check-answers'
+    )
+    expect(state).toEqual(original)
+  })
+
+  test('Should include trip dates, ports and selected gears in screenshot order', () => {
+    const model = buildCheckAnswersViewModel(
+      fakeRequest({
+        selectedGearIds: ['pots'],
+        catchNotLanded: false
+      }),
+      { reviewLayout: true }
+    )
+
+    expect(model.sections[0].rows.map((row) => row.key.text)).toEqual([
+      'Vessel',
+      'Date left',
+      'Port left from',
+      'Date returned',
+      'Port returned to',
+      'Gear used'
+    ])
+    expect(model.sections[0].rows[0].actions.items).toEqual([])
+  })
+
+  test('Should show gear shot count before dimensions and link to each measurement field', () => {
+    const model = buildCheckAnswersViewModel(
+      fakeRequest({
+        selectedGearIds: ['dredge'],
+        gearMeasurementDetails: { dredge: { count: 2, numberOfTimesShot: 0 } },
+        catchNotLanded: false
+      }),
+      {
+        reviewLayout: true,
+        gearCatalogue: [
+          {
+            id: 'dredge',
+            label: 'Dredge',
+            measurements: [
+              { id: 'count', label: 'Gear dimension by number' },
+              {
+                id: 'numberOfTimesShot',
+                label: 'Number of times gear was shot on the trip'
+              }
+            ]
+          }
+        ]
+      }
+    )
+    const rows = model.gearGroups[0].rows
+    expect(rows.map((row) => row.key.text)).toEqual([
+      'Area majority catch caught',
+      'Number of times gear was shot on the trip',
+      'Gear dimension by number'
+    ])
+    expect(rows[1].value.text).toBe('0')
+    expect(rows[1].actions.items[0].href).toBe(
+      '/gear-selection?return=/check-answers#dredge-numberOfTimesShot'
+    )
+    expect(rows[2].actions.items[0].href).toBe(
+      '/gear-selection?return=/check-answers#dredge-count'
+    )
+  })
+
   test('Should show every recorded gear detail with short labels without changing stored answers', () => {
     const state = {
       selectedGearIds: ['beam'],

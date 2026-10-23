@@ -35,7 +35,9 @@ async function viewContext(request, overrides = {}) {
   )
 
   return {
-    ...(await statisticalAreaContent(journeyState)),
+    ...(await statisticalAreaContent(journeyState, {
+      gearId: gearContext.gearId
+    })),
     ...gearContext,
     caption: 'New catch record',
     backLink: {

@@ -6,8 +6,3 @@
   // No visible border: the service navigation below is coloured to merge into one blue band
   border-bottom: none;
 }
-
-// Match the design: the GOV.UK logo's middle dot is white, not the default teal
-.app-header .govuk-logo-dot {
-  fill: govuk-colour('white');
-}

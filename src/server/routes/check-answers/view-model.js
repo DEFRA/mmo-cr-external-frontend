@@ -6,11 +6,13 @@ import {
 } from '#/server/common/helpers/journey/navigation.js'
 import {
   STATISTICAL_SUB_AREA,
+  STATISTICAL_AREA_LABEL,
   SPECIES_NOT_LANDED,
   NOT_LANDED,
   NOT_ENTERED,
   SPECIES_NOT_LANDED_PATH,
   KEPT_WEIGHT,
+  stripKilogramSuffix,
   resolveStatisticalSubArea,
   tripsDetailsSection,
   speciesCaughtSection,
@@ -25,6 +27,7 @@ import {
   gearSummaryRows,
   summaryGearCatalogue
 } from './gear-summary.js'
+import { buildReviewLayout } from './review-layout.js'
 
 const RETURN_TO_CHECK_ANSWERS = '?return=/check-answers'
 
@@ -49,7 +52,7 @@ function summaryRows(rows, compactSummary, context = '') {
 
 function gearAreaRow(answers, changeHref) {
   return {
-    key: 'Statistical area / sub area',
+    key: STATISTICAL_AREA_LABEL,
     value: resolveStatisticalSubArea(answers, {
       statisticalSubArea: NOT_ENTERED
     }),
@@ -272,7 +275,7 @@ function compactLegacyViewModel(sections, context) {
         rows: summaryRows(
           [
             ...gearSummaryRows(gear.rows),
-            { ...area, key: 'Statistical area / sub area' },
+            { ...area, key: STATISTICAL_AREA_LABEL },
             ...legacyCaughtRows(caught, context.speciesCatalogue)
           ],
           true
@@ -290,8 +293,159 @@ function compactLegacyViewModel(sections, context) {
   }
 }
 
+function reviewBaseModel(context) {
+  const fullContext = {
+    ...context,
+    compactSummary: false,
+    hideVesselChange: true
+  }
+  if (context.journeyState.selectedGearIds?.length) {
+    return groupedViewModel(fullContext)
+  }
+  const { trip, gear, caught, notLanded } = legacySections(fullContext)
+  const area = trip.rows.find((row) => row.key === STATISTICAL_SUB_AREA)
+  return {
+    sections: [
+      {
+        rows: summaryRows(
+          trip.rows.filter((row) => row !== area),
+          false
+        )
+      }
+    ],
+    gearGroups: [
+      {
+        heading: gear.rows[0].value,
+        rows: summaryRows(
+          [
+            ...gearSummaryRows(gear.rows),
+            { ...area, key: STATISTICAL_AREA_LABEL },
+            ...legacyCaughtRows(caught, context.speciesCatalogue)
+          ],
+          false
+        )
+      }
+    ],
+    trailingSections: [
+      { heading: SPECIES_NOT_LANDED, rows: summaryRows(notLanded.rows, false) }
+    ]
+  }
+}
+
+function readOnlyLegacySections(context) {
+  const { trip, gear, caught, notLanded } = legacySections(context)
+  gear.rows = gear.rows.filter((row) => row.key !== 'Mesh size')
+  return [trip, gear, caught, notLanded].filter(Boolean).map((section) => ({
+    heading: section.heading,
+    rows: summaryRows(section.rows, false)
+  }))
+}
+
+function readOnlyAreaRows(gearGroups) {
+  const multipleGears = gearGroups.length > 1
+  return gearGroups.flatMap((group) => {
+    const area = group.rows.find(
+      (row) => row.key.text === STATISTICAL_AREA_LABEL
+    )
+    if (!area) {
+      return []
+    }
+    const label = multipleGears
+      ? `${STATISTICAL_SUB_AREA} (${group.heading})`
+      : STATISTICAL_SUB_AREA
+    return [{ ...area, key: { text: label } }]
+  })
+}
+
+function readOnlyGearGroups(gearGroups) {
+  return gearGroups.map((group) => ({
+    ...group,
+    rows: group.rows
+      .filter(
+        (row) =>
+          row.key.text !== STATISTICAL_AREA_LABEL &&
+          !row.key.text.startsWith('Species') &&
+          !row.key.text.startsWith('Weight')
+      )
+      .map((row) =>
+        row.key.text === 'Gear' ? { ...row, key: { text: 'Gear type' } } : row
+      )
+  }))
+}
+
+function readOnlySpeciesGroups(gearGroups) {
+  return gearGroups
+    .map((group) => ({
+      ...group,
+      rows: group.rows.filter(
+        (row) =>
+          row.key.text.startsWith('Species') ||
+          row.key.text.startsWith('Weight')
+      )
+    }))
+    .filter((group) => group.rows.length)
+}
+
+function readOnlyTrailingSections(sections) {
+  return sections.map((section) => ({
+    ...section,
+    rows: section.rows.map((row) =>
+      row.key.text === KEPT_WEIGHT
+        ? {
+            ...row,
+            key: {
+              text: 'Weight above minimum size kept onboard or in keep pots (kg)'
+            },
+            value: { text: stripKilogramSuffix(row.value.text) }
+          }
+        : row
+    )
+  }))
+}
+
+function readOnlyViewModel(context) {
+  const readOnlyContext = {
+    ...context,
+    compactSummary: false,
+    hideVesselChange: true,
+    buildChangeHref: () => null
+  }
+  if (!context.journeyState.selectedGearIds?.length) {
+    return { sections: readOnlyLegacySections(readOnlyContext) }
+  }
+  const base = reviewBaseModel(readOnlyContext)
+
+  return {
+    sections: [
+      {
+        heading: 'Trips details',
+        rows: [...base.sections[0].rows, ...readOnlyAreaRows(base.gearGroups)]
+      },
+      {
+        heading: 'Gear used',
+        groups: readOnlyGearGroups(base.gearGroups),
+        groupIdPrefix: 'gear-summary',
+        rows: []
+      },
+      {
+        heading: 'Species caught',
+        groups: readOnlySpeciesGroups(base.gearGroups),
+        groupIdPrefix: 'species-summary',
+        rows: []
+      },
+      ...readOnlyTrailingSections(base.trailingSections)
+    ]
+  }
+}
+
 export function buildCheckAnswersViewModel(request, options = {}) {
   const context = viewModelContext(request, options)
+  if (context.readOnly) {
+    return readOnlyViewModel(context)
+  }
+  if (context.reviewLayout) {
+    return buildReviewLayout(reviewBaseModel(context), context)
+  }
   if (context.journeyState.selectedGearIds?.length) {
     return groupedViewModel(context)
   }

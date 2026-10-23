@@ -83,6 +83,7 @@ describe('per-gear catch journey', () => {
   }
 
   test('loops immediately after species and records unlanded catch once for the trip', async () => {
+    cookie = await seedFavouriteGears(server, ['pots', 'dredge'], cookie)
     expect((await start()).headers.location).toBe(
       '/statistical-area?gearId=pots'
     )
@@ -104,23 +105,33 @@ describe('per-gear catch journey', () => {
     const $ = load(summary.result)
     const groups = $('section[aria-labelledby^="gear-summary-"]')
     expect(groups).toHaveLength(2)
-    expect(groups.eq(0).find('h2').text()).toBe('Pots')
-    expect(groups.eq(0).text()).toContain('38E95')
-    expect(groups.eq(0).text()).toContain('15 kg')
-    expect(groups.eq(0).text()).toContain('2 kg')
-    expect(groups.eq(1).find('h2').text()).toBe('Dredge')
-    expect(groups.eq(1).text()).toContain('38E96')
-    expect(groups.eq(1).text()).toContain('30 kg')
-    expect(groups.eq(1).text()).not.toContain('15 kg')
+    expect(groups.eq(0).find('h3').text()).toBe('Pots')
+    expect($('dl').first().text()).toContain('38E95')
+    const speciesGroups = $('section[aria-labelledby^="species-summary-"]')
+    expect(speciesGroups).toHaveLength(2)
+    expect(
+      speciesGroups.eq(0).find('.govuk-summary-list__value').eq(1).text().trim()
+    ).toBe('15 kg')
+    expect(
+      speciesGroups.eq(0).find('.govuk-summary-list__value').eq(2).text().trim()
+    ).toBe('2 kg')
+    expect(groups.eq(1).find('h3').text()).toBe('Dredge')
+    expect($('dl').first().text()).toContain('38E96')
+    expect(
+      speciesGroups.eq(1).find('.govuk-summary-list__value').eq(1).text().trim()
+    ).toBe('30 kg')
     expect(groups.find('dt:contains("Not landed")')).toHaveLength(0)
-    expect($('dt:contains("Not landed")')).toHaveLength(0)
+    expect($('dt:contains("Not landed")')).toHaveLength(1)
     expect(
       $('h2').filter((_, element) => $(element).text() === 'Species not landed')
     ).toHaveLength(1)
-    expect($('h3, h4')).toHaveLength(0)
-    expect($('dt:contains("Weight kept onboard")').next().text().trim()).toBe(
-      '5 kg'
-    )
+    expect($('h3')).toHaveLength(4)
+    expect(
+      $('dt:contains("Weight above minimum size kept onboard")')
+        .next()
+        .text()
+        .trim()
+    ).toBe('5')
     expect(
       groups
         .eq(0)
@@ -128,30 +139,26 @@ describe('per-gear catch journey', () => {
         .map((_, element) => $(element).text().trim())
         .get()
     ).toEqual([
-      'Gear',
+      'Gear type',
       'Total pots or traps hauled',
-      'Total pots or traps left in water',
-      'Statistical area / sub area',
-      'Species',
-      'Weight above minimum size retained',
-      'Weight below minimum size retained'
+      'Total pots or traps left in water'
     ])
-    expect($('.app-catch-summary-list').length).toBeGreaterThan(0)
+    expect($('.govuk-summary-list').length).toBeGreaterThan(0)
     expect($('input[name="confirmAccurate"]')).toHaveLength(0)
-    expect($('.govuk-button').text().trim()).toBe('Save and continue')
+    expect($('main button, main form, main a, main input')).toHaveLength(0)
     expect(
-      $('h2').filter((_, element) => $(element).text() === 'Trip')
+      $('h2').filter((_, element) => $(element).text() === 'Trips details')
     ).toHaveLength(1)
-    expect(
-      groups.eq(1).find('a[href*="/species-selection"]').first().attr('href')
-    ).toBe('/species-selection?return=/check-answers&gearId=dredge')
-    expect(groups.eq(1).find('.govuk-visually-hidden').text()).toContain(
-      'Dredge'
-    )
+    expect(speciesGroups.eq(1).find('h3').text()).toBe('Dredge')
+    const changeHrefs = $('a')
+      .filter((_, element) => $(element).text().trim().startsWith('Change'))
+      .map((_, element) => $(element).attr('href'))
+      .get()
+    expect(changeHrefs).toEqual([])
     expect(
       (await inject('POST', '/check-answers', { confirmAccurate: 'true' }))
-        .headers.location
-    ).toBe('/confirmation')
+        .statusCode
+    ).toBe(404)
   })
 
   test('keeps validation inputs and edits isolated to the requested gear', async () => {
@@ -192,25 +199,34 @@ describe('per-gear catch journey', () => {
     expect(changed.headers.location).toBe('/check-answers')
     const summary = load((await inject('GET', '/check-answers')).result)
     expect(
-      summary('section[aria-labelledby^="gear-summary-"]').eq(0).text()
-    ).toContain('15 kg')
+      summary('section[aria-labelledby^="species-summary-"]')
+        .eq(0)
+        .find('.govuk-summary-list__value')
+        .eq(1)
+        .text()
+        .trim()
+    ).toBe('15 kg')
     expect(
-      summary('section[aria-labelledby^="gear-summary-"]').eq(1).text()
-    ).toContain('40 kg')
+      summary('section[aria-labelledby^="species-summary-"]')
+        .eq(1)
+        .find('.govuk-summary-list__value')
+        .eq(1)
+        .text()
+        .trim()
+    ).toBe('40 kg')
+    expect(summary('dt:contains("Not landed")').next().text().trim()).toBe('No')
     expect(
       (await inject('GET', '/species-selection?gearId=removed')).statusCode
     ).toBe(400)
   })
 
-  test('blocks incomplete review and submission and collects newly added gears', async () => {
+  test('reviews incomplete answers without edit redirects, rejects submission and retains gear collection', async () => {
     await start(['pots'])
-    expect((await inject('GET', '/check-answers')).headers.location).toBe(
-      '/statistical-area?gearId=pots'
-    )
+    expect((await inject('GET', '/check-answers')).statusCode).toBe(200)
     expect(
       (await inject('POST', '/check-answers', { confirmAccurate: 'true' }))
-        .headers.location
-    ).toBe('/statistical-area?gearId=pots')
+        .statusCode
+    ).toBe(404)
     await catchFor('pots', '38E95', '15')
     await finishTrip()
     const added = await inject(
@@ -312,7 +328,7 @@ describe('per-gear catch journey', () => {
     await finishTrip()
     const summary = load((await inject('GET', '/check-answers')).result)
     expect(summary('section[aria-labelledby^="gear-summary-"]')).toHaveLength(3)
-    expect(summary('.govuk-back-link').attr('href')).toBe('/catch-not-landed')
+    expect(summary('.govuk-back-link').attr('href')).toBe('/records')
   })
 
   test('keeps the add-species edit detour scoped and removes vessel species from every gear', async () => {
@@ -354,9 +370,9 @@ describe('per-gear catch journey', () => {
       )
       expect(selection(`input[value="${SPECIES_IDS.cod}"]`)).toHaveLength(0)
     }
-    expect((await inject('GET', '/check-answers')).headers.location).toBe(
-      '/species-selection?gearId=pots'
-    )
+    const review = await inject('GET', '/check-answers')
+    expect(review.statusCode).toBe(200)
+    expect(load(review.result)('main a, main form, main input')).toHaveLength(0)
   })
 
   test('offers only caught species for not-landed answers and clears them when changed to No', async () => {
@@ -395,9 +411,14 @@ describe('per-gear catch journey', () => {
     const summary = load((await inject('GET', '/check-answers')).result)
     const groups = summary('section[aria-labelledby^="gear-summary-"]')
     expect(groups).toHaveLength(1)
-    expect(groups.find('h2').text()).toBe('Dredge')
-    expect(groups.text()).toContain('30 kg')
-    expect(groups.text()).not.toContain('15 kg')
+    expect(groups.find('h3').text()).toBe('Dredge')
+    const speciesGroups = summary(
+      'section[aria-labelledby^="species-summary-"]'
+    )
+    expect(speciesGroups).toHaveLength(1)
+    expect(
+      speciesGroups.find('.govuk-summary-list__value').eq(1).text().trim()
+    ).toBe('30 kg')
   })
 
   test('offers the union of caught species once and retains shared unlanded answers when another gear still caught them', async () => {
@@ -433,8 +454,11 @@ describe('per-gear catch journey', () => {
     expect(changed.headers.location).toBe('/check-answers')
     const summary = load((await inject('GET', '/check-answers')).result)
     expect(
-      summary('dt:contains("Weight kept onboard")').next().text().trim()
-    ).toBe('3 kg')
+      summary('dt:contains("Weight above minimum size kept onboard")')
+        .next()
+        .text()
+        .trim()
+    ).toBe('3')
     const removed = await inject(
       'POST',
       '/species-selection?gearId=pots&return=/check-answers',

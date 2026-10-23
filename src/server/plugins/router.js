@@ -5,6 +5,7 @@ import { health } from '../routes/health/index.js'
 import { guidance } from '../routes/guidance/index.js'
 import { privacyNotice } from '../routes/privacy-notice/index.js'
 import { signIn } from '../routes/sign-in/index.js'
+import { forgottenPassword } from '../routes/forgotten-password/index.js'
 import { signOut } from '../routes/sign-out/index.js'
 import { records } from '../routes/records/index.js'
 import { recordDetails } from '../routes/record-details/index.js'
@@ -64,6 +65,7 @@ export const router = {
         guidance,
         privacyNotice,
         signIn,
+        forgottenPassword,
         signOut,
         records,
         recordDetails,

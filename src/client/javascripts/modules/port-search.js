@@ -3,6 +3,14 @@ const maximumResults = 10
 const collapsedState = 'false'
 const ariaExpandedAttribute = 'aria-expanded'
 
+function readPortNames(dataScript) {
+  try {
+    return JSON.parse(dataScript?.textContent || '[]')
+  } catch {
+    return []
+  }
+}
+
 export function initialisePortSearch() {
   const input = document.querySelector('[data-port-search]')
   if (!input) {
@@ -10,15 +18,11 @@ export function initialisePortSearch() {
   }
 
   const minimumLength = Number(input.dataset.minLength) || minimumSearchLength
+  const showAllOnFocus = input.dataset.showAllOnFocus !== undefined
   const results = document.querySelector('[data-port-results]')
   const dataScript = document.querySelector('[data-port-search-data]')
 
-  let portNames = []
-  try {
-    portNames = JSON.parse(dataScript?.textContent || '[]')
-  } catch {
-    portNames = []
-  }
+  const portNames = readPortNames(dataScript)
 
   const selectPort = (name) => {
     input.value = name
@@ -31,7 +35,7 @@ export function initialisePortSearch() {
     const query = input.value.trim().toLowerCase()
     results.replaceChildren()
 
-    if (query.length < minimumLength) {
+    if (query.length < minimumLength && !(showAllOnFocus && !query)) {
       results.hidden = true
       input.setAttribute(ariaExpandedAttribute, collapsedState)
       return
@@ -39,7 +43,7 @@ export function initialisePortSearch() {
 
     const matches = portNames
       .filter((name) => name.toLowerCase().startsWith(query))
-      .slice(0, maximumResults)
+      .slice(0, showAllOnFocus ? portNames.length : maximumResults)
 
     if (!matches.length) {
       results.hidden = true
@@ -64,6 +68,16 @@ export function initialisePortSearch() {
   }
 
   input.addEventListener('input', renderResults)
+  if (showAllOnFocus) {
+    input.addEventListener('focus', renderResults)
+    input.addEventListener('click', renderResults)
+    document.addEventListener('click', (event) => {
+      if (!input.contains(event.target) && !results.contains(event.target)) {
+        results.hidden = true
+        input.setAttribute(ariaExpandedAttribute, collapsedState)
+      }
+    })
+  }
   input.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') {
       results.hidden = true

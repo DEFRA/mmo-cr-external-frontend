@@ -60,6 +60,8 @@ export const recordsController = {
     return h.view('records/index', {
       pageTitle: 'Your catch records',
       heading: 'Your catch records',
+      bodyClasses: 'app-records-page',
+      backLink: { href: '/', text: 'Back' },
       notice: service.notice,
       records: pagination.pageItems.map(toRowViewModel),
       pagination,

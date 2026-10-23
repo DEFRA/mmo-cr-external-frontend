@@ -1,9 +1,7 @@
+@use 'govuk-frontend' as *;
+
 .app-statistical-area-map {
   margin-top: 2rem;
-}
-
-.app-statistical-area-map__heading {
-  max-width: 34rem;
 }
 
 .app-offline-map {
@@ -112,6 +110,25 @@
 .app-statistical-area-search__input {
   box-sizing: border-box;
   width: 100%;
+}
+
+.app-statistical-area-search__control--dropdown {
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: 1rem;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-right: 3px solid govuk-colour('black', $variant: 'tint-80');
+    border-bottom: 3px solid govuk-colour('black', $variant: 'tint-80');
+    pointer-events: none;
+    transform: translateY(-75%) rotate(45deg);
+  }
+
+  .app-statistical-area-search__input {
+    padding-right: 3rem;
+  }
 }
 
 .app-statistical-area-search__option {

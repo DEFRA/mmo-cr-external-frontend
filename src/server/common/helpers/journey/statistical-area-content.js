@@ -1,8 +1,8 @@
 import { getData } from '#/server/common/data/get-data.js'
 import { getGearCatalogue } from '#/server/common/helpers/gear/favourite-gear.js'
 
-export async function selectedGearDescription(journeyState) {
-  const selectedGearIds = journeyState.selectedGearIds || []
+export async function selectedGearDescription(journeyState, gearId) {
+  const selectedGearIds = gearId ? [gearId] : journeyState.selectedGearIds || []
   let catalogue = getData('gearCatalogue')
   if (
     selectedGearIds.some(
@@ -26,17 +26,21 @@ export async function selectedGearDescription(journeyState) {
         catalogue.find((gear) => gear.id === id)?.label
     )
     .filter(Boolean)
-    .map((name) => name.toLowerCase())
   return new Intl.ListFormat('en', {
     style: 'long',
     type: 'conjunction'
   }).format(gearNames)
 }
 
-export async function statisticalAreaContent(journeyState) {
-  const gears = await selectedGearDescription(journeyState)
+export async function statisticalAreaContent(
+  journeyState,
+  { manualEntry = false, gearId } = {}
+) {
+  const gears = await selectedGearDescription(journeyState, gearId)
   const gearSuffix = gears ? ` using ${gears}` : ''
-  const heading = `Select the statistical sub area where the majority of your catch was caught${gearSuffix}`
+  const heading = manualEntry
+    ? `Select the statistical sub area where the majority of your catch was caught${gearSuffix}`
+    : `Where was the majority of your catch caught${gearSuffix}?`
 
   return {
     pageTitle: heading,

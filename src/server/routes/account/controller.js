@@ -10,6 +10,7 @@ import {
   getGearCatalogue
 } from '#/server/common/helpers/gear/favourite-gear.js'
 import { getSpeciesPageData } from '#/server/common/helpers/species/species-list.js'
+import { getVesselItem } from '#/server/common/helpers/vessels/vessels-list.js'
 
 const NOT_IMPLEMENTED_HREF = '/not-implemented?return=/account'
 
@@ -227,6 +228,17 @@ export const accountController = {
     const vessel = getData('selectVessel')
     const vesselLabel = `${vessel.name} (${vessel.registration})`
     const journeyState = getJourneyState(request)
+    const selectedVessel = journeyState.selectedVesselId
+      ? await getVesselItem(journeyState.selectedVesselId)
+      : null
+    const selectedVesselName =
+      selectedVessel?.name || journeyState.selectedVesselName
+    const selectedVesselRegistration = selectedVessel?.pln
+      ? ` (${selectedVessel.pln})`
+      : ''
+    const selectedVesselLabel = selectedVesselName
+      ? `${selectedVesselName}${selectedVesselRegistration}`
+      : vesselLabel
     const skipper = journeyState.skipper
     const portsUsed = getAccountPortsUsed(journeyState)
     const gearCatalogue = await getGearCatalogue()
@@ -248,7 +260,7 @@ export const accountController = {
         buildPersonalDetailsSection(account, vesselLabel),
         buildVesselDetailsSection(
           account,
-          vesselLabel,
+          selectedVesselLabel,
           speciesCaught,
           skipper,
           portsUsed,

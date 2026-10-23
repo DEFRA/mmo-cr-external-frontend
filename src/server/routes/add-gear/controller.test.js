@@ -71,6 +71,10 @@ describe('#addGearController', () => {
     expect($('#gear').attr('placeholder')).toBe(
       'Start typing to display the list'
     )
+    expect($('#gear').attr('data-show-all-on-focus')).toBeUndefined()
+    expect($('#gear').attr('data-min-length')).toBe('1')
+    expect($('#gear').attr('aria-expanded')).toBe('false')
+    expect($('#gear-results').attr('hidden')).toBeDefined()
     expect($('body').text()).not.toContain('Gear type')
   })
 

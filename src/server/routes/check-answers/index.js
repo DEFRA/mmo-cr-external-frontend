@@ -1,7 +1,4 @@
-import {
-  checkAnswersController,
-  checkAnswersSubmitController
-} from './controller.js'
+import { checkAnswersController } from './controller.js'
 
 /**
  * Sets up the routes used in the check your answers page.
@@ -16,11 +13,6 @@ export const checkAnswers = {
           method: 'GET',
           path: '/check-answers',
           ...checkAnswersController
-        },
-        {
-          method: 'POST',
-          path: '/check-answers',
-          ...checkAnswersSubmitController
         }
       ])
     }

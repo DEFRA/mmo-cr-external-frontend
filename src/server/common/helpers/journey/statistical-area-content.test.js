@@ -17,20 +17,20 @@ describe('#statisticalAreaContent', () => {
     })
 
     expect(content.heading).toBe(
-      'Select the statistical sub area where the majority of your catch was caught using seine nets'
+      'Where was the majority of your catch caught using Seine nets?'
     )
     expect(content.pageTitle).toBe(content.heading)
     expect(getGearCatalogue).toHaveBeenCalledWith({ vesselLengthMetres: 8 })
   })
 
   test.each([
-    [{ selectedGearIds: ['pots'] }, ' using pots'],
+    [{ selectedGearIds: ['pots'] }, ' using Pots'],
     [
       {
         selectedGearIds: ['api-pots'],
         selectedGearNamesById: { 'api-pots': 'Pots' }
       },
-      ' using pots'
+      ' using Pots'
     ],
     [{}, '']
   ])(
@@ -39,11 +39,23 @@ describe('#statisticalAreaContent', () => {
       const content = await statisticalAreaContent(state)
 
       expect(content.heading).toBe(
-        `Select the statistical sub area where the majority of your catch was caught${suffix}`
+        `Where was the majority of your catch caught${suffix}?`
       )
       expect(getGearCatalogue).not.toHaveBeenCalled()
     }
   )
+
+  test.each([
+    [{ selectedGearIds: ['pots'] }, ' using Pots'],
+    [{}, '']
+  ])('Should use the manual-entry heading for %s', async (state, suffix) => {
+    const content = await statisticalAreaContent(state, { manualEntry: true })
+
+    expect(content.heading).toBe(
+      `Select the statistical sub area where the majority of your catch was caught${suffix}`
+    )
+    expect(content.pageTitle).toBe(content.heading)
+  })
 
   test('Should not silently drop a selected gear when reference data is unavailable', async () => {
     vi.mocked(getGearCatalogue).mockRejectedValue(new Error('Unavailable'))

@@ -9,11 +9,13 @@
       <span class="govuk-caption-l" data-testid="app-record-reference">{{ details.reference }}</span>
       <h1 class="govuk-heading-xl" data-testid="app-heading-title">{{ heading }}</h1>
 
-      <p class="govuk-body govuk-!-font-weight-bold govuk-!-margin-bottom-1">Record status:</p>
-      <strong class="govuk-tag govuk-tag--grey">{{ status | capitalize }}</strong>
+      {% if status %}
+        <p class="govuk-body govuk-!-font-weight-bold govuk-!-margin-bottom-1">Record status:</p>
+        <strong class="govuk-tag govuk-tag--grey">{{ status | capitalize }}</strong>
+      {% endif %}
 
       {% if sections or gearGroups %}
-        {{ appCatchRecordSummarySections(sections, gearGroups, trailingSections) }}
+        {{ appCatchRecordSummarySections(sections, gearGroups, trailingSections, readOnly) }}
       {% else %}
       <h2 class="govuk-heading-l">Trips details</h2>
       {{ govukSummaryList({ rows: [
@@ -47,6 +49,7 @@
         { key: { text: "Weight above minimum size kept onboard or in keep pots (kg)" }, value: { text: details.notLandedWeightAboveMinimumKept } }
       ] }) }}
       {% endif %}
+      {% if not readOnly %}
       <div class="govuk-button-group">
         {{ govukButton({
           text: "Edit catch record",
@@ -59,6 +62,7 @@
           type: "button"
         }) }}
       </div>
+      {% endif %}
     </div>
   </div>
 {% endblock %}
