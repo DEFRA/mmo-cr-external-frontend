@@ -25,6 +25,7 @@
 - Text has reserved space before the arrow at desktop and mobile widths.
 - Filtering and selecting a port still work; selecting a result closes the list.
 - Validation retains the red input border, inline error and error-summary link, with the arrow aligned to the input rather than the error message.
+- Submitting a port already saved in the relevant Account or journey favourites list stays on Add port, preserves the entered value, and shows “[Port name] is already saved in your favourites” in the error summary and beside the field. The saved list remains unchanged (FR5).
 - The arrow is decorative (`aria-hidden`, no pointer interception); the input remains labelled and keyboard accessible.
 
 ## GOV.UK Deviation
