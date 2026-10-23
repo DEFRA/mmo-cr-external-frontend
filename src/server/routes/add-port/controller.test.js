@@ -299,4 +299,115 @@ describe('#addPortSubmitController', () => {
 
     expect($('input[value="Newhaven"]')).toHaveLength(1)
   })
+
+  test('Should reject a port already in the default account list', async () => {
+    const response = await server.inject({
+      method: 'POST',
+      url: '/add-port?for=departure&return=/account',
+      payload: { port: 'Hastings' }
+    })
+    const $ = load(response.result)
+
+    expect(response.statusCode).toBe(statusCodes.badRequest)
+    expect(response.headers.location).toBeUndefined()
+    expect($('.govuk-error-summary a').text()).toBe(
+      'Hastings is already saved in your favourites'
+    )
+    expect($('.govuk-error-summary a').attr('href')).toBe('#port')
+    expect($('#port-error').text()).toContain(
+      'Hastings is already saved in your favourites'
+    )
+    expect($('#port').attr('aria-describedby')).toContain('port-error')
+    expect($('#port').val()).toBe('Hastings')
+    expect($('form').attr('action')).toBe(
+      '/add-port?for=departure&return=/account'
+    )
+  })
+
+  test('Should show an informative duplicate error and keep Plymouth listed once on Account', async () => {
+    const signIn = await server.inject({ method: 'POST', url: '/sign-in' })
+    const signInCookie = signIn.headers['set-cookie'][0].split(';')[0]
+    const saved = await server.inject({
+      method: 'POST',
+      url: '/add-port?for=departure&return=/account',
+      headers: { cookie: signInCookie },
+      payload: { port: 'Plymouth' }
+    })
+    const cookie = saved.headers['set-cookie'][0].split(';')[0]
+    const duplicate = await server.inject({
+      method: 'POST',
+      url: '/add-port?for=departure&return=/account',
+      headers: { cookie },
+      payload: { port: ' plymouth ' }
+    })
+    const $ = load(duplicate.result)
+
+    expect(duplicate.statusCode).toBe(statusCodes.badRequest)
+    expect(duplicate.headers.location).toBeUndefined()
+    expect($('.govuk-error-summary').text()).toContain(
+      'Plymouth is already saved in your favourites'
+    )
+    expect($('#port-error').text()).toContain(
+      'Plymouth is already saved in your favourites'
+    )
+    expect($('#port').val()).toBe('plymouth')
+
+    const accountPage = await server.inject({
+      method: 'GET',
+      url: '/account',
+      headers: { cookie }
+    })
+    const account = load(accountPage.result)
+    expect(accountPage.statusCode).toBe(statusCodes.ok)
+    expect(
+      account('.govuk-summary-list__row')
+        .filter((_, element) =>
+          account(element).find('dt').text().includes('Ports used')
+        )
+        .find('dd')
+        .first()
+        .text()
+        .match(/Plymouth/g)
+    ).toHaveLength(1)
+  })
+
+  test.each([
+    '/add-port?for=departure',
+    '/add-port?for=return',
+    '/add-port?for=departure&entry=1'
+  ])(
+    'Should reject a saved favourite without redirecting from %s',
+    async (url) => {
+      const saved = await server.inject({
+        method: 'POST',
+        url: '/add-port?for=departure&entry=1',
+        payload: { port: 'Plymouth' }
+      })
+      const cookie = saved.headers['set-cookie'][0].split(';')[0]
+      const duplicate = await server.inject({
+        method: 'POST',
+        url,
+        headers: { cookie },
+        payload: { port: 'Plymouth' }
+      })
+      const $ = load(duplicate.result)
+
+      expect(duplicate.statusCode).toBe(statusCodes.badRequest)
+      expect(duplicate.headers.location).toBeUndefined()
+      expect($('.govuk-error-summary').text()).toContain(
+        'Plymouth is already saved in your favourites'
+      )
+      expect($('#port-error').text()).toContain(
+        'Plymouth is already saved in your favourites'
+      )
+      expect($('form').attr('action')).toBe(url)
+
+      const selection = await server.inject({
+        method: 'GET',
+        url: '/departure-port',
+        headers: { cookie }
+      })
+      expect(load(selection.result)('input[value="GBPLY"]')).toHaveLength(1)
+    }
+  )
 })

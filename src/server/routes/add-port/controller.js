@@ -2,11 +2,19 @@ import Joi from 'joi'
 
 import {
   backForDeparturePort,
+  getJourneyState,
   resolveNextPath
 } from '#/server/common/helpers/journey/navigation.js'
-import { addFavouritePortCode } from '#/server/common/helpers/journey/favourite-ports.js'
-import { addAccountPortName } from '#/server/common/helpers/account/account-ports.js'
 import {
+  addFavouritePortCode,
+  getFavouritePortCodes
+} from '#/server/common/helpers/journey/favourite-ports.js'
+import {
+  addAccountPortName,
+  getAccountPortsUsed
+} from '#/server/common/helpers/account/account-ports.js'
+import {
+  findPortByCode,
   findPortByName,
   getPortCatalogue,
   portSearchLabel,
@@ -83,7 +91,13 @@ export const addPortController = {
   }
 }
 
-async function renderError(request, h, submittedValue, catalogue) {
+async function renderError(
+  request,
+  h,
+  submittedValue,
+  catalogue,
+  errorText = selectionErrorText
+) {
   const ports = catalogue || (await getPortCatalogue())
   return h
     .view(
@@ -91,9 +105,9 @@ async function renderError(request, h, submittedValue, catalogue) {
       viewContext(request, ports, {
         errorSummary: {
           titleText: 'There is a problem',
-          errorList: [{ text: selectionErrorText, href: '#port' }]
+          errorList: [{ text: errorText, href: '#port' }]
         },
-        fieldErrors: { port: selectionErrorText },
+        fieldErrors: { port: errorText },
         port: submittedValue || ''
       })
     )
@@ -119,6 +133,22 @@ export const addPortSubmitController = {
 
     if (!matchedPort) {
       return renderError(request, h, port, ports)
+    }
+
+    const alreadySaved = isAccountReturn(request)
+      ? getAccountPortsUsed(getJourneyState(request)).includes(matchedPort.name)
+      : getFavouritePortCodes(request).some(
+          (code) => findPortByCode(code, ports)?.code === matchedPort.code
+        )
+
+    if (alreadySaved) {
+      return renderError(
+        request,
+        h,
+        port,
+        ports,
+        `${matchedPort.name} is already saved in your favourites`
+      )
     }
 
     if (isAccountReturn(request)) {
