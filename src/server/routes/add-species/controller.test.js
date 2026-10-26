@@ -2,10 +2,12 @@ import { load } from 'cheerio'
 
 import { createServer } from '#/server/server.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
+import { getJourneyState } from '#/server/common/helpers/journey/navigation.js'
 import {
   mockSpeciesReferenceData,
   restoreSpeciesReferenceDataMock,
-  SPECIES_IDS
+  SPECIES_IDS,
+  SPECIES_ITEMS
 } from '#/test-helpers/mock-species-reference-data.js'
 import {
   mockVesselsReferenceData,
@@ -106,7 +108,7 @@ describe('#addSpeciesController', () => {
     expect($('.govuk-caption-l').text().trim()).toBe('New catch record')
   })
 
-  test('Should render a progressively enhanced species list that excludes already-added species', async () => {
+  test('Should render the full species catalogue including already-added species', async () => {
     const { result } = await server.inject({
       method: 'GET',
       url: '/add-species'
@@ -118,8 +120,16 @@ describe('#addSpeciesController', () => {
     )
     expect($('select[data-species-search][name="species"]')).toHaveLength(1)
     expect($('datalist')).toHaveLength(0)
-    expect($('#species option[value="Herring (HER)"]')).toHaveLength(1)
-    expect($('#species option[value="Atlantic cod (COD)"]')).toHaveLength(0)
+    expect(
+      $('#species option')
+        .map((_, option) => $(option).val())
+        .get()
+    ).toEqual([
+      '',
+      ...SPECIES_ITEMS.map(
+        (species) => `${species.displayName} (${species.faoCode})`
+      )
+    ])
   })
 })
 
@@ -189,6 +199,63 @@ describe('#addSpeciesSubmitController', () => {
     expect($('.govuk-error-summary').text()).toContain(
       'This species has already been added.'
     )
+    expect($('.govuk-error-summary a').attr('href')).toBe('#species')
+    expect($('#species-error').text()).toContain(
+      'This species has already been added.'
+    )
+    expect($('#species').attr('aria-describedby')).toBe('species-error')
+    expect($('#species option[value="Atlantic cod (COD)"]')).toHaveLength(1)
+  })
+
+  test('Should keep an added species selectable and reject re-adding it from the account without duplicating it', async () => {
+    const added = await server.inject({
+      method: 'POST',
+      url: '/add-species?return=/account',
+      payload: { species: 'Herring (HER)' }
+    })
+    expect(added.statusCode).toBe(statusCodes.seeOther)
+    expect(added.headers.location).toBe('/account')
+    const cookie = added.headers['set-cookie'][0].split(';')[0]
+
+    const page = await server.inject({
+      method: 'GET',
+      url: '/add-species?return=/account',
+      headers: { cookie }
+    })
+    const $page = load(page.result)
+    expect(page.statusCode).toBe(statusCodes.ok)
+    expect($page('#species option[value="Herring (HER)"]')).toHaveLength(1)
+
+    const duplicate = await server.inject({
+      method: 'POST',
+      url: '/add-species?return=/account',
+      headers: { cookie },
+      payload: { species: 'Herring (HER)' }
+    })
+    const $error = load(duplicate.result)
+    expect(duplicate.statusCode).toBe(statusCodes.badRequest)
+    expect($error('.govuk-error-summary').text()).toContain(
+      'This species has already been added.'
+    )
+    expect($error('#species option[value="Herring (HER)"]')).toHaveLength(1)
+    expect(getJourneyState(duplicate.request).availableSpeciesIds).toEqual([
+      SPECIES_IDS.cod,
+      SPECIES_IDS.haddock,
+      SPECIES_IDS.mackerel,
+      SPECIES_IDS.herring
+    ])
+    expect(
+      $error('[data-testid="app-page-navigation-back-link"]').attr('href')
+    ).toBe('/account')
+
+    const selection = await server.inject({
+      method: 'GET',
+      url: '/species-selection',
+      headers: { cookie }
+    })
+    const $selection = load(selection.result)
+    expect(selection.statusCode).toBe(statusCodes.ok)
+    expect($selection(`input[value="${SPECIES_IDS.herring}"]`)).toHaveLength(1)
   })
 
   test('Should add a new species and redirect to species selection', async () => {

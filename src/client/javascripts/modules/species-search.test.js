@@ -6,6 +6,7 @@ function renderSelect(error = false) {
     <label for="species">Add species</label>
     <select id="species" name="species" data-species-search${error ? ' aria-describedby="species-error"' : ''}>
       <option value="">Start typing to display the list</option>
+      <option value="Atlantic cod (COD)">Atlantic cod (COD)</option>
       <option value="Herring (HER)">Herring (HER)</option>
       <option value="Queen scallop (QSC)">Queen scallop (QSC)</option>
     </select>
@@ -47,6 +48,53 @@ describe('#initialiseSpeciesSearch', () => {
     expect(input.getAttribute('aria-describedby')).toContain('species-error')
   })
 
+  test('Should keep suggestions hidden when the empty input is focused or opened with the keyboard', async () => {
+    vi.useFakeTimers()
+    try {
+      renderSelect()
+      initialiseSpeciesSearch()
+      const input = document.querySelector('input#species')
+      input.focus()
+      input.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'ArrowDown',
+          keyCode: 40,
+          bubbles: true
+        })
+      )
+      await vi.advanceTimersByTimeAsync(200)
+
+      expect(input.getAttribute('aria-expanded')).toBe('false')
+      expect(document.querySelector('.autocomplete__menu--visible')).toBeNull()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  test('Should show matches after one character and hide suggestions when the query is cleared', async () => {
+    renderSelect()
+    initialiseSpeciesSearch()
+    const input = document.querySelector('input#species')
+    input.focus()
+    input.value = 'H'
+    input.dispatchEvent(new Event('input', { bubbles: true }))
+
+    await vi.waitFor(() => {
+      expect(input.getAttribute('aria-expanded')).toBe('true')
+      expect(document.querySelector('.autocomplete__option')?.textContent).toBe(
+        'Herring (HER)'
+      )
+    })
+
+    input.value = ''
+    input.dispatchEvent(new Event('input', { bubbles: true }))
+
+    await vi.waitFor(() => {
+      expect(input.getAttribute('aria-expanded')).toBe('false')
+      expect(document.querySelector('.autocomplete__menu--visible')).toBeNull()
+    })
+  })
+
   test('Should clear the previously confirmed species when the user edits the query', () => {
     renderSelect()
     initialiseSpeciesSearch()
@@ -60,27 +108,30 @@ describe('#initialiseSpeciesSearch', () => {
     expect(select.value).toBe('')
   })
 
-  test('Should filter suggestions and submit the confirmed option through the original select', async () => {
-    renderSelect()
-    initialiseSpeciesSearch()
-    const input = document.querySelector('input#species')
-    input.focus()
-    input.value = 'Herring'
-    input.dispatchEvent(new Event('input', { bubbles: true }))
+  test.each(['Herring (HER)', 'Atlantic cod (COD)'])(
+    'Should filter suggestions and submit %s through the original select',
+    async (speciesLabel) => {
+      renderSelect()
+      initialiseSpeciesSearch()
+      const input = document.querySelector('input#species')
+      input.focus()
+      input.value = speciesLabel
+      input.dispatchEvent(new Event('input', { bubbles: true }))
 
-    await vi.waitFor(() => {
-      expect(document.querySelector('.autocomplete__option')?.textContent).toBe(
-        'Herring (HER)'
-      )
-    })
-    document.querySelector('.autocomplete__option').click()
+      await vi.waitFor(() => {
+        expect(
+          document.querySelector('.autocomplete__option')?.textContent
+        ).toBe(speciesLabel)
+      })
+      document.querySelector('.autocomplete__option').click()
 
-    await vi.waitFor(() => {
-      expect(document.querySelector('select[name="species"]').value).toBe(
-        'Herring (HER)'
-      )
-    })
-  })
+      await vi.waitFor(() => {
+        expect(document.querySelector('select[name="species"]').value).toBe(
+          speciesLabel
+        )
+      })
+    }
+  )
 
   test('Should render species names as text rather than HTML', async () => {
     renderSelect()

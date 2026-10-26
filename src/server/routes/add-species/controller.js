@@ -11,12 +11,6 @@ import {
 } from '#/server/common/helpers/species/species-list.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 
-function speciesOptionLabels(availableSpeciesIds, catalogue) {
-  return catalogue
-    .filter((species) => !availableSpeciesIds.includes(species.id))
-    .map((species) => species.text)
-}
-
 function viewContext(request, speciesData, overrides = {}) {
   const vesselName = getJourneyState(request).selectedVesselName || ''
   const heading = 'Add species to your vessel'
@@ -30,10 +24,7 @@ function viewContext(request, speciesData, overrides = {}) {
       href: speciesSelectionReturnPath(request),
       text: 'Back'
     },
-    speciesOptionLabels: speciesOptionLabels(
-      speciesData.availableSpeciesIds,
-      speciesData.catalogue
-    ),
+    speciesOptionLabels: speciesData.catalogue.map((species) => species.text),
     ...overrides
   }
 }

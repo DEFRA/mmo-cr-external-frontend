@@ -13,7 +13,8 @@
 ## Species Suggestions
 
 - Replace the browser-native datalist popup with a list matching image 4: the same width as the input, attached directly beneath it, white rows, thin dark borders and blue/yellow focus styling.
-- Use `accessible-autocomplete` from the GOV.UK team for filtering, keyboard navigation, selection and assistive-technology announcements. Show available species when the input is opened, and filter by name or code as the user types.
+- Use `accessible-autocomplete` from the GOV.UK team for filtering, keyboard navigation, selection and assistive-technology announcements. Keep suggestions hidden while the input is empty, including on focus. Show matches by name or code after at least one character is typed, and hide suggestions again when the query is cleared.
+- Include the full species catalogue, including species already saved as favourites, in both autocomplete suggestions and the native select. Submitting an already-added species displays "This species has already been added." in the error summary and beside the field without adding it again, including when returning to Your account (FR5 / Scenario 2).
 - Use inline placement and a scrollable maximum height so results never cover Save and continue or the footer. Unlike statistical-area results, species rows contain the species name and code only; do not invent area coordinates.
 - Keep existing GOV.UK typography, spacing and two-thirds layout. The exact screenshot dimensions are not measured; reuse the nearby statistical-area list's 2.75rem minimum row height and 19.25rem maximum list height.
 
