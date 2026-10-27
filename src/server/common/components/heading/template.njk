@@ -1,5 +1,5 @@
 <div class="govuk-grid-row app-heading" data-testid="app-heading">
-  <div class="govuk-grid-column-two-thirds">
+  <div class="{{ params.columnClasses | default('govuk-grid-column-two-thirds') }}">
     {% if params.caption %}
       <span class="govuk-caption-m"
             data-testid="app-heading-caption">{{ params.caption }}</span>
