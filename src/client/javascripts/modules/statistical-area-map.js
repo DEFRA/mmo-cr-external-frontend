@@ -64,6 +64,7 @@ async function setUpMap(
     canvas,
     land,
     subrectangles,
+    ports,
     departurePort,
     state
   })

@@ -3,6 +3,7 @@ import { initialiseStatisticalAreaMap } from './statistical-area-map.js'
 import {
   loadOfflineMapData,
   findDeparturePort,
+  findDepartureCell,
   mapLandGeoJsonToCanvasData,
   mapSubrectanglesGeoJsonToCanvasData
 } from './statistical-area-map-render.js'
@@ -55,18 +56,33 @@ const landFeature = {
 const port = { name: 'Hastings', coordinate: [0.5, 0.5] }
 
 function fakeContext() {
-  return {
+  const context = {
+    fillStyles: [],
+    fillRectStyles: [],
+    strokeStyles: [],
+    strokeRectStyles: [],
+    fillTextStyles: [],
     clearRect: vi.fn(),
-    fillRect: vi.fn(),
+    fillRect: vi.fn(function (...args) {
+      context.fillRectStyles.push(context.fillStyle)
+      return args
+    }),
+    strokeRect: vi.fn(() =>
+      context.strokeRectStyles.push(context.strokeStyle)
+    ),
     beginPath: vi.fn(),
     moveTo: vi.fn(),
     lineTo: vi.fn(),
     closePath: vi.fn(),
-    fill: vi.fn(),
-    stroke: vi.fn(),
-    fillText: vi.fn(),
+    fill: vi.fn(() => context.fillStyles.push(context.fillStyle)),
+    stroke: vi.fn(() => context.strokeStyles.push(context.strokeStyle)),
+    fillText: vi.fn((text) =>
+      context.fillTextStyles.push({ text, fillStyle: context.fillStyle })
+    ),
+    measureText: vi.fn((text) => ({ width: text.length * 8 })),
     arc: vi.fn()
   }
+  return context
 }
 
 function setupMapDom({ departurePort = 'Hastings', selectedArea = '' } = {}) {
@@ -195,6 +211,37 @@ describe('#initialiseStatisticalAreaMap', () => {
     })
   })
 
+  test('Should use the nearest sea subrectangle when a port is inside a land-only cell', () => {
+    const nearestCell = {
+      ...subrectangle,
+      subCode: '29E52',
+      labelCoordinate: [-4.8333, 50.25],
+      bounds: {
+        minLongitude: -5,
+        maxLongitude: -4.6667,
+        minLatitude: 50.1667,
+        maxLatitude: 50.3333
+      }
+    }
+    const nextNearestCell = {
+      ...nearestCell,
+      subCode: '29E54',
+      labelCoordinate: [-4.5, 50.4167],
+      bounds: {
+        minLongitude: -4.6667,
+        maxLongitude: -4.3333,
+        minLatitude: 50.3333,
+        maxLatitude: 50.5
+      }
+    }
+
+    expect(
+      findDepartureCell([nearestCell, nextNearestCell], {
+        coordinate: [-4.71667, 50.35]
+      })
+    ).toBe(nearestCell)
+  })
+
   test('Should convert API GeoJSON land polygons to canvas polygons', async () => {
     const apiLand = {
       type: 'FeatureCollection',
@@ -291,6 +338,42 @@ describe('#initialiseStatisticalAreaMap', () => {
       labelCoordinate: [1, 1],
       overlapsSea: false
     })
+  })
+
+  test('Should map legacy Web Mercator subrectangle features to geographic coordinates', () => {
+    const result = mapSubrectanglesGeoJsonToCanvasData({
+      type: 'FeatureCollection',
+      metadata: { crs: 'EPSG:3857' },
+      features: [
+        {
+          properties: {
+            sub_code: '27D86',
+            sub_x: 0.5,
+            sub_y: 0.5
+          },
+          geometry: {
+            type: 'Polygon',
+            coordinates: [
+              [
+                [0, 0],
+                [111319.4908, 0],
+                [111319.4908, 111325.1429],
+                [0, 111325.1429],
+                [0, 0]
+              ]
+            ]
+          }
+        }
+      ]
+    })
+
+    expect(result).toHaveLength(1)
+    expect(result[0].subCode).toBe('27D86')
+    expect(result[0].bounds.minLongitude).toBeCloseTo(0)
+    expect(result[0].bounds.maxLongitude).toBeCloseTo(1, 3)
+    expect(result[0].bounds.minLatitude).toBeCloseTo(0)
+    expect(result[0].bounds.maxLatitude).toBeCloseTo(1, 3)
+    expect(result[0].labelCoordinate).toEqual([0.5, 0.5])
   })
 
   test('Should fall back to a matching bundled port when a saved coordinate is invalid', () => {
@@ -581,7 +664,150 @@ describe('#initialiseStatisticalAreaMap', () => {
     expect(context.fill).toHaveBeenCalled()
     expect(context.stroke).toHaveBeenCalled()
     expect(context.fillText).toHaveBeenCalled()
+    expect(context.fillTextStyles).toContainEqual({
+      text: 'Hastings',
+      fillStyle: '#0B1F22'
+    })
+    expect(context.fillRectStyles).toContain('rgba(255, 255, 255, 0.94)')
+    expect(context.strokeRect).toHaveBeenCalled()
     expect(context.arc).toHaveBeenCalled()
+  })
+
+  test('Should draw only one label when multiple visible ports share a name', async () => {
+    const { context } = setupMapDom()
+    mockFetchWith({
+      land: [landFeature],
+      subrectangles: [subrectangle],
+      ports: [port, { name: 'Hastings', coordinate: [0.55, 0.55] }]
+    })
+
+    await initialiseStatisticalAreaMap()
+
+    expect(
+      context.fillTextStyles.filter(({ text }) => text === 'Hastings')
+    ).toHaveLength(1)
+  })
+
+  test('Should use white text and a dark label background when a port label sits on land', async () => {
+    const { context } = setupMapDom()
+    mockFetchWith({
+      land: [
+        {
+          bounds: subrectangle.bounds,
+          polygons: [
+            {
+              exterior: [
+                [0, 0],
+                [1, 0],
+                [1, 1],
+                [0, 1],
+                [0, 0]
+              ],
+              holes: []
+            }
+          ]
+        }
+      ],
+      subrectangles: [subrectangle],
+      ports: [port]
+    })
+
+    await initialiseStatisticalAreaMap()
+
+    expect(context.fillRectStyles).toContain('rgba(11, 65, 67, 0.96)')
+    expect(context.strokeRectStyles).toContain('#0B4143')
+    expect(context.fillTextStyles).toContainEqual({
+      text: 'Hastings',
+      fillStyle: '#FFFFFF'
+    })
+  })
+
+  test('Should draw subrectangle labels in white when they sit on land', async () => {
+    const { context } = setupMapDom()
+    mockFetchWith({
+      land: [
+        {
+          bounds: subrectangle.bounds,
+          polygons: [
+            {
+              exterior: [
+                [0, 0],
+                [1, 0],
+                [1, 1],
+                [0, 1],
+                [0, 0]
+              ],
+              holes: []
+            }
+          ]
+        }
+      ],
+      subrectangles: [subrectangle],
+      ports: [port]
+    })
+
+    await initialiseStatisticalAreaMap()
+
+    expect(context.fillTextStyles).toContainEqual({
+      text: 'R0C0',
+      fillStyle: '#FFFFFF'
+    })
+  })
+
+  test('Should draw a subrectangle label in dark text when it is half over land and half over water', async () => {
+    const { context } = setupMapDom()
+    mockFetchWith({
+      land: [
+        {
+          bounds: {
+            minLongitude: 0,
+            maxLongitude: 0.7,
+            minLatitude: 0,
+            maxLatitude: 1
+          },
+          polygons: [
+            {
+              exterior: [
+                [0, 0],
+                [0.7, 0],
+                [0.7, 1],
+                [0, 1],
+                [0, 0]
+              ],
+              holes: []
+            }
+          ]
+        }
+      ],
+      subrectangles: [subrectangle],
+      ports: [port]
+    })
+
+    await initialiseStatisticalAreaMap()
+
+    expect(context.fillTextStyles).toContainEqual({
+      text: 'R0C0',
+      fillStyle: '#1d1d1d'
+    })
+  })
+
+  test('Should highlight a restored selection with a blue cell and label', async () => {
+    const { context } = setupMapDom({ selectedArea: 'r0c0' })
+    mockFetchWith({
+      land: [landFeature],
+      subrectangles: [subrectangle],
+      ports: [port]
+    })
+
+    await initialiseStatisticalAreaMap()
+
+    expect(context.fillStyles).toContain('rgba(29, 112, 184, 0.25)')
+    expect(context.strokeStyles).toContain('#0B6B3A')
+    expect(context.fillRectStyles).toContain('#1D70B8')
+    expect(context.fillTextStyles).toContainEqual({
+      text: 'R0C0',
+      fillStyle: '#FFFFFF'
+    })
   })
 
   test('Should select a subrectangle on tap and submit the form', async () => {

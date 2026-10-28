@@ -13,7 +13,10 @@ import {
   intersectBounds,
   clampPointToBounds,
   toScreen,
+  toCoordinate,
+  containsPoint,
   viewportForCellGrid,
+  closestSubrectangles,
   spanOf
 } from './statistical-area-map-geometry.js'
 
@@ -89,6 +92,29 @@ function polygonCoordinatesForGeometry(geometry) {
   return []
 }
 
+function toWgs84Coordinate([easting, northing, ...remaining]) {
+  const earthRadiusMetres = 6378137
+  const longitude = (easting / earthRadiusMetres) * (180 / Math.PI)
+  const latitude =
+    (2 * Math.atan(Math.exp(northing / earthRadiusMetres)) - Math.PI / 2) *
+    (180 / Math.PI)
+  return [longitude, latitude, ...remaining]
+}
+
+function transformCoordinatesToWgs84(coordinates) {
+  if (
+    Array.isArray(coordinates) &&
+    coordinates.length >= 2 &&
+    Number.isFinite(coordinates[0]) &&
+    Number.isFinite(coordinates[1])
+  ) {
+    return toWgs84Coordinate(coordinates)
+  }
+  return Array.isArray(coordinates)
+    ? coordinates.map(transformCoordinatesToWgs84)
+    : coordinates
+}
+
 export function mapLandGeoJsonToCanvasData(featureCollection) {
   if (
     featureCollection?.type !== 'FeatureCollection' ||
@@ -118,15 +144,34 @@ export function mapSubrectanglesGeoJsonToCanvasData(featureCollection) {
   ) {
     return []
   }
+  const referenceCrs =
+    featureCollection.metadata?.crs ||
+    featureCollection.crs?.properties?.name ||
+    ''
+  const usesWebMercator = /3857|900913/i.test(referenceCrs)
 
   return featureCollection.features.flatMap((feature) => {
+    const properties = feature.properties || {}
+    const code = properties.code || properties.sub_code
+    const isSubrectangle =
+      properties.areaType === 'ices-subrectangle' ||
+      (typeof properties.sub_code === 'string' &&
+        properties.sub_code.length > 0)
     if (
-      feature.properties?.areaType !== 'ices-subrectangle' ||
-      typeof feature.properties.code !== 'string'
+      !isSubrectangle ||
+      typeof code !== 'string'
     ) {
       return []
     }
-    const polygons = polygonCoordinatesForGeometry(feature.geometry)
+    const geometry = usesWebMercator
+      ? {
+          ...feature.geometry,
+          coordinates: transformCoordinatesToWgs84(
+            feature.geometry?.coordinates
+          )
+        }
+      : feature.geometry
+    const polygons = polygonCoordinatesForGeometry(geometry)
       .map(toLandPolygon)
       .filter(Boolean)
     if (polygons.length === 0) {
@@ -137,11 +182,16 @@ export function mapSubrectanglesGeoJsonToCanvasData(featureCollection) {
       ...polygon.holes
     ])
     const bounds = boundsForCoordinates(allCoordinates)
-    const centroid = feature.properties.centroid
+    const centroid =
+      properties.centroid ||
+      (Number.isFinite(properties.sub_x) &&
+      Number.isFinite(properties.sub_y)
+        ? { longitude: properties.sub_x, latitude: properties.sub_y }
+        : undefined)
 
     return [
       {
-        subCode: feature.properties.code.toUpperCase(),
+        subCode: code.toUpperCase(),
         polygons,
         bounds,
         labelCoordinate:
@@ -175,7 +225,7 @@ export async function loadOfflineMapData() {
       fetchJson('/public/offline-map/ports.json'),
       fetchJson('/map-data/statistical-areas')
     ])
-  if (!bundledSubrectangleData || !portData) {
+  if (!portData) {
     return null
   }
 
@@ -185,7 +235,7 @@ export async function loadOfflineMapData() {
   }
   const apiAreas = mapSubrectanglesGeoJsonToCanvasData(apiSubrectangles)
   const subrectanglesByCode = new Map(
-    (bundledSubrectangleData.subrectangles || []).map((area) => [
+    (bundledSubrectangleData?.subrectangles || []).map((area) => [
       area.subCode,
       area
     ])
@@ -207,6 +257,9 @@ export async function loadOfflineMapData() {
   const subrectangles = allSubrectangles.filter(
     (subrectangle) => subrectangle.overlapsSea
   )
+  if (subrectangles.length === 0) {
+    return null
+  }
 
   return { land, subrectangles, ports }
 }
@@ -232,12 +285,16 @@ export function findDeparturePort(ports, map) {
 }
 
 export function findDepartureCell(subrectangles, departurePort) {
-  return subrectangles.find(
+  const containingCell = subrectangles.find(
     (subrectangle) =>
       departurePort.coordinate[0] >= subrectangle.bounds.minLongitude &&
       departurePort.coordinate[0] <= subrectangle.bounds.maxLongitude &&
       departurePort.coordinate[1] >= subrectangle.bounds.minLatitude &&
       departurePort.coordinate[1] <= subrectangle.bounds.maxLatitude
+  )
+  return (
+    containingCell ||
+    closestSubrectangles(subrectangles, departurePort.coordinate, 1)[0]
   )
 }
 
@@ -293,11 +350,12 @@ function drawSubrectangles(
   for (const subrectangle of subrectangles.filter((feature) =>
     boundsIntersect(feature.bounds, viewport)
   )) {
-    const isSelected = subrectangle.subCode === selectedSubCode
+    const isSelected =
+      subrectangle.subCode === selectedSubCode?.toUpperCase()
     context.fillStyle = isSelected
-      ? 'rgba(232, 166, 58, 0.35)'
+      ? 'rgba(29, 112, 184, 0.25)'
       : 'rgba(11, 107, 58, 0.06)'
-    context.strokeStyle = isSelected ? '#E8A63A' : '#0B6B3A'
+    context.strokeStyle = '#0B6B3A'
     context.lineWidth = isSelected ? selectedGridLineWidth : 1
     subrectangle.polygons.forEach((polygon) =>
       drawPolygon(context, polygon, viewport, canvas)
@@ -318,9 +376,52 @@ function drawLand(context, land, viewport, canvas) {
   }
 }
 
-function drawSubrectangleLabels(context, subrectangles, viewport, canvas) {
-  context.fillStyle = '#1d1d1d'
-  context.font = `${Math.max(minimumLabelFontSize, canvas.width / fontSizeCanvasWidthDivisor)}px sans-serif`
+function landCoverageForLabel(land, bounds, viewport, canvas) {
+  const columns = 6
+  const rows = 3
+  let landSamples = 0
+
+  for (let column = 0; column < columns; column += 1) {
+    for (let row = 0; row < rows; row += 1) {
+      const coordinate = toCoordinate(
+        [
+          bounds.left + ((column + 0.5) / columns) * (bounds.right - bounds.left),
+          bounds.top + ((row + 0.5) / rows) * (bounds.bottom - bounds.top)
+        ],
+        viewport,
+        canvas
+      )
+      if (
+        land.some(
+          (feature) =>
+            coordinate[0] >= feature.bounds.minLongitude &&
+            coordinate[0] <= feature.bounds.maxLongitude &&
+            coordinate[1] >= feature.bounds.minLatitude &&
+            coordinate[1] <= feature.bounds.maxLatitude &&
+            containsPoint(coordinate, feature)
+        )
+      ) {
+        landSamples += 1
+      }
+    }
+  }
+
+  return landSamples / (columns * rows)
+}
+
+function drawSubrectangleLabels(
+  context,
+  subrectangles,
+  land,
+  viewport,
+  canvas,
+  selectedSubCode
+) {
+  const fontSize = Math.max(
+    minimumLabelFontSize,
+    canvas.width / fontSizeCanvasWidthDivisor
+  )
+  context.font = `${fontSize}px sans-serif`
   // A rectangle cropped down to a sliver by the viewport edge is too thin to own a legible,
   // non-overlapping label - skip it rather than let its label spill into the visible neighbour.
   subrectangles
@@ -346,12 +447,43 @@ function drawSubrectangleLabels(context, subrectangles, viewport, canvas) {
         return
       }
 
-      const [x, y] = toScreen(
-        clampPointToBounds(subrectangle.labelCoordinate, visible),
-        viewport,
-        canvas
+      const labelCoordinate = clampPointToBounds(
+        subrectangle.labelCoordinate,
+        visible
       )
-      context.fillText(subrectangle.subCode, x + 4, y - 4)
+      const [x, y] = toScreen(labelCoordinate, viewport, canvas)
+      const isSelected =
+        subrectangle.subCode === selectedSubCode?.toUpperCase()
+      const textX = x + 4
+      const textY = y - 4
+      if (isSelected) {
+        const horizontalPadding = 5
+        const verticalPadding = 3
+        const textWidth = context.measureText(subrectangle.subCode).width
+        context.fillStyle = '#1D70B8'
+        context.fillRect(
+          textX - horizontalPadding,
+          textY - fontSize + 2 - verticalPadding,
+          textWidth + horizontalPadding * 2,
+          fontSize + verticalPadding * 2
+        )
+        context.fillStyle = '#FFFFFF'
+      } else {
+        const textWidth = context.measureText(subrectangle.subCode).width
+        const landCoverage = landCoverageForLabel(
+          land,
+          {
+            left: textX,
+            right: textX + textWidth,
+            top: textY - fontSize,
+            bottom: textY
+          },
+          viewport,
+          canvas
+        )
+        context.fillStyle = landCoverage > 0.5 ? '#FFFFFF' : '#1d1d1d'
+      }
+      context.fillText(subrectangle.subCode, textX, textY)
     })
 }
 
@@ -366,10 +498,187 @@ function drawDeparturePortMarker(context, departurePort, viewport, canvas) {
   context.stroke()
 }
 
+function rectanglesOverlap(first, second) {
+  const gap = 2
+  return (
+    first.left < second.right + gap &&
+    first.right + gap > second.left &&
+    first.top < second.bottom + gap &&
+    first.bottom + gap > second.top
+  )
+}
+
+function drawPorts(context, ports, land, departurePort, viewport, canvas) {
+  const fontSize = Math.max(
+    minimumLabelFontSize,
+    canvas.width / (fontSizeCanvasWidthDivisor + 20)
+  )
+  context.font = `${fontSize}px sans-serif`
+  const visiblePorts = ports.filter(
+    ({ coordinate }) =>
+      Array.isArray(coordinate) &&
+      coordinate.length >= 2 &&
+      Number.isFinite(coordinate[0]) &&
+      Number.isFinite(coordinate[1]) &&
+      coordinate[0] >= viewport.minLongitude &&
+      coordinate[0] <= viewport.maxLongitude &&
+      coordinate[1] >= viewport.minLatitude &&
+      coordinate[1] <= viewport.maxLatitude
+  )
+  const departureIsVisible = visiblePorts.some(
+    (port) =>
+      port.name?.toLowerCase() === departurePort.name?.toLowerCase() ||
+      (Math.abs(port.coordinate[0] - departurePort.coordinate[0]) < 1e-6 &&
+        Math.abs(port.coordinate[1] - departurePort.coordinate[1]) < 1e-6)
+  )
+  const markerCoordinates = new Set()
+  const markerBounds = []
+
+  for (const port of visiblePorts) {
+    const [portX, portY] = toScreen(port.coordinate, viewport, canvas)
+    const coordinateKey = port.coordinate.map((value) => value.toFixed(5)).join(',')
+    if (markerCoordinates.has(coordinateKey)) {
+      continue
+    }
+    markerCoordinates.add(coordinateKey)
+    markerBounds.push({
+      left: portX - portMarkerRadius - 2,
+      right: portX + portMarkerRadius + 2,
+      top: portY - portMarkerRadius - 2,
+      bottom: portY + portMarkerRadius + 2
+    })
+
+    const isDeparturePort =
+      port.name?.toLowerCase() === departurePort.name?.toLowerCase() ||
+      (Math.abs(port.coordinate[0] - departurePort.coordinate[0]) < 1e-6 &&
+        Math.abs(port.coordinate[1] - departurePort.coordinate[1]) < 1e-6)
+    if (isDeparturePort) {
+      drawDeparturePortMarker(context, departurePort, viewport, canvas)
+      continue
+    }
+
+    context.fillStyle = '#01FEE2'
+    context.strokeStyle = '#000000'
+    context.lineWidth = 1
+    context.beginPath()
+    context.arc(portX, portY, portMarkerRadius, 0, Math.PI * 2)
+    context.fill()
+    context.stroke()
+  }
+
+  if (!departureIsVisible) {
+    drawDeparturePortMarker(context, departurePort, viewport, canvas)
+  }
+
+  const labelBounds = [...markerBounds]
+  const sortedPorts = visiblePorts.toSorted((first, second) => {
+    const distance = (port) =>
+      (port.coordinate[0] - departurePort.coordinate[0]) ** 2 +
+      (port.coordinate[1] - departurePort.coordinate[1]) ** 2
+    const firstIsDeparture =
+      first.name?.toLowerCase() === departurePort.name?.toLowerCase()
+    const secondIsDeparture =
+      second.name?.toLowerCase() === departurePort.name?.toLowerCase()
+    if (firstIsDeparture !== secondIsDeparture) {
+      return firstIsDeparture ? -1 : 1
+    }
+    return distance(first) - distance(second)
+  })
+  const labelledPortNames = new Set()
+
+  for (const port of sortedPorts) {
+    if (typeof port.name !== 'string' || port.name.length === 0) {
+      continue
+    }
+    const normalizedName = port.name.trim().toLocaleLowerCase()
+    if (!normalizedName || labelledPortNames.has(normalizedName)) {
+      continue
+    }
+    const [portX, portY] = toScreen(port.coordinate, viewport, canvas)
+    const paddingX = 4
+    const paddingY = 2
+    const maxTextWidth = canvas.width - paddingX * 2 - 4
+    const textWidth = Math.min(context.measureText(port.name).width, maxTextWidth)
+    const labelWidth = textWidth + paddingX * 2
+    const labelHeight = fontSize + paddingY * 2
+    const candidates = [
+      {
+        left: portX + portMarkerRadius + 4,
+        top: portY - labelHeight / 2
+      },
+      {
+        left: portX - portMarkerRadius - labelWidth - 4,
+        top: portY - labelHeight / 2
+      },
+      {
+        left: portX - labelWidth / 2,
+        top: portY - portMarkerRadius - labelHeight - 4
+      },
+      {
+        left: portX - labelWidth / 2,
+        top: portY + portMarkerRadius + 4
+      }
+    ]
+    const label = candidates.find((candidate) => {
+      const bounds = {
+        ...candidate,
+        right: candidate.left + labelWidth,
+        bottom: candidate.top + labelHeight
+      }
+      return (
+        bounds.left >= 2 &&
+        bounds.top >= 2 &&
+        bounds.right <= canvas.width - 2 &&
+        bounds.bottom <= canvas.height - 2 &&
+        !labelBounds.some((existing) => rectanglesOverlap(bounds, existing))
+      )
+    })
+    if (!label) {
+      continue
+    }
+
+    const bounds = {
+      ...label,
+      right: label.left + labelWidth,
+      bottom: label.top + labelHeight
+    }
+    const labelCoordinate = toCoordinate(
+      [label.left + labelWidth / 2, label.top + labelHeight / 2],
+      viewport,
+      canvas
+    )
+    const isOnLand = land.some(
+      (feature) =>
+        labelCoordinate[0] >= feature.bounds.minLongitude &&
+        labelCoordinate[0] <= feature.bounds.maxLongitude &&
+        labelCoordinate[1] >= feature.bounds.minLatitude &&
+        labelCoordinate[1] <= feature.bounds.maxLatitude &&
+        containsPoint(labelCoordinate, feature)
+    )
+    context.fillStyle = isOnLand
+      ? 'rgba(11, 65, 67, 0.96)'
+      : 'rgba(255, 255, 255, 0.94)'
+    context.fillRect(label.left, label.top, labelWidth, labelHeight)
+    context.strokeStyle = isOnLand ? '#0B4143' : 'rgba(11, 65, 67, 0.45)'
+    context.lineWidth = 1
+    context.strokeRect(label.left, label.top, labelWidth, labelHeight)
+    context.fillStyle = isOnLand ? '#FFFFFF' : '#0B1F22'
+    context.fillText(
+      port.name,
+      label.left + paddingX,
+      label.top + paddingY + fontSize,
+      textWidth
+    )
+    labelBounds.push(bounds)
+    labelledPortNames.add(normalizedName)
+  }
+}
+
 export function createRender({
   canvas,
   land,
   subrectangles,
+  ports,
   departurePort,
   state
 }) {
@@ -387,7 +696,14 @@ export function createRender({
       state.selectedSubCode
     )
     drawLand(context, land, state.viewport, canvas)
-    drawSubrectangleLabels(context, subrectangles, state.viewport, canvas)
-    drawDeparturePortMarker(context, departurePort, state.viewport, canvas)
+    drawSubrectangleLabels(
+      context,
+      subrectangles,
+      land,
+      state.viewport,
+      canvas,
+      state.selectedSubCode
+    )
+    drawPorts(context, ports, land, departurePort, state.viewport, canvas)
   }
 }
