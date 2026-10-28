@@ -144,10 +144,7 @@ function canvasPolygons(geometry) {
 }
 
 function coordinatesForPolygons(polygons) {
-  return polygons.flatMap((polygon) => [
-    polygon.exterior,
-    ...polygon.holes
-  ])
+  return polygons.flatMap((polygon) => [polygon.exterior, ...polygon.holes])
 }
 
 function centroidForProperties(properties) {
