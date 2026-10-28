@@ -1,3 +1,4 @@
+import proj4 from 'proj4'
 import {
   minimumRectangleCount,
   defaultRectangleCount,
@@ -13,7 +14,7 @@ import {
 } from './statistical-area-map-geometry.js'
 
 const webMercatorCrsPattern = /3857|900913/i
-const RADIANS_TO_DEGREES = 180 / Math.PI
+const webMercatorToWgs84 = proj4('EPSG:3857', 'EPSG:4326')
 
 export function resizeCanvas(canvas) {
   const ratio = window.devicePixelRatio || 1
@@ -71,12 +72,7 @@ function polygonCoordinatesForGeometry(geometry) {
 }
 
 function toWgs84Coordinate([easting, northing, ...remaining]) {
-  const earthRadiusMetres = 6378137
-  const longitude = (easting / earthRadiusMetres) * RADIANS_TO_DEGREES
-  const latitude =
-    (2 * Math.atan(Math.exp(northing / earthRadiusMetres)) - Math.PI / 2) *
-    RADIANS_TO_DEGREES
-  return [longitude, latitude, ...remaining]
+  return [...webMercatorToWgs84.forward([easting, northing]), ...remaining]
 }
 
 function transformCoordinatesToWgs84(coordinates) {
@@ -120,50 +116,85 @@ export function mapLandGeoJsonToCanvasData(featureCollection) {
   return land.length > 0 ? land : undefined
 }
 
-function mapFeatureToCanvasSubrectangle(feature, usesWebMercator) {
-  const properties = feature.properties || {}
-  const code = properties.code || properties.sub_code
-  const isSubrectangle =
+function isSubrectangle(properties) {
+  return (
     properties.areaType === 'ices-subrectangle' ||
     (typeof properties.sub_code === 'string' && properties.sub_code.length > 0)
-  if (!isSubrectangle || typeof code !== 'string') {
-    return undefined
+  )
+}
+
+function geoJsonCode(properties) {
+  return properties.code || properties.sub_code
+}
+
+function geometryInWgs84(geometry, usesWebMercator) {
+  if (!usesWebMercator) {
+    return geometry
   }
-  const geometry = usesWebMercator
-    ? {
-        ...feature.geometry,
-        coordinates: transformCoordinatesToWgs84(feature.geometry?.coordinates)
-      }
-    : feature.geometry
-  const polygons = polygonCoordinatesForGeometry(geometry)
+  return {
+    ...geometry,
+    coordinates: transformCoordinatesToWgs84(geometry?.coordinates)
+  }
+}
+
+function canvasPolygons(geometry) {
+  return polygonCoordinatesForGeometry(geometry)
     .map(toLandPolygon)
     .filter(Boolean)
-  if (polygons.length === 0) {
-    return undefined
-  }
-  const coordinates = polygons.flatMap((polygon) => [
+}
+
+function coordinatesForPolygons(polygons) {
+  return polygons.flatMap((polygon) => [
     polygon.exterior,
     ...polygon.holes
   ])
+}
+
+function centroidForProperties(properties) {
+  if (properties.centroid) {
+    return properties.centroid
+  }
+  if (Number.isFinite(properties.sub_x) && Number.isFinite(properties.sub_y)) {
+    return { longitude: properties.sub_x, latitude: properties.sub_y }
+  }
+  return undefined
+}
+
+function labelCoordinateForProperties(properties, bounds) {
+  const centroid = centroidForProperties(properties)
+  if (
+    Number.isFinite(centroid?.longitude) &&
+    Number.isFinite(centroid?.latitude)
+  ) {
+    return [centroid.longitude, centroid.latitude]
+  }
+  return [
+    (bounds.minLongitude + bounds.maxLongitude) / 2,
+    (bounds.minLatitude + bounds.maxLatitude) / 2
+  ]
+}
+
+function mapFeatureToCanvasSubrectangle(feature, usesWebMercator) {
+  const properties = feature.properties || {}
+  const code = geoJsonCode(properties)
+  const isSubrectangleFeature =
+    isSubrectangle(properties) && typeof code === 'string'
+  if (!isSubrectangleFeature) {
+    return undefined
+  }
+  const geometry = geometryInWgs84(feature.geometry, usesWebMercator)
+  const polygons = canvasPolygons(geometry)
+  if (polygons.length === 0) {
+    return undefined
+  }
+  const coordinates = coordinatesForPolygons(polygons)
   const bounds = boundsForCoordinates(coordinates)
-  const centroid =
-    properties.centroid ||
-    (Number.isFinite(properties.sub_x) && Number.isFinite(properties.sub_y)
-      ? { longitude: properties.sub_x, latitude: properties.sub_y }
-      : undefined)
 
   return {
     subCode: code.toUpperCase(),
     polygons,
     bounds,
-    labelCoordinate:
-      Number.isFinite(centroid?.longitude) &&
-      Number.isFinite(centroid?.latitude)
-        ? [centroid.longitude, centroid.latitude]
-        : [
-            (bounds.minLongitude + bounds.maxLongitude) / 2,
-            (bounds.minLatitude + bounds.maxLatitude) / 2
-          ],
+    labelCoordinate: labelCoordinateForProperties(properties, bounds),
     overlapsSea: properties.overlapsSea !== false
   }
 }
