@@ -157,10 +157,7 @@ export function mapSubrectanglesGeoJsonToCanvasData(featureCollection) {
       properties.areaType === 'ices-subrectangle' ||
       (typeof properties.sub_code === 'string' &&
         properties.sub_code.length > 0)
-    if (
-      !isSubrectangle ||
-      typeof code !== 'string'
-    ) {
+    if (!isSubrectangle || typeof code !== 'string') {
       return []
     }
     const geometry = usesWebMercator
@@ -184,8 +181,7 @@ export function mapSubrectanglesGeoJsonToCanvasData(featureCollection) {
     const bounds = boundsForCoordinates(allCoordinates)
     const centroid =
       properties.centroid ||
-      (Number.isFinite(properties.sub_x) &&
-      Number.isFinite(properties.sub_y)
+      (Number.isFinite(properties.sub_x) && Number.isFinite(properties.sub_y)
         ? { longitude: properties.sub_x, latitude: properties.sub_y }
         : undefined)
 
@@ -350,8 +346,7 @@ function drawSubrectangles(
   for (const subrectangle of subrectangles.filter((feature) =>
     boundsIntersect(feature.bounds, viewport)
   )) {
-    const isSelected =
-      subrectangle.subCode === selectedSubCode?.toUpperCase()
+    const isSelected = subrectangle.subCode === selectedSubCode?.toUpperCase()
     context.fillStyle = isSelected
       ? 'rgba(29, 112, 184, 0.25)'
       : 'rgba(11, 107, 58, 0.06)'
@@ -385,7 +380,8 @@ function landCoverageForLabel(land, bounds, viewport, canvas) {
     for (let row = 0; row < rows; row += 1) {
       const coordinate = toCoordinate(
         [
-          bounds.left + ((column + 0.5) / columns) * (bounds.right - bounds.left),
+          bounds.left +
+            ((column + 0.5) / columns) * (bounds.right - bounds.left),
           bounds.top + ((row + 0.5) / rows) * (bounds.bottom - bounds.top)
         ],
         viewport,
@@ -452,8 +448,7 @@ function drawSubrectangleLabels(
         visible
       )
       const [x, y] = toScreen(labelCoordinate, viewport, canvas)
-      const isSelected =
-        subrectangle.subCode === selectedSubCode?.toUpperCase()
+      const isSelected = subrectangle.subCode === selectedSubCode?.toUpperCase()
       const textX = x + 4
       const textY = y - 4
       if (isSelected) {
@@ -536,7 +531,9 @@ function drawPorts(context, ports, land, departurePort, viewport, canvas) {
 
   for (const port of visiblePorts) {
     const [portX, portY] = toScreen(port.coordinate, viewport, canvas)
-    const coordinateKey = port.coordinate.map((value) => value.toFixed(5)).join(',')
+    const coordinateKey = port.coordinate
+      .map((value) => value.toFixed(5))
+      .join(',')
     if (markerCoordinates.has(coordinateKey)) {
       continue
     }
@@ -598,7 +595,10 @@ function drawPorts(context, ports, land, departurePort, viewport, canvas) {
     const paddingX = 4
     const paddingY = 2
     const maxTextWidth = canvas.width - paddingX * 2 - 4
-    const textWidth = Math.min(context.measureText(port.name).width, maxTextWidth)
+    const textWidth = Math.min(
+      context.measureText(port.name).width,
+      maxTextWidth
+    )
     const labelWidth = textWidth + paddingX * 2
     const labelHeight = fontSize + paddingY * 2
     const candidates = [

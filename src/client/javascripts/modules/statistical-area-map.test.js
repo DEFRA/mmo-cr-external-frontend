@@ -67,9 +67,7 @@ function fakeContext() {
       context.fillRectStyles.push(context.fillStyle)
       return args
     }),
-    strokeRect: vi.fn(() =>
-      context.strokeRectStyles.push(context.strokeStyle)
-    ),
+    strokeRect: vi.fn(() => context.strokeRectStyles.push(context.strokeStyle)),
     beginPath: vi.fn(),
     moveTo: vi.fn(),
     lineTo: vi.fn(),
