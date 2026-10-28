@@ -4,6 +4,7 @@ import { about } from '../routes/about/index.js'
 import { health } from '../routes/health/index.js'
 import { guidance } from '../routes/guidance/index.js'
 import { privacyNotice } from '../routes/privacy-notice/index.js'
+import { cookies } from '../routes/cookies/index.js'
 import { signIn } from '../routes/sign-in/index.js'
 import { forgottenPassword } from '../routes/forgotten-password/index.js'
 import { signOut } from '../routes/sign-out/index.js'
@@ -64,6 +65,7 @@ export const router = {
         about,
         guidance,
         privacyNotice,
+        cookies,
         signIn,
         forgottenPassword,
         signOut,

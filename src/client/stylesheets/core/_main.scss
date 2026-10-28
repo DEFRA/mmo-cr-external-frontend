@@ -7,3 +7,22 @@
   padding-top: govuk-spacing(4);
   padding-bottom: govuk-spacing(3);
 }
+
+.app-privacy-notice {
+  max-width: calc($govuk-page-width * 2 / 3);
+  @include govuk-responsive-padding(9, 'bottom');
+
+  @include govuk-media-query($from: tablet) {
+    padding-bottom: govuk-spacing(9) * 2 + govuk-spacing(7);
+  }
+
+  .govuk-heading-m {
+    @include govuk-responsive-margin(6, 'top');
+    @include govuk-responsive-margin(4, 'bottom');
+  }
+
+  .govuk-body,
+  .govuk-list {
+    overflow-wrap: break-word;
+  }
+}
