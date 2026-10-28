@@ -93,6 +93,20 @@ function transformCoordinatesToWgs84(coordinates) {
     : coordinates
 }
 
+function mapLandFeatureToCanvasData(feature) {
+  const polygons = polygonCoordinatesForGeometry(feature.geometry)
+    .map(toLandPolygon)
+    .filter(Boolean)
+  if (polygons.length === 0) {
+    return undefined
+  }
+  const coordinates = polygons.flatMap((polygon) => [
+    polygon.exterior,
+    ...polygon.holes
+  ])
+  return { polygons, bounds: boundsForCoordinates(coordinates) }
+}
+
 export function mapLandGeoJsonToCanvasData(featureCollection) {
   if (
     featureCollection?.type !== 'FeatureCollection' ||
@@ -100,18 +114,9 @@ export function mapLandGeoJsonToCanvasData(featureCollection) {
   ) {
     return undefined
   }
-  const land = featureCollection.features.flatMap((feature) => {
-    const polygonCoordinates = polygonCoordinatesForGeometry(feature.geometry)
-    const polygons = polygonCoordinates.map(toLandPolygon).filter(Boolean)
-    if (polygons.length === 0) {
-      return []
-    }
-    const allCoordinates = polygons.flatMap((polygon) => [
-      polygon.exterior,
-      ...polygon.holes
-    ])
-    return [{ polygons, bounds: boundsForCoordinates(allCoordinates) }]
-  })
+  const land = featureCollection.features
+    .map(mapLandFeatureToCanvasData)
+    .filter(Boolean)
   return land.length > 0 ? land : undefined
 }
 
