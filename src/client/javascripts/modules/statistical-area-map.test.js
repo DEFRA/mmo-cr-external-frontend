@@ -7,6 +7,7 @@ import {
   mapLandGeoJsonToCanvasData,
   mapSubrectanglesGeoJsonToCanvasData
 } from './statistical-area-map-render.js'
+import { drawPorts } from './statistical-area-map-ports.js'
 
 const subrectangle = {
   subCode: 'R0C0',
@@ -80,6 +81,19 @@ function fakeContext() {
     measureText: vi.fn((text) => ({ width: text.length * 8 })),
     arc: vi.fn()
   }
+  return context
+}
+
+function renderPorts({ ports, departurePort, canvasSize = 100 }) {
+  const context = fakeContext()
+  const canvas = { width: canvasSize, height: canvasSize }
+  const viewport = {
+    minLongitude: 0,
+    maxLongitude: 1,
+    minLatitude: 0,
+    maxLatitude: 1
+  }
+  drawPorts(context, ports, [], departurePort, viewport, canvas)
   return context
 }
 
@@ -195,6 +209,34 @@ afterEach(() => {
 })
 
 describe('#initialiseStatisticalAreaMap', () => {
+  test('Should draw the departure marker when the port is absent from visible port data', () => {
+    const context = renderPorts({
+      ports: [{ name: 'Nearby Port', coordinate: [0.5, 0.5] }],
+      departurePort: { name: 'Remote Port', coordinate: [2, 2] }
+    })
+
+    expect(context.arc).toHaveBeenCalledTimes(2)
+  })
+
+  test('Should skip a port label when no collision-free position fits', () => {
+    const context = renderPorts({
+      ports: [{ name: 'Tiny', coordinate: [0.5, 0.5] }],
+      departurePort: { name: 'Tiny', coordinate: [0.5, 0.5] },
+      canvasSize: 20
+    })
+
+    expect(context.fillText).not.toHaveBeenCalled()
+  })
+
+  test('Should skip names that normalize to an empty label', () => {
+    const context = renderPorts({
+      ports: [{ name: '  ', coordinate: [0.5, 0.5] }],
+      departurePort: { name: '  ', coordinate: [0.5, 0.5] }
+    })
+
+    expect(context.fillText).not.toHaveBeenCalled()
+  })
+
   test('Should use selected reference-data coordinates when the port name is missing from bundled map ports', () => {
     const map = {
       dataset: {
