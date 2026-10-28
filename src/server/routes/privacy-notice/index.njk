@@ -1,12 +1,13 @@
 {% extends 'layouts/page.njk' %}
 
 {% block pageContent %}
-  {{ appHeading({
-    text: heading
-  }) }}
-
   <div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds">
+    <div class="govuk-grid-column-two-thirds app-privacy-notice">
+      {{ appHeading({
+        text: heading,
+        columnClasses: 'govuk-grid-column-full'
+      }) }}
+
       <p class="govuk-body">
         This privacy notice explains how the Marine Management Organisation
         (MMO) and other UK fisheries authorities collect and use your
@@ -169,11 +170,11 @@
       <p class="govuk-body govuk-!-margin-bottom-0">London</p>
       <p class="govuk-body">SW1P 4DF</p>
 
-      <h2 class="govuk-heading-m" id="complaints">Complaints</h2>
+      <h2 class="govuk-heading-l govuk-!-margin-top-6" id="complaints">Complaints</h2>
       <p class="govuk-body">
         If you are unhappy with how your personal data has been handled, you
-        can make a complaint to the
-        <a class="govuk-link" href="https://ico.org.uk">Information Commissioner's Office (ICO)</a>.
+        can make a complaint to the Information Commissioner's Office (ICO).<br>
+        Visit: <a class="govuk-link" href="https://ico.org.uk">https://ico.org.uk</a>
       </p>
     </div>
   </div>

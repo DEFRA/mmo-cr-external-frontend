@@ -82,7 +82,7 @@
   {% block pageContent %}{% endblock %}
 {% endblock %}
 
-{% block footer %}
+{% block govukFooter %}
   {{ govukFooter({
     classes: "app-footer",
     meta: {
@@ -93,11 +93,15 @@
         },
         {
           href: "/privacy-notice",
-          text: "Privacy policy"
+          text: "Privacy notice"
         },
         {
           href: "https://www.gov.uk/help/accessibility-statement",
-          text: "Accessibility Statement"
+          text: "Accessibility statement"
+        },
+        {
+          href: "/cookies",
+          text: "Cookies"
         }
       ]
     }
