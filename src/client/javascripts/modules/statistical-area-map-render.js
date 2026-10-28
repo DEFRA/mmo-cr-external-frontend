@@ -1,38 +1,20 @@
+import proj4 from 'proj4'
 import {
   minimumRectangleCount,
   defaultRectangleCount,
-  maximumRectangleCount,
-  selectedGridLineWidth,
-  minimumLabelFontSize,
-  fontSizeCanvasWidthDivisor,
-  portMarkerRadius,
-  minimumLabelSpan
+  maximumRectangleCount
 } from './statistical-area-map-constants.js'
+import { drawPorts } from './statistical-area-map-ports.js'
+import { drawMapLayers } from './statistical-area-map-layers.js'
 import {
   boundsIntersect,
-  intersectBounds,
-  clampPointToBounds,
-  toScreen,
   viewportForCellGrid,
+  closestSubrectangles,
   spanOf
 } from './statistical-area-map-geometry.js'
 
-function drawPolygon(context, polygon, viewport, canvas) {
-  context.beginPath()
-  for (const ring of [polygon.exterior, ...polygon.holes]) {
-    ring.forEach((coordinate, index) => {
-      const [x, y] = toScreen(coordinate, viewport, canvas)
-      if (index === 0) {
-        context.moveTo(x, y)
-      } else {
-        context.lineTo(x, y)
-      }
-    })
-    context.closePath()
-  }
-  context.fill('evenodd')
-  context.stroke()
-}
+const webMercatorCrsPattern = /3857|900913/i
+const webMercatorToWgs84 = proj4('EPSG:3857', 'EPSG:4326')
 
 export function resizeCanvas(canvas) {
   const ratio = window.devicePixelRatio || 1
@@ -89,6 +71,38 @@ function polygonCoordinatesForGeometry(geometry) {
   return []
 }
 
+function toWgs84Coordinate([easting, northing, ...remaining]) {
+  return [...webMercatorToWgs84.forward([easting, northing]), ...remaining]
+}
+
+function transformCoordinatesToWgs84(coordinates) {
+  if (
+    Array.isArray(coordinates) &&
+    coordinates.length >= 2 &&
+    Number.isFinite(coordinates[0]) &&
+    Number.isFinite(coordinates[1])
+  ) {
+    return toWgs84Coordinate(coordinates)
+  }
+  return Array.isArray(coordinates)
+    ? coordinates.map(transformCoordinatesToWgs84)
+    : coordinates
+}
+
+function mapLandFeatureToCanvasData(feature) {
+  const polygons = polygonCoordinatesForGeometry(feature.geometry)
+    .map(toLandPolygon)
+    .filter(Boolean)
+  if (polygons.length === 0) {
+    return undefined
+  }
+  const coordinates = polygons.flatMap((polygon) => [
+    polygon.exterior,
+    ...polygon.holes
+  ])
+  return { polygons, bounds: boundsForCoordinates(coordinates) }
+}
+
 export function mapLandGeoJsonToCanvasData(featureCollection) {
   if (
     featureCollection?.type !== 'FeatureCollection' ||
@@ -96,19 +110,90 @@ export function mapLandGeoJsonToCanvasData(featureCollection) {
   ) {
     return undefined
   }
-  const land = featureCollection.features.flatMap((feature) => {
-    const polygonCoordinates = polygonCoordinatesForGeometry(feature.geometry)
-    const polygons = polygonCoordinates.map(toLandPolygon).filter(Boolean)
-    if (polygons.length === 0) {
-      return []
-    }
-    const allCoordinates = polygons.flatMap((polygon) => [
-      polygon.exterior,
-      ...polygon.holes
-    ])
-    return [{ polygons, bounds: boundsForCoordinates(allCoordinates) }]
-  })
+  const land = featureCollection.features
+    .map(mapLandFeatureToCanvasData)
+    .filter(Boolean)
   return land.length > 0 ? land : undefined
+}
+
+function isSubrectangle(properties) {
+  return (
+    properties.areaType === 'ices-subrectangle' ||
+    (typeof properties.sub_code === 'string' && properties.sub_code.length > 0)
+  )
+}
+
+function geoJsonCode(properties) {
+  return properties.code || properties.sub_code
+}
+
+function geometryInWgs84(geometry, usesWebMercator) {
+  if (!usesWebMercator) {
+    return geometry
+  }
+  return {
+    ...geometry,
+    coordinates: transformCoordinatesToWgs84(geometry?.coordinates)
+  }
+}
+
+function canvasPolygons(geometry) {
+  return polygonCoordinatesForGeometry(geometry)
+    .map(toLandPolygon)
+    .filter(Boolean)
+}
+
+function coordinatesForPolygons(polygons) {
+  return polygons.flatMap((polygon) => [polygon.exterior, ...polygon.holes])
+}
+
+function centroidForProperties(properties) {
+  if (properties.centroid) {
+    return properties.centroid
+  }
+  if (Number.isFinite(properties.sub_x) && Number.isFinite(properties.sub_y)) {
+    return { longitude: properties.sub_x, latitude: properties.sub_y }
+  }
+  return undefined
+}
+
+function labelCoordinateForProperties(properties, bounds) {
+  const centroid = centroidForProperties(properties)
+  if (
+    Number.isFinite(centroid?.longitude) &&
+    Number.isFinite(centroid?.latitude)
+  ) {
+    return [centroid.longitude, centroid.latitude]
+  }
+  return [
+    (bounds.minLongitude + bounds.maxLongitude) / 2,
+    (bounds.minLatitude + bounds.maxLatitude) / 2
+  ]
+}
+
+function mapFeatureToCanvasSubrectangle(feature, usesWebMercator) {
+  const properties = feature.properties || {}
+  const code = geoJsonCode(properties)
+  const isSubrectangleFeature =
+    isSubrectangle(properties) && typeof code === 'string'
+  if (!isSubrectangleFeature) {
+    return undefined
+  }
+  const geometry = geometryInWgs84(feature.geometry, usesWebMercator)
+  const polygons = canvasPolygons(geometry)
+  if (polygons.length === 0) {
+    return undefined
+  }
+  const coordinates = coordinatesForPolygons(polygons)
+  const bounds = boundsForCoordinates(coordinates)
+
+  return {
+    subCode: code.toUpperCase(),
+    polygons,
+    bounds,
+    labelCoordinate: labelCoordinateForProperties(properties, bounds),
+    overlapsSea: properties.overlapsSea !== false
+  }
 }
 
 export function mapSubrectanglesGeoJsonToCanvasData(featureCollection) {
@@ -118,44 +203,14 @@ export function mapSubrectanglesGeoJsonToCanvasData(featureCollection) {
   ) {
     return []
   }
-
-  return featureCollection.features.flatMap((feature) => {
-    if (
-      feature.properties?.areaType !== 'ices-subrectangle' ||
-      typeof feature.properties.code !== 'string'
-    ) {
-      return []
-    }
-    const polygons = polygonCoordinatesForGeometry(feature.geometry)
-      .map(toLandPolygon)
-      .filter(Boolean)
-    if (polygons.length === 0) {
-      return []
-    }
-    const allCoordinates = polygons.flatMap((polygon) => [
-      polygon.exterior,
-      ...polygon.holes
-    ])
-    const bounds = boundsForCoordinates(allCoordinates)
-    const centroid = feature.properties.centroid
-
-    return [
-      {
-        subCode: feature.properties.code.toUpperCase(),
-        polygons,
-        bounds,
-        labelCoordinate:
-          Number.isFinite(centroid?.longitude) &&
-          Number.isFinite(centroid?.latitude)
-            ? [centroid.longitude, centroid.latitude]
-            : [
-                (bounds.minLongitude + bounds.maxLongitude) / 2,
-                (bounds.minLatitude + bounds.maxLatitude) / 2
-              ],
-        overlapsSea: feature.properties.overlapsSea !== false
-      }
-    ]
-  })
+  const referenceCrs =
+    featureCollection.metadata?.crs ||
+    featureCollection.crs?.properties?.name ||
+    ''
+  const usesWebMercator = webMercatorCrsPattern.test(referenceCrs)
+  return featureCollection.features
+    .map((feature) => mapFeatureToCanvasSubrectangle(feature, usesWebMercator))
+    .filter(Boolean)
 }
 
 async function fetchJson(url) {
@@ -175,7 +230,7 @@ export async function loadOfflineMapData() {
       fetchJson('/public/offline-map/ports.json'),
       fetchJson('/map-data/statistical-areas')
     ])
-  if (!bundledSubrectangleData || !portData) {
+  if (!portData) {
     return null
   }
 
@@ -185,7 +240,7 @@ export async function loadOfflineMapData() {
   }
   const apiAreas = mapSubrectanglesGeoJsonToCanvasData(apiSubrectangles)
   const subrectanglesByCode = new Map(
-    (bundledSubrectangleData.subrectangles || []).map((area) => [
+    (bundledSubrectangleData?.subrectangles || []).map((area) => [
       area.subCode,
       area
     ])
@@ -207,6 +262,9 @@ export async function loadOfflineMapData() {
   const subrectangles = allSubrectangles.filter(
     (subrectangle) => subrectangle.overlapsSea
   )
+  if (subrectangles.length === 0) {
+    return null
+  }
 
   return { land, subrectangles, ports }
 }
@@ -232,12 +290,16 @@ export function findDeparturePort(ports, map) {
 }
 
 export function findDepartureCell(subrectangles, departurePort) {
-  return subrectangles.find(
+  const containingCell = subrectangles.find(
     (subrectangle) =>
       departurePort.coordinate[0] >= subrectangle.bounds.minLongitude &&
       departurePort.coordinate[0] <= subrectangle.bounds.maxLongitude &&
       departurePort.coordinate[1] >= subrectangle.bounds.minLatitude &&
       departurePort.coordinate[1] <= subrectangle.bounds.maxLatitude
+  )
+  return (
+    containingCell ||
+    closestSubrectangles(subrectangles, departurePort.coordinate, 1)[0]
   )
 }
 
@@ -279,97 +341,11 @@ export function computeZoomExtents(
   }
 }
 
-function drawSubrectangles(
-  context,
-  subrectangles,
-  viewport,
-  canvas,
-  selectedSubCode
-) {
-  // Grid drawn before land so the opaque land fill covers any rectangle that would
-  // otherwise overlay it - land areas must stay clean, only the sea portion of a cell
-  // should ever show its grid lines/fill. Intersecting (not just fully-contained) cells
-  // are drawn so the grid still covers every edge of the viewport.
-  for (const subrectangle of subrectangles.filter((feature) =>
-    boundsIntersect(feature.bounds, viewport)
-  )) {
-    const isSelected = subrectangle.subCode === selectedSubCode
-    context.fillStyle = isSelected
-      ? 'rgba(232, 166, 58, 0.35)'
-      : 'rgba(11, 107, 58, 0.06)'
-    context.strokeStyle = isSelected ? '#E8A63A' : '#0B6B3A'
-    context.lineWidth = isSelected ? selectedGridLineWidth : 1
-    subrectangle.polygons.forEach((polygon) =>
-      drawPolygon(context, polygon, viewport, canvas)
-    )
-  }
-}
-
-function drawLand(context, land, viewport, canvas) {
-  for (const landFeature of land.filter((feature) =>
-    boundsIntersect(feature.bounds, viewport)
-  )) {
-    context.fillStyle = '#0B4143'
-    context.strokeStyle = '#000000'
-    context.lineWidth = 1
-    landFeature.polygons.forEach((polygon) =>
-      drawPolygon(context, polygon, viewport, canvas)
-    )
-  }
-}
-
-function drawSubrectangleLabels(context, subrectangles, viewport, canvas) {
-  context.fillStyle = '#1d1d1d'
-  context.font = `${Math.max(minimumLabelFontSize, canvas.width / fontSizeCanvasWidthDivisor)}px sans-serif`
-  // A rectangle cropped down to a sliver by the viewport edge is too thin to own a legible,
-  // non-overlapping label - skip it rather than let its label spill into the visible neighbour.
-  subrectangles
-    .filter((subrectangle) => boundsIntersect(subrectangle.bounds, viewport))
-    .forEach((subrectangle) => {
-      // Clamped to the visible slice of this rectangle so the code stays on screen (and never
-      // just vanishes) even once zooming/panning has cropped most of the rectangle out of view.
-      const visible = intersectBounds(subrectangle.bounds, viewport)
-      const [leftX, topY] = toScreen(
-        [visible.minLongitude, visible.maxLatitude],
-        viewport,
-        canvas
-      )
-      const [rightX, bottomY] = toScreen(
-        [visible.maxLongitude, visible.minLatitude],
-        viewport,
-        canvas
-      )
-      if (
-        rightX - leftX < minimumLabelSpan ||
-        bottomY - topY < minimumLabelSpan
-      ) {
-        return
-      }
-
-      const [x, y] = toScreen(
-        clampPointToBounds(subrectangle.labelCoordinate, visible),
-        viewport,
-        canvas
-      )
-      context.fillText(subrectangle.subCode, x + 4, y - 4)
-    })
-}
-
-function drawDeparturePortMarker(context, departurePort, viewport, canvas) {
-  const [portX, portY] = toScreen(departurePort.coordinate, viewport, canvas)
-  context.fillStyle = '#01FEE2'
-  context.strokeStyle = '#000000'
-  context.lineWidth = 1
-  context.beginPath()
-  context.arc(portX, portY, portMarkerRadius, 0, Math.PI * 2)
-  context.fill()
-  context.stroke()
-}
-
 export function createRender({
   canvas,
   land,
   subrectangles,
+  ports,
   departurePort,
   state
 }) {
@@ -379,15 +355,13 @@ export function createRender({
     context.fillStyle = '#ffffff'
     context.fillRect(0, 0, canvas.width, canvas.height)
 
-    drawSubrectangles(
-      context,
+    drawMapLayers(context, {
       subrectangles,
-      state.viewport,
+      land,
+      viewport: state.viewport,
       canvas,
-      state.selectedSubCode
-    )
-    drawLand(context, land, state.viewport, canvas)
-    drawSubrectangleLabels(context, subrectangles, state.viewport, canvas)
-    drawDeparturePortMarker(context, departurePort, state.viewport, canvas)
+      selectedCode: state.selectedSubCode
+    })
+    drawPorts(context, ports, land, departurePort, state.viewport, canvas)
   }
 }
