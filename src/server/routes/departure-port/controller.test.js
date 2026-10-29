@@ -71,6 +71,9 @@ describe('#departurePortController', () => {
     )
     expect($('h1').text()).toContain('Select the port you left from')
     expect($('h1 .govuk-caption-l').text().trim()).toBe('New catch record')
+    expect($('main').text()).not.toContain(
+      'Select a port name or the nearest port to where you left.'
+    )
   })
 
   test('Should render only the saved favourite ports as radio options', async () => {

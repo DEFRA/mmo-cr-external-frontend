@@ -43,7 +43,7 @@ describe('#gearSelectionController', () => {
     expect(statusCode).toBe(statusCodes.ok)
   })
 
-  test('Should render the question as the page heading with caption and hint', async () => {
+  test('Should render the question as the page heading and caption without selection helper text', async () => {
     const favouriteCookie = await seedFavouriteGears(server)
     const { result } = await server.inject({
       method: 'GET',
@@ -54,7 +54,7 @@ describe('#gearSelectionController', () => {
 
     expect($('h1').text()).toContain('What gear did you use?')
     expect($('h1 .govuk-caption-l').text().trim()).toBe('New catch record')
-    expect($('.govuk-hint').first().text().trim()).toBe('Select all that apply')
+    expect($('main').text()).not.toContain('Select all that apply')
   })
 
   test('Should render 9 gear checkboxes with the stable ids', async () => {

@@ -29,11 +29,10 @@
       <form method="post" novalidate>
         {% if gearCheckboxItems.length %}
           <div class="govuk-form-group{{ ' govuk-form-group--error' if fieldErrors.gearIds }}">
-            <fieldset class="govuk-fieldset" aria-describedby="gearIds-hint{{ ' gearIds-error' if fieldErrors.gearIds }}">
+            <fieldset class="govuk-fieldset" aria-describedby="{{ 'gearIds-error' if fieldErrors.gearIds }}">
               <legend class="govuk-fieldset__legend govuk-fieldset__legend--xl">
                 <h1 class="govuk-fieldset__heading"><span class="govuk-caption-l">{{ caption }}</span>{{ heading }}</h1>
               </legend>
-              <div id="gearIds-hint" class="govuk-hint">Select all that apply</div>
               {% if fieldErrors.gearIds %}
                 <p id="gearIds-error" class="govuk-error-message">
                   <span class="govuk-visually-hidden">Error:</span> {{ fieldErrors.gearIds }}
@@ -106,5 +105,4 @@
     </div>
   </div>
 {% endblock %}
-
 

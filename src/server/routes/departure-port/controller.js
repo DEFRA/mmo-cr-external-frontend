@@ -21,7 +21,6 @@ import { statusCodes } from '#/server/common/constants/status-codes.js'
 const pageTitle = 'Select the port you left from'
 const templatePath = 'departure-port/index'
 const errorSummaryTitle = 'There is a problem'
-const hintText = 'Select a port name or the nearest port to where you left.'
 function favouritePorts(request, ports) {
   const codes = getFavouritePortCodes(request)
   return ports.filter((port) => codes.includes(port.code))
@@ -39,7 +38,6 @@ function viewContext(request, ports, overrides = {}) {
   return {
     pageTitle,
     heading: pageTitle,
-    hintText,
     caption: 'New catch record',
     backLink: {
       href: backForDeparturePort(request),
