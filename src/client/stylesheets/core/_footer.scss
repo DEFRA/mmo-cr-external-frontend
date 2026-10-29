@@ -7,10 +7,6 @@
   @include govuk-font($size: 16);
 }
 
-.app-footer .govuk-footer__crown {
-  display: none;
-}
-
 .app-footer .govuk-footer__link {
   @include govuk-link-style-text;
 }

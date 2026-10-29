@@ -1,0 +1,47 @@
+{% extends 'layouts/page.njk' %}
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+{% from "catch-record-declaration/macro.njk" import appCatchRecordDeclaration %}
+
+{% block pageContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <span class="govuk-caption-l" data-testid="app-check-answers-reference">{{ reference }}</span>
+      <h1 class="govuk-heading-xl" data-testid="app-heading-title">{{ heading }}</h1>
+
+      {% for section in sections %}
+        <h2 class="govuk-heading-l">{{ section.heading }}</h2>
+        {{ govukSummaryList({ rows: section.rows }) }}
+      {% endfor %}
+
+      {% if gearGroups.length %}
+        <h2 class="govuk-heading-l">2. Gear</h2>
+        {% for gear in gearGroups %}
+          <section aria-labelledby="gear-summary-{{ loop.index }}" data-gear-id="{{ gear.gearId }}">
+            <h3 id="gear-summary-{{ loop.index }}" class="govuk-heading-m">{{ gear.heading }}</h3>
+            {{ govukSummaryList({ rows: gear.rows }) }}
+          </section>
+        {% endfor %}
+      {% endif %}
+
+      {% if speciesGroups.length %}
+        <h2 class="govuk-heading-l">3. Species caught</h2>
+        {% for species in speciesGroups %}
+          <section aria-labelledby="species-summary-{{ loop.index }}" data-gear-id="{{ species.gearId }}">
+            <h3 id="species-summary-{{ loop.index }}" class="govuk-heading-m">{{ species.heading }}</h3>
+            {% if gearGroups.length > 1 %}
+              <p class="govuk-body">Caught with {{ species.gearHeading }}</p>
+            {% endif %}
+            {{ govukSummaryList({ rows: species.rows }) }}
+          </section>
+        {% endfor %}
+      {% endif %}
+
+      {% for section in trailingSections %}
+        <h2 class="govuk-heading-l">{{ section.heading }}</h2>
+        {{ govukSummaryList({ rows: section.rows }) }}
+      {% endfor %}
+
+      {{ appCatchRecordDeclaration(fieldErrors, false, true) }}
+    </div>
+  </div>
+{% endblock %}

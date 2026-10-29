@@ -15,6 +15,15 @@ function weightFieldForLabel(label) {
   return 'weightDiscarded'
 }
 
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;')
+}
+
 function reviewWeightRow(row, speciesGroup) {
   const label = row.key.text
     .replace(/ \([A-Z]+\)$/, '')
@@ -71,10 +80,9 @@ function reviewTripRows(base, context) {
   }))
   const gearUsed = toSummaryListRow({
     key: 'Gear used',
-    value: '',
+    value: base.gearGroups.map((group) => group.heading).join(', '),
     changeHref: context.buildChangeHref('/gear-selection')
   })
-  gearUsed.value = { items: base.gearGroups.map((group) => group.heading) }
   return [...rows, gearUsed]
 }
 
@@ -114,13 +122,15 @@ function reviewGearRows(group, context, speciesGroups) {
     rows.push({ ...area, key: { text: 'Area majority catch caught' } })
   }
   if (selectedSpecies) {
+    const speciesNames = speciesGroups
+      .filter((item) => item.gearId === group.gearId)
+      .map((item) => item.heading)
     rows.push({
       ...selectedSpecies,
       key: { text: 'Species caught' },
       value: {
-        items: speciesGroups
-          .filter((item) => item.gearId === group.gearId)
-          .map((item) => item.heading)
+        text: speciesNames.join(', '),
+        html: speciesNames.map(escapeHtml).join('<br>')
       }
     })
   }

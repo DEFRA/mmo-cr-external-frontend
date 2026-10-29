@@ -166,6 +166,9 @@ describe('#buildCheckAnswersViewModel', () => {
     })
 
     expect(model.sections[0].heading).toBe('1. Trips details')
+    expect(rowValue(model.sections[0].rows, 'Gear used')).toBe(
+      'Beam trawl, Dredge'
+    )
     expect(model.gearGroups).toHaveLength(2)
     expect(model.speciesGroups.map((group) => group.heading)).toEqual([
       'Atlantic cod (COD)',
@@ -174,6 +177,12 @@ describe('#buildCheckAnswersViewModel', () => {
     expect(
       model.speciesGroups.map((group) => group.rows[0].value.text)
     ).toEqual(['12', '25'])
+    expect(rowValue(model.gearGroups[0].rows, 'Species caught')).toBe(
+      'Atlantic cod (COD)'
+    )
+    expect(rowValue(model.gearGroups[1].rows, 'Species caught')).toBe(
+      'Atlantic cod (COD)'
+    )
     expect(model.speciesGroups[0].rows[0].actions.items[0].href).toContain(
       'gearId=beam'
     )
@@ -189,6 +198,37 @@ describe('#buildCheckAnswersViewModel', () => {
       '/catch-not-landed?return=/check-answers'
     )
     expect(state).toEqual(original)
+  })
+
+  test('Should render multiple species caught with one gear on separate lines', () => {
+    const model = buildCheckAnswersViewModel(
+      fakeRequest({
+        selectedGearIds: ['beam'],
+        catchNotLanded: false,
+        catchDetailsByGearId: {
+          beam: {
+            statAreaBranch: 'direct',
+            selectedStatisticalArea: '38E95',
+            selectedSpeciesIds: [SPECIES_IDS.cod, SPECIES_IDS.haddock],
+            speciesWeights: {
+              [SPECIES_IDS.cod]: { weightAboveMinimum: 12 },
+              [SPECIES_IDS.haddock]: { weightAboveMinimum: 8 }
+            }
+          }
+        }
+      }),
+      {
+        reviewLayout: true,
+        gearCatalogue: [{ id: 'beam', label: 'Beam trawl', measurements: [] }]
+      }
+    )
+    const speciesCaught = model.gearGroups[0].rows.find(
+      (row) => row.key.text === 'Species caught'
+    )
+
+    expect(speciesCaught.value.text).toContain('Atlantic cod (COD)')
+    expect(speciesCaught.value.html).toContain('<br>')
+    expect(speciesCaught.value.html).toContain('Haddock (HAD)')
   })
 
   test('Should include trip dates, ports and selected gears in screenshot order', () => {
@@ -208,6 +248,7 @@ describe('#buildCheckAnswersViewModel', () => {
       'Port returned to',
       'Gear used'
     ])
+    expect(rowValue(model.sections[0].rows, 'Gear used')).toBe('Pots')
     expect(model.sections[0].rows[0].actions.items).toEqual([])
   })
 

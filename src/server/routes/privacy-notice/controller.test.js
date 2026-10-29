@@ -89,9 +89,9 @@ describe('#privacyNoticeController', () => {
       expect($column.find('#complaints')).toHaveLength(1)
     })
 
-    test('Should link the footer Privacy notice item to this page', () => {
+    test('Should link the footer Privacy policy item to this page', () => {
       const $privacyPolicyLink = $('.govuk-footer a').filter(
-        (_index, element) => $(element).text().trim() === 'Privacy notice'
+        (_index, element) => $(element).text().trim() === 'Privacy policy'
       )
 
       expect($privacyPolicyLink).toHaveLength(1)
@@ -102,10 +102,11 @@ describe('#privacyNoticeController', () => {
       const $footer = $('footer .govuk-footer')
 
       expect($footer).toHaveLength(1)
-      expect($footer.find('a[href="/cookies"]').text().trim()).toBe('Cookies')
-      expect($footer.text()).toContain('Accessibility statement')
+      expect($footer.find('a[href="/cookies"]')).toHaveLength(0)
+      expect($footer.text()).toContain('Accessibility Statement')
       expect($footer.text()).toContain('Open Government Licence v3.0')
       expect($footer.find('.govuk-footer__copyright-logo')).toHaveLength(1)
+      expect($footer.find('.govuk-footer__crown')).toHaveLength(1)
     })
 
     test('Should render the Back link with the expected href', () => {

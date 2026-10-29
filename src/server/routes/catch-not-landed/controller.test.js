@@ -53,14 +53,14 @@ describe('#catchNotLandedController', () => {
     expect(result).not.toContain('will be implemented in a later step')
   })
 
-  test('Should render the approved hint text', async () => {
+  test('Should not render the example hint text', async () => {
     const { result } = await server.inject({
       method: 'GET',
       url: '/catch-not-landed'
     })
     const $ = load(result)
 
-    expect($('.govuk-hint').text().trim()).toBe(
+    expect($('main').text()).not.toContain(
       'For example, keeping white fish onboard for bait or storing shellfish in keep pots.'
     )
   })

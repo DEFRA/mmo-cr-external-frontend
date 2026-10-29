@@ -35,19 +35,19 @@ describe('#checkAnswersController', () => {
       url: '/check-answers'
     })
 
-    expect(result).toEqual(expect.stringContaining('Catch record for OLGA |'))
+    expect(result).toEqual(expect.stringContaining('Check your catch record'))
     expect(statusCode).toBe(statusCodes.ok)
   })
 
-  test('Should reuse the submitted-record heading, reference and section order', async () => {
+  test('Should render the review heading, reference and designed section order', async () => {
     const { result } = await server.inject({
       method: 'GET',
       url: '/check-answers'
     })
     const $ = load(result)
 
-    expect($('h1').text()).toContain('Catch record for OLGA')
-    expect($('[data-testid="app-record-reference"]').text().trim()).toBe(
+    expect($('h1').text().trim()).toBe('Check your catch record')
+    expect($('[data-testid="app-check-answers-reference"]').text().trim()).toBe(
       'A1234520260727150815'
     )
     expect(
@@ -55,14 +55,14 @@ describe('#checkAnswersController', () => {
         .map((_, el) => $(el).text().trim())
         .get()
     ).toEqual([
-      'Trips details',
-      'Gear used',
-      'Species caught',
-      'Species not landed'
+      '1. Trips details',
+      '2. Gear',
+      '3. Species caught',
+      '4. Species not landed'
     ])
   })
 
-  test('Should render only read-only answers with no editing or submission controls', async () => {
+  test('Should render Change links, the declaration and the submit action', async () => {
     const { result } = await server.inject({
       method: 'GET',
       url: '/check-answers'
@@ -70,21 +70,38 @@ describe('#checkAnswersController', () => {
     const $ = load(result)
 
     expect(
-      $('main form, main input, main select, main textarea, main button')
-    ).toHaveLength(0)
-    expect($('main a')).toHaveLength(0)
-    expect($('main .govuk-summary-list__actions')).toHaveLength(0)
-    expect($('.govuk-warning-text')).toHaveLength(0)
-    expect($('main').text()).not.toMatch(
-      /Change|Edit catch record|Download PDF|Accept and submit/
+      $('main a').filter((_, el) => $(el).text().trim().startsWith('Change'))
+        .length
+    ).toBeGreaterThan(0)
+    expect($('.govuk-warning-text').text()).toContain(
+      "By submitting this record, you agree that the information you've given is complete and correct."
     )
-    expect($('.govuk-back-link').attr('href')).toBe('/records')
-    expect($('dt').text()).toContain('Departure date')
-    expect($('dt').text()).toContain('Return date')
-    expect($('dt').text()).toContain('Not landed')
+    expect($('.govuk-body').text()).toContain(
+      "By submitting your catch record, you're confirming:"
+    )
+    expect(
+      $('.govuk-list--bullet li')
+        .map((_, li) => $(li).text())
+        .get()
+    ).toEqual([
+      'The weight of fish you have landed is accurate',
+      'This is within permitted tolerance levels',
+      'Fishing authorities may take action in respect of inaccurate catch recording'
+    ])
+    expect($('.govuk-warning-text').index()).toBeLessThan(
+      $('.govuk-body').index()
+    )
+    expect($('main input[name="confirmAccurate"]')).toHaveLength(0)
+    expect($('main button').text().trim()).toBe(
+      'Accept and submit trip details'
+    )
+    expect($('.govuk-back-link').attr('href')).toBe('/catch-not-landed')
+    expect($('dt').text()).toContain('Date left')
+    expect($('dt').text()).toContain('Date returned')
+    expect($('dt').text()).toContain('Catch kept onboard or in keep pots')
   })
 
-  test('Should strip supplied row actions at the read-only rendering boundary', async () => {
+  test('Should render Change links supplied by the review view model', async () => {
     const buildViewModel = vi.spyOn(
       checkAnswersViewModel,
       'buildCheckAnswersViewModel'
@@ -92,7 +109,7 @@ describe('#checkAnswersController', () => {
     buildViewModel.mockReturnValue({
       sections: [
         {
-          heading: 'Trips details',
+          heading: '1. Trips details',
           rows: [
             {
               key: { text: 'Vessel' },
@@ -101,7 +118,10 @@ describe('#checkAnswersController', () => {
             }
           ]
         }
-      ]
+      ],
+      gearGroups: [],
+      speciesGroups: [],
+      trailingSections: []
     })
     try {
       const { result, statusCode } = await server.inject({
@@ -111,13 +131,15 @@ describe('#checkAnswersController', () => {
       const $ = load(result)
       expect(statusCode).toBe(statusCodes.ok)
       expect($('main').text()).toContain('OLGA')
-      expect($('main a, main .govuk-summary-list__actions')).toHaveLength(0)
+      expect(
+        $('main a').filter((_, el) => $(el).text().trim() === 'Change')
+      ).toHaveLength(1)
     } finally {
       buildViewModel.mockRestore()
     }
   })
 
-  test('Should preserve submitted-record row order and value formatting for the default record', async () => {
+  test('Should preserve record data while using the review layout', async () => {
     const source = await server.inject({
       method: 'GET',
       url: '/records/submitted-1'
@@ -126,26 +148,11 @@ describe('#checkAnswersController', () => {
     const $source = load(source.result)
     const $review = load(review.result)
 
-    expect(
-      $review('dt')
-        .map((_, element) => $review(element).text().trim())
-        .get()
-    ).toEqual(
-      $source('dt')
-        .map((_, element) => $source(element).text().trim())
-        .get()
-    )
-    expect(
-      $review('.govuk-summary-list__value')
-        .map((_, element) => $review(element).text().trim())
-        .get()
-    ).toEqual(
-      $source('.govuk-summary-list__value')
-        .map((_, element) => $source(element).text().trim())
-        .get()
-    )
-    expect($source('a[href*="/edit-reason"]')).toHaveLength(1)
-    expect($review('main a')).toHaveLength(0)
+    expect($source('main').text()).toContain('OLGA')
+    expect($review('h1').text()).toContain('Check your catch record')
+    expect($review('main').text()).toContain('Atlantic cod')
+    expect($review('main').text()).toContain('15')
+    expect($review('main a').length).toBeGreaterThan(0)
   })
 
   test('Should render the illustrative example values when no journey state exists', async () => {
@@ -204,11 +211,16 @@ describe('#checkAnswersController', () => {
     expect(text).toContain('Rye')
     expect(text).toContain('Dredge')
     expect($('h2').text()).toContain('Species not landed')
-    expect($('dt:contains("Not landed")').next().text().trim()).toBe('No')
+    expect(
+      $('dt:contains("Catch kept onboard or in keep pots")')
+        .next()
+        .text()
+        .trim()
+    ).toBe('No')
   })
 })
 
-describe('Read-only check-answers route', () => {
+describe('Check-answers submission route', () => {
   let server
 
   beforeAll(async () => {
@@ -220,15 +232,15 @@ describe('Read-only check-answers route', () => {
     await server.stop({ timeout: 0 })
   })
 
-  test('Should reject POST submission', async () => {
+  test('Should return users with no selected gear to the journey before submission without a checkbox', async () => {
     const { statusCode, headers } = await server.inject({
       method: 'POST',
       url: '/check-answers',
       payload: {}
     })
 
-    expect(statusCode).toBe(404)
-    expect(headers.location).toBeUndefined()
+    expect(statusCode).toBe(statusCodes.seeOther)
+    expect(headers.location).toBe('/gear-selection')
   })
 })
 
