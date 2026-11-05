@@ -21,10 +21,15 @@ export const UNAVAILABLE_MESSAGE =
 export const INVALID_RECORD_MESSAGE =
   'Catch Recording Service returned an invalid record'
 export const RECORD_STATUSES = ['DRAFT', 'SUBMITTED', 'COMPLETE']
-const RECORD_DISPLAY_STATUSES = ['Draft', 'Amended', 'Submitted', 'Complete']
-const LIST_DISPLAY_STATUSES = [...RECORD_DISPLAY_STATUSES, 'Late']
+const RECORD_DISPLAY_STATUSES = new Set([
+  'Draft',
+  'Amended',
+  'Submitted',
+  'Complete'
+])
+const LIST_DISPLAY_STATUSES = new Set([...RECORD_DISPLAY_STATUSES, 'Late'])
 const RECORD_SECTIONS = ['trip', 'pairFishing', 'gears']
-const ARTIFACT_TYPES = ['json', 'pdf']
+const ARTIFACT_TYPES = new Set(['json', 'pdf'])
 const MAX_ID_LENGTH = 200
 const MAX_LIST_LIMIT = 100
 const MAX_SUBMISSION_NUMBER = 1000
@@ -79,7 +84,7 @@ function isNonNegativeInteger(value) {
 }
 
 export function isArrayOf(value, predicate) {
-  return Array.isArray(value) && value.every(predicate)
+  return Array.isArray(value) && value.every((item) => predicate(item))
 }
 
 function hasUniqueValues(values) {
@@ -110,7 +115,7 @@ export function isValidListItem(item) {
     Boolean(item.trip) &&
     typeof item.trip === 'object' &&
     isString(item.vessel?.nameSnapshot) &&
-    LIST_DISPLAY_STATUSES.includes(item.displayStatus)
+    LIST_DISPLAY_STATUSES.has(item.displayStatus)
   )
 }
 
@@ -157,14 +162,14 @@ export function isValidRecordDetail(body) {
     isArrayOf(body.speciesNotLanded, hasStringId) &&
     hasRecordSectionState(body) &&
     isNonNegativeInteger(body.numberOfSubmissions) &&
-    RECORD_DISPLAY_STATUSES.includes(body.displayStatus)
+    RECORD_DISPLAY_STATUSES.has(body.displayStatus)
   )
 }
 
 function hasValidRecordStatus(body) {
   return (
     RECORD_STATUSES.includes(body.status) &&
-    RECORD_DISPLAY_STATUSES.includes(body.displayStatus) &&
+    RECORD_DISPLAY_STATUSES.has(body.displayStatus) &&
     isPositiveInteger(body.version)
   )
 }
@@ -209,9 +214,7 @@ export function isValidDraft(body) {
 export function isValidSubmission(item) {
   return (
     isPositiveInteger(item?.submissionNumber) &&
-    isArrayOf(item.artifacts, (artifact) =>
-      ARTIFACT_TYPES.includes(artifact?.type)
-    )
+    isArrayOf(item.artifacts, (artifact) => ARTIFACT_TYPES.has(artifact?.type))
   )
 }
 
@@ -357,7 +360,7 @@ export function requireFavouriteId(id) {
 
 export function validateArtifact(submissionNumber, artifactType) {
   if (
-    !ARTIFACT_TYPES.includes(artifactType) ||
+    !ARTIFACT_TYPES.has(artifactType) ||
     !Number.isSafeInteger(submissionNumber) ||
     submissionNumber < 1 ||
     submissionNumber > MAX_SUBMISSION_NUMBER
