@@ -1,6 +1,7 @@
 import Joi from 'joi'
 
 import {
+  catchRecordCaption,
   getJourneyState,
   resolveNextPath,
   setJourneyState
@@ -10,8 +11,11 @@ import {
   getVesselItem
 } from '#/server/common/helpers/vessels/vessels-list.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
-import { getData } from '#/server/common/data/get-data.js'
 import { buildNavigation } from '#/config/nunjucks/context/build-navigation.js'
+import {
+  ensureCatchRecordDraft,
+  prepareDraftCreation
+} from '#/server/common/helpers/journey/create-draft.js'
 
 const errorText = 'Which vessel did you use?'
 const templatePath = 'select-vessel/index'
@@ -21,7 +25,7 @@ function viewContext(request, vessels, overrides = {}) {
   return {
     pageTitle: errorText,
     heading: errorText,
-    reference: getData('catchRecordDetails').reference,
+    reference: catchRecordCaption(request),
     navigation: buildNavigation(request, { showWhenSignedOut: true }),
     backLink: {
       href: '/records',
@@ -39,6 +43,7 @@ function viewContext(request, vessels, overrides = {}) {
 export const selectVesselController = {
   async handler(request, h) {
     const vessels = await getVesselCatalogue()
+    prepareDraftCreation(request)
     return h.view(templatePath, viewContext(request, vessels))
   }
 }
@@ -85,6 +90,22 @@ export const selectVesselSubmitController = {
         .code(statusCodes.badRequest)
     }
     const selectedVessel = await getVesselItem(vessel.id)
+    if (!(await ensureCatchRecordDraft(request, selectedVessel))) {
+      const message =
+        'You cannot change vessel for this record. Start a new catch record from Your catch records.'
+      return h
+        .view(
+          templatePath,
+          viewContext(request, vessels, {
+            errorSummary: {
+              titleText: 'There is a problem',
+              errorList: [{ text: message, href: '#vesselId' }]
+            },
+            fieldErrors: { vesselId: message }
+          })
+        )
+        .code(statusCodes.badRequest)
+    }
     setJourneyState(request, {
       selectedVesselId: selectedVessel.id,
       selectedVesselName: selectedVessel.name,

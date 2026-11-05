@@ -1,6 +1,7 @@
 import Joi from 'joi'
 
 import {
+  catchRecordCaption,
   getGearJourneyState as getJourneyState,
   gearPageContext,
   gearPath,
@@ -96,8 +97,6 @@ function resolveSelectedAreaCoordinatesText(
 async function viewContext(request, overrides = {}) {
   const journeyState = getJourneyState(request)
   const gearContext = gearPageContext(request)
-  const alternativeStatisticalArea =
-    journeyState.alternativeStatisticalArea || ''
   const departurePort = getData('ports').find(
     (port) => port.code === journeyState.departurePort
   )
@@ -113,7 +112,26 @@ async function viewContext(request, overrides = {}) {
   const nearbyAreaCodes = departurePortCoordinate
     ? closestSubareas(departurePortCoordinate)
     : []
-  const selectedArea = journeyState.selectedAlternativeAreaOption
+  const savedArea =
+    journeyState.statAreaBranch === 'other'
+      ? journeyState.selectedAlternativeAreaOption === 'other'
+        ? journeyState.alternativeStatisticalArea
+        : journeyState.selectedAlternativeAreaOption
+      : journeyState.selectedStatisticalArea
+  const restoredArea =
+    savedArea && savedArea !== 'other' ? savedArea.toUpperCase() : undefined
+  const selectedArea =
+    journeyState.selectedAlternativeAreaOption === 'other'
+      ? 'other'
+      : restoredArea
+        ? nearbyAreaCodes.includes(restoredArea)
+          ? restoredArea
+          : 'other'
+        : journeyState.selectedAlternativeAreaOption
+  const alternativeStatisticalArea =
+    selectedArea === 'other'
+      ? restoredArea || journeyState.alternativeStatisticalArea || ''
+      : ''
 
   return {
     ...(await statisticalAreaContent(journeyState, {
@@ -121,7 +139,7 @@ async function viewContext(request, overrides = {}) {
       gearId: gearContext.gearId
     })),
     ...gearContext,
-    caption: 'New catch record',
+    caption: catchRecordCaption(request),
     backLink: {
       href: gearPath(
         request,

@@ -408,7 +408,9 @@ function readOnlyViewModel(context) {
     ...context,
     compactSummary: false,
     hideVesselChange: true,
-    buildChangeHref: () => null
+    buildChangeHref: context.editableDetails
+      ? context.buildChangeHref
+      : () => null
   }
   if (!context.journeyState.selectedGearIds?.length) {
     return { sections: readOnlyLegacySections(readOnlyContext) }

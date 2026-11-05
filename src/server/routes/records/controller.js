@@ -1,71 +1,32 @@
 import Joi from 'joi'
 
-import { getData } from '#/server/common/data/get-data.js'
-import { getStatusDisplay } from '#/server/common/helpers/records/status-display.js'
-import { buildPagination } from '#/server/common/helpers/records/pagination.js'
+import { listLiveRecords } from '../live-records/controller.js'
+import { getJourneyState } from '#/server/common/helpers/journey/navigation.js'
 
-const PAGE_SIZE = 10
-
-function toRowViewModel(record) {
-  const statusDisplay = getStatusDisplay(record.status)
-
-  return {
-    recordId: record.recordId,
-    tripEndDate: record.tripEndDate,
-    vesselName: record.vesselName,
-    createdBy: record.createdBy,
-    statusText: statusDisplay.text,
-    statusTagClasses: statusDisplay.tagClasses,
-    href: record.status === 'unsent' ? '/draft' : `/records/${record.recordId}`
-  }
-}
-
-function toPaginationItems(pagination) {
-  const items = []
-
-  for (
-    let pageNumber = 1;
-    pageNumber <= pagination.pageCount;
-    pageNumber += 1
-  ) {
-    items.push({
-      number: String(pageNumber),
-      current: pageNumber === pagination.currentPage,
-      href: `/records?page=${pageNumber}`
-    })
-  }
-
-  return items
-}
-
-/**
- * Landing page after sign in. Sources catch records from the Step 03 mock-data layer.
- */
 export const recordsController = {
   options: {
     validate: {
       query: Joi.object({
-        page: Joi.number().integer().min(1).optional()
+        page: Joi.number().integer().min(1).optional(),
+        status: Joi.string()
+          .valid('', 'DRAFT', 'SUBMITTED', 'COMPLETE')
+          .optional()
       })
     }
   },
-  handler(request, h) {
-    const service = getData('service')
-    const pagination = buildPagination({
-      items: getData('allRecords'),
-      page: request.query.page ?? 1,
-      pageSize: PAGE_SIZE
-    })
+  handler: listLiveRecords
+}
 
-    return h.view('records/index', {
-      pageTitle: 'Your catch records',
-      heading: 'Your catch records',
-      bodyClasses: 'app-records-page',
-      backLink: { href: '/', text: 'Back' },
-      notice: service.notice,
-      records: pagination.pageItems.map(toRowViewModel),
-      pagination,
-      paginationItems: toPaginationItems(pagination)
-    })
+export const newRecordController = {
+  handler(request, h) {
+    const state = getJourneyState(request)
+    if (state.departurePort && state.returnPort) {
+      request.yar.set(
+        'previousTripPort',
+        state.departurePort === state.returnPort ? state.departurePort : false
+      )
+    }
+    request.yar.set('journey', {})
+    return h.redirect('/select-vessel').code(303)
   }
 }

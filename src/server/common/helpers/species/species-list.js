@@ -7,6 +7,7 @@ import {
   getGearJourneyState,
   setJourneyState
 } from '#/server/common/helpers/journey/navigation.js'
+import { loadFavouriteSpecies } from '#/server/common/helpers/journey/session-favourites.js'
 
 const DEFAULT_AVAILABLE_SPECIES_CODES = new Set(['COD', 'HAD', 'MAC'])
 
@@ -59,6 +60,21 @@ function migrateSpeciesDataById(speciesData, catalogue) {
 }
 
 function speciesMigrationPatch(journeyState, catalogue) {
+  const savedSpeciesIds = [
+    ...(journeyState.selectedSpeciesIds || []),
+    ...Object.keys(journeyState.speciesNotLanded || {})
+  ]
+  if (
+    config.get('catchRecording.enabled') &&
+    savedSpeciesIds.some(
+      (id) => !catalogue.some((species) => species.id === id)
+    )
+  ) {
+    throw Boom.conflict(
+      'A saved species is no longer available. This record cannot be edited without changing its saved selections.',
+      { catchRecordError: true }
+    )
+  }
   const patch = {}
 
   for (const key of ['selectedSpeciesIds', 'availableSpeciesIds']) {
@@ -127,16 +143,44 @@ export function getSpeciesOptionsByIds(speciesIds, catalogue) {
   return catalogue.filter((species) => speciesIds.includes(species.id))
 }
 
-export async function getSpeciesPageData(request) {
+export async function getSpeciesPageData(
+  request,
+  { loadFavourites = false, includeSelected = false } = {}
+) {
+  if (loadFavourites) {
+    await loadFavouriteSpecies(request)
+  }
   const catalogue = await getSpeciesCatalogue(request)
   const journeyState = getSpeciesJourneyState(request, catalogue)
   const availableSpeciesIds = getAvailableSpeciesIds(journeyState, catalogue)
+  if (
+    loadFavourites &&
+    config.get('catchRecording.enabled') &&
+    journeyState.favouriteSpeciesIds.some(
+      (id) => !catalogue.some((species) => species.id === id)
+    )
+  ) {
+    throw Boom.conflict(
+      'A favourite species is no longer available in Reference Data. Reload the page before trying again.',
+      { catchRecordError: true }
+    )
+  }
+  const optionIds =
+    includeSelected && config.get('catchRecording.enabled')
+      ? [
+          ...new Set([
+            ...availableSpeciesIds,
+            ...(journeyState.journeySpeciesIds || []),
+            ...(journeyState.selectedSpeciesIds || [])
+          ])
+        ]
+      : availableSpeciesIds
 
   return {
     catalogue,
     journeyState,
     availableSpeciesIds,
-    speciesOptions: getSpeciesOptionsByIds(availableSpeciesIds, catalogue)
+    speciesOptions: getSpeciesOptionsByIds(optionIds, catalogue)
   }
 }
 

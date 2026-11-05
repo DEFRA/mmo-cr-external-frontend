@@ -1,6 +1,9 @@
 import Joi from 'joi'
 
 import {
+  catchRecordCaption,
+  backForDeparturePort,
+  getJourneyState,
   setJourneyState,
   resolveNextPath
 } from '#/server/common/helpers/journey/navigation.js'
@@ -11,6 +14,8 @@ import {
   rememberPortName
 } from '#/server/common/helpers/ports/ports-list.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
+import { liveCatchRecords } from '#/server/common/helpers/journey/catch-record-service.js'
+import { portSelectionPath } from '#/server/common/helpers/journey/favourite-ports.js'
 
 const departurePortPath = '/departure-port'
 
@@ -18,6 +23,16 @@ async function resolvePort(request) {
   const code = request.query.port
   if (!code) {
     return undefined
+  }
+  if (liveCatchRecords()) {
+    const state = getJourneyState(request)
+    if (
+      !state.catchRecordId ||
+      state.departurePort !== code ||
+      state.returnPort !== code
+    ) {
+      return undefined
+    }
   }
   const ports = await getPortCatalogue()
   const port = findPortByCode(code, ports)
@@ -28,16 +43,19 @@ function heading(portName) {
   return `Was ${portName} the port or the closest port you set off from and returned to?`
 }
 
-function viewContext(_request, port, overrides = {}) {
+function viewContext(request, port, overrides = {}) {
   return {
     pageTitle: heading(port.name),
     heading: heading(port.name),
-    caption: 'New catch record',
+    caption: catchRecordCaption(request),
     backLink: {
-      href: '/add-port?for=departure&entry=1',
+      href: backForDeparturePort(request),
       text: 'Back'
     },
-    formAction: `/confirm-same-port?port=${port.code}`,
+    formAction: portSelectionPath(
+      request,
+      `/confirm-same-port?port=${encodeURIComponent(port.code)}`
+    ),
     ...overrides
   }
 }
@@ -46,7 +64,9 @@ export const confirmSamePortController = {
   async handler(request, h) {
     const port = await resolvePort(request)
     if (!port) {
-      return h.redirect(departurePortPath).code(statusCodes.seeOther)
+      return h
+        .redirect(portSelectionPath(request, departurePortPath))
+        .code(statusCodes.seeOther)
     }
 
     return h.view('confirm-same-port/index', viewContext(request, port))
@@ -63,7 +83,7 @@ export const confirmSamePortSubmitController = {
         const port = await resolvePort(request)
         if (!port) {
           return h
-            .redirect(departurePortPath)
+            .redirect(portSelectionPath(request, departurePortPath))
             .code(statusCodes.seeOther)
             .takeover()
         }
@@ -89,7 +109,9 @@ export const confirmSamePortSubmitController = {
   async handler(request, h) {
     const port = await resolvePort(request)
     if (!port) {
-      return h.redirect(departurePortPath).code(statusCodes.seeOther)
+      return h
+        .redirect(portSelectionPath(request, departurePortPath))
+        .code(statusCodes.seeOther)
     }
 
     if (request.payload.confirmSamePort === 'yes') {
@@ -104,6 +126,9 @@ export const confirmSamePortSubmitController = {
         .code(statusCodes.seeOther)
     }
 
-    return h.redirect(departurePortPath).code(statusCodes.seeOther)
+    setJourneyState(request, { portSelectionStarted: true })
+    return h
+      .redirect(portSelectionPath(request, departurePortPath))
+      .code(statusCodes.seeOther)
   }
 }

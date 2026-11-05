@@ -100,7 +100,7 @@ async function getCollection(filters, { collectionCache, inFlight, request }) {
   const params = new URLSearchParams()
   for (const [key, value] of Object.entries(filters)) {
     if (value !== undefined && value !== null && value !== '') {
-      params.set(key, String(value))
+      params.set(key === 'code' ? 'query' : key, String(value))
     }
   }
   const query = params.toString()
@@ -174,4 +174,27 @@ export function createMapStatisticalAreasReferenceDataClient({
       getCollection(filters, { collectionCache, inFlight, request }),
     getFeature: (id) => getFeature(id, { itemCache, request })
   }
+}
+
+// Catch Recording resolves `/map/statistical-areas/{id}` against the raw ArcGIS export, so the
+// reference ID is the stringified `OBJECTID` and the code is `sub_code`; canonical features with a
+// feature `id` and `properties.code` are still accepted when OBJECTID is absent.
+export function statisticalAreaReference(feature) {
+  const properties = feature?.properties || {}
+  if (
+    Number.isInteger(properties.OBJECTID) &&
+    properties.OBJECTID >= 0 &&
+    typeof properties.sub_code === 'string' &&
+    properties.sub_code.length > 0
+  ) {
+    return { id: String(properties.OBJECTID), code: properties.sub_code }
+  }
+  if (
+    typeof feature?.id === 'string' &&
+    feature.id.length > 0 &&
+    typeof properties.code === 'string'
+  ) {
+    return { id: feature.id, code: properties.code }
+  }
+  return undefined
 }

@@ -5,6 +5,11 @@ import { getData } from '#/server/common/data/get-data.js'
 import { setAmendmentState } from '#/server/common/helpers/journey/amendment.js'
 import { formatDate } from '#/config/nunjucks/filters/format-date.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
+import { liveCatchRecords } from '#/server/common/helpers/journey/catch-record-service.js'
+import {
+  reasonContext,
+  startAmendment
+} from '../edit-catch-record-review/live-amendment.js'
 
 const defaultPageTitle = 'Why are you editing this catch record?'
 const lateRecordPageTitle = 'Why are you editing this record?'
@@ -53,7 +58,13 @@ export const editCatchRecordReasonController = {
       })
     }
   },
-  handler(request, h) {
+  async handler(request, h) {
+    if (liveCatchRecords()) {
+      return h.view(
+        'edit-catch-record-reason/index',
+        await reasonContext(request)
+      )
+    }
     const { recordId } = request.params
     findRecord(recordId)
 
@@ -68,9 +79,28 @@ export const editCatchRecordReasonSubmitController = {
         recordId: Joi.string().required()
       }),
       payload: Joi.object({
-        editReason: Joi.string().trim().min(1).max(2000).required()
+        editReason: Joi.string().trim().min(1).max(2000).required(),
+        reasonKey: Joi.string().uuid().optional()
       }),
-      failAction(request, h) {
+      async failAction(request, h) {
+        if (liveCatchRecords()) {
+          const errorText =
+            'Enter a reason for editing this catch record (2000 characters or fewer)'
+          return h
+            .view(
+              'edit-catch-record-reason/index',
+              await reasonContext(request, {
+                values: request.payload,
+                errorSummary: {
+                  titleText: 'There is a problem',
+                  errorList: [{ text: errorText, href: '#editReason' }]
+                },
+                fieldErrors: { editReason: errorText }
+              })
+            )
+            .code(statusCodes.badRequest)
+            .takeover()
+        }
         const { recordId } = request.params
         findRecord(recordId)
 
@@ -94,6 +124,7 @@ export const editCatchRecordReasonSubmitController = {
     }
   },
   handler(request, h) {
+    if (liveCatchRecords()) return startAmendment(request, h)
     const { recordId } = request.params
 
     findRecord(recordId)

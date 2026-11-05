@@ -1,4 +1,8 @@
 import { load } from 'cheerio'
+import {
+  mockCatchRecording,
+  restoreCatchRecordingMock
+} from '#/test-helpers/mock-catch-recording.js'
 
 import { createServer } from '#/server/server.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
@@ -18,10 +22,12 @@ beforeEach(() => {
   mockSpeciesReferenceData()
   mockVesselsReferenceData()
   mockGearsReferenceData()
+  mockCatchRecording()
 })
 afterEach(() => {
   restoreVesselsReferenceDataMock()
   restoreSpeciesReferenceDataMock()
+  restoreCatchRecordingMock()
 })
 
 describe('#accountController', () => {
@@ -62,6 +68,10 @@ describe('#accountController', () => {
 
     expect(result).toEqual(expect.stringContaining('Your account |'))
     expect(statusCode).toBe(statusCodes.ok)
+    const $ = load(result)
+    expect($('select[name="vesselId"]')).toHaveLength(0)
+    expect($('form[action="/account"]')).toHaveLength(0)
+    expect($('main').text()).not.toContain('Manage vessel favourites')
   })
 
   test('Should render Personal details and Vessel details in order', async () => {
@@ -82,13 +92,19 @@ describe('#accountController', () => {
     expect($('h3.govuk-heading-m').text().trim()).toBe('OLGA (FIN-126-U)')
   })
 
-  test('Should show the selected vessel and update Vessel details when the selection changes', async () => {
+  test('Should show the selected vessel and update Vessel details for a new journey', async () => {
     let cookie = await signedInCookie()
 
     for (const [vesselId, expectedLabel] of [
       [VESSEL_IDS.achilles, 'ACHILLES (PH1234)'],
       [VESSEL_IDS.seaSpray, 'SEA SPRAY (BM45)']
     ]) {
+      const reset = await server.inject({
+        method: 'POST',
+        url: '/records/new',
+        headers: { cookie }
+      })
+      cookie = reset.headers['set-cookie'][0].split(';')[0]
       const selected = await server.inject({
         method: 'POST',
         url: '/select-vessel',

@@ -1,0 +1,11 @@
+{% extends 'layouts/page.njk' %}
+{% block pageContent %}
+  <h1 class="govuk-heading-xl">Catch record history</h1>
+  <p class="govuk-body">Status: {{ history.displayStatus }}</p>
+  <p class="govuk-body">Showing at most 100 events.</p>
+  <ol class="govuk-list govuk-list--number">
+    {% for event in history.events %}
+      <li>{{ event.eventType }} — {{ event.timestamp }}{% if event.section %} ({{ event.section }}){% endif %}{% if event.submissionNumber %}, submission {{ event.submissionNumber }}{% endif %}</li>
+    {% else %}<li>No events recorded.</li>{% endfor %}
+  </ol>
+{% endblock %}

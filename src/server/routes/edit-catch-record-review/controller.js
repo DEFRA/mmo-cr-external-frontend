@@ -11,6 +11,8 @@ import { getSpeciesPageData } from '#/server/common/helpers/species/species-list
 import { getGearCatalogue } from '#/server/common/helpers/gear/favourite-gear.js'
 import { formatDate } from '#/config/nunjucks/filters/format-date.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
+import { liveCatchRecords } from '#/server/common/helpers/journey/catch-record-service.js'
+import { liveReview, resubmitAmendment } from './live-amendment.js'
 
 const AMENDMENT_CHANGE_HREF = '/not-implemented?return=/records'
 
@@ -88,6 +90,7 @@ export const editCatchRecordReviewController = {
     }
   },
   async handler(request, h) {
+    if (liveCatchRecords()) return liveReview(request, h)
     const { recordId } = request.params
     findRecord(recordId)
 
@@ -109,9 +112,27 @@ export const editCatchRecordReviewSubmitController = {
         recordId: Joi.string().required()
       }),
       payload: Joi.object({
-        confirmAccurate: Joi.string().valid('true').required()
+        confirmAccurate: Joi.string().valid('true').required(),
+        submissionKey: Joi.string().uuid().optional()
       }),
       async failAction(request, h) {
+        if (liveCatchRecords()) {
+          const errorText =
+            'Select I confirm the information is complete and accurate'
+          const response = await liveReview(
+            request,
+            h,
+            {
+              errorSummary: {
+                titleText: 'There is a problem',
+                errorList: [{ text: errorText, href: '#confirmAccurate' }]
+              },
+              fieldErrors: { confirmAccurate: errorText }
+            },
+            statusCodes.badRequest
+          )
+          return response.takeover()
+        }
         const { recordId } = request.params
         findRecord(recordId)
 
@@ -142,6 +163,7 @@ export const editCatchRecordReviewSubmitController = {
     }
   },
   handler(request, h) {
+    if (liveCatchRecords()) return resubmitAmendment(request, h)
     const { recordId } = request.params
     findRecord(recordId)
 

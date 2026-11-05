@@ -1,6 +1,12 @@
 // Structural + business-rule validation for a GOV.UK date-input day/month/year triple.
 const MONTHS_IN_YEAR = 12
 
+export function dateInputValues(isoDate) {
+  if (!isoDate) return {}
+  const [year, month, day] = isoDate.split('-')
+  return { day: String(Number(day)), month: String(Number(month)), year }
+}
+
 function isMissing(value) {
   return value === undefined || value === null || String(value).trim() === ''
 }

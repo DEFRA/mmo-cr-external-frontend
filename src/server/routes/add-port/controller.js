@@ -1,13 +1,18 @@
 import Joi from 'joi'
 
 import {
+  catchRecordCaption,
+  accountVesselPath,
   backForDeparturePort,
   getJourneyState,
-  resolveNextPath
+  resolveNextPath,
+  setJourneyState
 } from '#/server/common/helpers/journey/navigation.js'
 import {
   addFavouritePortCode,
-  getFavouritePortCodes
+  getFavouritePortCodes,
+  previousPortForConfirmation,
+  portSelectionPath
 } from '#/server/common/helpers/journey/favourite-ports.js'
 import {
   addAccountPortName,
@@ -21,6 +26,11 @@ import {
   rememberPortName
 } from '#/server/common/helpers/ports/ports-list.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
+import {
+  loadFavouritePorts,
+  addFavouritePort
+} from '#/server/common/helpers/journey/session-favourites.js'
+import { liveCatchRecords } from '#/server/common/helpers/journey/catch-record-service.js'
 
 const selectionErrorText = 'Select a port from the list'
 const returnPhase = 'return'
@@ -44,12 +54,25 @@ function isAccountReturn(request) {
   return request.query.return === accountPath
 }
 
+function isTripSelection(request) {
+  return Boolean(request.query.for) && !isAccountReturn(request)
+}
+
 function backLink(request) {
   if (isAccountReturn(request)) {
     return accountPath
   }
 
   const phase = resolvePhase(request)
+  if (
+    liveCatchRecords() &&
+    isTripSelection(request) &&
+    getFavouritePortCodes(request).length === 0
+  ) {
+    return phase === returnPhase
+      ? departurePortPath
+      : backForDeparturePort(request)
+  }
   if (!isEntry(request)) {
     return phase === returnPhase ? '/return-port' : departurePortPath
   }
@@ -60,26 +83,54 @@ function backLink(request) {
 }
 
 function formAction(request) {
+  if (
+    liveCatchRecords() &&
+    !request.query.for &&
+    !isEntry(request) &&
+    !isAccountReturn(request)
+  ) {
+    return '/add-port'
+  }
   const phase = resolvePhase(request)
   const entrySuffix = isEntry(request) ? '&entry=1' : ''
   const returnSuffix = isAccountReturn(request) ? '&return=/account' : ''
-  return `/add-port?for=${phase}${entrySuffix}${returnSuffix}`
+  return accountVesselPath(
+    request,
+    portSelectionPath(
+      request,
+      `/add-port?for=${phase}${entrySuffix}${returnSuffix}`
+    )
+  )
 }
 
 function viewContext(request, ports, overrides = {}) {
-  const heading = headingByPhase[resolvePhase(request)]
+  const favouritesPage =
+    liveCatchRecords() &&
+    (isAccountReturn(request) || (!request.query.for && !isEntry(request)))
+  const heading = favouritesPage
+    ? 'Add a port to your favourites'
+    : headingByPhase[resolvePhase(request)]
+  const state = getJourneyState(request)
+  const selectedCode =
+    resolvePhase(request) === returnPhase
+      ? state.returnPort
+      : state.departurePort
+  const selected =
+    liveCatchRecords() && isTripSelection(request)
+      ? findPortByCode(selectedCode, ports)
+      : undefined
 
   return {
     pageTitle: heading,
     heading,
-    caption: 'New catch record',
+    caption: favouritesPage ? 'Your favourites' : catchRecordCaption(request),
     backLink: {
       href: backLink(request),
       text: 'Back'
     },
     formAction: formAction(request),
     portNames: ports.map((port) => portSearchLabel(port, ports)),
-    port: '',
+    port: selected ? portSearchLabel(selected, ports) : '',
     ...overrides
   }
 }
@@ -87,6 +138,24 @@ function viewContext(request, ports, overrides = {}) {
 export const addPortController = {
   async handler(request, h) {
     const ports = await getPortCatalogue()
+    await loadFavouritePorts(request, ports)
+    if (
+      isEntry(request) &&
+      !isAccountReturn(request) &&
+      resolvePhase(request) === 'departure'
+    ) {
+      const previousPort = previousPortForConfirmation(request)
+      if (previousPort) {
+        return h
+          .redirect(
+            portSelectionPath(
+              request,
+              `/confirm-same-port?port=${encodeURIComponent(previousPort)}`
+            )
+          )
+          .code(statusCodes.seeOther)
+      }
+    }
     return h.view('add-port/index', viewContext(request, ports))
   }
 }
@@ -122,12 +191,14 @@ export const addPortSubmitController = {
         port: Joi.string().trim().allow('').default('')
       }),
       async failAction(request, h) {
+        await loadFavouritePorts(request)
         return renderError(request, h, request.payload.port)
       }
     }
   },
   async handler(request, h) {
     const ports = await getPortCatalogue()
+    await loadFavouritePorts(request, ports)
     const { port } = request.payload
     const matchedPort = findPortByName(port, ports)
 
@@ -135,11 +206,32 @@ export const addPortSubmitController = {
       return renderError(request, h, port, ports)
     }
 
-    const alreadySaved = isAccountReturn(request)
-      ? getAccountPortsUsed(getJourneyState(request)).includes(matchedPort.name)
-      : getFavouritePortCodes(request).some(
-          (code) => findPortByCode(code, ports)?.code === matchedPort.code
+    if (liveCatchRecords() && isTripSelection(request)) {
+      const returning = resolvePhase(request) === returnPhase
+      rememberPortName(request, matchedPort)
+      setJourneyState(request, {
+        [returning ? 'returnPort' : 'departurePort']: matchedPort.code,
+        portSelectionStarted: true
+      })
+      return h
+        .redirect(
+          resolveNextPath(
+            request,
+            returning ? '/gear-selection' : '/return-port'
+          )
         )
+        .code(statusCodes.seeOther)
+    }
+
+    const alreadySaved = liveCatchRecords()
+      ? getJourneyState(request).favouritePortIds.includes(matchedPort.id)
+      : isAccountReturn(request)
+        ? getAccountPortsUsed(getJourneyState(request)).includes(
+            matchedPort.name
+          )
+        : getFavouritePortCodes(request).some(
+            (code) => findPortByCode(code, ports)?.code === matchedPort.code
+          )
 
     if (alreadySaved) {
       return renderError(
@@ -151,18 +243,25 @@ export const addPortSubmitController = {
       )
     }
 
+    if (liveCatchRecords()) {
+      await addFavouritePort(request, matchedPort.id, ports)
+    }
+
     if (isAccountReturn(request)) {
-      addAccountPortName(request, matchedPort.name)
+      if (!liveCatchRecords()) {
+        addAccountPortName(request, matchedPort.name)
+      }
       return h.redirect(accountPath).code(statusCodes.seeOther)
     }
 
-    addFavouritePortCode(request, matchedPort.code)
+    if (!liveCatchRecords()) {
+      addFavouritePortCode(request, matchedPort.code)
+    }
     rememberPortName(request, matchedPort)
 
     if (isEntry(request)) {
-      return h
-        .redirect(`/confirm-same-port?port=${matchedPort.code}`)
-        .code(statusCodes.seeOther)
+      setJourneyState(request, { portSelectionStarted: true })
+      return h.redirect(departurePortPath).code(statusCodes.seeOther)
     }
 
     const phase = resolvePhase(request)

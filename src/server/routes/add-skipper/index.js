@@ -1,20 +1,32 @@
 import Joi from 'joi'
 import {
   getJourneyState,
+  accountVesselPath,
   setJourneyState
 } from '#/server/common/helpers/journey/navigation.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
+import { liveCatchRecords } from '#/server/common/helpers/journey/catch-record-service.js'
+import { requireSkipperVessel } from '#/server/common/helpers/journey/vessel-skippers.js'
+
+function vesselName(request) {
+  return liveCatchRecords()
+    ? getJourneyState(request).selectedVesselName || 'this vessel'
+    : 'OLGA'
+}
 
 const viewContext = (request, overrides = {}) => ({
-  pageTitle: 'Do you want to add a skipper for OLGA?',
-  heading: 'Do you want to add a skipper for OLGA?',
+  pageTitle: `Do you want to add a skipper for ${vesselName(request)}?`,
+  heading: `Do you want to add a skipper for ${vesselName(request)}?`,
   backLink: { href: '/account', text: 'Back' },
   checked: getJourneyState(request).wantsToAddSkipper,
   ...overrides
 })
 
 export const addSkipperController = {
-  handler: (request, h) => h.view('add-skipper/index', viewContext(request))
+  handler(request, h) {
+    if (liveCatchRecords()) requireSkipperVessel(request)
+    return h.view('add-skipper/index', viewContext(request))
+  }
 }
 
 export const addSkipperSubmitController = {
@@ -24,6 +36,7 @@ export const addSkipperSubmitController = {
         wantsToAddSkipper: Joi.string().valid('yes', 'no').required()
       }),
       failAction(request, h) {
+        if (liveCatchRecords()) requireSkipperVessel(request)
         const errorText = 'Select yes if you want to add a skipper'
         return h
           .view(
@@ -42,10 +55,27 @@ export const addSkipperSubmitController = {
     }
   },
   handler(request, h) {
+    if (liveCatchRecords()) requireSkipperVessel(request)
     const { wantsToAddSkipper } = request.payload
-    setJourneyState(request, { wantsToAddSkipper })
+    setJourneyState(request, {
+      wantsToAddSkipper,
+      ...(liveCatchRecords() && wantsToAddSkipper === 'yes'
+        ? {
+            pendingSkipper: null,
+            pendingSkipperVesselId: null,
+            skipperAdditionKey: null,
+            skipperConfirmed: false,
+            skipperConfirmedVesselId: null
+          }
+        : {})
+    })
     return h
-      .redirect(wantsToAddSkipper === 'yes' ? '/skipper-details' : '/account')
+      .redirect(
+        accountVesselPath(
+          request,
+          wantsToAddSkipper === 'yes' ? '/skipper-details' : '/account'
+        )
+      )
       .code(statusCodes.seeOther)
   }
 }

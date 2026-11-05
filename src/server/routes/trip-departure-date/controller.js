@@ -1,5 +1,10 @@
-import { validateDateInput } from '#/server/common/helpers/journey/date-input.js'
 import {
+  validateDateInput,
+  dateInputValues
+} from '#/server/common/helpers/journey/date-input.js'
+import {
+  catchRecordCaption,
+  getJourneyState,
   resolveNextPath,
   setJourneyState
 } from '#/server/common/helpers/journey/navigation.js'
@@ -9,13 +14,13 @@ const pageTitle = 'Which date did you set off on your trip?'
 const hintText = 'For example, 31/03/2020'
 const MIN_DEPARTURE_DATE = '2025-07-24'
 
-function viewContext(overrides = {}) {
+function viewContext(request, overrides = {}) {
   return {
     pageTitle,
     heading: pageTitle,
-    caption: 'New catch record',
+    caption: catchRecordCaption(request),
     hintText,
-    values: {},
+    values: dateInputValues(getJourneyState(request).departureDate),
     backLink: {
       href: '/trip-date',
       text: 'Back'
@@ -25,8 +30,8 @@ function viewContext(overrides = {}) {
 }
 
 export const tripDepartureDateController = {
-  handler(_request, h) {
-    return h.view('trip-departure-date/index', viewContext())
+  handler(request, h) {
+    return h.view('trip-departure-date/index', viewContext(request))
   }
 }
 
@@ -57,7 +62,7 @@ export const tripDepartureDateSubmitController = {
       return h
         .view(
           'trip-departure-date/index',
-          viewContext({
+          viewContext(request, {
             errorSummary: {
               titleText: 'There is a problem',
               errorList: [

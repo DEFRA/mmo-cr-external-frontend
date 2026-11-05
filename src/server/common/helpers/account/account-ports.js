@@ -1,6 +1,5 @@
-// "Ports used" removal has no real backend in this mock app - the working list lives in the
-// session's journeyState, seeded from the account mock data so it keeps working unchanged
-// until the user adds or removes a port (mirrors the favourite-gear/available-species pattern).
+// Live vessel-profile loading replaces this session projection; walkthrough
+// mode keeps the fixture defaults until the user edits them.
 import { getData } from '#/server/common/data/get-data.js'
 import {
   getJourneyState,

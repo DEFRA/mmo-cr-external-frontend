@@ -8,6 +8,8 @@ import {
 } from '#/server/common/helpers/species/species-list.js'
 import { getGearCatalogue } from '#/server/common/helpers/gear/favourite-gear.js'
 import { buildCheckAnswersViewModel } from '#/server/routes/check-answers/view-model.js'
+import { liveCatchRecords } from '#/server/common/helpers/journey/catch-record-service.js'
+import { showLiveRecord } from '../live-records/controller.js'
 
 /**
  * Dispatches by record status: all supported statuses (Unsent, Submitted,
@@ -22,6 +24,7 @@ export const recordDetailsController = {
     }
   },
   async handler(request, h) {
+    if (liveCatchRecords()) return showLiveRecord(request, h)
     const { recordId } = request.params
     const record = getData('allRecords').find(
       (item) => item.recordId === recordId

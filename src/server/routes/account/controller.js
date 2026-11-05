@@ -1,6 +1,10 @@
 import { getData } from '#/server/common/data/get-data.js'
 import { isSignedIn } from '#/server/common/helpers/auth/session.js'
-import { getJourneyState } from '#/server/common/helpers/journey/navigation.js'
+import {
+  getJourneyState,
+  setJourneyState,
+  accountVesselPath
+} from '#/server/common/helpers/journey/navigation.js'
 import { getAccountPortsUsed } from '#/server/common/helpers/account/account-ports.js'
 import {
   formatGearMeasurements,
@@ -10,7 +14,18 @@ import {
   getGearCatalogue
 } from '#/server/common/helpers/gear/favourite-gear.js'
 import { getSpeciesPageData } from '#/server/common/helpers/species/species-list.js'
-import { getVesselItem } from '#/server/common/helpers/vessels/vessels-list.js'
+import {
+  getVesselItem,
+  getVesselCatalogue
+} from '#/server/common/helpers/vessels/vessels-list.js'
+import {
+  loadFavouriteGears,
+  loadFavouritePorts
+} from '#/server/common/helpers/journey/session-favourites.js'
+import { liveCatchRecords } from '#/server/common/helpers/journey/catch-record-service.js'
+import { loadVesselSkippers } from '#/server/common/helpers/journey/vessel-skippers.js'
+import Joi from 'joi'
+import Boom from '@hapi/boom'
 
 const NOT_IMPLEMENTED_HREF = '/not-implemented?return=/account'
 
@@ -94,6 +109,34 @@ function buildPersonalDetailsSection(account, vesselLabel) {
 }
 
 function skippersRow(account, skipper) {
+  if (liveCatchRecords() && Array.isArray(skipper)) {
+    return {
+      key: { text: 'Skippers' },
+      value: {
+        html: skipper.length
+          ? joinLines(skipper.map((item) => escapeHtml(item.name)))
+          : 'N/A'
+      },
+      actions: {
+        items: [
+          {
+            href: '/add-skipper',
+            text: 'Add skipper',
+            visuallyHiddenText: 'skipper'
+          },
+          ...(skipper.length
+            ? [
+                {
+                  href: '/remove-skipper',
+                  text: 'Remove skipper',
+                  visuallyHiddenText: 'skipper'
+                }
+              ]
+            : [])
+        ]
+      }
+    }
+  }
   return {
     key: { text: 'Skippers' },
     value: {
@@ -116,7 +159,7 @@ function skippersRow(account, skipper) {
 function portsUsedRow(portsUsed) {
   return {
     key: { text: 'Ports used' },
-    value: { html: joinLines(portsUsed) },
+    value: { html: joinLines(portsUsed.map(escapeHtml)) },
     actions: {
       items: [
         {
@@ -218,15 +261,77 @@ function buildVesselDetailsSection(
   }
 }
 
+async function buildLiveVesselSection(request, account, vessel) {
+  const scopedRequest = { ...request, query: { vesselId: vessel.id } }
+  setJourneyState(scopedRequest, {
+    selectedVesselId: vessel.id,
+    selectedVesselName: vessel.name,
+    selectedVesselLengthOverallMetres: vessel.lengthOverallMetres
+  })
+  const [, , , { speciesOptions }, catalogue] = await Promise.all([
+    loadFavouriteGears(scopedRequest),
+    loadFavouritePorts(scopedRequest),
+    loadVesselSkippers(scopedRequest),
+    getSpeciesPageData(scopedRequest, { loadFavourites: true }),
+    getGearCatalogue()
+  ])
+  const state = getJourneyState(scopedRequest)
+  const section = buildVesselDetailsSection(
+    account,
+    `${vessel.name}${vessel.pln ? ` (${vessel.pln})` : ''}`,
+    speciesOptions.map((species) => species.text),
+    state.vesselSkippers,
+    getAccountPortsUsed(state),
+    getFavouriteGearOptions(getFavouriteGearIds(state, catalogue), catalogue),
+    getFavouriteGearMeasurements(state)
+  )
+  for (const row of section.rows) {
+    for (const action of row.actions.items) {
+      action.href = accountVesselPath(scopedRequest, action.href)
+    }
+  }
+  return section
+}
+
 export const accountController = {
   async handler(request, h) {
     if (!isSignedIn(request)) {
       return h.redirect('/sign-in').code(302)
     }
+    if (liveCatchRecords()) {
+      const account = getData('account')
+      const example = getData('selectVessel')
+      const vessels = await getVesselCatalogue()
+      const vesselSections = await Promise.all(
+        vessels.map((vessel) =>
+          buildLiveVesselSection(request, account, vessel)
+        )
+      )
+      return h.view('account/index', {
+        pageTitle: 'Your account',
+        heading: 'Your account',
+        backLink: { href: '/records', text: 'Back' },
+        sections: [
+          buildPersonalDetailsSection(
+            account,
+            `${example.name} (${example.registration})`
+          ),
+          ...vesselSections.map((section, index) => ({
+            ...section,
+            heading: index === 0 ? 'Vessel details' : ''
+          }))
+        ]
+      })
+    }
 
     const account = getData('account')
     const vessel = getData('selectVessel')
     const vesselLabel = `${vessel.name} (${vessel.registration})`
+    await loadFavouriteGears(request)
+    await loadFavouritePorts(request)
+    if (getJourneyState(request).selectedVesselId) {
+      await loadVesselSkippers(request)
+    }
     const journeyState = getJourneyState(request)
     const selectedVessel = journeyState.selectedVesselId
       ? await getVesselItem(journeyState.selectedVesselId)
@@ -246,28 +351,79 @@ export const accountController = {
       getFavouriteGearIds(journeyState, gearCatalogue),
       gearCatalogue
     )
-    const { speciesOptions } = await getSpeciesPageData(request)
+    const { speciesOptions } = await getSpeciesPageData(request, {
+      loadFavourites: true
+    })
     const speciesCaught = speciesOptions.map((species) => species.text)
 
-    return h.view('account/index', {
-      pageTitle: 'Your account',
-      heading: 'Your account',
-      backLink: {
-        href: '/records',
-        text: 'Back'
-      },
-      sections: [
-        buildPersonalDetailsSection(account, vesselLabel),
-        buildVesselDetailsSection(
-          account,
-          selectedVesselLabel,
-          speciesCaught,
-          skipper,
-          portsUsed,
-          favouriteGearOptions,
-          getFavouriteGearMeasurements(journeyState)
-        )
-      ]
-    })
+    return h
+      .view('account/index', {
+        pageTitle: 'Your account',
+        heading: 'Your account',
+        ...(request.app.accountVesselError
+          ? {
+              errorSummary: {
+                titleText: 'There is a problem',
+                errorList: [
+                  { text: request.app.accountVesselError, href: '#vesselId' }
+                ]
+              },
+              fieldErrors: { vesselId: request.app.accountVesselError }
+            }
+          : {}),
+        backLink: {
+          href: '/records',
+          text: 'Back'
+        },
+        sections: [
+          buildPersonalDetailsSection(account, vesselLabel),
+          buildVesselDetailsSection(
+            account,
+            selectedVesselLabel,
+            speciesCaught,
+            skipper,
+            portsUsed,
+            favouriteGearOptions,
+            getFavouriteGearMeasurements(journeyState)
+          )
+        ]
+      })
+      .code(request.app.accountVesselError ? 400 : 200)
+  }
+}
+
+export const accountVesselSubmitController = {
+  options: {
+    validate: {
+      payload: Joi.object({ vesselId: Joi.string().trim().required() }),
+      async failAction(request, h) {
+        if (!isSignedIn(request)) {
+          return h.redirect('/sign-in').code(302).takeover()
+        }
+        if (!liveCatchRecords()) throw Boom.notFound()
+        request.app.accountVesselError =
+          'Select a vessel to manage its favourites'
+        return (await accountController.handler(request, h)).takeover()
+      }
+    }
+  },
+  async handler(request, h) {
+    if (!isSignedIn(request)) return h.redirect('/sign-in').code(302)
+    if (!liveCatchRecords()) throw Boom.notFound()
+    const vessels = await getVesselCatalogue()
+    const vessel = vessels.find((item) => item.id === request.payload.vesselId)
+    if (!vessel) {
+      request.app.accountVesselError = 'Select a vessel from the list'
+      return accountController.handler(request, h)
+    }
+    const selected = await getVesselItem(vessel.id)
+    if (request.yar.get('accountJourney')?.selectedVesselId !== selected.id) {
+      request.yar.set('accountJourney', {
+        selectedVesselId: selected.id,
+        selectedVesselName: selected.name,
+        selectedVesselLengthOverallMetres: selected.lengthOverallMetres
+      })
+    }
+    return h.redirect('/account').code(303)
   }
 }

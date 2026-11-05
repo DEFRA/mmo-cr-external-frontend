@@ -1,6 +1,7 @@
 import Joi from 'joi'
 
 import {
+  catchRecordCaption,
   backForSpeciesSelection,
   gearPageContext,
   gearPath,
@@ -260,13 +261,13 @@ function speciesCheckboxItems(
 async function viewContext(request, speciesData, overrides = {}) {
   const { journeyState, speciesOptions } = speciesData
   const gears = await selectedGearDescription(journeyState)
-  const gearSuffix = gears ? ` using ${gears}` : ''
+  const gearSuffix = gears ? ` using ${gears.toLowerCase()}` : ''
   const pageTitle = `What species did you catch${gearSuffix}?`
   const selectedSpeciesIds = journeyState.selectedSpeciesIds || []
   const speciesWeights = journeyState.speciesWeights || {}
   const gearContext = gearPageContext(request)
   const heading = gearContext.gearLabel
-    ? `What species did you catch using ${gearContext.gearLabel}?`
+    ? `What species did you catch using ${gearContext.gearLabel.toLowerCase()}?`
     : pageTitle
 
   return {
@@ -285,7 +286,7 @@ async function viewContext(request, speciesData, overrides = {}) {
       undefined,
       request.query?.return
     ),
-    caption: 'New catch record',
+    caption: catchRecordCaption(request),
     backLink: {
       href: backForSpeciesSelection(request),
       text: 'Back'
@@ -319,7 +320,10 @@ async function renderPage(
 
 export const speciesSelectionController = {
   async handler(request, h) {
-    const speciesData = await getSpeciesPageData(request)
+    const speciesData = await getSpeciesPageData(request, {
+      loadFavourites: true,
+      includeSelected: true
+    })
     return h.view(
       'species-selection/index',
       await viewContext(request, speciesData)
@@ -341,7 +345,10 @@ export const speciesSelectionSubmitController = {
         const selectedSpeciesIds = normalizeSpeciesIds(
           request.payload.speciesIds
         )
-        const speciesData = await getSpeciesPageData(request)
+        const speciesData = await getSpeciesPageData(request, {
+          loadFavourites: true,
+          includeSelected: true
+        })
         const { journeyState, speciesOptions } = speciesData
         const errorText = 'There was a problem with your submission'
 
@@ -367,7 +374,10 @@ export const speciesSelectionSubmitController = {
     }
   },
   async handler(request, h) {
-    const speciesData = await getSpeciesPageData(request)
+    const speciesData = await getSpeciesPageData(request, {
+      loadFavourites: true,
+      includeSelected: true
+    })
     const { speciesOptions } = speciesData
     const speciesIds = filterKnownSpeciesIds(
       normalizeSpeciesIds(request.payload.speciesIds),

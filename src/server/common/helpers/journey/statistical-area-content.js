@@ -37,7 +37,7 @@ export async function statisticalAreaContent(
   { manualEntry = false, gearId } = {}
 ) {
   const gears = await selectedGearDescription(journeyState, gearId)
-  const gearSuffix = gears ? ` using ${gears}` : ''
+  const gearSuffix = gears ? ` using ${gears.toLowerCase()}` : ''
   const heading = manualEntry
     ? `Select the statistical sub area where the majority of your catch was caught${gearSuffix}`
     : `Where was the majority of your catch caught${gearSuffix}?`

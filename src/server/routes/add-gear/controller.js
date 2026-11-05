@@ -2,6 +2,9 @@ import Joi from 'joi'
 
 import {
   getJourneyState,
+  catchRecordCaption,
+  isCatchRecordJourney,
+  accountVesselPath,
   resolveNextPath,
   setJourneyState
 } from '#/server/common/helpers/journey/navigation.js'
@@ -16,6 +19,11 @@ import {
 import { validateMeasurement } from '#/server/common/helpers/gear/measurement-validation.js'
 import { getData } from '#/server/common/data/get-data.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
+import {
+  loadFavouriteGears,
+  addFavouriteGear
+} from '#/server/common/helpers/journey/session-favourites.js'
+import { liveCatchRecords } from '#/server/common/helpers/journey/catch-record-service.js'
 
 const pageTitle = 'What gear did you use?'
 const { reference } = getData('confirmation')
@@ -23,6 +31,19 @@ const addGearViewName = 'add-gear/index'
 const gearSelectionPath = '/gear-selection'
 const measurementStep = 'measurements'
 const emptyGearMessage = 'Select the gear you want to add'
+
+function pendingContext(request) {
+  return isCatchRecordJourney(request)
+    ? getJourneyState(request).catchRecordId
+    : 'favourites'
+}
+
+function pendingGearId(request, state) {
+  return liveCatchRecords() &&
+    state.addGearPendingContext !== pendingContext(request)
+    ? undefined
+    : state.addGearPendingId
+}
 
 // Keeps the "return" query param across the page's own add/measurement redirects
 // so "Save and continue" still honours it once the measurement step is done.
@@ -35,22 +56,37 @@ function addGearPath(request, { step } = {}) {
     params.set('step', step)
   }
   const query = params.toString()
-  return query ? `/add-gear?${query}` : '/add-gear'
+  return accountVesselPath(request, query ? `/add-gear?${query}` : '/add-gear')
 }
 
 function viewContext(request, catalogue, overrides = {}) {
   const journeyState = getJourneyState(request)
   const favouriteGearIds = getFavouriteGearIds(journeyState, catalogue)
-  const pendingGearId = journeyState.addGearPendingId
-  const pendingOption =
-    pendingGearId && getGearOptionById(pendingGearId, catalogue)
+  const tripSelection = isCatchRecordJourney(request)
+  const existingIds = tripSelection
+    ? [
+        ...(journeyState.journeyGearIds || []),
+        ...(journeyState.selectedGearIds || [])
+      ]
+    : favouriteGearIds
+  const pendingId = pendingGearId(request, journeyState)
+  const pendingOption = pendingId && getGearOptionById(pendingId, catalogue)
 
   return {
-    pageTitle,
+    pageTitle:
+      liveCatchRecords() && !tripSelection
+        ? 'Add gear to your favourites'
+        : pageTitle,
     heading: pendingOption
       ? `Enter the measurements for ${pendingOption.label.toLowerCase()}`
-      : pageTitle,
-    caption: reference,
+      : liveCatchRecords() && !tripSelection
+        ? 'Add gear to your favourites'
+        : pageTitle,
+    caption: tripSelection
+      ? catchRecordCaption(request)
+      : liveCatchRecords()
+        ? 'Your favourites'
+        : reference,
     backLink: {
       href: resolveNextPath(request, gearSelectionPath),
       text: 'Back'
@@ -58,7 +94,7 @@ function viewContext(request, catalogue, overrides = {}) {
     pendingOption,
     gearOptionLabels: catalogue
       .filter((option) => option.id !== 'pots')
-      .filter((option) => !favouriteGearIds.includes(option.id))
+      .filter((option) => !existingIds.includes(option.id))
       .map((option) => option.label),
     ...overrides
   }
@@ -101,21 +137,19 @@ function renderMeasurementErrors(
 
 export const addGearController = {
   async handler(request, h) {
+    await loadFavouriteGears(request)
     if (
       request.query.step !== measurementStep &&
       getJourneyState(request).addGearPendingId
     ) {
       setJourneyState(request, { addGearPendingId: null })
     }
-    const catalogue = await getGearCatalogue({
-      vesselLengthMetres:
-        getJourneyState(request).selectedVesselLengthOverallMetres
-    })
+    const catalogue = await getGearCatalogue()
     return h.view(addGearViewName, viewContext(request, catalogue))
   }
 }
 
-function handlePendingMeasurementSubmission(
+async function handlePendingMeasurementSubmission(
   request,
   h,
   journeyState,
@@ -150,8 +184,28 @@ function handlePendingMeasurementSubmission(
     )
   }
 
-  const favouriteGearIds = getFavouriteGearIds(journeyState, catalogue)
+  if (isCatchRecordJourney(request)) {
+    setJourneyState(request, {
+      journeyGearIds: [
+        ...new Set([...(journeyState.journeyGearIds || []), pendingOption.id])
+      ],
+      gearMeasurementDetails: {
+        ...journeyState.gearMeasurementDetails,
+        [pendingOption.id]: values
+      },
+      addGearPendingId: null
+    })
+    return h
+      .redirect(resolveNextPath(request, gearSelectionPath))
+      .code(statusCodes.seeOther)
+  }
+
   const favouriteGearMeasurements = getFavouriteGearMeasurements(journeyState)
+  await addFavouriteGear(request, pendingOption.id)
+  const favouriteGearIds = getFavouriteGearIds(
+    getJourneyState(request),
+    catalogue
+  )
 
   setJourneyState(request, {
     favouriteGearIds: favouriteGearIds.includes(pendingOption.id)
@@ -190,7 +244,12 @@ async function handleGearSearchSubmission(request, h, journeyState, catalogue) {
     )
   }
 
-  const favouriteGearIds = getFavouriteGearIds(journeyState, catalogue)
+  const favouriteGearIds = isCatchRecordJourney(request)
+    ? [
+        ...(journeyState.journeyGearIds || []),
+        ...(journeyState.selectedGearIds || [])
+      ]
+    : getFavouriteGearIds(journeyState, catalogue)
 
   if (favouriteGearIds.includes(matchedOption.id)) {
     return renderSearchError(
@@ -203,14 +262,34 @@ async function handleGearSearchSubmission(request, h, journeyState, catalogue) {
 
   await getGearItem(matchedOption.id)
   if (matchedOption.measurements?.length) {
-    setJourneyState(request, { addGearPendingId: matchedOption.id })
+    setJourneyState(request, {
+      addGearPendingId: matchedOption.id,
+      addGearPendingContext: pendingContext(request)
+    })
     return h
       .redirect(addGearPath(request, { step: measurementStep }))
       .code(statusCodes.seeOther)
   }
 
+  if (isCatchRecordJourney(request)) {
+    setJourneyState(request, {
+      journeyGearIds: [
+        ...new Set([...(journeyState.journeyGearIds || []), matchedOption.id])
+      ]
+    })
+    return h
+      .redirect(resolveNextPath(request, gearSelectionPath))
+      .code(statusCodes.seeOther)
+  }
+
+  await addFavouriteGear(request, matchedOption.id)
   setJourneyState(request, {
-    favouriteGearIds: [...favouriteGearIds, matchedOption.id]
+    favouriteGearIds: [
+      ...new Set([
+        ...getFavouriteGearIds(getJourneyState(request), catalogue),
+        matchedOption.id
+      ])
+    ]
   })
 
   return h
@@ -225,22 +304,18 @@ export const addGearSubmitController = {
         gear: Joi.string().allow('')
       }).unknown(true),
       async failAction(request, h) {
-        const catalogue = await getGearCatalogue({
-          vesselLengthMetres:
-            getJourneyState(request).selectedVesselLengthOverallMetres
-        })
+        await loadFavouriteGears(request)
+        const catalogue = await getGearCatalogue()
         return renderSearchError(request, h, catalogue, emptyGearMessage)
       }
     }
   },
   async handler(request, h) {
+    await loadFavouriteGears(request)
     const journeyState = getJourneyState(request)
-    const catalogue = await getGearCatalogue({
-      vesselLengthMetres: journeyState.selectedVesselLengthOverallMetres
-    })
-    const pendingGearId = journeyState.addGearPendingId
-    const pendingOption =
-      pendingGearId && getGearOptionById(pendingGearId, catalogue)
+    const catalogue = await getGearCatalogue()
+    const pendingId = pendingGearId(request, journeyState)
+    const pendingOption = pendingId && getGearOptionById(pendingId, catalogue)
 
     if (pendingOption) {
       const allowedFields = new Set(

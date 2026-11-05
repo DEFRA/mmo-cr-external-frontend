@@ -1,16 +1,29 @@
 {% extends 'layouts/page.njk' %}
 {% from "catch-record-summary-sections/macro.njk" import appCatchRecordSummarySections %}
 {% from "catch-record-declaration/macro.njk" import appCatchRecordDeclaration %}
+{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
+
+{% block notification %}
+  {% if not liveAmendment %}{{ super() }}{% endif %}
+{% endblock %}
 
 {% block pageContent %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
+      {% if liveAmendment %}
+        {% call govukNotificationBanner({ titleText: "Important" }) %}
+          <p class="govuk-body govuk-!-font-weight-bold">Catch record submitted:</p>
+          <p class="govuk-body">{{ submittedAt | formatDate("d MMMM yyyy HH:mm") if submittedAt else "Not available" }}</p>
+          <p class="govuk-body govuk-!-font-weight-bold">Submitted by:</p>
+          <p class="govuk-body">{{ submittedBy or "Not available" }}</p>
+        {% endcall %}
+      {% endif %}
       <span class="govuk-caption-l" data-testid="app-edit-review-caption">{{ reference }}</span>
       <h1 class="govuk-heading-xl" data-testid="app-heading-title">{{ heading }}</h1>
 
       {{ appCatchRecordSummarySections(sections, gearGroups, trailingSections) }}
 
-      {{ appCatchRecordDeclaration(fieldErrors) }}
+      {{ appCatchRecordDeclaration(fieldErrors, false, false, submissionKey) }}
     </div>
   </div>
 {% endblock %}

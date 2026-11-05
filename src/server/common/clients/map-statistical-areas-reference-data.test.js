@@ -1,4 +1,7 @@
-import { createMapStatisticalAreasReferenceDataClient } from './map-statistical-areas-reference-data.js'
+import {
+  createMapStatisticalAreasReferenceDataClient,
+  statisticalAreaReference
+} from './map-statistical-areas-reference-data.js'
 
 const feature = {
   type: 'Feature',
@@ -45,7 +48,7 @@ describe('#createMapStatisticalAreasReferenceDataClient', () => {
     expect(first.body.features).toEqual([feature])
     expect(second).toBe(first)
     expect(fetchFn.mock.calls[0][0]).toContain(
-      '/map/statistical-areas?code=27D86'
+      '/map/statistical-areas?query=27D86'
     )
     expect(fetchFn.mock.calls[1][1].headers['If-None-Match']).toBe('"areas-v1"')
   })
@@ -149,5 +152,41 @@ describe('#createMapStatisticalAreasReferenceDataClient', () => {
       statusCode: 503,
       message: 'Statistical area reference data returned an invalid response'
     })
+  })
+})
+
+describe('#statisticalAreaReference', () => {
+  test.each([
+    [
+      'raw ArcGIS OBJECTID and sub_code',
+      { properties: { OBJECTID: 34264, ICESNAME: '36E9', sub_code: '36E98' } },
+      { id: '34264', code: '36E98' }
+    ],
+    [
+      'OBJECTID in preference to a feature id',
+      {
+        id: 'guid-1',
+        properties: { OBJECTID: 0, sub_code: '36E98', code: 'X' }
+      },
+      { id: '0', code: '36E98' }
+    ],
+    [
+      'canonical feature id and code',
+      { id: 'guid-1', properties: { code: '27D86' } },
+      { id: 'guid-1', code: '27D86' }
+    ],
+    [
+      'a feature without an identifier',
+      { properties: { sub_code: '36E98' } },
+      undefined
+    ],
+    [
+      'a non-integer OBJECTID',
+      { properties: { OBJECTID: '34264', sub_code: '36E98' } },
+      undefined
+    ],
+    ['a missing feature', undefined, undefined]
+  ])('Should read %s', (_description, feature, expected) => {
+    expect(statisticalAreaReference(feature)).toEqual(expected)
   })
 })

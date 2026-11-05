@@ -8,7 +8,7 @@
       <h1 class="govuk-heading-xl" data-testid="app-heading-title">{{ heading }}</h1>
 
       {% for section in sections %}
-        <h2 class="govuk-heading-l">{{ section.heading }}</h2>
+        {% if section.heading %}<h2 class="govuk-heading-l">{{ section.heading }}</h2>{% endif %}
         {% if section.vesselLabel %}
           <h3 class="govuk-heading-m">{{ section.vesselLabel }}</h3>
         {% endif %}

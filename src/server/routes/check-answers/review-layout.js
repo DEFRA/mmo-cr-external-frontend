@@ -1,5 +1,5 @@
 import {
-  NOT_LANDED,
+  KEPT_WEIGHT,
   STATISTICAL_AREA_LABEL,
   stripKilogramSuffix,
   toSummaryListRow
@@ -66,24 +66,40 @@ function reviewSpeciesGroups(group, speciesCatalogue) {
   return speciesGroups
 }
 
-function reviewTripRows(base, context) {
+function reviewTripRows(base) {
   const labels = [
-    ['Vessel', 'Vessel'],
-    ['Departure date', 'Date left'],
-    ['Departure port', 'Port left from'],
-    ['Return date', 'Date returned'],
-    ['Return port', 'Port returned to']
+    'Vessel',
+    'Departure date',
+    'Return date',
+    'Departure port',
+    'Return port'
   ]
-  const rows = labels.map(([original, label]) => ({
-    ...base.sections[0].rows.find((row) => row.key.text === original),
-    key: { text: label }
-  }))
-  const gearUsed = toSummaryListRow({
-    key: 'Gear used',
-    value: base.gearGroups.map((group) => group.heading).join(', '),
-    changeHref: context.buildChangeHref('/gear-selection')
+  const rows = labels.map((label) => {
+    const row = base.sections[0].rows.find((row) => row.key.text === label)
+    if (label === 'Vessel') {
+      return { key: row.key, value: row.value }
+    }
+    return row
   })
-  return [...rows, gearUsed]
+  const areas = base.gearGroups.flatMap((group) => {
+    const area = group.rows.find(
+      (row) => row.key.text === STATISTICAL_AREA_LABEL
+    )
+    return area
+      ? [
+          {
+            ...area,
+            key: {
+              text:
+                base.gearGroups.length > 1
+                  ? `Statistical sub area (${group.heading})`
+                  : 'Statistical sub area'
+            }
+          }
+        ]
+      : []
+  })
+  return [...rows, ...areas]
 }
 
 function reviewMeasurementRow(row, gearId, context) {
@@ -117,7 +133,13 @@ function reviewGearRows(group, context, speciesGroups) {
   const selectedSpecies = group.rows.find((row) =>
     row.key.text.startsWith('Species')
   )
-  const rows = []
+  const rows = [
+    toSummaryListRow({
+      key: 'Gear type',
+      value: group.heading,
+      changeHref: context.buildChangeHref('/gear-selection')
+    })
+  ]
   if (area) {
     rows.push({ ...area, key: { text: 'Area majority catch caught' } })
   }
@@ -158,10 +180,16 @@ function reviewGearRows(group, context, speciesGroups) {
 function reviewTrailingSections(sections) {
   return sections.map((section) => ({
     ...section,
-    heading: '4. Species not landed',
+    heading: 'Species not landed',
     rows: section.rows.map((row) =>
-      row.key.text === NOT_LANDED
-        ? { ...row, key: { text: 'Catch kept onboard or in keep pots' } }
+      row.key.text === KEPT_WEIGHT
+        ? {
+            ...row,
+            key: {
+              text: 'Weight above minimum size kept onboard or in keep pots (kg)'
+            },
+            value: { text: stripKilogramSuffix(row.value.text) }
+          }
         : row
     )
   }))
@@ -172,9 +200,7 @@ export function buildReviewLayout(base, context) {
     reviewSpeciesGroups(group, context.speciesCatalogue)
   )
   return {
-    sections: [
-      { heading: '1. Trips details', rows: reviewTripRows(base, context) }
-    ],
+    sections: [{ heading: 'Trips details', rows: reviewTripRows(base) }],
     gearGroups: base.gearGroups.map((group) => ({
       ...group,
       rows: reviewGearRows(group, context, speciesGroups)

@@ -1,4 +1,5 @@
 import {
+  catchRecordCaption,
   resolveNextPath,
   getJourneyState,
   speciesSelectionReturnPath,
@@ -7,6 +8,8 @@ import {
 import { filterKnownSpeciesIds } from '#/server/common/helpers/species/species-form.js'
 import { getSpeciesPageData } from '#/server/common/helpers/species/species-list.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
+import { removeFavouriteSpecies } from '#/server/common/helpers/journey/session-favourites.js'
+import { liveCatchRecords } from '#/server/common/helpers/journey/catch-record-service.js'
 
 function speciesCheckboxItems(speciesOptions) {
   return speciesOptions.map((species) => ({
@@ -16,14 +19,20 @@ function speciesCheckboxItems(speciesOptions) {
 }
 
 function viewContext(request, speciesData, overrides = {}) {
-  const vesselName = speciesData.journeyState.selectedVesselName || ''
-  const heading = 'Remove species from vessel'
+  const vesselName = liveCatchRecords()
+    ? ''
+    : speciesData.journeyState.selectedVesselName || ''
+  const heading = liveCatchRecords()
+    ? 'Remove species from your favourites'
+    : 'Remove species from vessel'
   const pageTitle = vesselName ? `${heading} ${vesselName}` : heading
   return {
     pageTitle,
     heading,
     vesselName,
-    caption: 'New catch record',
+    caption: liveCatchRecords()
+      ? 'Your favourites'
+      : catchRecordCaption(request),
     backLink: {
       href: speciesSelectionReturnPath(request),
       text: 'Back'
@@ -43,7 +52,9 @@ function normalizeSpeciesIds(rawValue) {
 
 export const removeSpeciesController = {
   async handler(request, h) {
-    const speciesData = await getSpeciesPageData(request)
+    const speciesData = await getSpeciesPageData(request, {
+      loadFavourites: true
+    })
     return h.view('remove-species/index', viewContext(request, speciesData))
   }
 }
@@ -90,7 +101,9 @@ function removeSpeciesFromJourney(request, availableSpeciesIds, idsToRemove) {
 
 export const removeSpeciesSubmitController = {
   async handler(request, h) {
-    const speciesData = await getSpeciesPageData(request)
+    const speciesData = await getSpeciesPageData(request, {
+      loadFavourites: true
+    })
     const { availableSpeciesIds } = speciesData
 
     if (availableSpeciesIds.length === 0) {
@@ -123,11 +136,17 @@ export const removeSpeciesSubmitController = {
         .takeover()
     }
 
-    const remainingSpeciesIds = removeSpeciesFromJourney(
-      request,
-      availableSpeciesIds,
-      idsToRemove
-    )
+    let remainingSpeciesIds
+    if (liveCatchRecords()) {
+      await removeFavouriteSpecies(request, idsToRemove)
+      remainingSpeciesIds = getJourneyState(request).availableSpeciesIds
+    } else {
+      remainingSpeciesIds = removeSpeciesFromJourney(
+        request,
+        availableSpeciesIds,
+        idsToRemove
+      )
+    }
 
     if (remainingSpeciesIds.length === 0) {
       return h

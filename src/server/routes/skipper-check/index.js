@@ -1,14 +1,27 @@
 import Joi from 'joi'
 import {
   getJourneyState,
+  accountVesselPath,
   setJourneyState
 } from '#/server/common/helpers/journey/navigation.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
+import { liveCatchRecords } from '#/server/common/helpers/journey/catch-record-service.js'
+import {
+  requirePendingSkipper,
+  addPendingVesselSkipper
+} from '#/server/common/helpers/journey/vessel-skippers.js'
 const context = (request, overrides = {}) => ({
   pageTitle: 'Check skipper details',
   heading: 'Check skipper details',
-  backLink: { href: '/skipper-details', text: 'Back' },
-  skipper: getJourneyState(request).skipper || {},
+  backLink: {
+    href: accountVesselPath(request, '/skipper-details'),
+    text: 'Back'
+  },
+  changeSkipperHref: accountVesselPath(request, '/skipper-details'),
+  skipper: liveCatchRecords()
+    ? requirePendingSkipper(request)
+    : getJourneyState(request).skipper || {},
+  liveSkippers: liveCatchRecords(),
   ...overrides
 })
 export const skipperCheckController = {
@@ -38,8 +51,14 @@ export const skipperCheckSubmitController = {
       }
     }
   },
-  handler(request, h) {
-    setJourneyState(request, { skipperConfirmed: true })
-    return h.redirect('/skipper-confirmation').code(statusCodes.seeOther)
+  async handler(request, h) {
+    if (liveCatchRecords()) {
+      await addPendingVesselSkipper(request)
+    } else {
+      setJourneyState(request, { skipperConfirmed: true })
+    }
+    return h
+      .redirect(accountVesselPath(request, '/skipper-confirmation'))
+      .code(statusCodes.seeOther)
   }
 }

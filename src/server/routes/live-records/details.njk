@@ -1,0 +1,88 @@
+{% extends 'layouts/page.njk' %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% block pageContent %}
+  <span class="govuk-caption-l">{{ record.catchRecordReference }}</span>
+  <h1 class="govuk-heading-xl">Catch record for {{ record.vessel.nameSnapshot }}</h1>
+  <p class="govuk-body">Status: <strong>{{ record.displayStatus }}</strong></p>
+  <h2 class="govuk-heading-l">Trip</h2>
+  <dl class="govuk-summary-list">
+    {% for label, value in {
+      "Departure date": record.trip.dateStarted,
+      "Return date": record.trip.dateEnded,
+      "Departure port": record.trip.departurePort.nameSnapshot,
+      "Return port": record.trip.returnPort.nameSnapshot
+    } %}
+      <div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">{{ label }}</dt><dd class="govuk-summary-list__value">{{ value or "Not entered" }}</dd></div>
+    {% endfor %}
+  </dl>
+  <h2 class="govuk-heading-l">Pair fishing</h2>
+  <p class="govuk-body">{{ "Yes" if record.pairFishing.enabled else "No" }}</p>
+  {% if record.pairFishing.enabled %}
+    <p class="govuk-body">Paired vessel: {{ record.pairFishing.pairVessel or "Not entered" }}</p>
+    <p class="govuk-body">Paired skipper: {{ record.pairFishing.pairSkipperName or "Not entered" }}</p>
+  {% endif %}
+  <h2 class="govuk-heading-l">Section progress</h2>
+  <ul class="govuk-list">
+    {% for section, label in {trip: "Trip", pairFishing: "Pair fishing", gears: "Gear"} %}
+      <li>{{ label }}: {{ "Complete" if record.sectionCompletion[section] else "Not complete" }}</li>
+    {% endfor %}
+  </ul>
+  <p class="govuk-body">{{ "Preliminary submission checks passed. Final validation takes place when you submit." if record.submissionEligible else "Not ready to submit" }}</p>
+  <h2 class="govuk-heading-l">Gear and species caught</h2>
+  {% for entry in record.gears %}
+    <h3 class="govuk-heading-m">{{ entry.gear.nameSnapshot }}</h3>
+    <p class="govuk-body">Statistical area: {{ entry.statisticalArea.codeSnapshot or "Not entered" }}</p>
+    <ul class="govuk-list">
+      {% for characteristic in entry.characteristics %}<li>{{ characteristic.nameSnapshot }}: {{ characteristic.value }} {{ characteristic.unitSnapshot }}</li>{% endfor %}
+      {% for species in entry.speciesCaught %}
+        <li>{{ species.nameSnapshot }} ({{ species.faoCodeSnapshot }}):
+          above minimum {{ species.weightAboveMinimumKg if species.weightAboveMinimumKg != null else "Not entered" }} kg;
+          below minimum {{ species.weightBelowMinimumKg if species.weightBelowMinimumKg != null else "Not entered" }} kg;
+          legally discarded {{ species.weightLegallyDiscardedKg if species.weightLegallyDiscardedKg != null else "Not entered" }} kg
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}<p class="govuk-body">No gear entered.</p>{% endfor %}
+  <h2 class="govuk-heading-l">Species not landed</h2>
+  <ul class="govuk-list">{% for species in record.speciesNotLanded %}
+    <li>{{ species.nameSnapshot }} ({{ species.faoCodeSnapshot }}):
+      above minimum {{ species.weightAboveMinimumKg if species.weightAboveMinimumKg != null else "Not entered" }} kg;
+      below minimum {{ species.weightBelowMinimumKg if species.weightBelowMinimumKg != null else "Not entered" }} kg;
+      legally discarded {{ species.weightLegallyDiscardedKg if species.weightLegallyDiscardedKg != null else "Not entered" }} kg
+    </li>
+  {% else %}<li>None recorded.</li>{% endfor %}</ul>
+  <a class="govuk-link" href="{{ recordPath }}/history">View record history</a>
+  <h2 class="govuk-heading-l">Submissions and downloads</h2>
+  <ul class="govuk-list">{% for submission in submissions %}
+    <li>Submission {{ submission.submissionNumber }}:
+      {% for artifact in submission.artifacts %}
+        <a class="govuk-link govuk-!-margin-right-4" href="{{ recordPath }}/submissions/{{ submission.submissionNumber }}/{{ artifact.type }}">Download {{ artifact.type | upper }} (submission {{ submission.submissionNumber }})</a>
+      {% endfor %}
+    </li>
+  {% else %}<li>No submissions yet.</li>{% endfor %}</ul>
+  {% if record.status == "DRAFT" %}
+    <form method="post" action="{{ recordPath }}/resume">
+      <input type="hidden" name="actionKey" value="{{ actionKey }}">
+      {{ govukButton({text: "Continue this draft"}) }}
+    </form>
+    {% if record.numberOfSubmissions == 0 %}
+      <form method="post" action="{{ recordPath }}/delete">
+        <input type="hidden" name="actionKey" value="{{ actionKey }}">
+        {{ govukButton({text: "Delete draft", classes: "govuk-button--warning"}) }}
+      </form>
+    {% endif %}
+  {% else %}
+    <form method="post" action="{{ recordPath }}/edit">
+      <input type="hidden" name="actionKey" value="{{ actionKey }}">
+      {{ govukButton({text: "Start an amendment"}) }}
+    </form>
+  {% endif %}
+  {% if completionEnabled and record.status == "SUBMITTED" %}
+    <h2 class="govuk-heading-l">Staff action</h2>
+    <p class="govuk-body">Mark this submitted record as complete. This action requires staff completion permission.</p>
+    <form method="post" action="{{ recordPath }}/complete">
+      <input type="hidden" name="actionKey" value="{{ actionKey }}">
+      {{ govukButton({text: "Mark submitted record as complete", classes: "govuk-button--secondary"}) }}
+    </form>
+  {% endif %}
+{% endblock %}

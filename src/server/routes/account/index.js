@@ -1,4 +1,7 @@
-import { accountController } from './controller.js'
+import {
+  accountController,
+  accountVesselSubmitController
+} from './controller.js'
 
 /**
  * Sets up the routes used in the account page.
@@ -13,6 +16,11 @@ export const account = {
           method: 'GET',
           path: '/account',
           ...accountController
+        },
+        {
+          method: 'POST',
+          path: '/account',
+          ...accountVesselSubmitController
         }
       ])
     }

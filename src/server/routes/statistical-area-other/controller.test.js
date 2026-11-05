@@ -199,7 +199,7 @@ describe('#statisticalAreaOtherSubmitController', () => {
       })
       expect(statusCode).toBe(303)
       expect(fetchMock.mock.calls.map(([url]) => url)).toContain(
-        'http://localhost:3002/api/v1/reference-data/map/statistical-areas?code=27D86'
+        'http://localhost:3002/api/v1/reference-data/map/statistical-areas?query=27D86'
       )
       expect(fetchMock.mock.calls.map(([url]) => url)).toContain(
         'http://localhost:3002/api/v1/reference-data/map/statistical-areas/area-guid'

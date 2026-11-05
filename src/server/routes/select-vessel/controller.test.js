@@ -1,4 +1,11 @@
 import { load } from 'cheerio'
+import {
+  mockCatchRecording,
+  restoreCatchRecordingMock,
+  CREATED_DRAFT
+} from '#/test-helpers/mock-catch-recording.js'
+import { getJourneyState } from '#/server/common/helpers/journey/navigation.js'
+import { config } from '#/config/config.js'
 
 import { createServer } from '#/server/server.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
@@ -8,8 +15,14 @@ import {
   VESSEL_IDS
 } from '#/test-helpers/mock-vessels-reference-data.js'
 
-beforeEach(() => mockVesselsReferenceData())
-afterEach(() => restoreVesselsReferenceDataMock())
+beforeEach(() => {
+  mockVesselsReferenceData()
+  mockCatchRecording()
+})
+afterEach(() => {
+  restoreVesselsReferenceDataMock()
+  restoreCatchRecordingMock()
+})
 
 describe('#selectVesselController', () => {
   let server
@@ -44,7 +57,7 @@ describe('#selectVesselController', () => {
 
     expect($('h1').text()).toContain('Which vessel did you use?')
     expect($('[data-testid="app-catch-reference"]').text().trim()).toBe(
-      'A1234520260727150815'
+      'New catch record'
     )
     expect($('h1 .govuk-caption-l')).toHaveLength(0)
   })
@@ -205,5 +218,103 @@ describe('#selectVesselSubmitController', () => {
         .map((_, el) => $(el).text().trim())
         .get()
     ).toEqual(['ACHILLES', 'SEA SPRAY'])
+  })
+
+  test('Should persist a draft and reuse it when the same vessel is posted again', async () => {
+    const first = await server.inject({
+      method: 'POST',
+      url: '/select-vessel',
+      payload: { vesselId: VESSEL_IDS.achilles }
+    })
+    expect(first.statusCode).toBe(303)
+    expect(getJourneyState(first.request)).toMatchObject({
+      catchRecordId: CREATED_DRAFT.id,
+      reference: CREATED_DRAFT.catchRecordReference,
+      version: 1
+    })
+    const cookie = first.headers['set-cookie'][0].split(';')[0]
+    const second = await server.inject({
+      method: 'POST',
+      url: '/select-vessel',
+      headers: { cookie },
+      payload: { vesselId: VESSEL_IDS.achilles }
+    })
+    expect(second.statusCode).toBe(303)
+    const calls = globalThis.fetch.mock.calls.filter(([url]) =>
+      url.endsWith('/v1/catch-records')
+    )
+    expect(calls).toHaveLength(1)
+    const page = await server.inject({
+      method: 'GET',
+      url: '/select-vessel',
+      headers: { cookie }
+    })
+    expect(
+      load(page.result)('[data-testid="app-catch-reference"]').text()
+    ).toBe(CREATED_DRAFT.catchRecordReference)
+  })
+
+  test('Should show a field error when changing the vessel of an existing draft', async () => {
+    const first = await server.inject({
+      method: 'POST',
+      url: '/select-vessel',
+      payload: { vesselId: VESSEL_IDS.achilles }
+    })
+    const cookie = first.headers['set-cookie'][0].split(';')[0]
+    const changed = await server.inject({
+      method: 'POST',
+      url: '/select-vessel',
+      headers: { cookie },
+      payload: { vesselId: VESSEL_IDS.seaSpray }
+    })
+    expect(changed.statusCode).toBe(400)
+    expect(load(changed.result)('.govuk-error-summary').text()).toContain(
+      'You cannot change vessel'
+    )
+    expect(getJourneyState(changed.request).selectedVesselId).toBe(
+      VESSEL_IDS.achilles
+    )
+  })
+
+  test('Should not redirect or store a draft when the service is unconfigured', async () => {
+    config.set('catchRecording.token', null)
+    const response = await server.inject({
+      method: 'POST',
+      url: '/select-vessel',
+      payload: { vesselId: VESSEL_IDS.achilles }
+    })
+    expect(response.statusCode).toBe(503)
+    expect(response.headers.location).toBeUndefined()
+    expect(getJourneyState(response.request)).not.toHaveProperty(
+      'catchRecordId'
+    )
+    expect(getJourneyState(response.request).draftCreationKey).toBeDefined()
+  })
+
+  test('Should reset the journey only when explicitly starting a new record', async () => {
+    const first = await server.inject({
+      method: 'POST',
+      url: '/select-vessel',
+      payload: { vesselId: VESSEL_IDS.achilles }
+    })
+    const cookie = first.headers['set-cookie'][0].split(';')[0]
+    const reset = await server.inject({
+      method: 'POST',
+      url: '/records/new',
+      headers: { cookie }
+    })
+    expect(reset.statusCode).toBe(303)
+    expect(reset.headers.location).toBe('/select-vessel')
+    expect(getJourneyState(reset.request)).toEqual({})
+    const next = await server.inject({
+      method: 'POST',
+      url: '/select-vessel',
+      headers: { cookie: reset.headers['set-cookie'][0].split(';')[0] },
+      payload: { vesselId: VESSEL_IDS.seaSpray }
+    })
+    expect(next.statusCode).toBe(303)
+    expect(getJourneyState(next.request).draftCreationKey).not.toBe(
+      getJourneyState(first.request).draftCreationKey
+    )
   })
 })

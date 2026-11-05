@@ -63,6 +63,7 @@ export async function getGearCatalogue(filters = {}) {
   try {
     const { items } = await client.getGears(filters)
     const catalogue =
+      !config.get('catchRecording.enabled') &&
       legacyPotsOption &&
       !items.some(
         (gear) => gear.id === 'pots' || normalized(gear.name) === 'pots'
@@ -130,6 +131,17 @@ export function formatGearMeasurements(option, values) {
 
 export function migrateGearJourneyState(request, catalogue) {
   const state = getJourneyState(request)
+  if (
+    config.get('catchRecording.enabled') &&
+    state.selectedGearIds?.some(
+      (id) => !catalogue.some((gear) => gear.id === id)
+    )
+  ) {
+    throw Boom.conflict(
+      'A saved gear is no longer available. This record cannot be edited without changing its saved selections.',
+      { catchRecordError: true }
+    )
+  }
   const patch = {}
   for (const key of ['favouriteGearIds', 'selectedGearIds']) {
     if (Array.isArray(state[key])) {

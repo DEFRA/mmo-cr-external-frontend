@@ -138,10 +138,10 @@ describe('#statisticalAreaController', () => {
       const mapContext = h.view.mock.calls[0][1]
       const otherContext = h.view.mock.calls[1][1]
       expect(mapContext.heading).toBe(
-        `Where was the majority of your catch caught using ${label}?`
+        `Where was the majority of your catch caught using ${label.toLowerCase()}?`
       )
       expect(otherContext.heading).toBe(
-        `Select the statistical sub area where the majority of your catch was caught using ${label}`
+        `Select the statistical sub area where the majority of your catch was caught using ${label.toLowerCase()}`
       )
       expect(otherContext.pageTitle).toBe(otherContext.heading)
       expect(otherContext.bodyText).toEqual(mapContext.bodyText)
@@ -174,10 +174,10 @@ describe('#statisticalAreaController', () => {
       await statisticalAreaOtherController.handler(request, h)
 
       expect(h.view.mock.calls[0][1].heading).toBe(
-        `Where was the majority of your catch caught using ${label}?`
+        `Where was the majority of your catch caught using ${label.toLowerCase()}?`
       )
       expect(h.view.mock.calls[1][1].heading).toBe(
-        `Select the statistical sub area where the majority of your catch was caught using ${label}`
+        `Select the statistical sub area where the majority of your catch was caught using ${label.toLowerCase()}`
       )
     }
   )

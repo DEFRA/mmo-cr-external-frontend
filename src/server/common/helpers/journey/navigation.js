@@ -1,4 +1,5 @@
 import Boom from '@hapi/boom'
+import { config } from '#/config/config.js'
 
 // Journey state helpers backed by the @hapi/yar session cache (no persistence beyond the session).
 const JOURNEY_SESSION_KEY = 'journey'
@@ -44,15 +45,129 @@ const SAFE_RETURN_PATHS = [
 ]
 
 const DEFAULT_RETURN_PATH = '/records'
+const FAVOURITE_KEYS = new Set([
+  'favouriteGearIds',
+  'favouriteGearMeasurements',
+  'favouriteSpeciesIds',
+  'availableSpeciesIds',
+  'favouritePortIds',
+  'favouritePorts',
+  'accountPortsUsed'
+])
+
+function sessionKey(request) {
+  const accountPage = [
+    '/account',
+    '/remove-port',
+    '/add-skipper',
+    '/skipper-details',
+    '/skipper-check',
+    '/skipper-confirmation',
+    '/remove-skipper'
+  ].includes(request.path)
+  const accountFavouritePage =
+    request.query?.return === '/account' &&
+    [
+      '/add-port',
+      '/add-gear',
+      '/remove-gear',
+      '/add-species',
+      '/remove-species'
+    ].includes(request.path)
+  if (
+    config.get('catchRecording.enabled') &&
+    (accountPage || accountFavouritePage)
+  ) {
+    const vesselId = request.query?.vesselId
+    if (vesselId !== undefined) {
+      if (
+        typeof vesselId !== 'string' ||
+        !vesselId.trim() ||
+        vesselId.length > 200
+      ) {
+        throw Boom.badRequest('Select a valid vessel')
+      }
+      return `accountJourney:${vesselId}`
+    }
+    if (request.yar.get('accountJourney')) return 'accountJourney'
+  }
+  return JOURNEY_SESSION_KEY
+}
 
 export function getJourneyState(request) {
-  return request.yar.get(JOURNEY_SESSION_KEY) || {}
+  const key = sessionKey(request)
+  const state = request.yar.get(key) || {}
+  if (!config.get('catchRecording.enabled')) return state
+  const answers = Object.fromEntries(
+    Object.entries(state).filter(([key]) => !FAVOURITE_KEYS.has(key))
+  )
+  const selectedVesselId = key.startsWith('accountJourney:')
+    ? request.query.vesselId
+    : state.selectedVesselId
+  return {
+    ...answers,
+    ...(selectedVesselId ? { selectedVesselId } : {}),
+    ...request.yar.get('vesselFavourites')?.[selectedVesselId || '']
+  }
+}
+
+export function catchRecordCaption(request) {
+  return getJourneyState(request).reference || 'New catch record'
+}
+
+export function isCatchRecordJourney(request) {
+  return (
+    config.get('catchRecording.enabled') &&
+    request.query?.return !== '/account' &&
+    Boolean(getJourneyState(request).catchRecordId)
+  )
 }
 
 export function setJourneyState(request, patch) {
-  const merged = { ...getJourneyState(request), ...patch }
-  request.yar.set(JOURNEY_SESSION_KEY, merged)
+  const current = getJourneyState(request)
+  const changingVessel =
+    config.get('catchRecording.enabled') &&
+    patch.selectedVesselId !== undefined &&
+    patch.selectedVesselId !== current.selectedVesselId
+  const state = changingVessel
+    ? {
+        ...Object.fromEntries(
+          Object.entries(current).filter(([key]) => !FAVOURITE_KEYS.has(key))
+        ),
+        ...request.yar.get('vesselFavourites')?.[patch.selectedVesselId]
+      }
+    : current
+  const merged = { ...state, ...patch }
+  if (config.get('catchRecording.enabled')) {
+    const vesselId = merged.selectedVesselId || ''
+    request.yar.set('vesselFavourites', {
+      ...request.yar.get('vesselFavourites'),
+      [vesselId]: Object.fromEntries(
+        Object.entries(merged).filter(([key]) => FAVOURITE_KEYS.has(key))
+      )
+    })
+    request.yar.set(
+      sessionKey(request),
+      Object.fromEntries(
+        Object.entries(merged).filter(([key]) => !FAVOURITE_KEYS.has(key))
+      )
+    )
+    return merged
+  }
+
+  request.yar.set(sessionKey(request), merged)
   return merged
+}
+
+export function accountVesselPath(request, path) {
+  if (
+    !config.get('catchRecording.enabled') ||
+    !request.query?.vesselId ||
+    path === '/account'
+  ) {
+    return path
+  }
+  return `${path}${path.includes('?') ? '&' : '?'}vesselId=${encodeURIComponent(request.query.vesselId)}`
 }
 
 export function backForDeparturePort(request) {

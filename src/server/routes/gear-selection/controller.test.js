@@ -43,7 +43,7 @@ describe('#gearSelectionController', () => {
     expect(statusCode).toBe(statusCodes.ok)
   })
 
-  test('Should render the question as the page heading and caption without selection helper text', async () => {
+  test('Should render the question, caption and accessible selection hint from the design', async () => {
     const favouriteCookie = await seedFavouriteGears(server)
     const { result } = await server.inject({
       method: 'GET',
@@ -54,7 +54,17 @@ describe('#gearSelectionController', () => {
 
     expect($('h1').text()).toContain('What gear did you use?')
     expect($('h1 .govuk-caption-l').text().trim()).toBe('New catch record')
-    expect($('main').text()).not.toContain('Select all that apply')
+    expect($('#gearIds-hint').text()).toBe('Select all that apply')
+    expect($('fieldset').attr('aria-describedby')).toBe('gearIds-hint')
+    for (const input of $(
+      'input[name="gearIds"][aria-describedby]'
+    ).toArray()) {
+      expect(
+        $(`#${$(input).attr('aria-describedby')}`).hasClass(
+          'govuk-checkboxes__hint'
+        )
+      ).toBe(true)
+    }
   })
 
   test('Should render 9 gear checkboxes with the stable ids', async () => {
@@ -307,7 +317,7 @@ describe('#gearSelectionSubmitController', () => {
       })
       expect(response.statusCode).toBe(statusCodes.seeOther)
       const cookie = response.headers['set-cookie'][0].split(';')[0]
-      const expectedHeading = `Select the statistical sub area where the majority of your catch was caught using ${gearName}`
+      const expectedHeading = `Select the statistical sub area where the majority of your catch was caught using ${gearName.toLowerCase()}`
 
       for (const method of ['GET', 'POST']) {
         const { result, statusCode } = await server.inject({

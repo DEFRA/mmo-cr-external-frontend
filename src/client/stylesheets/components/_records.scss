@@ -1,5 +1,14 @@
 @use 'govuk-frontend' as *;
 
+.app-records-status {
+  display: inline-flex;
+  align-items: center;
+  box-sizing: border-box;
+  width: 7em;
+  min-height: 1.75em;
+  white-space: nowrap;
+}
+
 .app-records-pagination {
   display: flex;
   align-items: center;

@@ -51,7 +51,7 @@ describe('#departurePortController', () => {
     })
 
     expect(result).toEqual(
-      expect.stringContaining('Select the port you left from |')
+      expect.stringContaining('Select the port you set off from |')
     )
     expect(statusCode).toBe(statusCodes.ok)
   })
@@ -67,9 +67,9 @@ describe('#departurePortController', () => {
     const $ = load(result)
 
     expect($('head > title').text()).toEqual(
-      expect.stringContaining('Select the port you left from |')
+      expect.stringContaining('Select the port you set off from |')
     )
-    expect($('h1').text()).toContain('Select the port you left from')
+    expect($('h1').text()).toContain('Select the port you set off from')
     expect($('h1 .govuk-caption-l').text().trim()).toBe('New catch record')
     expect($('main').text()).not.toContain(
       'Select a port name or the nearest port to where you left.'
@@ -105,7 +105,7 @@ describe('#departurePortController', () => {
     expect(radios.eq(1).attr('value')).toBe('newhaven')
   })
 
-  test('Should render the Save and continue and Add port buttons', async () => {
+  test('Should render only Save and continue without an Add port button', async () => {
     const cookie = await withFavourite(server, 'hastings')
 
     const { result } = await server.inject({
@@ -116,10 +116,8 @@ describe('#departurePortController', () => {
     const $ = load(result)
 
     expect($('.govuk-button').eq(0).text().trim()).toBe('Save and continue')
-    expect($('.govuk-button').eq(1).text().trim()).toBe('Add port')
-    expect($('.govuk-button').eq(1).attr('href')).toBe(
-      '/add-port?for=departure'
-    )
+    expect($('.govuk-button')).toHaveLength(1)
+    expect($('a.govuk-button--secondary')).toHaveLength(0)
   })
 
   test('Should default the Back link to trip date when no journey state exists', async () => {
@@ -229,7 +227,7 @@ describe('#departurePortSubmitController', () => {
     expect(statusCode).toBe(statusCodes.badRequest)
     expect($('.govuk-error-summary')).toHaveLength(1)
     expect($('.govuk-error-summary').text()).toContain(
-      'Select the port you left from'
+      'Select the port you set off from'
     )
     expect($('.govuk-error-message')).toHaveLength(1)
   })

@@ -1,0 +1,69 @@
+{% extends 'layouts/page.njk' %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+{% from "govuk/components/pagination/macro.njk" import govukPagination %}
+{% from "govuk/components/pagination/template.njk" import arrowPrevious, arrowNext %}
+{% block pageContent %}
+  <h1 class="govuk-heading-xl">{{ heading }}</h1>
+  <form method="post" action="/records/new">
+    {{ govukButton({ text: "Create a new catch record", type: "submit" }) }}
+  </form>
+  {# Temporarily hide the record-status filter.
+  <form method="get" action="/records">
+    <label class="govuk-label" for="status">Record status</label>
+    <select class="govuk-select" id="status" name="status">
+      <option value="">All statuses</option>
+      {% for value, label in {DRAFT: "Draft", SUBMITTED: "Submitted", COMPLETE: "Complete"} %}
+        <option value="{{ value }}" {% if statusFilter == value %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+    {{ govukButton({ text: "Filter", classes: "govuk-button--secondary" }) }}
+  </form>
+  #}
+  {% if bounded %}<p class="govuk-body">Showing at most the latest 100 matching records. The API does not provide older-page navigation.</p>{% endif %}
+  {% if records.length %}
+    <table class="govuk-table">
+      <caption class="govuk-table__caption govuk-table__caption--m">Catch records</caption>
+      <thead><tr>
+        <th class="govuk-table__header" scope="col">Reference</th>
+        <th class="govuk-table__header" scope="col">Vessel</th>
+        <th class="govuk-table__header" scope="col">Trip end date</th>
+        <th class="govuk-table__header" scope="col">Status</th>
+      </tr></thead>
+      <tbody>{% for record in records %}<tr>
+        <td class="govuk-table__cell">{% if record.status == "DRAFT" %}<a class="govuk-link" href="/draft?recordId={{ record.id | urlencode }}">{{ record.catchRecordReference }}</a>{% elif recordDetailsEnabled %}<a class="govuk-link" href="/records/{{ record.id | urlencode }}">{{ record.catchRecordReference }}</a>{% else %}{{ record.catchRecordReference }}{% endif %}</td>
+        <td class="govuk-table__cell">{{ record.vessel.nameSnapshot }}</td>
+        <td class="govuk-table__cell">{% if recordDetailsEnabled and record.status == "SUBMITTED" %}<a class="govuk-link" href="/records/{{ record.id | urlencode }}">{{ record.trip.dateEnded | formatDate("d MMM yyyy") if record.trip.dateEnded else "Not entered" }}<span class="govuk-visually-hidden"> ({{ record.catchRecordReference }})</span></a>{% else %}{{ record.trip.dateEnded | formatDate("d MMM yyyy") if record.trip.dateEnded else "Not entered" }}{% endif %}</td>
+        <td class="govuk-table__cell">{{ govukTag({
+          text: record.displayStatus,
+          classes: "app-records-status " + record.statusTagClasses
+        }) }}</td>
+      </tr>{% endfor %}</tbody>
+    </table>
+    <div class="app-records-pagination">
+      <div class="app-records-pagination__summary">
+        {% if pagination.hasPrevious %}
+          <a class="govuk-link app-records-pagination__control" href="?page={{ pagination.currentPage - 1 }}&amp;status={{ statusFilter }}" rel="prev">
+            {{ arrowPrevious | safe }}<span class="govuk-visually-hidden">Previous page</span>
+          </a>
+        {% else %}
+          <span class="app-records-pagination__control app-records-pagination__control--disabled" aria-disabled="true">
+            {{ arrowPrevious | safe }}<span class="govuk-visually-hidden">Previous page</span>
+          </span>
+        {% endif %}
+        <p class="govuk-body govuk-!-font-weight-bold" data-testid="app-records-results">Showing {{ pagination.firstItem }} to {{ pagination.lastItem }} of {{ pagination.total }}<span class="govuk-visually-hidden"> retrieved records</span></p>
+      </div>
+      {{ govukPagination({ items: paginationItems }) }}
+      {% if pagination.hasNext %}
+        <a class="govuk-link app-records-pagination__control app-records-pagination__next" href="?page={{ pagination.currentPage + 1 }}&amp;status={{ statusFilter }}" rel="next"><span class="app-records-pagination__label">Next</span>{{ arrowNext | safe }}</a>
+      {% else %}
+        <span class="app-records-pagination__control app-records-pagination__control--disabled app-records-pagination__next" aria-disabled="true"><span class="app-records-pagination__label">Next</span>{{ arrowNext | safe }}</span>
+      {% endif %}
+    </div>
+  {% else %}<p class="govuk-body">No catch records found.</p>{% endif %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% include "partials/catch-record-help.njk" %}
+    </div>
+  </div>
+{% endblock %}

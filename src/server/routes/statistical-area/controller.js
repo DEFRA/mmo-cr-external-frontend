@@ -1,6 +1,7 @@
 import Joi from 'joi'
 
 import {
+  catchRecordCaption,
   getGearJourneyState as getJourneyState,
   gearPageContext,
   backForStatisticalArea,
@@ -29,7 +30,12 @@ const validAreaIds = [
 async function viewContext(request, overrides = {}) {
   const journeyState = getJourneyState(request)
   const gearContext = gearPageContext(request)
-  const selectedStatisticalArea = journeyState.selectedStatisticalArea
+  const selectedStatisticalArea =
+    journeyState.statAreaBranch === 'other'
+      ? journeyState.selectedAlternativeAreaOption === 'other'
+        ? journeyState.alternativeStatisticalArea
+        : journeyState.selectedAlternativeAreaOption
+      : journeyState.selectedStatisticalArea
   const departurePort = departurePorts.find(
     (port) => port.code === journeyState.departurePort
   )
@@ -39,7 +45,7 @@ async function viewContext(request, overrides = {}) {
       gearId: gearContext.gearId
     })),
     ...gearContext,
-    caption: 'New catch record',
+    caption: catchRecordCaption(request),
     backLink: {
       href: backForStatisticalArea(request),
       text: 'Back'

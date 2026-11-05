@@ -14,7 +14,7 @@
       {% endfor %}
 
       {% if gearGroups.length %}
-        <h2 class="govuk-heading-l">2. Gear</h2>
+        <h2 class="govuk-heading-l">2. Gear used</h2>
         {% for gear in gearGroups %}
           <section aria-labelledby="gear-summary-{{ loop.index }}" data-gear-id="{{ gear.gearId }}">
             <h3 id="gear-summary-{{ loop.index }}" class="govuk-heading-m">{{ gear.heading }}</h3>
@@ -41,7 +41,11 @@
         {{ govukSummaryList({ rows: section.rows }) }}
       {% endfor %}
 
-      {{ appCatchRecordDeclaration(fieldErrors, false, true) }}
+      {% if pendingTrip %}
+        <p class="govuk-body">Trip answers have not been saved yet. <a class="govuk-link" href="/trip-date">Complete the trip dates and both ports</a> before submitting.</p>
+      {% else %}
+        {{ appCatchRecordDeclaration(fieldErrors, false, true, submissionKey) }}
+      {% endif %}
     </div>
   </div>
 {% endblock %}

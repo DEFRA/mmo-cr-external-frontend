@@ -1,6 +1,7 @@
 import Joi from 'joi'
 
 import {
+  catchRecordCaption,
   backForDeparturePort,
   getJourneyState,
   resolveNextPath,
@@ -8,7 +9,9 @@ import {
 } from '#/server/common/helpers/journey/navigation.js'
 import {
   addFavouritePortCode,
-  getFavouritePortCodes
+  getFavouritePortCodes,
+  previousPortForConfirmation,
+  portSelectionPath
 } from '#/server/common/helpers/journey/favourite-ports.js'
 import {
   findPortByCode,
@@ -17,12 +20,17 @@ import {
   rememberPortName
 } from '#/server/common/helpers/ports/ports-list.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
+import { loadFavouritePorts } from '#/server/common/helpers/journey/session-favourites.js'
+import { liveCatchRecords } from '#/server/common/helpers/journey/catch-record-service.js'
 
-const pageTitle = 'Select the port you left from'
+const pageTitle = 'Select the port you set off from'
 const templatePath = 'departure-port/index'
 const errorSummaryTitle = 'There is a problem'
 function favouritePorts(request, ports) {
-  const codes = getFavouritePortCodes(request)
+  const codes = [...getFavouritePortCodes(request)]
+  if (liveCatchRecords() && getJourneyState(request).departurePort) {
+    codes.push(getJourneyState(request).departurePort)
+  }
   return ports.filter((port) => codes.includes(port.code))
 }
 
@@ -38,12 +46,11 @@ function viewContext(request, ports, overrides = {}) {
   return {
     pageTitle,
     heading: pageTitle,
-    caption: 'New catch record',
+    caption: catchRecordCaption(request),
     backLink: {
       href: backForDeparturePort(request),
       text: 'Back'
     },
-    addPortHref: '/add-port?for=departure',
     portOptions: portOptions(
       request,
       getJourneyState(request).departurePort,
@@ -56,10 +63,22 @@ function viewContext(request, ports, overrides = {}) {
 export const departurePortController = {
   async handler(request, h) {
     const ports = await getPortCatalogue()
+    await loadFavouritePorts(request, ports)
     migratePortJourneyState(request, ports)
-    if (favouritePorts(request, ports).length === 0) {
+    const previousPort = previousPortForConfirmation(request)
+    if (previousPort) {
       return h
-        .redirect('/add-port?for=departure&entry=1')
+        .redirect(
+          portSelectionPath(
+            request,
+            `/confirm-same-port?port=${encodeURIComponent(previousPort)}`
+          )
+        )
+        .code(statusCodes.seeOther)
+    }
+    if (getFavouritePortCodes(request).length === 0) {
+      return h
+        .redirect(portSelectionPath(request, '/add-port?for=departure&entry=1'))
         .code(statusCodes.seeOther)
     }
 
@@ -75,6 +94,7 @@ export const departurePortSubmitController = {
       }),
       async failAction(request, h) {
         const ports = await getPortCatalogue()
+        await loadFavouritePorts(request, ports)
         const errorText = pageTitle
 
         return h
@@ -95,6 +115,7 @@ export const departurePortSubmitController = {
   },
   async handler(request, h) {
     const ports = await getPortCatalogue()
+    await loadFavouritePorts(request, ports)
     const { departurePort } = request.payload
     const port = findPortByCode(departurePort, ports)
     if (!port) {
@@ -113,9 +134,14 @@ export const departurePortSubmitController = {
         .code(statusCodes.badRequest)
     }
 
-    addFavouritePortCode(request, port.code)
+    if (!liveCatchRecords()) {
+      addFavouritePortCode(request, port.code)
+    }
     rememberPortName(request, port)
-    setJourneyState(request, { departurePort: port.code })
+    setJourneyState(request, {
+      departurePort: port.code,
+      portSelectionStarted: true
+    })
 
     return h
       .redirect(resolveNextPath(request, '/return-port'))
