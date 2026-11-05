@@ -71,7 +71,9 @@ describe('API-backed catch record listing', () => {
   test.each([false, true])(
     'Should show expanded help and status panels below the records list with empty=%s',
     async (empty) => {
-      if (empty) items = []
+      if (empty) {
+        items = []
+      }
       const response = await server.inject('/records')
       expect(response.statusCode).toBe(200)
       const $ = load(response.result)

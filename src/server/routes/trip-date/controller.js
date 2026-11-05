@@ -67,6 +67,6 @@ export const tripDateSubmitController = {
           tripSameDate === 'yes' ? '/departure-port' : '/trip-departure-date'
         )
       )
-      .code(303)
+      .code(statusCodes.seeOther)
   }
 }

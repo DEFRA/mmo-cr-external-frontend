@@ -2,6 +2,7 @@ import Boom from '@hapi/boom'
 import { getJourneyState, setJourneyState } from './navigation.js'
 import { catchRecordService, liveCatchRecords } from './catch-record-service.js'
 import { getPortCatalogue, portSearchLabel } from '../ports/ports-list.js'
+import { forEachSequentially } from '../sequential.js'
 
 function vesselInput(request) {
   const vesselId = getJourneyState(request).selectedVesselId
@@ -14,7 +15,9 @@ function vesselInput(request) {
 }
 
 export async function loadFavouriteGears(request) {
-  if (!liveCatchRecords()) return getJourneyState(request)
+  if (!liveCatchRecords()) {
+    return getJourneyState(request)
+  }
   const state = getJourneyState(request)
   if (!state.selectedVesselId) {
     return setJourneyState(request, {
@@ -31,7 +34,9 @@ export async function loadFavouriteGears(request) {
 }
 
 export async function addFavouriteGear(request, id) {
-  if (!liveCatchRecords()) return
+  if (!liveCatchRecords()) {
+    return getJourneyState(request)
+  }
   const { client, ...input } = vesselInput(request)
   const result = await client.addFavouriteGear({ ...input, gearId: id })
   return setJourneyState(request, {
@@ -40,11 +45,13 @@ export async function addFavouriteGear(request, id) {
 }
 
 export async function removeFavouriteGears(request, ids) {
-  if (!liveCatchRecords()) return
-  const { client, ...input } = vesselInput(request)
-  for (const gearId of ids) {
-    await client.removeFavouriteGear({ ...input, gearId })
+  if (!liveCatchRecords()) {
+    return getJourneyState(request)
   }
+  const { client, ...input } = vesselInput(request)
+  await forEachSequentially(ids, (gearId) =>
+    client.removeFavouriteGear({ ...input, gearId })
+  )
   const state = await loadFavouriteGears(request)
   return setJourneyState(request, {
     favouriteGearMeasurements: Object.fromEntries(
@@ -56,7 +63,9 @@ export async function removeFavouriteGears(request, ids) {
 }
 
 export async function loadFavouriteSpecies(request) {
-  if (!liveCatchRecords()) return getJourneyState(request)
+  if (!liveCatchRecords()) {
+    return getJourneyState(request)
+  }
   const state = getJourneyState(request)
   const { client, ...input } = state.selectedVesselId
     ? vesselInput(request)
@@ -71,7 +80,9 @@ export async function loadFavouriteSpecies(request) {
 }
 
 export async function addFavouriteSpecies(request, id) {
-  if (!liveCatchRecords()) return
+  if (!liveCatchRecords()) {
+    return getJourneyState(request)
+  }
   const { client, ...input } = vesselInput(request)
   const result = await client.addFavouriteSpecies({ ...input, speciesId: id })
   return setJourneyState(request, {
@@ -81,11 +92,13 @@ export async function addFavouriteSpecies(request, id) {
 }
 
 export async function removeFavouriteSpecies(request, ids) {
-  if (!liveCatchRecords()) return
-  const { client, ...input } = vesselInput(request)
-  for (const speciesId of ids) {
-    await client.removeFavouriteSpecies({ ...input, speciesId })
+  if (!liveCatchRecords()) {
+    return getJourneyState(request)
   }
+  const { client, ...input } = vesselInput(request)
+  await forEachSequentially(ids, (speciesId) =>
+    client.removeFavouriteSpecies({ ...input, speciesId })
+  )
   return loadFavouriteSpecies(request)
 }
 
@@ -105,7 +118,9 @@ function storePorts(request, ids, catalogue) {
 }
 
 export async function loadFavouritePorts(request, catalogue) {
-  if (!liveCatchRecords()) return getJourneyState(request)
+  if (!liveCatchRecords()) {
+    return getJourneyState(request)
+  }
   const ports = catalogue ?? (await getPortCatalogue())
   const vesselId = getJourneyState(request).selectedVesselId
   const { client, ...input } = vesselId ? vesselInput(request) : {}
@@ -117,17 +132,21 @@ export async function loadFavouritePorts(request, catalogue) {
 }
 
 export async function addFavouritePort(request, id, catalogue) {
-  if (!liveCatchRecords()) return
+  if (!liveCatchRecords()) {
+    return getJourneyState(request)
+  }
   const { client, ...input } = vesselInput(request)
   const result = await client.addFavouritePort({ ...input, portId: id })
   return storePorts(request, result.favouritePortIds, catalogue)
 }
 
 export async function removeFavouritePorts(request, ids, catalogue) {
-  if (!liveCatchRecords()) return
-  const { client, ...input } = vesselInput(request)
-  for (const portId of ids) {
-    await client.removeFavouritePort({ ...input, portId })
+  if (!liveCatchRecords()) {
+    return getJourneyState(request)
   }
+  const { client, ...input } = vesselInput(request)
+  await forEachSequentially(ids, (portId) =>
+    client.removeFavouritePort({ ...input, portId })
+  )
   return loadFavouritePorts(request, catalogue)
 }

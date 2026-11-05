@@ -26,7 +26,9 @@ import { liveCatchRecords } from '#/server/common/helpers/journey/catch-record-s
 import { loadVesselSkippers } from '#/server/common/helpers/journey/vessel-skippers.js'
 import Joi from 'joi'
 import Boom from '@hapi/boom'
+import { statusCodes } from '#/server/common/constants/status-codes.js'
 
+const ACCOUNT_PAGE_TITLE = 'Your account'
 const NOT_IMPLEMENTED_HREF = '/not-implemented?return=/account'
 
 function row(key, value, href, actionText, visuallyHiddenText) {
@@ -278,117 +280,130 @@ async function buildLiveVesselSection(request, account, vessel) {
   const state = getJourneyState(scopedRequest)
   const section = buildVesselDetailsSection(
     account,
-    `${vessel.name}${vessel.pln ? ` (${vessel.pln})` : ''}`,
+    vesselDisplayName(vessel.name, vessel.pln),
     speciesOptions.map((species) => species.text),
     state.vesselSkippers,
     getAccountPortsUsed(state),
     getFavouriteGearOptions(getFavouriteGearIds(state, catalogue), catalogue),
     getFavouriteGearMeasurements(state)
   )
-  for (const row of section.rows) {
-    for (const action of row.actions.items) {
+  for (const sectionRow of section.rows) {
+    for (const action of sectionRow.actions.items) {
       action.href = accountVesselPath(scopedRequest, action.href)
     }
   }
   return section
 }
 
-export const accountController = {
-  async handler(request, h) {
-    if (!isSignedIn(request)) {
-      return h.redirect('/sign-in').code(302)
-    }
-    if (liveCatchRecords()) {
-      const account = getData('account')
-      const example = getData('selectVessel')
-      const vessels = await getVesselCatalogue()
-      const vesselSections = await Promise.all(
-        vessels.map((vessel) =>
-          buildLiveVesselSection(request, account, vessel)
+function vesselDisplayName(name, pln) {
+  return pln ? `${name} (${pln})` : name
+}
+
+function accountErrorContext(error) {
+  if (!error) {
+    return {}
+  }
+  return {
+    errorSummary: {
+      titleText: 'There is a problem',
+      errorList: [{ text: error, href: '#vesselId' }]
+    },
+    fieldErrors: { vesselId: error }
+  }
+}
+
+async function liveAccountView(request, h) {
+  const account = getData('account')
+  const example = getData('selectVessel')
+  const vessels = await getVesselCatalogue()
+  const vesselSections = await Promise.all(
+    vessels.map((item) => buildLiveVesselSection(request, account, item))
+  )
+  return h.view('account/index', {
+    pageTitle: ACCOUNT_PAGE_TITLE,
+    heading: ACCOUNT_PAGE_TITLE,
+    backLink: { href: '/records', text: 'Back' },
+    sections: [
+      buildPersonalDetailsSection(
+        account,
+        `${example.name} (${example.registration})`
+      ),
+      ...vesselSections.map((section, index) => ({
+        ...section,
+        heading: index === 0 ? 'Vessel details' : ''
+      }))
+    ]
+  })
+}
+
+async function selectedVesselLabel(journeyState, fallbackLabel) {
+  const selectedVessel = journeyState.selectedVesselId
+    ? await getVesselItem(journeyState.selectedVesselId)
+    : null
+  const selectedVesselName =
+    selectedVessel?.name || journeyState.selectedVesselName
+  return selectedVesselName
+    ? vesselDisplayName(selectedVesselName, selectedVessel?.pln)
+    : fallbackLabel
+}
+
+async function offlineAccountView(request, h) {
+  const account = getData('account')
+  const vessel = getData('selectVessel')
+  const vesselLabel = `${vessel.name} (${vessel.registration})`
+  await loadFavouriteGears(request)
+  await loadFavouritePorts(request)
+  if (getJourneyState(request).selectedVesselId) {
+    await loadVesselSkippers(request)
+  }
+  const journeyState = getJourneyState(request)
+  const vesselDetailsLabel = await selectedVesselLabel(
+    journeyState,
+    vesselLabel
+  )
+  const gearCatalogue = await getGearCatalogue()
+  const favouriteGearOptions = getFavouriteGearOptions(
+    getFavouriteGearIds(journeyState, gearCatalogue),
+    gearCatalogue
+  )
+  const { speciesOptions } = await getSpeciesPageData(request, {
+    loadFavourites: true
+  })
+  const { accountVesselError } = request.app
+
+  return h
+    .view('account/index', {
+      pageTitle: ACCOUNT_PAGE_TITLE,
+      heading: ACCOUNT_PAGE_TITLE,
+      ...accountErrorContext(accountVesselError),
+      backLink: {
+        href: '/records',
+        text: 'Back'
+      },
+      sections: [
+        buildPersonalDetailsSection(account, vesselLabel),
+        buildVesselDetailsSection(
+          account,
+          vesselDetailsLabel,
+          speciesOptions.map((species) => species.text),
+          journeyState.skipper,
+          getAccountPortsUsed(journeyState),
+          favouriteGearOptions,
+          getFavouriteGearMeasurements(journeyState)
         )
-      )
-      return h.view('account/index', {
-        pageTitle: 'Your account',
-        heading: 'Your account',
-        backLink: { href: '/records', text: 'Back' },
-        sections: [
-          buildPersonalDetailsSection(
-            account,
-            `${example.name} (${example.registration})`
-          ),
-          ...vesselSections.map((section, index) => ({
-            ...section,
-            heading: index === 0 ? 'Vessel details' : ''
-          }))
-        ]
-      })
-    }
-
-    const account = getData('account')
-    const vessel = getData('selectVessel')
-    const vesselLabel = `${vessel.name} (${vessel.registration})`
-    await loadFavouriteGears(request)
-    await loadFavouritePorts(request)
-    if (getJourneyState(request).selectedVesselId) {
-      await loadVesselSkippers(request)
-    }
-    const journeyState = getJourneyState(request)
-    const selectedVessel = journeyState.selectedVesselId
-      ? await getVesselItem(journeyState.selectedVesselId)
-      : null
-    const selectedVesselName =
-      selectedVessel?.name || journeyState.selectedVesselName
-    const selectedVesselRegistration = selectedVessel?.pln
-      ? ` (${selectedVessel.pln})`
-      : ''
-    const selectedVesselLabel = selectedVesselName
-      ? `${selectedVesselName}${selectedVesselRegistration}`
-      : vesselLabel
-    const skipper = journeyState.skipper
-    const portsUsed = getAccountPortsUsed(journeyState)
-    const gearCatalogue = await getGearCatalogue()
-    const favouriteGearOptions = getFavouriteGearOptions(
-      getFavouriteGearIds(journeyState, gearCatalogue),
-      gearCatalogue
-    )
-    const { speciesOptions } = await getSpeciesPageData(request, {
-      loadFavourites: true
+      ]
     })
-    const speciesCaught = speciesOptions.map((species) => species.text)
+    .code(accountVesselError ? statusCodes.badRequest : statusCodes.ok)
+}
 
-    return h
-      .view('account/index', {
-        pageTitle: 'Your account',
-        heading: 'Your account',
-        ...(request.app.accountVesselError
-          ? {
-              errorSummary: {
-                titleText: 'There is a problem',
-                errorList: [
-                  { text: request.app.accountVesselError, href: '#vesselId' }
-                ]
-              },
-              fieldErrors: { vesselId: request.app.accountVesselError }
-            }
-          : {}),
-        backLink: {
-          href: '/records',
-          text: 'Back'
-        },
-        sections: [
-          buildPersonalDetailsSection(account, vesselLabel),
-          buildVesselDetailsSection(
-            account,
-            selectedVesselLabel,
-            speciesCaught,
-            skipper,
-            portsUsed,
-            favouriteGearOptions,
-            getFavouriteGearMeasurements(journeyState)
-          )
-        ]
-      })
-      .code(request.app.accountVesselError ? 400 : 200)
+export const accountController = {
+  handler(request, h) {
+    if (!isSignedIn(request)) {
+      return h.redirect('/sign-in').code(statusCodes.found)
+    }
+    return liveCatchRecords()
+      ? liveAccountView(request, h)
+      : offlineAccountView(request, h)
   }
 }
 
@@ -398,9 +413,11 @@ export const accountVesselSubmitController = {
       payload: Joi.object({ vesselId: Joi.string().trim().required() }),
       async failAction(request, h) {
         if (!isSignedIn(request)) {
-          return h.redirect('/sign-in').code(302).takeover()
+          return h.redirect('/sign-in').code(statusCodes.found).takeover()
         }
-        if (!liveCatchRecords()) throw Boom.notFound()
+        if (!liveCatchRecords()) {
+          throw Boom.notFound()
+        }
         request.app.accountVesselError =
           'Select a vessel to manage its favourites'
         return (await accountController.handler(request, h)).takeover()
@@ -408,8 +425,12 @@ export const accountVesselSubmitController = {
     }
   },
   async handler(request, h) {
-    if (!isSignedIn(request)) return h.redirect('/sign-in').code(302)
-    if (!liveCatchRecords()) throw Boom.notFound()
+    if (!isSignedIn(request)) {
+      return h.redirect('/sign-in').code(statusCodes.found)
+    }
+    if (!liveCatchRecords()) {
+      throw Boom.notFound()
+    }
     const vessels = await getVesselCatalogue()
     const vessel = vessels.find((item) => item.id === request.payload.vesselId)
     if (!vessel) {
@@ -424,6 +445,6 @@ export const accountVesselSubmitController = {
         selectedVesselLengthOverallMetres: selected.lengthOverallMetres
       })
     }
-    return h.redirect('/account').code(303)
+    return h.redirect('/account').code(statusCodes.seeOther)
   }
 }

@@ -3,7 +3,9 @@ import Boom from '@hapi/boom'
 import { liveCatchRecords } from '#/server/common/helpers/journey/catch-record-service.js'
 import { recordAction, showHistory, downloadArtifact } from './controller.js'
 
-const recordId = Joi.string().trim().min(1).max(200).required()
+const MAX_RECORD_ID_LENGTH = 200
+const MAX_SUBMISSION_NUMBER = 1000
+const recordId = Joi.string().trim().min(1).max(MAX_RECORD_ID_LENGTH).required()
 const params = Joi.object({ recordId })
 export const liveRecords = {
   name: 'live-records',
@@ -40,7 +42,7 @@ export const liveRecords = {
                 submissionNumber: Joi.number()
                   .integer()
                   .min(1)
-                  .max(1000)
+                  .max(MAX_SUBMISSION_NUMBER)
                   .required(),
                 artifactType: Joi.string().valid('json', 'pdf').required()
               })
@@ -51,7 +53,9 @@ export const liveRecords = {
       ].map((route) => ({
         ...route,
         handler: (request, h) => {
-          if (!liveCatchRecords()) throw Boom.notFound()
+          if (!liveCatchRecords()) {
+            throw Boom.notFound()
+          }
           return route.handler(request, h)
         }
       }))

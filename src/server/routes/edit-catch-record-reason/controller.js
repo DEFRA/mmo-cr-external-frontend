@@ -11,6 +11,8 @@ import {
   startAmendment
 } from '../edit-catch-record-review/live-amendment.js'
 
+const templatePath = 'edit-catch-record-reason/index'
+const EDIT_REASON_MAX_LENGTH = 2000
 const defaultPageTitle = 'Why are you editing this catch record?'
 const lateRecordPageTitle = 'Why are you editing this record?'
 
@@ -60,15 +62,12 @@ export const editCatchRecordReasonController = {
   },
   async handler(request, h) {
     if (liveCatchRecords()) {
-      return h.view(
-        'edit-catch-record-reason/index',
-        await reasonContext(request)
-      )
+      return h.view(templatePath, await reasonContext(request))
     }
     const { recordId } = request.params
     findRecord(recordId)
 
-    return h.view('edit-catch-record-reason/index', viewContext(recordId))
+    return h.view(templatePath, viewContext(recordId))
   }
 }
 
@@ -79,23 +78,26 @@ export const editCatchRecordReasonSubmitController = {
         recordId: Joi.string().required()
       }),
       payload: Joi.object({
-        editReason: Joi.string().trim().min(1).max(2000).required(),
+        editReason: Joi.string()
+          .trim()
+          .min(1)
+          .max(EDIT_REASON_MAX_LENGTH)
+          .required(),
         reasonKey: Joi.string().uuid().optional()
       }),
       async failAction(request, h) {
         if (liveCatchRecords()) {
-          const errorText =
-            'Enter a reason for editing this catch record (2000 characters or fewer)'
+          const liveErrorText = `Enter a reason for editing this catch record (${EDIT_REASON_MAX_LENGTH} characters or fewer)`
           return h
             .view(
-              'edit-catch-record-reason/index',
+              templatePath,
               await reasonContext(request, {
                 values: request.payload,
                 errorSummary: {
                   titleText: 'There is a problem',
-                  errorList: [{ text: errorText, href: '#editReason' }]
+                  errorList: [{ text: liveErrorText, href: '#editReason' }]
                 },
-                fieldErrors: { editReason: errorText }
+                fieldErrors: { editReason: liveErrorText }
               })
             )
             .code(statusCodes.badRequest)
@@ -108,7 +110,7 @@ export const editCatchRecordReasonSubmitController = {
 
         return h
           .view(
-            'edit-catch-record-reason/index',
+            templatePath,
             viewContext(recordId, {
               errorSummary: {
                 titleText: 'There is a problem',
@@ -124,7 +126,9 @@ export const editCatchRecordReasonSubmitController = {
     }
   },
   handler(request, h) {
-    if (liveCatchRecords()) return startAmendment(request, h)
+    if (liveCatchRecords()) {
+      return startAmendment(request, h)
+    }
     const { recordId } = request.params
 
     findRecord(recordId)
@@ -132,6 +136,8 @@ export const editCatchRecordReasonSubmitController = {
     // boolean flag is retained in session — not the free-text reason itself.
     setAmendmentState(request, { recordId, reasonProvided: true })
 
-    return h.redirect(`/records/${recordId}/edit-review`).code(303)
+    return h
+      .redirect(`/records/${recordId}/edit-review`)
+      .code(statusCodes.seeOther)
   }
 }

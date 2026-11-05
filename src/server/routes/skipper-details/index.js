@@ -12,84 +12,123 @@ import {
 } from '#/server/common/helpers/journey/vessel-skippers.js'
 
 const emailMaxLength = 254
+const nameMaxLength = 100
+const phoneNumberMaxLength = 30
 const schema = Joi.object({
-  firstName: Joi.string().trim().max(100).required(),
-  lastName: Joi.string().trim().max(100).required(),
+  firstName: Joi.string().trim().max(nameMaxLength).required(),
+  lastName: Joi.string().trim().max(nameMaxLength).required(),
   email: Joi.string().trim().email().max(emailMaxLength).allow('').optional(),
-  phoneNumber: Joi.string().trim().max(30).allow('').optional()
+  phoneNumber: Joi.string()
+    .trim()
+    .max(phoneNumberMaxLength)
+    .allow('')
+    .optional()
 }).custom((value, helpers) => {
-  if (!liveCatchRecords() && !value.email) return helpers.error('any.invalid')
+  if (!liveCatchRecords() && !value.email) {
+    return helpers.error('any.invalid')
+  }
   if (
     liveCatchRecords() &&
-    `${value.firstName} ${value.lastName}`.length > 100
+    `${value.firstName} ${value.lastName}`.length > nameMaxLength
   ) {
     return helpers.error('any.invalid')
   }
   return value
 })
+function savedSkipperValues(request) {
+  const state = getJourneyState(request)
+  if (!liveCatchRecords()) {
+    return state.skipper || {}
+  }
+  return state.pendingSkipperVesselId === state.selectedVesselId
+    ? state.pendingSkipper || {}
+    : {}
+}
+
 const viewContext = (request, overrides = {}) => ({
   pageTitle: 'Enter skipper details',
   heading: 'Enter skipper details',
   backLink: { href: accountVesselPath(request, '/add-skipper'), text: 'Back' },
-  values: liveCatchRecords()
-    ? getJourneyState(request).pendingSkipperVesselId ===
-      getJourneyState(request).selectedVesselId
-      ? getJourneyState(request).pendingSkipper || {}
-      : {}
-    : getJourneyState(request).skipper || {},
+  values: savedSkipperValues(request),
   liveSkippers: liveCatchRecords(),
   ...overrides
 })
 export const skipperDetailsController = {
   handler(request, h) {
-    if (liveCatchRecords()) requireSkipperVessel(request)
+    if (liveCatchRecords()) {
+      requireSkipperVessel(request)
+    }
     return h.view('skipper-details/index', viewContext(request))
   }
 }
+function trimmedValue(payload, key) {
+  return typeof payload[key] === 'string' ? payload[key].trim() : ''
+}
+
+function nameError(value, missingText, tooLongText) {
+  if (!value) {
+    return missingText
+  }
+  return value.length > nameMaxLength ? tooLongText : undefined
+}
+
+function emailError(payload) {
+  if (!trimmedValue(payload, 'email') && !liveCatchRecords()) {
+    return 'Enter the skipper’s email address'
+  }
+  const invalid =
+    payload.email &&
+    Joi.string().email().max(emailMaxLength).validate(payload.email).error
+  return invalid ? 'Enter an email address in the correct format' : undefined
+}
+
+function phoneNumberError(payload) {
+  const invalid =
+    payload.phoneNumber &&
+    Joi.string().trim().max(phoneNumberMaxLength).validate(payload.phoneNumber)
+      .error
+  return invalid ? 'Phone number must be 30 characters or fewer' : undefined
+}
+
+function skipperErrors(payload) {
+  const firstName = trimmedValue(payload, 'firstName')
+  const lastName = trimmedValue(payload, 'lastName')
+  const fullNameTooLong =
+    liveCatchRecords() && `${firstName} ${lastName}`.length > nameMaxLength
+  const errors = Object.fromEntries(
+    Object.entries({
+      firstName: fullNameTooLong
+        ? 'The full skipper name must be 100 characters or fewer'
+        : nameError(
+            firstName,
+            'Enter the skipper’s first name',
+            'First name must be 100 characters or fewer'
+          ),
+      lastName: nameError(
+        lastName,
+        'Enter the skipper’s last name',
+        'Last name must be 100 characters or fewer'
+      ),
+      email: emailError(payload),
+      phoneNumber: phoneNumberError(payload)
+    }).filter(([, text]) => text)
+  )
+  if (!Object.keys(errors).length) {
+    errors.firstName = 'Check the skipper details and try again'
+  }
+  return errors
+}
+
 export const skipperDetailsSubmitController = {
   options: {
     validate: {
       payload: schema,
       failAction(request, h) {
-        if (liveCatchRecords()) requireSkipperVessel(request)
-        const errors = {}
+        if (liveCatchRecords()) {
+          requireSkipperVessel(request)
+        }
         const payload = request.payload || {}
-        const value = (key) =>
-          typeof payload[key] === 'string' ? payload[key].trim() : ''
-        if (!value('firstName')) {
-          errors.firstName = 'Enter the skipper’s first name'
-        } else if (value('firstName').length > 100) {
-          errors.firstName = 'First name must be 100 characters or fewer'
-        }
-        if (!value('lastName')) {
-          errors.lastName = 'Enter the skipper’s last name'
-        } else if (value('lastName').length > 100) {
-          errors.lastName = 'Last name must be 100 characters or fewer'
-        }
-        if (
-          liveCatchRecords() &&
-          `${value('firstName')} ${value('lastName')}`.length > 100
-        ) {
-          errors.firstName =
-            'The full skipper name must be 100 characters or fewer'
-        }
-        if (!value('email') && !liveCatchRecords()) {
-          errors.email = 'Enter the skipper’s email address'
-        } else if (
-          payload.email &&
-          Joi.string().email().max(emailMaxLength).validate(payload.email).error
-        ) {
-          errors.email = 'Enter an email address in the correct format'
-        }
-        if (
-          payload.phoneNumber &&
-          Joi.string().trim().max(30).validate(payload.phoneNumber).error
-        ) {
-          errors.phoneNumber = 'Phone number must be 30 characters or fewer'
-        }
-        if (!Object.keys(errors).length) {
-          errors.firstName = 'Check the skipper details and try again'
-        }
+        const errors = skipperErrors(payload)
         return h
           .view(
             'skipper-details/index',

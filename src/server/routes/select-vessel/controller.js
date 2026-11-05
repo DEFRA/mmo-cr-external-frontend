@@ -18,6 +18,7 @@ import {
 } from '#/server/common/helpers/journey/create-draft.js'
 
 const errorText = 'Which vessel did you use?'
+const errorSummaryTitle = 'There is a problem'
 const templatePath = 'select-vessel/index'
 
 function viewContext(request, vessels, overrides = {}) {
@@ -61,7 +62,7 @@ export const selectVesselSubmitController = {
             templatePath,
             viewContext(request, vessels, {
               errorSummary: {
-                titleText: 'There is a problem',
+                titleText: errorSummaryTitle,
                 errorList: [{ text: errorText, href: '#vesselId' }]
               },
               fieldErrors: { vesselId: errorText }
@@ -81,7 +82,7 @@ export const selectVesselSubmitController = {
           templatePath,
           viewContext(request, vessels, {
             errorSummary: {
-              titleText: 'There is a problem',
+              titleText: errorSummaryTitle,
               errorList: [{ text: errorText, href: '#vesselId' }]
             },
             fieldErrors: { vesselId: errorText }
@@ -98,7 +99,7 @@ export const selectVesselSubmitController = {
           templatePath,
           viewContext(request, vessels, {
             errorSummary: {
-              titleText: 'There is a problem',
+              titleText: errorSummaryTitle,
               errorList: [{ text: message, href: '#vesselId' }]
             },
             fieldErrors: { vesselId: message }

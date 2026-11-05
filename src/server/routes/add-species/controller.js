@@ -15,15 +15,20 @@ import { statusCodes } from '#/server/common/constants/status-codes.js'
 import { addFavouriteSpecies } from '#/server/common/helpers/journey/session-favourites.js'
 import { liveCatchRecords } from '#/server/common/helpers/journey/catch-record-service.js'
 
+function addSpeciesHeading(request) {
+  if (isCatchRecordJourney(request)) {
+    return 'Add species to your catch record'
+  }
+  return liveCatchRecords()
+    ? 'Add species to your favourites'
+    : 'Add species to your vessel'
+}
+
 function viewContext(request, speciesData, overrides = {}) {
   const vesselName = liveCatchRecords()
     ? ''
     : getJourneyState(request).selectedVesselName || ''
-  const heading = isCatchRecordJourney(request)
-    ? 'Add species to your catch record'
-    : liveCatchRecords()
-      ? 'Add species to your favourites'
-      : 'Add species to your vessel'
+  const heading = addSpeciesHeading(request)
   const pageTitle = vesselName ? `${heading} ${vesselName}` : heading
   return {
     pageTitle,
@@ -70,6 +75,31 @@ export const addSpeciesController = {
   }
 }
 
+function existingSpeciesIds(request, speciesData) {
+  if (!isCatchRecordJourney(request)) {
+    return speciesData.availableSpeciesIds
+  }
+  return [
+    ...(getJourneyState(request).journeySpeciesIds || []),
+    ...(speciesData.journeyState.selectedSpeciesIds || [])
+  ]
+}
+
+async function saveAddedSpecies(request, speciesData, speciesId) {
+  if (isCatchRecordJourney(request)) {
+    const { journeySpeciesIds = [] } = getJourneyState(request)
+    setJourneyState(request, {
+      journeySpeciesIds: [...new Set([...journeySpeciesIds, speciesId])]
+    })
+  } else if (liveCatchRecords()) {
+    await addFavouriteSpecies(request, speciesId)
+  } else {
+    setJourneyState(request, {
+      availableSpeciesIds: [...speciesData.availableSpeciesIds, speciesId]
+    })
+  }
+}
+
 export const addSpeciesSubmitController = {
   options: {
     validate: {
@@ -113,16 +143,7 @@ export const addSpeciesSubmitController = {
       return renderError(request, h, 'Select a species to add', speciesData)
     }
 
-    const { availableSpeciesIds } = speciesData
-    const state = getJourneyState(request)
-    const existingIds = isCatchRecordJourney(request)
-      ? [
-          ...(state.journeySpeciesIds || []),
-          ...(speciesData.journeyState.selectedSpeciesIds || [])
-        ]
-      : availableSpeciesIds
-
-    if (existingIds.includes(matchedSpecies.id)) {
+    if (existingSpeciesIds(request, speciesData).includes(matchedSpecies.id)) {
       return renderError(
         request,
         h,
@@ -131,19 +152,7 @@ export const addSpeciesSubmitController = {
       )
     }
 
-    if (isCatchRecordJourney(request)) {
-      setJourneyState(request, {
-        journeySpeciesIds: [
-          ...new Set([...(state.journeySpeciesIds || []), matchedSpecies.id])
-        ]
-      })
-    } else if (liveCatchRecords()) {
-      await addFavouriteSpecies(request, matchedSpecies.id)
-    } else {
-      setJourneyState(request, {
-        availableSpeciesIds: [...availableSpeciesIds, matchedSpecies.id]
-      })
-    }
+    await saveAddedSpecies(request, speciesData, matchedSpecies.id)
 
     return h
       .redirect(speciesSelectionReturnPath(request))

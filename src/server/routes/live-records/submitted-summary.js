@@ -12,79 +12,77 @@ function speciesName(species) {
     : species.nameSnapshot
 }
 
-export function submittedSummary(record) {
+function formattedDate(value) {
+  return value ? formatDate(value, 'd MMMM yyyy') : null
+}
+
+function tripSection(record) {
   const multipleGears = record.gears.length > 1
-  const sections = [
-    {
-      heading: 'Trips details',
-      rows: [
-        row('Vessel', record.vessel.nameSnapshot),
+  return {
+    heading: 'Trips details',
+    rows: [
+      row('Vessel', record.vessel.nameSnapshot),
+      row('Departure date', formattedDate(record.trip.dateStarted)),
+      row('Return date', formattedDate(record.trip.dateEnded)),
+      row('Departure port', record.trip.departurePort?.nameSnapshot),
+      row('Return port', record.trip.returnPort?.nameSnapshot),
+      ...record.gears.map((entry) =>
         row(
-          'Departure date',
-          record.trip.dateStarted
-            ? formatDate(record.trip.dateStarted, 'd MMMM yyyy')
-            : null
-        ),
-        row(
-          'Return date',
-          record.trip.dateEnded
-            ? formatDate(record.trip.dateEnded, 'd MMMM yyyy')
-            : null
-        ),
-        row('Departure port', record.trip.departurePort?.nameSnapshot),
-        row('Return port', record.trip.returnPort?.nameSnapshot),
-        ...record.gears.map((entry) =>
-          row(
-            multipleGears
-              ? `Statistical sub area (${entry.gear.nameSnapshot})`
-              : 'Statistical sub area',
-            entry.statisticalArea?.codeSnapshot
-          )
+          multipleGears
+            ? `Statistical sub area (${entry.gear.nameSnapshot})`
+            : 'Statistical sub area',
+          entry.statisticalArea?.codeSnapshot
         )
+      )
+    ]
+  }
+}
+
+function pairFishingSections(pairFishing) {
+  if (!pairFishing.enabled) {
+    return []
+  }
+  return [
+    {
+      heading: 'Pair fishing',
+      rows: [
+        row('Paired vessel', pairFishing.pairVessel),
+        row('Paired skipper', pairFishing.pairSkipperName)
       ]
     }
   ]
-  if (record.pairFishing.enabled) {
-    sections.push({
-      heading: 'Pair fishing',
-      rows: [
-        row('Paired vessel', record.pairFishing.pairVessel),
-        row('Paired skipper', record.pairFishing.pairSkipperName)
-      ]
-    })
-  }
-  for (const [index, entry] of record.gears.entries()) {
-    sections.push({
-      heading: 'Gear used',
-      gearId: entry.gear.id,
-      kind: 'gear',
-      gearName: entry.gear.nameSnapshot,
-      startsGearSection: index === 0,
-      rows: [
-        row('Gear type', entry.gear.nameSnapshot),
-        row('Area majority catch caught', entry.statisticalArea?.codeSnapshot),
-        row(
-          'Species caught',
-          entry.speciesCaught.length
-            ? entry.speciesCaught.map(speciesName).join(', ')
-            : null
-        ),
-        ...entry.characteristics.map((item) =>
-          row(item.nameSnapshot, item.value)
-        )
-      ]
-    })
-  }
-  let startsSpeciesSection = true
-  for (const entry of record.gears) {
-    for (const species of entry.speciesCaught) {
-      sections.push({
+}
+
+function gearSections(gears) {
+  return gears.map((entry, index) => ({
+    heading: 'Gear used',
+    gearId: entry.gear.id,
+    kind: 'gear',
+    gearName: entry.gear.nameSnapshot,
+    startsGearSection: index === 0,
+    rows: [
+      row('Gear type', entry.gear.nameSnapshot),
+      row('Area majority catch caught', entry.statisticalArea?.codeSnapshot),
+      row(
+        'Species caught',
+        entry.speciesCaught.length
+          ? entry.speciesCaught.map(speciesName).join(', ')
+          : null
+      ),
+      ...entry.characteristics.map((item) => row(item.nameSnapshot, item.value))
+    ]
+  }))
+}
+
+function speciesCaughtSections(gears) {
+  return gears
+    .flatMap((entry) =>
+      entry.speciesCaught.map((species) => ({
         heading: 'Species caught',
         gearId: entry.gear.id,
         kind: 'species',
         speciesName: speciesName(species),
         gearName: entry.gear.nameSnapshot,
-        startsSpeciesSection,
         rows: [
           row(
             'Weight above minimum size retained (kg)',
@@ -96,38 +94,48 @@ export function submittedSummary(record) {
           ),
           row('Weight legally discarded (kg)', species.weightLegallyDiscardedKg)
         ]
-      })
-      startsSpeciesSection = false
-    }
-  }
-  sections.push({
+      }))
+    )
+    .map((section, index) => ({
+      ...section,
+      startsSpeciesSection: index === 0
+    }))
+}
+
+function optionalRow(label, value) {
+  return value == null ? [] : [row(label, value)]
+}
+
+function speciesNotLandedSection(speciesNotLanded) {
+  return {
     heading: 'Species not landed',
     rows: [
-      row('Not landed', record.speciesNotLanded.length ? 'Yes' : 'No'),
-      ...record.speciesNotLanded.flatMap((species) => [
+      row('Not landed', speciesNotLanded.length ? 'Yes' : 'No'),
+      ...speciesNotLanded.flatMap((species) => [
         row('Species', speciesName(species)),
         row(
           'Weight above minimum size kept onboard or in keep pots (kg)',
           species.weightAboveMinimumKg
         ),
-        ...(species.weightBelowMinimumKg != null
-          ? [
-              row(
-                'Weight below minimum size kept onboard or in keep pots (kg)',
-                species.weightBelowMinimumKg
-              )
-            ]
-          : []),
-        ...(species.weightLegallyDiscardedKg != null
-          ? [
-              row(
-                'Weight legally discarded (kg)',
-                species.weightLegallyDiscardedKg
-              )
-            ]
-          : [])
+        ...optionalRow(
+          'Weight below minimum size kept onboard or in keep pots (kg)',
+          species.weightBelowMinimumKg
+        ),
+        ...optionalRow(
+          'Weight legally discarded (kg)',
+          species.weightLegallyDiscardedKg
+        )
       ])
     ]
-  })
-  return sections
+  }
+}
+
+export function submittedSummary(record) {
+  return [
+    tripSection(record),
+    ...pairFishingSections(record.pairFishing),
+    ...gearSections(record.gears),
+    ...speciesCaughtSections(record.gears),
+    speciesNotLandedSection(record.speciesNotLanded)
+  ]
 }

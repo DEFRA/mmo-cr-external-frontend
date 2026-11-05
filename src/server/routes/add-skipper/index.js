@@ -24,7 +24,9 @@ const viewContext = (request, overrides = {}) => ({
 
 export const addSkipperController = {
   handler(request, h) {
-    if (liveCatchRecords()) requireSkipperVessel(request)
+    if (liveCatchRecords()) {
+      requireSkipperVessel(request)
+    }
     return h.view('add-skipper/index', viewContext(request))
   }
 }
@@ -36,7 +38,9 @@ export const addSkipperSubmitController = {
         wantsToAddSkipper: Joi.string().valid('yes', 'no').required()
       }),
       failAction(request, h) {
-        if (liveCatchRecords()) requireSkipperVessel(request)
+        if (liveCatchRecords()) {
+          requireSkipperVessel(request)
+        }
         const errorText = 'Select yes if you want to add a skipper'
         return h
           .view(
@@ -55,7 +59,9 @@ export const addSkipperSubmitController = {
     }
   },
   handler(request, h) {
-    if (liveCatchRecords()) requireSkipperVessel(request)
+    if (liveCatchRecords()) {
+      requireSkipperVessel(request)
+    }
     const { wantsToAddSkipper } = request.payload
     setJourneyState(request, {
       wantsToAddSkipper,

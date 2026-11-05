@@ -21,7 +21,9 @@ export function getStatusDisplay(status) {
 }
 
 export function getRecordDisplayStatus(record) {
-  if (record.status === 'DRAFT') return 'Draft'
+  if (record.status === 'DRAFT') {
+    return 'Draft'
+  }
   if (record.status === 'SUBMITTED' && record.displayStatus !== 'Late') {
     return record.numberOfSubmissions > 1 ? 'Amended' : 'Submitted'
   }

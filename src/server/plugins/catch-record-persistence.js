@@ -9,11 +9,13 @@ import {
   liveCatchRecords
 } from '#/server/common/helpers/journey/catch-record-service.js'
 import { recordJourney } from '#/server/common/helpers/journey/catch-record-mapping.js'
+import { forEachSequentially } from '#/server/common/helpers/sequential.js'
 import { MapStatisticalAreasReferenceDataError } from '#/server/common/clients/map-statistical-areas-reference-data.js'
 import {
   businessDate,
   sectionData
 } from '#/server/common/helpers/journey/catch-record-payload.js'
+import { statusCodes } from '#/server/common/constants/status-codes.js'
 
 const SECTION_ROUTES = {
   '/trip-date': 'trip',
@@ -29,6 +31,129 @@ const SECTION_ROUTES = {
   '/species-selection': 'gears',
   '/catch-not-landed': 'speciesNotLanded',
   '/species-not-landed': 'speciesNotLanded'
+}
+
+function shouldSkipSave(request, before) {
+  if (!before || request.response.statusCode !== statusCodes.seeOther) {
+    return true
+  }
+  if (
+    request.route.path === '/confirm-same-port' &&
+    request.payload.confirmSamePort === 'no'
+  ) {
+    return true
+  }
+  return isDeepStrictEqual(before, getJourneyState(request))
+}
+
+function hasTripDates(state) {
+  return (
+    state.tripSameDate !== false ||
+    Boolean(state.departureDate && state.returnDate)
+  )
+}
+
+function isTripIncomplete(state) {
+  return (
+    typeof state.tripSameDate !== 'boolean' ||
+    !state.departurePort ||
+    !state.returnPort ||
+    !hasTripDates(state)
+  )
+}
+
+function shouldSkipSection(request, section, before) {
+  if (section === 'trip' && isTripIncomplete(getJourneyState(request))) {
+    setJourneyState(request, {
+      catchRecordPendingTrip: true,
+      submissionKey: null,
+      submissionVersion: null
+    })
+    return true
+  }
+  return (
+    section === 'speciesNotLanded' &&
+    isDeepStrictEqual(
+      before.speciesNotLanded,
+      getJourneyState(request).speciesNotLanded
+    )
+  )
+}
+
+async function syncGearAssociations(request, before, saved, service) {
+  const canonical = await service.client.getRecord({
+    catchRecordId: before.catchRecordId,
+    correlationId: service.correlationId
+  })
+  if (canonical.version !== saved.version) {
+    throw Boom.conflict(
+      'The record changed during saving. Reopen it from Your catch records.',
+      { catchRecordError: true }
+    )
+  }
+  setJourneyState(request, {
+    gearAssociationIds: recordJourney(canonical).gearAssociationIds
+  })
+}
+
+async function saveSection(request, section, before, service, progress) {
+  const data = await sectionData(request, section)
+  progress.mutationAttempted = true
+  const saved = await service.client.saveSection({
+    catchRecordId: before.catchRecordId,
+    version: getJourneyState(request).version,
+    section,
+    data,
+    correlationId: service.correlationId
+  })
+  setJourneyState(request, {
+    version: saved.version,
+    submissionKey: null,
+    submissionVersion: null,
+    submittedRecordId: null
+  })
+  if (section === 'trip') {
+    setJourneyState(request, { catchRecordPendingTrip: false })
+  }
+  if (section === 'gears') {
+    await syncGearAssociations(request, before, saved, service)
+  }
+}
+
+async function saveChangedSections(request, before, progress) {
+  const sections = [SECTION_ROUTES[request.route.path]].flat()
+  const service = catchRecordService()
+  if (
+    request.route.path === '/trip-date' &&
+    getJourneyState(request).tripSameDate
+  ) {
+    setJourneyState(request, {
+      departureDate: businessDate(),
+      returnDate: businessDate()
+    })
+  }
+  await forEachSequentially(sections, async (section) => {
+    if (!shouldSkipSection(request, section, before)) {
+      await saveSection(request, section, before, service, progress)
+    }
+  })
+}
+
+function restoreBeforeFailure(request, before, mutationAttempted) {
+  request.yar.set('journey', {
+    ...before,
+    ...(mutationAttempted ? { catchRecordReloadRequired: true } : {})
+  })
+}
+
+function toPersistenceError(error) {
+  if (error instanceof MapStatisticalAreasReferenceDataError) {
+    return Boom.serverUnavailable(
+      'Statistical-area reference data is temporarily unavailable',
+      { catchRecordError: true }
+    )
+  }
+  return error
 }
 
 export const catchRecordPersistence = {
@@ -59,99 +184,15 @@ export const catchRecordPersistence = {
     })
     server.ext('onPostHandler', async (request, h) => {
       const before = request.app.catchRecordBeforeSave
-      if (!before || request.response.statusCode !== 303) return h.continue
-      if (
-        request.route.path === '/confirm-same-port' &&
-        request.payload.confirmSamePort === 'no'
-      ) {
+      if (shouldSkipSave(request, before)) {
         return h.continue
       }
-      if (isDeepStrictEqual(before, getJourneyState(request))) return h.continue
-      let mutationAttempted = false
+      const progress = { mutationAttempted: false }
       try {
-        const sections = [SECTION_ROUTES[request.route.path]].flat()
-        const { client, correlationId } = catchRecordService()
-        if (
-          request.route.path === '/trip-date' &&
-          getJourneyState(request).tripSameDate
-        ) {
-          setJourneyState(request, {
-            departureDate: businessDate(),
-            returnDate: businessDate()
-          })
-        }
-        for (const section of sections) {
-          const current = getJourneyState(request)
-          if (
-            section === 'trip' &&
-            (typeof current.tripSameDate !== 'boolean' ||
-              !current.departurePort ||
-              !current.returnPort ||
-              (current.tripSameDate === false &&
-                (!current.departureDate || !current.returnDate)))
-          ) {
-            setJourneyState(request, {
-              catchRecordPendingTrip: true,
-              submissionKey: null,
-              submissionVersion: null
-            })
-            continue
-          }
-          if (
-            section === 'speciesNotLanded' &&
-            isDeepStrictEqual(
-              before.speciesNotLanded,
-              getJourneyState(request).speciesNotLanded
-            )
-          ) {
-            continue
-          }
-          const data = await sectionData(request, section)
-          mutationAttempted = true
-          const saved = await client.saveSection({
-            catchRecordId: before.catchRecordId,
-            version: getJourneyState(request).version,
-            section,
-            data,
-            correlationId
-          })
-          setJourneyState(request, {
-            version: saved.version,
-            submissionKey: null,
-            submissionVersion: null,
-            submittedRecordId: null
-          })
-          if (section === 'trip') {
-            setJourneyState(request, { catchRecordPendingTrip: false })
-          }
-          if (section === 'gears') {
-            const canonical = await client.getRecord({
-              catchRecordId: before.catchRecordId,
-              correlationId
-            })
-            if (canonical.version !== saved.version) {
-              throw Boom.conflict(
-                'The record changed during saving. Reopen it from Your catch records.',
-                { catchRecordError: true }
-              )
-            }
-            setJourneyState(request, {
-              gearAssociationIds: recordJourney(canonical).gearAssociationIds
-            })
-          }
-        }
+        await saveChangedSections(request, before, progress)
       } catch (error) {
-        request.yar.set('journey', {
-          ...before,
-          ...(mutationAttempted ? { catchRecordReloadRequired: true } : {})
-        })
-        if (error instanceof MapStatisticalAreasReferenceDataError) {
-          throw Boom.serverUnavailable(
-            'Statistical-area reference data is temporarily unavailable',
-            { catchRecordError: true }
-          )
-        }
-        throw error
+        restoreBeforeFailure(request, before, progress.mutationAttempted)
+        throw toPersistenceError(error)
       }
       return h.continue
     })

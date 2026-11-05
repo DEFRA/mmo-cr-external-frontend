@@ -75,7 +75,7 @@ function reviewTripRows(base) {
     'Return port'
   ]
   const rows = labels.map((label) => {
-    const row = base.sections[0].rows.find((row) => row.key.text === label)
+    const row = base.sections[0].rows.find((item) => item.key.text === label)
     if (label === 'Vessel') {
       return { key: row.key, value: row.value }
     }

@@ -24,7 +24,9 @@ export const recordDetailsController = {
     }
   },
   async handler(request, h) {
-    if (liveCatchRecords()) return showLiveRecord(request, h)
+    if (liveCatchRecords()) {
+      return showLiveRecord(request, h)
+    }
     const { recordId } = request.params
     const record = getData('allRecords').find(
       (item) => item.recordId === recordId

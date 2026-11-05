@@ -1,8 +1,13 @@
 // Structural + business-rule validation for a GOV.UK date-input day/month/year triple.
 const MONTHS_IN_YEAR = 12
+const YEAR_DIGITS = 4
+const DATE_PART_DIGITS = 2
+const DATE_PARTS = ['day', 'month', 'year']
 
 export function dateInputValues(isoDate) {
-  if (!isoDate) return {}
+  if (!isoDate) {
+    return {}
+  }
   const [year, month, day] = isoDate.split('-')
   return { day: String(Number(day)), month: String(Number(month)), year }
 }
@@ -20,7 +25,7 @@ function isYearFormatValid(value) {
 }
 
 function toIsoDate(dayNum, monthNum, yearNum) {
-  return `${String(yearNum).padStart(4, '0')}-${String(monthNum).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`
+  return `${String(yearNum).padStart(YEAR_DIGITS, '0')}-${String(monthNum).padStart(DATE_PART_DIGITS, '0')}-${String(dayNum).padStart(DATE_PART_DIGITS, '0')}`
 }
 
 // Numeric form of an ISO date (e.g. '2025-07-24' -> 20250724) so bounds are compared as numbers, not strings.
@@ -64,11 +69,9 @@ export function todayIsoDate() {
 }
 
 function checkMissingFields(values, options) {
-  const missingParts = ['day', 'month', 'year'].filter((part) =>
-    isMissing(values[part])
-  )
+  const missingParts = DATE_PARTS.filter((part) => isMissing(values[part]))
 
-  if (missingParts.length === 3) {
+  if (missingParts.length === DATE_PARTS.length) {
     return {
       isValid: false,
       errorMessage: `Enter ${options.subject}`,

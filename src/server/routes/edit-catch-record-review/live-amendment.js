@@ -15,6 +15,7 @@ import { getSpeciesPageData } from '#/server/common/helpers/species/species-list
 import { getGearCatalogue } from '#/server/common/helpers/gear/favourite-gear.js'
 import { buildCheckAnswersViewModel } from '#/server/routes/check-answers/view-model.js'
 import { submitLiveRecord } from '#/server/routes/live-records/controller.js'
+import { statusCodes } from '#/server/common/constants/status-codes.js'
 
 export async function amendmentRecord(request) {
   const { client, correlationId } = catchRecordService()
@@ -38,7 +39,9 @@ export async function reasonContext(request, overrides = {}) {
     existing.key
       ? existing
       : { recordId: record.id, version: record.version, key: randomUUID() }
-  if (action !== existing) clearAmendmentState(request)
+  if (action !== existing) {
+    clearAmendmentState(request)
+  }
   setAmendmentState(request, action)
   return {
     pageTitle: 'Why are you editing this catch record?',
@@ -68,7 +71,7 @@ export async function startAmendment(request, h) {
     amendment.reasonProvided &&
     getJourneyState(request).catchRecordId === amendment.recordId
   ) {
-    return h.redirect(`${path}/edit-review`).code(303)
+    return h.redirect(`${path}/edit-review`).code(statusCodes.seeOther)
   }
   const record = await amendmentRecord(request)
   if (record.status !== 'SUBMITTED' || record.version !== amendment.version) {
@@ -89,7 +92,7 @@ export async function startAmendment(request, h) {
     submittedAt: record.submittedAt,
     submittedBy: record.submittedBy
   })
-  return h.redirect(`${path}/edit-review`).code(303)
+  return h.redirect(`${path}/edit-review`).code(statusCodes.seeOther)
 }
 
 export function validLiveAmendment(request) {
@@ -108,7 +111,7 @@ export async function liveReview(request, h, overrides = {}, status = 200) {
       .redirect(
         `/records/${encodeURIComponent(request.params.recordId)}/edit-reason`
       )
-      .code(303)
+      .code(statusCodes.seeOther)
   }
   const state = getJourneyState(request)
   if (state.catchRecordReloadRequired) {

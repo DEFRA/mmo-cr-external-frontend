@@ -10,8 +10,9 @@ import { getJourneyState } from '#/server/common/helpers/journey/navigation.js'
 import { recordJourney } from '#/server/common/helpers/journey/catch-record-mapping.js'
 
 const errorText = 'Select what you want to do with this draft record'
+const MAX_RECORD_ID_LENGTH = 200
 const query = Joi.object({
-  recordId: Joi.string().trim().min(1).max(200).optional()
+  recordId: Joi.string().trim().min(1).max(MAX_RECORD_ID_LENGTH).optional()
 })
 
 function selectedDraft(request) {
@@ -46,11 +47,13 @@ export const draftController = {
   async handler(request, h) {
     const recordId =
       request.query.recordId || getJourneyState(request).catchRecordId
-    if (!recordId) return h.redirect('/records').code(303)
+    if (!recordId) {
+      return h.redirect('/records').code(statusCodes.seeOther)
+    }
     if (!request.query.recordId) {
       return h
         .redirect(`/draft?recordId=${encodeURIComponent(recordId)}`)
-        .code(303)
+        .code(statusCodes.seeOther)
     }
     const { client, correlationId } = catchRecordService()
     const record = await client.getRecord({
@@ -126,7 +129,7 @@ export const draftSubmitController = {
         request.yar.set('journey', {})
       }
       request.yar.clear('draftAction')
-      return h.redirect('/records').code(303)
+      return h.redirect('/records').code(statusCodes.seeOther)
     }
     if (!liveCatchRecords()) {
       throw Boom.conflict(
@@ -146,6 +149,6 @@ export const draftSubmitController = {
     }
     request.yar.set('journey', recordJourney(record))
     request.yar.clear('draftAction')
-    return h.redirect('/trip-date').code(303)
+    return h.redirect('/trip-date').code(statusCodes.seeOther)
   }
 }

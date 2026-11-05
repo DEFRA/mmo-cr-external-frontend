@@ -77,6 +77,8 @@ export const tripReturnDateSubmitController = {
 
     setJourneyState(request, { returnDate: result.isoDate })
 
-    return h.redirect(resolveNextPath(request, '/departure-port')).code(303)
+    return h
+      .redirect(resolveNextPath(request, '/departure-port'))
+      .code(statusCodes.seeOther)
   }
 }

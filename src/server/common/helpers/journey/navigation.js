@@ -3,6 +3,7 @@ import { config } from '#/config/config.js'
 
 // Journey state helpers backed by the @hapi/yar session cache (no persistence beyond the session).
 const JOURNEY_SESSION_KEY = 'journey'
+const MAX_VESSEL_ID_LENGTH = 200
 const GEAR_SELECTION_PATH = '/gear-selection'
 const STATISTICAL_AREA_PATH = '/statistical-area'
 const STATISTICAL_AREA_OTHER_PATH = '/statistical-area-other'
@@ -10,6 +11,13 @@ const SPECIES_SELECTION_PATH = '/species-selection'
 const CATCH_NOT_LANDED_PATH = '/catch-not-landed'
 const SPECIES_NOT_LANDED_PATH = '/species-not-landed'
 const CHECK_ANSWERS_PATH = '/check-answers'
+const ADD_SPECIES_PATH = '/add-species'
+const REMOVE_SPECIES_PATH = '/remove-species'
+const ACCOUNT_PATH = '/account'
+
+function liveCatchRecording() {
+  return config.get('catchRecording.enabled')
+}
 
 // Allowlist of known internal route paths. Exact string match only — used to
 // prevent an open redirect via the Empty Page's `return` query parameter.
@@ -33,13 +41,13 @@ const SAFE_RETURN_PATHS = [
   STATISTICAL_AREA_PATH,
   STATISTICAL_AREA_OTHER_PATH,
   SPECIES_SELECTION_PATH,
-  '/add-species',
-  '/remove-species',
+  ADD_SPECIES_PATH,
+  REMOVE_SPECIES_PATH,
   CATCH_NOT_LANDED_PATH,
   SPECIES_NOT_LANDED_PATH,
   CHECK_ANSWERS_PATH,
   '/confirmation',
-  '/account',
+  ACCOUNT_PATH,
   '/remove-port',
   '/not-implemented'
 ]
@@ -57,7 +65,7 @@ const FAVOURITE_KEYS = new Set([
 
 function sessionKey(request) {
   const accountPage = [
-    '/account',
+    ACCOUNT_PATH,
     '/remove-port',
     '/add-skipper',
     '/skipper-details',
@@ -66,30 +74,29 @@ function sessionKey(request) {
     '/remove-skipper'
   ].includes(request.path)
   const accountFavouritePage =
-    request.query?.return === '/account' &&
+    request.query?.return === ACCOUNT_PATH &&
     [
       '/add-port',
       '/add-gear',
       '/remove-gear',
-      '/add-species',
-      '/remove-species'
+      ADD_SPECIES_PATH,
+      REMOVE_SPECIES_PATH
     ].includes(request.path)
-  if (
-    config.get('catchRecording.enabled') &&
-    (accountPage || accountFavouritePage)
-  ) {
+  if (liveCatchRecording() && (accountPage || accountFavouritePage)) {
     const vesselId = request.query?.vesselId
     if (vesselId !== undefined) {
       if (
         typeof vesselId !== 'string' ||
         !vesselId.trim() ||
-        vesselId.length > 200
+        vesselId.length > MAX_VESSEL_ID_LENGTH
       ) {
         throw Boom.badRequest('Select a valid vessel')
       }
       return `accountJourney:${vesselId}`
     }
-    if (request.yar.get('accountJourney')) return 'accountJourney'
+    if (request.yar.get('accountJourney')) {
+      return 'accountJourney'
+    }
   }
   return JOURNEY_SESSION_KEY
 }
@@ -97,9 +104,11 @@ function sessionKey(request) {
 export function getJourneyState(request) {
   const key = sessionKey(request)
   const state = request.yar.get(key) || {}
-  if (!config.get('catchRecording.enabled')) return state
+  if (!liveCatchRecording()) {
+    return state
+  }
   const answers = Object.fromEntries(
-    Object.entries(state).filter(([key]) => !FAVOURITE_KEYS.has(key))
+    Object.entries(state).filter(([name]) => !FAVOURITE_KEYS.has(name))
   )
   const selectedVesselId = key.startsWith('accountJourney:')
     ? request.query.vesselId
@@ -117,8 +126,8 @@ export function catchRecordCaption(request) {
 
 export function isCatchRecordJourney(request) {
   return (
-    config.get('catchRecording.enabled') &&
-    request.query?.return !== '/account' &&
+    liveCatchRecording() &&
+    request.query?.return !== ACCOUNT_PATH &&
     Boolean(getJourneyState(request).catchRecordId)
   )
 }
@@ -126,7 +135,7 @@ export function isCatchRecordJourney(request) {
 export function setJourneyState(request, patch) {
   const current = getJourneyState(request)
   const changingVessel =
-    config.get('catchRecording.enabled') &&
+    liveCatchRecording() &&
     patch.selectedVesselId !== undefined &&
     patch.selectedVesselId !== current.selectedVesselId
   const state = changingVessel
@@ -138,7 +147,7 @@ export function setJourneyState(request, patch) {
       }
     : current
   const merged = { ...state, ...patch }
-  if (config.get('catchRecording.enabled')) {
+  if (liveCatchRecording()) {
     const vesselId = merged.selectedVesselId || ''
     request.yar.set('vesselFavourites', {
       ...request.yar.get('vesselFavourites'),
@@ -161,9 +170,9 @@ export function setJourneyState(request, patch) {
 
 export function accountVesselPath(request, path) {
   if (
-    !config.get('catchRecording.enabled') ||
+    !liveCatchRecording() ||
     !request.query?.vesselId ||
-    path === '/account'
+    path === ACCOUNT_PATH
   ) {
     return path
   }
@@ -215,8 +224,8 @@ const GEAR_PATHS = new Set([
   STATISTICAL_AREA_PATH,
   STATISTICAL_AREA_OTHER_PATH,
   SPECIES_SELECTION_PATH,
-  '/add-species',
-  '/remove-species'
+  ADD_SPECIES_PATH,
+  REMOVE_SPECIES_PATH
 ])
 const CATCH_KEYS = [
   'statAreaBranch',

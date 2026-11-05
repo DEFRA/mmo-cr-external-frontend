@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto'
 import Boom from '@hapi/boom'
 import { getJourneyState, setJourneyState } from './navigation.js'
 import { catchRecordService, liveCatchRecords } from './catch-record-service.js'
+import { forEachSequentially } from '#/server/common/helpers/sequential.js'
 
 export function requireSkipperVessel(request) {
   const vesselId = getJourneyState(request).selectedVesselId
@@ -25,7 +26,9 @@ function storeSkippers(request, result) {
 }
 
 export async function loadVesselSkippers(request) {
-  if (!liveCatchRecords()) return getJourneyState(request)
+  if (!liveCatchRecords()) {
+    return getJourneyState(request)
+  }
   const { client, ...input } = vesselInput(request)
   return storeSkippers(request, await client.listSkippers(input))
 }
@@ -92,7 +95,7 @@ export async function addPendingVesselSkipper(request) {
 
 export async function removeVesselSkippers(request, skipperIds) {
   const { client, ...input } = vesselInput(request)
-  for (const skipperId of skipperIds) {
+  await forEachSequentially(skipperIds, async (skipperId) => {
     await client.removeSkipper({ ...input, skipperId })
     const state = getJourneyState(request)
     storeSkippers(request, {
@@ -101,5 +104,5 @@ export async function removeVesselSkippers(request, skipperIds) {
         (skipper) => skipper.id !== skipperId
       )
     })
-  }
+  })
 }

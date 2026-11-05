@@ -129,8 +129,7 @@ export function formatGearMeasurements(option, values) {
     .map(({ id, label }) => `${label}: ${values[id]}`)
 }
 
-export function migrateGearJourneyState(request, catalogue) {
-  const state = getJourneyState(request)
+function assertSelectedGearsAvailable(state, catalogue) {
   if (
     config.get('catchRecording.enabled') &&
     state.selectedGearIds?.some(
@@ -142,20 +141,44 @@ export function migrateGearJourneyState(request, catalogue) {
       { catchRecordError: true }
     )
   }
+}
+
+function migratedGearIdList(ids, catalogue) {
+  if (!Array.isArray(ids)) {
+    return undefined
+  }
+  const migrated = [
+    ...new Set(ids.map((id) => migratedGearId(id, catalogue)).filter(Boolean))
+  ]
+  const keepsSelection = migrated.length > 0 || ids.length === 0
+  return keepsSelection && JSON.stringify(migrated) !== JSON.stringify(ids)
+    ? migrated
+    : undefined
+}
+
+function migratedGearIdKeys(values, catalogue) {
+  if (!values) {
+    return undefined
+  }
+  const migrated = Object.fromEntries(
+    Object.entries(values).map(([id, value]) => [
+      migratedGearId(id, catalogue) || id,
+      value
+    ])
+  )
+  return JSON.stringify(migrated) === JSON.stringify(values)
+    ? undefined
+    : migrated
+}
+
+export function migrateGearJourneyState(request, catalogue) {
+  const state = getJourneyState(request)
+  assertSelectedGearsAvailable(state, catalogue)
   const patch = {}
   for (const key of ['favouriteGearIds', 'selectedGearIds']) {
-    if (Array.isArray(state[key])) {
-      const ids = [
-        ...new Set(
-          state[key].map((id) => migratedGearId(id, catalogue)).filter(Boolean)
-        )
-      ]
-      if (
-        (ids.length > 0 || state[key].length === 0) &&
-        JSON.stringify(ids) !== JSON.stringify(state[key])
-      ) {
-        patch[key] = ids
-      }
+    const ids = migratedGearIdList(state[key], catalogue)
+    if (ids) {
+      patch[key] = ids
     }
   }
   for (const key of [
@@ -163,16 +186,9 @@ export function migrateGearJourneyState(request, catalogue) {
     'gearMeasurementDetails',
     'gearLabelsById'
   ]) {
-    if (state[key]) {
-      const migrated = Object.fromEntries(
-        Object.entries(state[key]).map(([id, value]) => [
-          migratedGearId(id, catalogue) || id,
-          value
-        ])
-      )
-      if (JSON.stringify(migrated) !== JSON.stringify(state[key])) {
-        patch[key] = migrated
-      }
+    const migrated = migratedGearIdKeys(state[key], catalogue)
+    if (migrated) {
+      patch[key] = migrated
     }
   }
   return Object.keys(patch).length ? setJourneyState(request, patch) : state

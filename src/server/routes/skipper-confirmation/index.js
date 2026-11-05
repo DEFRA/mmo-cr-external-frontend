@@ -4,6 +4,7 @@ import {
 } from '#/server/common/helpers/journey/navigation.js'
 import { liveCatchRecords } from '#/server/common/helpers/journey/catch-record-service.js'
 import { requireSkipperVessel } from '#/server/common/helpers/journey/vessel-skippers.js'
+import { statusCodes } from '#/server/common/constants/status-codes.js'
 export const skipperConfirmationController = {
   handler(request, h) {
     const state = getJourneyState(request)
@@ -14,7 +15,9 @@ export const skipperConfirmationController = {
         !state.skipperConfirmed ||
         state.skipperConfirmedVesselId !== vesselId
       ) {
-        return h.redirect(accountVesselPath(request, '/add-skipper')).code(303)
+        return h
+          .redirect(accountVesselPath(request, '/add-skipper'))
+          .code(statusCodes.seeOther)
       }
     }
     const heading = `Skipper added for vessel ${liveSkippers ? state.selectedVesselName || 'selected vessel' : 'OLGA'}`

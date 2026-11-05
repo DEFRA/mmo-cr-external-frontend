@@ -90,12 +90,16 @@ export const editCatchRecordReviewController = {
     }
   },
   async handler(request, h) {
-    if (liveCatchRecords()) return liveReview(request, h)
+    if (liveCatchRecords()) {
+      return liveReview(request, h)
+    }
     const { recordId } = request.params
     findRecord(recordId)
 
     if (!hasValidAmendment(request, recordId)) {
-      return h.redirect(`/records/${recordId}/edit-reason`).code(302)
+      return h
+        .redirect(`/records/${recordId}/edit-reason`)
+        .code(statusCodes.found)
     }
 
     return h.view(
@@ -104,6 +108,9 @@ export const editCatchRecordReviewController = {
     )
   }
 }
+
+const CONFIRM_ACCURATE_ERROR =
+  'Select I confirm the information is complete and accurate'
 
 export const editCatchRecordReviewSubmitController = {
   options: {
@@ -117,17 +124,17 @@ export const editCatchRecordReviewSubmitController = {
       }),
       async failAction(request, h) {
         if (liveCatchRecords()) {
-          const errorText =
-            'Select I confirm the information is complete and accurate'
           const response = await liveReview(
             request,
             h,
             {
               errorSummary: {
                 titleText: 'There is a problem',
-                errorList: [{ text: errorText, href: '#confirmAccurate' }]
+                errorList: [
+                  { text: CONFIRM_ACCURATE_ERROR, href: '#confirmAccurate' }
+                ]
               },
-              fieldErrors: { confirmAccurate: errorText }
+              fieldErrors: { confirmAccurate: CONFIRM_ACCURATE_ERROR }
             },
             statusCodes.badRequest
           )
@@ -139,12 +146,9 @@ export const editCatchRecordReviewSubmitController = {
         if (!hasValidAmendment(request, recordId)) {
           return h
             .redirect(`/records/${recordId}/edit-reason`)
-            .code(302)
+            .code(statusCodes.found)
             .takeover()
         }
-
-        const errorText =
-          'Select I confirm the information is complete and accurate'
 
         return h
           .view(
@@ -152,9 +156,11 @@ export const editCatchRecordReviewSubmitController = {
             await viewContext(request, recordId, {
               errorSummary: {
                 titleText: 'There is a problem',
-                errorList: [{ text: errorText, href: '#confirmAccurate' }]
+                errorList: [
+                  { text: CONFIRM_ACCURATE_ERROR, href: '#confirmAccurate' }
+                ]
               },
-              fieldErrors: { confirmAccurate: errorText }
+              fieldErrors: { confirmAccurate: CONFIRM_ACCURATE_ERROR }
             })
           )
           .code(statusCodes.badRequest)
@@ -163,16 +169,20 @@ export const editCatchRecordReviewSubmitController = {
     }
   },
   handler(request, h) {
-    if (liveCatchRecords()) return resubmitAmendment(request, h)
+    if (liveCatchRecords()) {
+      return resubmitAmendment(request, h)
+    }
     const { recordId } = request.params
     findRecord(recordId)
 
     if (!hasValidAmendment(request, recordId)) {
-      return h.redirect(`/records/${recordId}/edit-reason`).code(302)
+      return h
+        .redirect(`/records/${recordId}/edit-reason`)
+        .code(statusCodes.found)
     }
 
     clearAmendmentState(request)
 
-    return h.redirect('/confirmation').code(303)
+    return h.redirect('/confirmation').code(statusCodes.seeOther)
   }
 }

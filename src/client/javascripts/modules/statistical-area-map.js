@@ -22,6 +22,26 @@ function setMapLoadError(canvas, errorElement, hasError) {
   }
 }
 
+function findSavedCell(subrectangles, selectedArea) {
+  const savedCode = selectedArea?.toUpperCase()
+  return subrectangles.find((area) => area.subCode.toUpperCase() === savedCode)
+}
+
+function focusCoordinate(selectedCell, departurePort) {
+  if (!selectedCell) {
+    return departurePort.coordinate
+  }
+  const { minLongitude, maxLongitude, minLatitude, maxLatitude } =
+    selectedCell.bounds
+  return [(minLongitude + maxLongitude) / 2, (minLatitude + maxLatitude) / 2]
+}
+
+function showInitialSelection(input, status, selectedSubCode) {
+  input.value = selectedSubCode || ''
+  input.disabled = !selectedSubCode
+  status.textContent = selectedSubCode ? `${selectedSubCode} selected` : ''
+}
+
 async function setUpMap(
   map,
   canvas,
@@ -48,33 +68,18 @@ async function setUpMap(
     return false
   }
 
-  const savedCode = map.dataset.selectedArea?.toUpperCase()
-  const selectedCell = subrectangles.find(
-    (area) => area.subCode.toUpperCase() === savedCode
-  )
-  const focusCell = selectedCell || departureCell
-  const focusCoordinate = selectedCell
-    ? [
-        (selectedCell.bounds.minLongitude + selectedCell.bounds.maxLongitude) /
-          2,
-        (selectedCell.bounds.minLatitude + selectedCell.bounds.maxLatitude) / 2
-      ]
-    : departurePort.coordinate
+  const selectedCell = findSavedCell(subrectangles, map.dataset.selectedArea)
   const extents = computeZoomExtents(
     subrectangles,
-    focusCell,
-    focusCoordinate,
+    selectedCell || departureCell,
+    focusCoordinate(selectedCell, departurePort),
     canvas
   )
   const state = {
     viewport: { ...extents.defaultZoomExtent },
     selectedSubCode: selectedCell?.subCode
   }
-  input.value = state.selectedSubCode || ''
-  input.disabled = !state.selectedSubCode
-  status.textContent = state.selectedSubCode
-    ? `${state.selectedSubCode} selected`
-    : ''
+  showInitialSelection(input, status, state.selectedSubCode)
 
   const clientPointToMap = createClientPointToMap(canvas, state)
   const render = createRender({

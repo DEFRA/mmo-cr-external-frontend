@@ -5,6 +5,7 @@ import {
   removeVesselSkippers
 } from '#/server/common/helpers/journey/vessel-skippers.js'
 import Boom from '@hapi/boom'
+import { statusCodes } from '#/server/common/constants/status-codes.js'
 
 function context(request, overrides = {}) {
   return {
@@ -21,7 +22,9 @@ function context(request, overrides = {}) {
 }
 
 async function load(request) {
-  if (!liveCatchRecords()) throw Boom.notFound()
+  if (!liveCatchRecords()) {
+    throw Boom.notFound()
+  }
   await loadVesselSkippers(request)
 }
 
@@ -45,12 +48,12 @@ export const removeSkipper = {
             await load(request)
             const raw = request.payload?.skipperIds
             const requested = Array.isArray(raw) ? raw : [raw]
-            const knownIds = getJourneyState(request).vesselSkippers.map(
-              (skipper) => skipper.id
+            const knownIds = new Set(
+              getJourneyState(request).vesselSkippers.map(
+                (skipper) => skipper.id
+              )
             )
-            const ids = [
-              ...new Set(requested.filter((id) => knownIds.includes(id)))
-            ]
+            const ids = [...new Set(requested.filter((id) => knownIds.has(id)))]
             if (!ids.length) {
               const text = 'Select the skipper you want to remove'
               return h
@@ -64,10 +67,10 @@ export const removeSkipper = {
                     }
                   })
                 )
-                .code(400)
+                .code(statusCodes.badRequest)
             }
             await removeVesselSkippers(request, ids)
-            return h.redirect('/account').code(303)
+            return h.redirect('/account').code(statusCodes.seeOther)
           }
         }
       ])

@@ -41,10 +41,13 @@ function boundsForCoordinates(coordinates) {
   )
 }
 
+// A closed GeoJSON linear ring needs at least four positions.
+const MIN_RING_POSITIONS = 4
+
 function isValidRing(ring) {
   return (
     Array.isArray(ring) &&
-    ring.length >= 4 &&
+    ring.length >= MIN_RING_POSITIONS &&
     ring.every(
       (coordinate) =>
         Array.isArray(coordinate) &&

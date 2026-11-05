@@ -12,6 +12,7 @@ import { getData } from '#/server/common/data/get-data.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 import { offlineMapSubrectangleCodes } from '#/server/common/data/offline-map-subrectangle-codes.js'
 import { statisticalAreaContent } from '#/server/common/helpers/journey/statistical-area-content.js'
+import { statisticalAreaCode } from '#/server/common/helpers/journey/catch-record-mapping.js'
 import {
   getPortCatalogue,
   migratePortJourneyState
@@ -30,12 +31,7 @@ const validAreaIds = [
 async function viewContext(request, overrides = {}) {
   const journeyState = getJourneyState(request)
   const gearContext = gearPageContext(request)
-  const selectedStatisticalArea =
-    journeyState.statAreaBranch === 'other'
-      ? journeyState.selectedAlternativeAreaOption === 'other'
-        ? journeyState.alternativeStatisticalArea
-        : journeyState.selectedAlternativeAreaOption
-      : journeyState.selectedStatisticalArea
+  const selectedStatisticalArea = statisticalAreaCode(journeyState)
   const departurePort = departurePorts.find(
     (port) => port.code === journeyState.departurePort
   )
@@ -127,6 +123,6 @@ export const statisticalAreaSubmitController = {
           isOther ? '/statistical-area-other' : '/species-selection'
         )
       )
-      .code(303)
+      .code(statusCodes.seeOther)
   }
 }

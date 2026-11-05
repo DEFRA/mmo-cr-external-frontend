@@ -2,6 +2,7 @@ import Joi from 'joi'
 
 import { listLiveRecords } from '../live-records/controller.js'
 import { getJourneyState } from '#/server/common/helpers/journey/navigation.js'
+import { statusCodes } from '#/server/common/constants/status-codes.js'
 
 export const recordsController = {
   options: {
@@ -27,6 +28,6 @@ export const newRecordController = {
       )
     }
     request.yar.set('journey', {})
-    return h.redirect('/select-vessel').code(303)
+    return h.redirect('/select-vessel').code(statusCodes.seeOther)
   }
 }

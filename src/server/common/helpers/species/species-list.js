@@ -9,6 +9,10 @@ import {
 } from '#/server/common/helpers/journey/navigation.js'
 import { loadFavouriteSpecies } from '#/server/common/helpers/journey/session-favourites.js'
 
+function liveCatchRecording() {
+  return config.get('catchRecording.enabled')
+}
+
 const DEFAULT_AVAILABLE_SPECIES_CODES = new Set(['COD', 'HAD', 'MAC'])
 
 const speciesReferenceDataClient = createSpeciesReferenceDataClient({
@@ -59,13 +63,13 @@ function migrateSpeciesDataById(speciesData, catalogue) {
   }, {})
 }
 
-function speciesMigrationPatch(journeyState, catalogue) {
+function assertSavedSpeciesAvailable(journeyState, catalogue) {
   const savedSpeciesIds = [
     ...(journeyState.selectedSpeciesIds || []),
     ...Object.keys(journeyState.speciesNotLanded || {})
   ]
   if (
-    config.get('catchRecording.enabled') &&
+    liveCatchRecording() &&
     savedSpeciesIds.some(
       (id) => !catalogue.some((species) => species.id === id)
     )
@@ -75,23 +79,33 @@ function speciesMigrationPatch(journeyState, catalogue) {
       { catchRecordError: true }
     )
   }
+}
+
+function changedValue(original, migrated) {
+  return JSON.stringify(migrated) === JSON.stringify(original)
+    ? undefined
+    : migrated
+}
+
+function speciesMigrationPatch(journeyState, catalogue) {
+  assertSavedSpeciesAvailable(journeyState, catalogue)
   const patch = {}
 
   for (const key of ['selectedSpeciesIds', 'availableSpeciesIds']) {
-    if (Array.isArray(journeyState[key])) {
-      const migratedIds = migrateIds(journeyState[key], catalogue)
-      if (JSON.stringify(migratedIds) !== JSON.stringify(journeyState[key])) {
-        patch[key] = migratedIds
-      }
+    const value = journeyState[key]
+    const migrated =
+      Array.isArray(value) && changedValue(value, migrateIds(value, catalogue))
+    if (migrated) {
+      patch[key] = migrated
     }
   }
 
   for (const key of ['speciesWeights', 'speciesNotLanded']) {
-    if (journeyState[key]) {
-      const migratedData = migrateSpeciesDataById(journeyState[key], catalogue)
-      if (JSON.stringify(migratedData) !== JSON.stringify(journeyState[key])) {
-        patch[key] = migratedData
-      }
+    const value = journeyState[key]
+    const migrated =
+      value && changedValue(value, migrateSpeciesDataById(value, catalogue))
+    if (migrated) {
+      patch[key] = migrated
     }
   }
   return patch
@@ -155,7 +169,7 @@ export async function getSpeciesPageData(
   const availableSpeciesIds = getAvailableSpeciesIds(journeyState, catalogue)
   if (
     loadFavourites &&
-    config.get('catchRecording.enabled') &&
+    liveCatchRecording() &&
     journeyState.favouriteSpeciesIds.some(
       (id) => !catalogue.some((species) => species.id === id)
     )
@@ -166,7 +180,7 @@ export async function getSpeciesPageData(
     )
   }
   const optionIds =
-    includeSelected && config.get('catchRecording.enabled')
+    includeSelected && liveCatchRecording()
       ? [
           ...new Set([
             ...availableSpeciesIds,

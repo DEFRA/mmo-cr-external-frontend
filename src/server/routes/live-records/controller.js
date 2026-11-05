@@ -18,11 +18,14 @@ import {
   getRecordDisplayStatus
 } from '#/server/common/helpers/records/status-display.js'
 import { submittedSummary } from './submitted-summary.js'
+import { statusCodes } from '#/server/common/constants/status-codes.js'
+
+const RECORD_LIST_LIMIT = 100
 
 export async function listLiveRecords(request, h) {
   const { client, correlationId } = catchRecordService()
   const result = await client.listRecords({
-    limit: 100,
+    limit: RECORD_LIST_LIMIT,
     status: request.query.status,
     correlationId
   })
@@ -62,7 +65,7 @@ export async function listLiveRecords(request, h) {
         current: index + 1 === pagination.currentPage
       })
     ),
-    bounded: result.count === 100,
+    bounded: result.count === RECORD_LIST_LIMIT,
     statusFilter: request.query.status || ''
   })
 }
@@ -102,7 +105,7 @@ export async function showLiveRecord(request, h) {
   })
 }
 
-export async function recordAction(request, h) {
+function requireRecordAction(request) {
   if (
     request.params.action === 'complete' &&
     !config.get('catchRecording.completionEnabled')
@@ -117,6 +120,51 @@ export async function recordAction(request, h) {
   ) {
     throw Boom.badRequest('Open the record before taking this action')
   }
+  return action
+}
+
+async function deleteRecordAction(request, h, client, input) {
+  await client.deleteRecord(input)
+  if (getJourneyState(request).catchRecordId === input.catchRecordId) {
+    request.yar.set('journey', {})
+  }
+  request.yar.clear('recordAction')
+  return h.redirect('/records').code(statusCodes.seeOther)
+}
+
+async function completeRecordAction(request, h, client, input, record) {
+  if (record.status !== 'SUBMITTED') {
+    throw Boom.conflict('Only a submitted catch record may be completed')
+  }
+  await client.completeRecord(input)
+  request.yar.clear('recordAction')
+  return h
+    .redirect(`/records/${encodeURIComponent(input.catchRecordId)}`)
+    .code(statusCodes.seeOther)
+}
+
+async function openRecordJourney(request, h, client, input, record) {
+  const journey = recordJourney(record)
+  const editing = request.params.action === 'edit'
+  if (!editing && record.status !== 'DRAFT') {
+    throw Boom.conflict('Only a draft can be resumed')
+  }
+  if (editing && record.status === 'SUBMITTED') {
+    return h
+      .redirect(`/records/${encodeURIComponent(record.id)}/edit-reason`)
+      .code(statusCodes.seeOther)
+  }
+  if (editing) {
+    const saved = await client.startEdit(input)
+    journey.version = saved.version
+  }
+  request.yar.set('journey', journey)
+  request.yar.clear('recordAction')
+  return h.redirect('/trip-date').code(statusCodes.seeOther)
+}
+
+export async function recordAction(request, h) {
+  const action = requireRecordAction(request)
   const { client, correlationId } = catchRecordService()
   const input = {
     catchRecordId: action.id,
@@ -125,37 +173,13 @@ export async function recordAction(request, h) {
     correlationId
   }
   if (request.params.action === 'delete') {
-    await client.deleteRecord(input)
-    if (getJourneyState(request).catchRecordId === action.id) {
-      request.yar.set('journey', {})
-    }
-    request.yar.clear('recordAction')
-    return h.redirect('/records').code(303)
+    return deleteRecordAction(request, h, client, input)
   }
   const record = await client.getRecord(input)
   if (request.params.action === 'complete') {
-    if (record.status !== 'SUBMITTED') {
-      throw Boom.conflict('Only a submitted catch record may be completed')
-    }
-    await client.completeRecord(input)
-    request.yar.clear('recordAction')
-    return h.redirect(`/records/${encodeURIComponent(action.id)}`).code(303)
+    return completeRecordAction(request, h, client, input, record)
   }
-  const journey = recordJourney(record)
-  if (request.params.action === 'edit') {
-    if (record.status === 'SUBMITTED') {
-      return h
-        .redirect(`/records/${encodeURIComponent(record.id)}/edit-reason`)
-        .code(303)
-    }
-    const saved = await client.startEdit(input)
-    journey.version = saved.version
-  } else if (record.status !== 'DRAFT') {
-    throw Boom.conflict('Only a draft can be resumed')
-  }
-  request.yar.set('journey', journey)
-  request.yar.clear('recordAction')
-  return h.redirect('/trip-date').code(303)
+  return openRecordJourney(request, h, client, input, record)
 }
 
 export async function showHistory(request, h) {
@@ -231,12 +255,14 @@ export async function submitLiveRecord(request, h) {
     submittedRecordId: saved.id,
     reference: saved.catchRecordReference
   })
-  return h.redirect('/confirmation').code(303)
+  return h.redirect('/confirmation').code(statusCodes.seeOther)
 }
 
 async function saveReviewedRecord(request, client, correlationId) {
   const state = getJourneyState(request)
-  if (state.replacementSubmissionKey === state.submissionKey) return
+  if (state.replacementSubmissionKey === state.submissionKey) {
+    return
+  }
   const record = await client.getRecord({
     catchRecordId: state.catchRecordId,
     correlationId

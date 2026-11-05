@@ -59,34 +59,42 @@ function addGearPath(request, { step } = {}) {
   return accountVesselPath(request, query ? `/add-gear?${query}` : '/add-gear')
 }
 
-function viewContext(request, catalogue, overrides = {}) {
-  const journeyState = getJourneyState(request)
-  const favouriteGearIds = getFavouriteGearIds(journeyState, catalogue)
-  const tripSelection = isCatchRecordJourney(request)
-  const existingIds = tripSelection
+function existingGearIds(request, journeyState, catalogue) {
+  return isCatchRecordJourney(request)
     ? [
         ...(journeyState.journeyGearIds || []),
         ...(journeyState.selectedGearIds || [])
       ]
-    : favouriteGearIds
+    : getFavouriteGearIds(journeyState, catalogue)
+}
+
+function addGearTitle(tripSelection) {
+  return liveCatchRecords() && !tripSelection
+    ? 'Add gear to your favourites'
+    : pageTitle
+}
+
+function addGearCaption(request, tripSelection) {
+  if (tripSelection) {
+    return catchRecordCaption(request)
+  }
+  return liveCatchRecords() ? 'Your favourites' : reference
+}
+
+function viewContext(request, catalogue, overrides = {}) {
+  const journeyState = getJourneyState(request)
+  const tripSelection = isCatchRecordJourney(request)
+  const existingIds = existingGearIds(request, journeyState, catalogue)
   const pendingId = pendingGearId(request, journeyState)
   const pendingOption = pendingId && getGearOptionById(pendingId, catalogue)
+  const title = addGearTitle(tripSelection)
 
   return {
-    pageTitle:
-      liveCatchRecords() && !tripSelection
-        ? 'Add gear to your favourites'
-        : pageTitle,
+    pageTitle: title,
     heading: pendingOption
       ? `Enter the measurements for ${pendingOption.label.toLowerCase()}`
-      : liveCatchRecords() && !tripSelection
-        ? 'Add gear to your favourites'
-        : pageTitle,
-    caption: tripSelection
-      ? catchRecordCaption(request)
-      : liveCatchRecords()
-        ? 'Your favourites'
-        : reference,
+      : title,
+    caption: addGearCaption(request, tripSelection),
     backLink: {
       href: resolveNextPath(request, gearSelectionPath),
       text: 'Back'
@@ -244,14 +252,9 @@ async function handleGearSearchSubmission(request, h, journeyState, catalogue) {
     )
   }
 
-  const favouriteGearIds = isCatchRecordJourney(request)
-    ? [
-        ...(journeyState.journeyGearIds || []),
-        ...(journeyState.selectedGearIds || [])
-      ]
-    : getFavouriteGearIds(journeyState, catalogue)
-
-  if (favouriteGearIds.includes(matchedOption.id)) {
+  if (
+    existingGearIds(request, journeyState, catalogue).includes(matchedOption.id)
+  ) {
     return renderSearchError(
       request,
       h,

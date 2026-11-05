@@ -1,9 +1,11 @@
 import { config } from '#/config/config.js'
 import { getJourneyState } from './navigation.js'
+import { forEachSequentially } from '#/server/common/helpers/sequential.js'
 import {
   tripPayload,
   gearPayload,
-  speciesPayload
+  speciesPayload,
+  statisticalAreaCode
 } from './catch-record-mapping.js'
 import { getPortCatalogue } from '#/server/common/helpers/ports/ports-list.js'
 import { getGearCatalogue } from '#/server/common/helpers/gear/favourite-gear.js'
@@ -21,6 +23,40 @@ export function businessDate() {
   }).format(new Date())
 }
 
+function uniqueAreaCodes(catchDetailsByGearId) {
+  const codes = new Map()
+  for (const answers of Object.values(catchDetailsByGearId || {})) {
+    const code = statisticalAreaCode(answers)
+    const key = code?.toUpperCase()
+    if (code && code !== 'other' && !codes.has(key)) {
+      codes.set(key, code)
+    }
+  }
+  return codes
+}
+
+async function statisticalAreaIds(catchDetailsByGearId) {
+  const areaClient = createMapStatisticalAreasReferenceDataClient({
+    serviceUrl: config.get('referenceData.serviceUrl'),
+    token: config.get('referenceData.token'),
+    timeoutMs: config.get('referenceData.timeoutMs')
+  })
+  const areaIds = {}
+  await forEachSequentially(
+    [...uniqueAreaCodes(catchDetailsByGearId)],
+    async ([key, code]) => {
+      const { body } = await areaClient.getCollection({ code })
+      const reference = body.features
+        .map(statisticalAreaReference)
+        .find((item) => item?.code.toUpperCase() === key)
+      if (reference) {
+        areaIds[key] = reference.id
+      }
+    }
+  )
+  return areaIds
+}
+
 export async function sectionData(request, section) {
   const state = getJourneyState(request)
   if (section === 'trip') {
@@ -29,27 +65,7 @@ export async function sectionData(request, section) {
   if (section === 'speciesNotLanded') {
     return speciesPayload(state.speciesNotLanded)
   }
-  const areaClient = createMapStatisticalAreasReferenceDataClient({
-    serviceUrl: config.get('referenceData.serviceUrl'),
-    token: config.get('referenceData.token'),
-    timeoutMs: config.get('referenceData.timeoutMs')
-  })
-  const areaIds = {}
-  for (const answers of Object.values(state.catchDetailsByGearId || {})) {
-    const code =
-      answers.statAreaBranch === 'other'
-        ? answers.selectedAlternativeAreaOption === 'other'
-          ? answers.alternativeStatisticalArea
-          : answers.selectedAlternativeAreaOption
-        : answers.selectedStatisticalArea
-    if (!code || code === 'other') continue
-    if (areaIds[code.toUpperCase()]) continue
-    const { body } = await areaClient.getCollection({ code })
-    const reference = body.features
-      .map(statisticalAreaReference)
-      .find((item) => item?.code.toUpperCase() === code.toUpperCase())
-    if (reference) areaIds[code.toUpperCase()] = reference.id
-  }
+  const areaIds = await statisticalAreaIds(state.catchDetailsByGearId)
   return gearPayload(state, await getGearCatalogue(), areaIds)
 }
 

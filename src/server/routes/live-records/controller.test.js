@@ -185,7 +185,9 @@ describe('Live catch records and section persistence', () => {
           }
         }
         if (pathname === '/v1/catch-records') {
-          if (options.method === 'POST') return record
+          if (options.method === 'POST') {
+            return record
+          }
           return { items: [record], count: 1, limit: 100 }
         }
         if (pathname.endsWith('/history')) {
@@ -260,7 +262,9 @@ describe('Live catch records and section persistence', () => {
             }
             record.trip = data
           }
-          if (section === 'speciesNotLanded') record.speciesNotLanded = data
+          if (section === 'speciesNotLanded') {
+            record.speciesNotLanded = data
+          }
           if (section === 'gears') {
             record.gears = data.map((entry) => {
               const previous = record.gears.find(
@@ -1840,7 +1844,9 @@ describe('Live catch records and section persistence', () => {
     'Should offer the same-port draft shortcut with favourites=%s and answer=%s (case 5)',
     async (favourites, answer) => {
       await seed()
-      if (favourites) await seedFavourites({ favouritePortIds: ['port-2'] })
+      if (favourites) {
+        await seedFavourites({ favouritePortIds: ['port-2'] })
+      }
       const departure = await call('GET', '/departure-port')
       expect(departure.headers.location).toBe('/confirm-same-port?port=GBABC')
       const confirmation = await call('GET', departure.headers.location)
@@ -1888,7 +1894,9 @@ describe('Live catch records and section persistence', () => {
     'Should preselect both different draft ports with favourites=%s (case 6)',
     async (favourites) => {
       await seed({ ...recordJourney(record), returnPort: 'GBDEF' })
-      if (favourites) await seedFavourites({ favouritePortIds: ['port-1'] })
+      if (favourites) {
+        await seedFavourites({ favouritePortIds: ['port-1'] })
+      }
       for (const [phase, code, name] of [
         ['departure', 'GBABC', 'Test port'],
         ['return', 'GBDEF', 'Second port']
@@ -1919,7 +1927,9 @@ describe('Live catch records and section persistence', () => {
     'Should preselect a departure-only draft without a shortcut, favourites=%s',
     async (favourites) => {
       await seed({ ...recordJourney(record), returnPort: null })
-      if (favourites) await seedFavourites({ favouritePortIds: ['port-2'] })
+      if (favourites) {
+        await seedFavourites({ favouritePortIds: ['port-2'] })
+      }
       const departure = await call('GET', '/departure-port')
       if (favourites) {
         expect(departure.statusCode).toBe(200)
@@ -3134,7 +3144,9 @@ describe('Live catch records and section persistence', () => {
     })
     const upstream = fetchMock.getMockImplementation()
     fetchMock.mockImplementation((url, options) => {
-      if (options.method === 'PUT') throw new Error('timeout')
+      if (options.method === 'PUT') {
+        throw new Error('timeout')
+      }
       return upstream(url, options)
     })
     const response = await call('POST', '/check-answers', {

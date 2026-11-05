@@ -58,7 +58,9 @@ describe('Catch Recording complete API client', () => {
           ...(payload ? { body: JSON.stringify(payload) } : {})
         })
       )
-      if (!payload) expect(fetchFn.mock.calls[0][1].body).toBeUndefined()
+      if (!payload) {
+        expect(fetchFn.mock.calls[0][1].body).toBeUndefined()
+      }
     }
   )
 

@@ -7,17 +7,22 @@ export function getFavouritePortCodes(request) {
   return getJourneyState(request).favouritePorts || []
 }
 
+function livePreviousPort(state) {
+  const sameSavedPort =
+    state.departurePort && state.departurePort === state.returnPort
+  return state.catchRecordId && !state.portSelectionStarted && sameSavedPort
+    ? state.departurePort
+    : undefined
+}
+
 export function previousPortForConfirmation(request) {
   const state = getJourneyState(request)
   if (liveCatchRecords()) {
-    return state.catchRecordId &&
-      !state.portSelectionStarted &&
-      state.departurePort &&
-      state.departurePort === state.returnPort
-      ? state.departurePort
-      : undefined
+    return livePreviousPort(state)
   }
-  if (state.departurePort || state.portSelectionStarted) return undefined
+  if (state.departurePort || state.portSelectionStarted) {
+    return undefined
+  }
   const codes = getFavouritePortCodes(request)
   const previous = request.yar.get('previousTripPort')
   const code = previous == null && codes.length === 1 ? codes[0] : previous
@@ -25,9 +30,11 @@ export function previousPortForConfirmation(request) {
 }
 
 export function portSelectionPath(request, path) {
-  return request.query.return === '/check-answers'
-    ? `${path}${path.includes('?') ? '&' : '?'}return=/check-answers`
-    : path
+  if (request.query.return !== '/check-answers') {
+    return path
+  }
+  const separator = path.includes('?') ? '&' : '?'
+  return `${path}${separator}return=/check-answers`
 }
 
 export function addFavouritePortCode(request, code) {
