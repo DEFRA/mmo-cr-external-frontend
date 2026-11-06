@@ -10,6 +10,11 @@ import {
 } from '#/server/common/helpers/gear/favourite-gear.js'
 import { getData } from '#/server/common/data/get-data.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
+import { liveCatchRecords } from '#/server/common/helpers/journey/catch-record-service.js'
+import {
+  loadFavouriteGears,
+  removeFavouriteGears
+} from '#/server/common/helpers/journey/session-favourites.js'
 
 const headingLine1 = 'Remove gear from vessel'
 const GEAR_SELECTION_PATH = '/gear-selection'
@@ -25,12 +30,16 @@ function gearCheckboxItems(favouriteOptions) {
 function viewContext(request, catalogue, overrides = {}) {
   const journeyState = migrateGearJourneyState(request, catalogue)
   const favouriteGearIds = getFavouriteGearIds(journeyState, catalogue)
-  const vesselName =
-    journeyState.selectedVesselName || getData('selectVessel').name
+  const vesselName = liveCatchRecords()
+    ? ''
+    : journeyState.selectedVesselName || getData('selectVessel').name
+  const heading = liveCatchRecords()
+    ? 'Remove gear from your favourites'
+    : headingLine1
 
   return {
-    pageTitle: `${headingLine1} ${vesselName}`,
-    headingLine1,
+    pageTitle: `${heading} ${vesselName}`.trim(),
+    headingLine1: heading,
     vesselName,
     backLink: {
       href: resolveNextPath(request, GEAR_SELECTION_PATH),
@@ -63,6 +72,7 @@ function renderWithError(request, h, catalogue) {
 
 export const removeGearController = {
   async handler(request, h) {
+    await loadFavouriteGears(request)
     const catalogue = await getGearCatalogue()
     return h.view('remove-gear/index', viewContext(request, catalogue))
   }
@@ -70,6 +80,7 @@ export const removeGearController = {
 
 export const removeGearSubmitController = {
   async handler(request, h) {
+    await loadFavouriteGears(request)
     const catalogue = await getGearCatalogue()
     const journeyState = migrateGearJourneyState(request, catalogue)
     const favouriteGearIds = getFavouriteGearIds(journeyState, catalogue)
@@ -93,6 +104,13 @@ export const removeGearSubmitController = {
 
     if (idsToRemove.length === 0) {
       return renderWithError(request, h, catalogue)
+    }
+
+    if (liveCatchRecords()) {
+      await removeFavouriteGears(request, [...new Set(idsToRemove)])
+      return h
+        .redirect(resolveNextPath(request, GEAR_SELECTION_PATH))
+        .code(statusCodes.seeOther)
     }
 
     const remainingFavouriteGearIds = favouriteGearIds.filter(

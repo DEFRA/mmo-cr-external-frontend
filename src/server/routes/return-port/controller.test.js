@@ -97,7 +97,7 @@ describe('#returnPortController', () => {
     expect(radios.eq(1).attr('value')).toBe('newhaven')
   })
 
-  test('Should render the Save and continue and Add port buttons', async () => {
+  test('Should render only the Save and continue button without extra hint text', async () => {
     const cookie = await withDeparturePort(server, 'hastings')
 
     const { result } = await server.inject({
@@ -108,8 +108,8 @@ describe('#returnPortController', () => {
     const $ = load(result)
 
     expect($('.govuk-button').eq(0).text().trim()).toBe('Save and continue')
-    expect($('.govuk-button').eq(1).text().trim()).toBe('Add port')
-    expect($('.govuk-button').eq(1).attr('href')).toBe('/add-port?for=return')
+    expect($('.govuk-button')).toHaveLength(1)
+    expect($('.govuk-hint')).toHaveLength(0)
   })
 
   test('Should render the Back link to the departure port page', async () => {

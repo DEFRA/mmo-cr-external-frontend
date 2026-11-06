@@ -41,10 +41,13 @@ function boundsForCoordinates(coordinates) {
   )
 }
 
+// A closed GeoJSON linear ring needs at least four positions.
+const MIN_RING_POSITIONS = 4
+
 function isValidRing(ring) {
   return (
     Array.isArray(ring) &&
-    ring.length >= 4 &&
+    ring.length >= MIN_RING_POSITIONS &&
     ring.every(
       (coordinate) =>
         Array.isArray(coordinate) &&
@@ -89,31 +92,69 @@ function transformCoordinatesToWgs84(coordinates) {
     : coordinates
 }
 
-function mapLandFeatureToCanvasData(feature) {
-  const polygons = polygonCoordinatesForGeometry(feature.geometry)
-    .map(toLandPolygon)
-    .filter(Boolean)
+function isFeatureCollection(featureCollection) {
+  return (
+    featureCollection?.type === 'FeatureCollection' &&
+    Array.isArray(featureCollection.features)
+  )
+}
+
+function usesWebMercatorCrs(featureCollection) {
+  const referenceCrs =
+    featureCollection.metadata?.crs ||
+    featureCollection.crs?.properties?.name ||
+    ''
+  return webMercatorCrsPattern.test(referenceCrs)
+}
+
+function mapLandFeatureToCanvasData(feature, usesWebMercator) {
+  const geometry = geometryInWgs84(feature?.geometry, usesWebMercator)
+  const polygons = canvasPolygons(geometry)
   if (polygons.length === 0) {
     return undefined
   }
-  const coordinates = polygons.flatMap((polygon) => [
-    polygon.exterior,
-    ...polygon.holes
-  ])
-  return { polygons, bounds: boundsForCoordinates(coordinates) }
+  return {
+    polygons,
+    bounds: boundsForCoordinates(coordinatesForPolygons(polygons))
+  }
 }
 
 export function mapLandGeoJsonToCanvasData(featureCollection) {
-  if (
-    featureCollection?.type !== 'FeatureCollection' ||
-    !Array.isArray(featureCollection.features)
-  ) {
+  if (!isFeatureCollection(featureCollection)) {
     return undefined
   }
+  const usesWebMercator = usesWebMercatorCrs(featureCollection)
   const land = featureCollection.features
-    .map(mapLandFeatureToCanvasData)
+    .map((feature) => mapLandFeatureToCanvasData(feature, usesWebMercator))
     .filter(Boolean)
   return land.length > 0 ? land : undefined
+}
+
+function mapPortFeatureToCanvasPort(feature, usesWebMercator) {
+  const name = feature?.properties?.name
+  if (feature?.geometry?.type !== 'Point' || typeof name !== 'string') {
+    return undefined
+  }
+  const geometry = geometryInWgs84(feature.geometry, usesWebMercator)
+  const [longitude, latitude] = geometry.coordinates || []
+  if (!Number.isFinite(longitude) || !Number.isFinite(latitude)) {
+    return undefined
+  }
+  return {
+    code: feature.properties.code,
+    name,
+    coordinate: [longitude, latitude]
+  }
+}
+
+export function mapPortsGeoJsonToCanvasData(featureCollection) {
+  if (!isFeatureCollection(featureCollection)) {
+    return undefined
+  }
+  const usesWebMercator = usesWebMercatorCrs(featureCollection)
+  return featureCollection.features
+    .map((feature) => mapPortFeatureToCanvasPort(feature, usesWebMercator))
+    .filter(Boolean)
 }
 
 function isSubrectangle(properties) {
@@ -179,7 +220,7 @@ function mapFeatureToCanvasSubrectangle(feature, usesWebMercator) {
   if (!isSubrectangleFeature) {
     return undefined
   }
-  const geometry = geometryInWgs84(feature.geometry, usesWebMercator)
+  const geometry = geometryInWgs84(feature?.geometry, usesWebMercator)
   const polygons = canvasPolygons(geometry)
   if (polygons.length === 0) {
     return undefined
@@ -197,17 +238,10 @@ function mapFeatureToCanvasSubrectangle(feature, usesWebMercator) {
 }
 
 export function mapSubrectanglesGeoJsonToCanvasData(featureCollection) {
-  if (
-    featureCollection?.type !== 'FeatureCollection' ||
-    !Array.isArray(featureCollection.features)
-  ) {
+  if (!isFeatureCollection(featureCollection)) {
     return []
   }
-  const referenceCrs =
-    featureCollection.metadata?.crs ||
-    featureCollection.crs?.properties?.name ||
-    ''
-  const usesWebMercator = webMercatorCrsPattern.test(referenceCrs)
+  const usesWebMercator = usesWebMercatorCrs(featureCollection)
   return featureCollection.features
     .map((feature) => mapFeatureToCanvasSubrectangle(feature, usesWebMercator))
     .filter(Boolean)
@@ -222,20 +256,19 @@ async function fetchJson(url) {
   }
 }
 
-export async function loadOfflineMapData() {
-  const [bundledLand, bundledSubrectangleData, portData, apiSubrectangles] =
+// Land and ports come only from the Reference Data Service (via same-origin proxies); if either
+// layer is unavailable the map shows its retry state rather than falling back to bundled data.
+export async function loadMapData() {
+  const [apiLand, bundledSubrectangleData, apiPorts, apiSubrectangles] =
     await Promise.all([
-      fetchJson('/public/offline-map/land.json'),
+      fetchJson('/map-data/land'),
       fetchJson('/public/offline-map/subrectangles.json'),
-      fetchJson('/public/offline-map/ports.json'),
+      fetchJson('/map-data/ports'),
       fetchJson('/map-data/statistical-areas')
     ])
-  if (!portData) {
-    return null
-  }
-
-  const land = bundledLand?.land
-  if (!Array.isArray(land) || land.length === 0) {
+  const land = mapLandGeoJsonToCanvasData(apiLand)
+  const ports = mapPortsGeoJsonToCanvasData(apiPorts)
+  if (!land || !ports) {
     return null
   }
   const apiAreas = mapSubrectanglesGeoJsonToCanvasData(apiSubrectangles)
@@ -257,7 +290,6 @@ export async function loadOfflineMapData() {
     })
   }
   const allSubrectangles = [...subrectanglesByCode.values()]
-  const { ports } = portData
   // A rectangle entirely on land has no fishing area and must never be shown, selectable or not.
   const subrectangles = allSubrectangles.filter(
     (subrectangle) => subrectangle.overlapsSea

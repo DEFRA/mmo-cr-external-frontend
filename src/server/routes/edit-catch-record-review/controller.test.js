@@ -1,4 +1,8 @@
 import { load } from 'cheerio'
+import {
+  mockCatchRecording,
+  restoreCatchRecordingMock
+} from '#/test-helpers/mock-catch-recording.js'
 
 import { createServer } from '#/server/server.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
@@ -15,10 +19,12 @@ import {
 beforeEach(() => {
   mockSpeciesReferenceData()
   mockVesselsReferenceData()
+  mockCatchRecording()
 })
 afterEach(() => {
   restoreVesselsReferenceDataMock()
   restoreSpeciesReferenceDataMock()
+  restoreCatchRecordingMock()
 })
 
 describe('#editCatchRecordReviewController', () => {
@@ -130,6 +136,14 @@ describe('#editCatchRecordReviewController', () => {
         [VESSEL_IDS.achilles, 'ACHILLES'],
         [VESSEL_IDS.seaSpray, 'SEA SPRAY']
       ]) {
+        if (cookie) {
+          const reset = await server.inject({
+            method: 'POST',
+            url: '/records/new',
+            headers: { cookie }
+          })
+          cookie = reset.headers['set-cookie'][0].split(';')[0]
+        }
         const selection = await server.inject({
           method: 'POST',
           url: '/select-vessel',

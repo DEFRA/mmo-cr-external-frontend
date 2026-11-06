@@ -1,10 +1,11 @@
 // @vitest-environment jsdom
 import { initialiseStatisticalAreaMap } from './statistical-area-map.js'
 import {
-  loadOfflineMapData,
+  loadMapData,
   findDeparturePort,
   findDepartureCell,
   mapLandGeoJsonToCanvasData,
+  mapPortsGeoJsonToCanvasData,
   mapSubrectanglesGeoJsonToCanvasData
 } from './statistical-area-map-render.js'
 import { drawPorts } from './statistical-area-map-ports.js'
@@ -151,38 +152,66 @@ function setupMapDom({ departurePort = 'Hastings', selectedArea = '' } = {}) {
   }
 }
 
-function mockFetchWith({ land, subrectangles, ports, apiLand, apiAreas }) {
+function landGeoJson(land) {
+  return {
+    type: 'FeatureCollection',
+    metadata: { dataset: 'map-land', crs: 'EPSG:4326' },
+    features: land.map((feature, index) => ({
+      type: 'Feature',
+      id: `land-${index}`,
+      properties: { id: `land-${index}` },
+      geometry: {
+        type: 'MultiPolygon',
+        coordinates: feature.polygons.map((polygon) => [
+          polygon.exterior,
+          ...polygon.holes
+        ])
+      }
+    }))
+  }
+}
+
+function portsGeoJson(ports) {
+  return {
+    type: 'FeatureCollection',
+    metadata: { dataset: 'map-ports', crs: 'EPSG:4326' },
+    features: ports.map((mapPort, index) => ({
+      type: 'Feature',
+      id: `port-${index}`,
+      properties: {
+        id: `port-${index}`,
+        code: mapPort.code ?? `P${index}`,
+        name: mapPort.name
+      },
+      geometry: { type: 'Point', coordinates: mapPort.coordinate }
+    }))
+  }
+}
+
+function jsonResponse(body) {
+  return Promise.resolve({
+    ok: Boolean(body),
+    json: () => Promise.resolve(body)
+  })
+}
+
+function mockFetchWith({ land, subrectangles, ports, apiAreas }) {
   vi.stubGlobal(
     'fetch',
     vi.fn((url) => {
       if (url === '/map-data/land') {
-        return Promise.resolve({
-          ok: Boolean(apiLand),
-          json: () => Promise.resolve(apiLand)
-        })
+        return jsonResponse(land && landGeoJson(land))
+      }
+      if (url === '/map-data/ports') {
+        return jsonResponse(ports && portsGeoJson(ports))
       }
       if (url === '/map-data/statistical-areas') {
-        return Promise.resolve({
-          ok: Boolean(apiAreas),
-          json: () => Promise.resolve(apiAreas)
-        })
-      }
-      if (url.includes('land.json')) {
-        return Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve({ land })
-        })
+        return jsonResponse(apiAreas)
       }
       if (url.includes('subrectangles.json')) {
         return Promise.resolve({
           ok: true,
           json: () => Promise.resolve({ subrectangles })
-        })
-      }
-      if (url.includes('ports.json')) {
-        return Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve({ ports })
         })
       }
       return Promise.resolve({ ok: false })
@@ -428,53 +457,123 @@ describe('#initialiseStatisticalAreaMap', () => {
     expect(findDeparturePort([], map)).toBeUndefined()
   })
 
-  test('Should return no map data when required bundled files are missing', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn((url) =>
-        Promise.resolve({
-          ok: !url.includes('subrectangles.json'),
-          json: () => Promise.resolve({ land: [landFeature], ports: [port] })
-        })
-      )
+  test('Should return no map data when the bundled subrectangle catalogue is missing', async () => {
+    mockFetchWith({ land: [landFeature], ports: [port] })
+    vi.mocked(fetch).mockImplementation((url) =>
+      url.includes('subrectangles.json')
+        ? Promise.resolve({ ok: false })
+        : url === '/map-data/land'
+          ? jsonResponse(landGeoJson([landFeature]))
+          : url === '/map-data/ports'
+            ? jsonResponse(portsGeoJson([port]))
+            : Promise.resolve({ ok: false })
     )
 
-    await expect(loadOfflineMapData()).resolves.toBeNull()
+    await expect(loadMapData()).resolves.toBeNull()
   })
 
-  test('Should initialize the map with bundled land and selection layers', async () => {
+  test('Should initialize the map with Reference Data land, ports and selection layers', async () => {
     const dom = setupMapDom()
     mockFetchWith({
       land: [landFeature],
-      apiLand: {
-        type: 'FeatureCollection',
-        metadata: { dataset: 'map-land' },
-        features: [
-          {
-            type: 'Feature',
-            geometry: {
-              type: 'Polygon',
-              coordinates: [landFeature.polygons[0].exterior]
-            }
-          }
-        ]
-      },
       subrectangles: [subrectangle],
       ports: [port]
     })
 
     await initialiseStatisticalAreaMap()
 
+    expect(fetch).toHaveBeenCalledWith('/map-data/land')
+    expect(fetch).toHaveBeenCalledWith('/map-data/ports')
+    expect(fetch).not.toHaveBeenCalledWith('/public/offline-map/land.json')
+    expect(fetch).not.toHaveBeenCalledWith('/public/offline-map/ports.json')
     expect(dom.canvas.hidden).toBe(false)
     expect(dom.errorElement.hidden).toBe(true)
     expect(dom.context.fill).toHaveBeenCalled()
   })
 
-  test('Should use bundled land even when API land is available', async () => {
-    const bundledLand = [landFeature]
-    const apiLand = {
+  test('Should load land and ports only from the Reference Data Service', async () => {
+    mockFetchWith({
+      land: [landFeature],
+      subrectangles: [subrectangle],
+      ports: [{ code: 'GBHAS', ...port }]
+    })
+
+    const mapData = await loadMapData()
+
+    expect(mapData.land).toEqual([landFeature])
+    expect(mapData.ports).toEqual([
+      { code: 'GBHAS', name: 'Hastings', coordinate: [0.5, 0.5] }
+    ])
+  })
+
+  test.each([
+    ['land', { land: undefined, ports: [port] }],
+    ['ports', { land: [landFeature], ports: undefined }],
+    ['land with no features', { land: [], ports: [port] }]
+  ])(
+    'Should show the retry state when Reference Data %s is unavailable',
+    async (_layer, layers) => {
+      const dom = setupMapDom()
+      mockFetchWith({ ...layers, subrectangles: [subrectangle] })
+
+      await expect(loadMapData()).resolves.toBeNull()
+      await initialiseStatisticalAreaMap()
+
+      expect(dom.canvas.hidden).toBe(true)
+      expect(dom.errorElement.hidden).toBe(false)
+    }
+  )
+
+  test('Should map Reference Data ports and skip features without a usable point', () => {
+    expect(mapPortsGeoJsonToCanvasData(null)).toBeUndefined()
+    expect(
+      mapPortsGeoJsonToCanvasData({
+        type: 'FeatureCollection',
+        metadata: { dataset: 'map-ports', crs: 'EPSG:4326' },
+        features: [
+          {
+            type: 'Feature',
+            properties: { code: 'GBPLY', name: 'Plymouth' },
+            geometry: { type: 'Point', coordinates: [-4.1427, 50.3661] }
+          },
+          {
+            type: 'Feature',
+            properties: { code: 'NONAME' },
+            geometry: { type: 'Point', coordinates: [0, 0] }
+          },
+          {
+            type: 'Feature',
+            properties: { code: 'BAD', name: 'Bad' },
+            geometry: { type: 'Point', coordinates: ['x', 0] }
+          },
+          {
+            type: 'Feature',
+            properties: { code: 'POLY', name: 'Polygon' },
+            geometry: { type: 'Polygon', coordinates: [] }
+          }
+        ]
+      })
+    ).toEqual([
+      { code: 'GBPLY', name: 'Plymouth', coordinate: [-4.1427, 50.3661] }
+    ])
+  })
+
+  test('Should reproject Web Mercator land and ports to WGS84', () => {
+    const metadata = { crs: 'EPSG:3857' }
+    const [mappedPort] = mapPortsGeoJsonToCanvasData({
       type: 'FeatureCollection',
-      metadata: { dataset: 'map-land' },
+      metadata,
+      features: [
+        {
+          type: 'Feature',
+          properties: { name: 'Origin' },
+          geometry: { type: 'Point', coordinates: [0, 0] }
+        }
+      ]
+    })
+    const [mappedLand] = mapLandGeoJsonToCanvasData({
+      type: 'FeatureCollection',
+      metadata,
       features: [
         {
           type: 'Feature',
@@ -483,36 +582,23 @@ describe('#initialiseStatisticalAreaMap', () => {
             coordinates: [
               [
                 [0, 0],
-                [1, 0],
-                [1, 1],
-                [0, 1],
+                [111319.49, 0],
+                [111319.49, 111325.14],
                 [0, 0]
               ]
             ]
           }
         }
       ]
-    }
-    mockFetchWith({
-      land: bundledLand,
-      subrectangles: [subrectangle],
-      ports: [port],
-      apiLand
     })
 
-    const mapData = await loadOfflineMapData()
-    expect(mapData.land).toEqual(bundledLand)
-
-    mockFetchWith({
-      land: bundledLand,
-      subrectangles: [subrectangle],
-      ports: [port]
-    })
-    const fallbackData = await loadOfflineMapData()
-    expect(fallbackData.land).toEqual(bundledLand)
+    expect(mappedPort.coordinate[0]).toBeCloseTo(0)
+    expect(mappedPort.coordinate[1]).toBeCloseTo(0)
+    expect(mappedLand.bounds.maxLongitude).toBeCloseTo(1, 3)
+    expect(mappedLand.bounds.maxLatitude).toBeCloseTo(1, 3)
   })
 
-  test('Should merge API subrectangles with bundled coverage and keep bundled land', async () => {
+  test('Should merge API subrectangles with bundled coverage', async () => {
     const apiAreas = {
       type: 'FeatureCollection',
       features: [
@@ -550,7 +636,7 @@ describe('#initialiseStatisticalAreaMap', () => {
       apiAreas
     })
 
-    const mapData = await loadOfflineMapData()
+    const mapData = await loadMapData()
 
     expect(fetch).toHaveBeenCalledWith('/map-data/statistical-areas')
     expect(mapData.land).toEqual([landFeature])
@@ -601,7 +687,7 @@ describe('#initialiseStatisticalAreaMap', () => {
       apiAreas
     })
 
-    const mapData = await loadOfflineMapData()
+    const mapData = await loadMapData()
     expect(mapData.subrectangles).toEqual([subrectangle])
   })
 
@@ -832,7 +918,9 @@ describe('#initialiseStatisticalAreaMap', () => {
   })
 
   test('Should highlight a restored selection with a blue cell and label', async () => {
-    const { context } = setupMapDom({ selectedArea: 'r0c0' })
+    const { context, input, status, form } = setupMapDom({
+      selectedArea: 'r0c0'
+    })
     mockFetchWith({
       land: [landFeature],
       subrectangles: [subrectangle],
@@ -848,6 +936,48 @@ describe('#initialiseStatisticalAreaMap', () => {
       text: 'R0C0',
       fillStyle: '#FFFFFF'
     })
+    expect(input.value).toBe('R0C0')
+    expect(input.disabled).toBe(false)
+    expect(status.textContent).toBe('R0C0 selected')
+    expect(form.requestSubmit).not.toHaveBeenCalled()
+  })
+
+  test('Should open the map on a saved area far from the departure port', async () => {
+    const { context, input, form } = setupMapDom({ selectedArea: 'saved' })
+    const saved = {
+      ...subrectangle,
+      subCode: 'SAVED',
+      bounds: {
+        minLongitude: 20,
+        maxLongitude: 21,
+        minLatitude: 20,
+        maxLatitude: 21
+      },
+      labelCoordinate: [20.5, 20.5],
+      polygons: [
+        {
+          exterior: [
+            [20, 20],
+            [21, 20],
+            [21, 21],
+            [20, 21]
+          ],
+          holes: []
+        }
+      ]
+    }
+    mockFetchWith({
+      land: [landFeature],
+      subrectangles: [subrectangle, saved],
+      ports: [port]
+    })
+    await initialiseStatisticalAreaMap()
+    expect(context.fillTextStyles).toContainEqual({
+      text: 'SAVED',
+      fillStyle: '#FFFFFF'
+    })
+    expect(input.value).toBe('SAVED')
+    expect(form.requestSubmit).not.toHaveBeenCalled()
   })
 
   test('Should select a subrectangle on tap and submit the form', async () => {

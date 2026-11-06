@@ -4,6 +4,7 @@ import {
   getSpeciesJourneyState,
   getSpeciesOptionsByIds
 } from './species-list.js'
+import { config } from '#/config/config.js'
 
 const catalogue = [
   { id: 'guid-cod', code: 'COD', text: 'Cod (COD)' },
@@ -75,6 +76,26 @@ describe('#findSpeciesOptionByLabel', () => {
 })
 
 describe('#getSpeciesJourneyState', () => {
+  test('Should not silently discard saved species selections in live mode', () => {
+    const enabled = config.get('catchRecording.enabled')
+    config.set('catchRecording.enabled', true)
+    try {
+      const state = {
+        selectedGearIds: ['gear-1'],
+        catchDetailsByGearId: {
+          'gear-1': { selectedSpeciesIds: ['guid-cod', 'retired-species'] }
+        }
+      }
+      const request = { yar: { get: () => state, set: vi.fn() } }
+      expect(() => getSpeciesJourneyState(request, catalogue)).toThrow(
+        'A saved species is no longer available'
+      )
+      expect(request.yar.set).not.toHaveBeenCalled()
+    } finally {
+      config.set('catchRecording.enabled', enabled)
+    }
+  })
+
   test('Should migrate species IDs inside every gear without mixing their answers', () => {
     let state = {
       selectedGearIds: ['pots', 'dredge'],

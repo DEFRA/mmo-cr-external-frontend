@@ -1,6 +1,7 @@
 import Joi from 'joi'
 
 import {
+  catchRecordCaption,
   getGearJourneyState as getJourneyState,
   gearPageContext,
   gearPath,
@@ -14,6 +15,7 @@ import { offlineMapPorts } from '#/server/common/data/offline-map-ports.js'
 import { config } from '#/config/config.js'
 import { createMapStatisticalAreasReferenceDataClient } from '#/server/common/clients/map-statistical-areas-reference-data.js'
 import { statisticalAreaContent } from '#/server/common/helpers/journey/statistical-area-content.js'
+import { statisticalAreaCode } from '#/server/common/helpers/journey/catch-record-mapping.js'
 
 const templatePath = 'statistical-area-other/index'
 const subrectangleFormat = /^\d{2}[A-Z]\d{2}$/i
@@ -72,8 +74,10 @@ function areaRadioItems(codes, selectedArea) {
   ]
 }
 
+const COORDINATE_DECIMAL_PLACES = 4
+
 function formatCoordinate([longitude, latitude]) {
-  return `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`
+  return `${latitude.toFixed(COORDINATE_DECIMAL_PLACES)}, ${longitude.toFixed(COORDINATE_DECIMAL_PLACES)}`
 }
 
 function resolveSelectedAreaCoordinatesText(
@@ -93,11 +97,7 @@ function resolveSelectedAreaCoordinatesText(
   return subrectangle ? formatCoordinate(subrectangle.coordinate) : undefined
 }
 
-async function viewContext(request, overrides = {}) {
-  const journeyState = getJourneyState(request)
-  const gearContext = gearPageContext(request)
-  const alternativeStatisticalArea =
-    journeyState.alternativeStatisticalArea || ''
+function departurePortCoordinate(journeyState) {
   const departurePort = getData('ports').find(
     (port) => port.code === journeyState.departurePort
   )
@@ -105,15 +105,44 @@ async function viewContext(request, overrides = {}) {
     journeyState.portNamesByCode?.[journeyState.departurePort] ||
     departurePort?.name ||
     'Hastings'
-  const departurePortCoordinate =
+  return (
     journeyState.portCoordinatesByCode?.[journeyState.departurePort] ||
-    (departurePortName
-      ? offlineMapPorts.get(departurePortName.toLowerCase())
-      : undefined)
-  const nearbyAreaCodes = departurePortCoordinate
-    ? closestSubareas(departurePortCoordinate)
-    : []
-  const selectedArea = journeyState.selectedAlternativeAreaOption
+    offlineMapPorts.get(departurePortName.toLowerCase())
+  )
+}
+
+function restoredAreaCode(journeyState) {
+  const savedArea = statisticalAreaCode(journeyState)
+  return savedArea && savedArea !== 'other'
+    ? savedArea.toUpperCase()
+    : undefined
+}
+
+function resolveSelectedArea(journeyState, restoredArea, nearbyAreaCodes) {
+  if (journeyState.selectedAlternativeAreaOption === 'other') {
+    return 'other'
+  }
+  if (!restoredArea) {
+    return journeyState.selectedAlternativeAreaOption
+  }
+  return nearbyAreaCodes.includes(restoredArea) ? restoredArea : 'other'
+}
+
+async function viewContext(request, overrides = {}) {
+  const journeyState = getJourneyState(request)
+  const gearContext = gearPageContext(request)
+  const portCoordinate = departurePortCoordinate(journeyState)
+  const nearbyAreaCodes = portCoordinate ? closestSubareas(portCoordinate) : []
+  const restoredArea = restoredAreaCode(journeyState)
+  const selectedArea = resolveSelectedArea(
+    journeyState,
+    restoredArea,
+    nearbyAreaCodes
+  )
+  const alternativeStatisticalArea =
+    selectedArea === 'other'
+      ? restoredArea || journeyState.alternativeStatisticalArea || ''
+      : ''
 
   return {
     ...(await statisticalAreaContent(journeyState, {
@@ -121,7 +150,7 @@ async function viewContext(request, overrides = {}) {
       gearId: gearContext.gearId
     })),
     ...gearContext,
-    caption: 'New catch record',
+    caption: catchRecordCaption(request),
     backLink: {
       href: gearPath(
         request,

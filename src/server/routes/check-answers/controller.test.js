@@ -9,13 +9,30 @@ import {
 import { mockPortsReferenceData } from '#/test-helpers/mock-ports-reference-data.js'
 import { mockGearsReferenceData } from '#/test-helpers/mock-gears-reference-data.js'
 import * as checkAnswersViewModel from './view-model.js'
+import {
+  mockCatchRecording,
+  restoreCatchRecordingMock,
+  CREATED_DRAFT,
+  RETRIEVED_DRAFT
+} from '#/test-helpers/mock-catch-recording.js'
+import {
+  mockVesselsReferenceData,
+  restoreVesselsReferenceDataMock,
+  VESSEL_IDS
+} from '#/test-helpers/mock-vessels-reference-data.js'
 
 beforeEach(() => {
   mockSpeciesReferenceData()
   mockPortsReferenceData()
   mockGearsReferenceData()
+  mockVesselsReferenceData()
+  mockCatchRecording()
 })
-afterEach(() => restoreSpeciesReferenceDataMock())
+afterEach(() => {
+  restoreVesselsReferenceDataMock()
+  restoreSpeciesReferenceDataMock()
+  restoreCatchRecordingMock()
+})
 
 describe('#checkAnswersController', () => {
   let server
@@ -55,10 +72,10 @@ describe('#checkAnswersController', () => {
         .map((_, el) => $(el).text().trim())
         .get()
     ).toEqual([
-      '1. Trips details',
-      '2. Gear',
+      'Trips details',
+      '2. Gear used',
       '3. Species caught',
-      '4. Species not landed'
+      'Species not landed'
     ])
   })
 
@@ -96,9 +113,25 @@ describe('#checkAnswersController', () => {
       'Accept and submit trip details'
     )
     expect($('.govuk-back-link').attr('href')).toBe('/catch-not-landed')
-    expect($('dt').text()).toContain('Date left')
-    expect($('dt').text()).toContain('Date returned')
-    expect($('dt').text()).toContain('Catch kept onboard or in keep pots')
+    const tripRows = $('main .govuk-summary-list')
+      .first()
+      .find('.govuk-summary-list__row')
+    expect(
+      tripRows
+        .find('dt')
+        .map((_, row) => $(row).text().trim())
+        .get()
+    ).toEqual([
+      'Vessel',
+      'Departure date',
+      'Return date',
+      'Departure port',
+      'Return port',
+      'Statistical sub area'
+    ])
+    expect(tripRows.first().find('a')).toHaveLength(0)
+    expect(tripRows.slice(1).find('a')).toHaveLength(5)
+    expect($('dt').text()).toContain('Not landed')
   })
 
   test('Should render Change links supplied by the review view model', async () => {
@@ -165,6 +198,38 @@ describe('#checkAnswersController', () => {
     expect($('dd').eq(0).text().trim()).toBe('OLGA')
   })
 
+  test('Should retrieve the persisted record without displaying status and progress', async () => {
+    const selection = await server.inject({
+      method: 'POST',
+      url: '/select-vessel',
+      payload: { vesselId: VESSEL_IDS.achilles }
+    })
+    const cookie = selection.headers['set-cookie'][0].split(';')[0]
+    const { result, statusCode } = await server.inject({
+      method: 'GET',
+      url: '/check-answers',
+      headers: { cookie }
+    })
+    const $ = load(result)
+
+    expect(statusCode).toBe(statusCodes.ok)
+    expect($('[data-testid="app-record-status"]')).toHaveLength(0)
+    expect($('[data-testid="app-record-progress"]')).toHaveLength(0)
+    expect($('[data-testid="app-record-submission-eligibility"]')).toHaveLength(
+      0
+    )
+    expect($('main').text()).not.toContain('Record status and progress')
+    expect($('main').text()).not.toContain('This is a preliminary check.')
+    expect($('h1').text()).toContain('Check your catch record')
+    expect($('form[method="post"]')).toHaveLength(1)
+    expect(
+      globalThis.fetch.mock.calls.some(([url]) =>
+        url.endsWith(`/v1/catch-records/${CREATED_DRAFT.id}`)
+      )
+    ).toBe(true)
+    expect(RETRIEVED_DRAFT.incompleteSections).toEqual(['trip', 'gears'])
+  })
+
   test('Should reflect real captured journey answers over the illustrative example', async () => {
     const tripDateResponse = await server.inject({
       method: 'POST',
@@ -211,12 +276,7 @@ describe('#checkAnswersController', () => {
     expect(text).toContain('Rye')
     expect(text).toContain('Dredge')
     expect($('h2').text()).toContain('Species not landed')
-    expect(
-      $('dt:contains("Catch kept onboard or in keep pots")')
-        .next()
-        .text()
-        .trim()
-    ).toBe('No')
+    expect($('dt:contains("Not landed")').next().text().trim()).toBe('No')
   })
 })
 

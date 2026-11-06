@@ -2,6 +2,7 @@ import {
   getFavouriteGearIds,
   migrateGearJourneyState
 } from './favourite-gear.js'
+import { config } from '#/config/config.js'
 
 function createRequest(state) {
   let journeyState = state
@@ -51,5 +52,23 @@ describe('#gear favourite reference migration', () => {
 
   test('Should return no favourites when none have been saved', () => {
     expect(getFavouriteGearIds({}, catalogue)).toEqual([])
+  })
+
+  test('Should not silently discard saved gear selections in live mode', () => {
+    const enabled = config.get('catchRecording.enabled')
+    config.set('catchRecording.enabled', true)
+    try {
+      const request = createRequest({
+        selectedGearIds: ['api-guid-1', 'retired-gear']
+      })
+      expect(() => migrateGearJourneyState(request, catalogue)).toThrow(
+        'A saved gear is no longer available'
+      )
+      expect(request.yar.get()).toEqual({
+        selectedGearIds: ['api-guid-1', 'retired-gear']
+      })
+    } finally {
+      config.set('catchRecording.enabled', enabled)
+    }
   })
 })

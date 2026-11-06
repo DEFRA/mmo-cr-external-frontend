@@ -1,4 +1,4 @@
-import { recordsController } from './controller.js'
+import { recordsController, newRecordController } from './controller.js'
 
 /**
  * Sets up the routes used in the records page.
@@ -13,6 +13,11 @@ export const records = {
           method: 'GET',
           path: '/records',
           ...recordsController
+        },
+        {
+          method: 'POST',
+          path: '/records/new',
+          ...newRecordController
         }
       ])
     }

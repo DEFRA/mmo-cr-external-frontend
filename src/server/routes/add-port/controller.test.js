@@ -114,7 +114,7 @@ describe('#addPortSubmitController', () => {
     await server.stop({ timeout: 0 })
   })
 
-  test('Should redirect to confirm-same-port after a first-time (entry) save', async () => {
+  test('Should redirect to departure selection after a first-time (entry) save', async () => {
     const { statusCode, headers } = await server.inject({
       method: 'POST',
       url: '/add-port?for=departure&entry=1',
@@ -122,7 +122,7 @@ describe('#addPortSubmitController', () => {
     })
 
     expect(statusCode).toBe(303)
-    expect(headers.location).toBe('/confirm-same-port?port=hastings')
+    expect(headers.location).toBe('/departure-port')
   })
 
   test('Should save the port as a favourite so the select screen shows it', async () => {
@@ -152,21 +152,15 @@ describe('#addPortSubmitController', () => {
     const cookie = response.headers['set-cookie'][0].split(';')[0]
 
     expect(response.statusCode).toBe(303)
-    expect(response.headers.location).toBe('/confirm-same-port?port=GBPLY')
+    expect(response.headers.location).toBe('/departure-port')
 
-    const confirmation = await server.inject({
+    const selection = await server.inject({
       method: 'GET',
       url: response.headers.location,
       headers: { cookie }
     })
-    expect(confirmation.statusCode).toBe(200)
-    expect(confirmation.result).toContain('Was Plymouth the port')
-
-    const selection = await server.inject({
-      method: 'GET',
-      url: '/departure-port',
-      headers: { cookie }
-    })
+    expect(selection.statusCode).toBe(200)
+    expect(selection.result).toContain('Select the port you set off from')
     expect(load(selection.result)('input[value="GBPLY"]')).toHaveLength(1)
   })
 

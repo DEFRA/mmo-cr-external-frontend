@@ -55,6 +55,87 @@ describe('#stripKilogramSuffix', () => {
 })
 
 describe('#buildCheckAnswersViewModel', () => {
+  test.each([5, 0])(
+    'Should match the unlanded review design with weight=%s and preserve saved answers',
+    (weight) => {
+      const state = {
+        selectedGearIds: ['pots'],
+        catchNotLanded: true,
+        speciesNotLanded: {
+          [SPECIES_IDS.cod]: { weightAboveMinimum: weight }
+        }
+      }
+      const original = structuredClone(state)
+      const model = buildCheckAnswersViewModel(fakeRequest(state), {
+        reviewLayout: true
+      })
+      const section = model.trailingSections[0]
+      expect(section.heading).toBe('Species not landed')
+      expect(section.rows.map((row) => [row.key.text, row.value.text])).toEqual(
+        [
+          ['Not landed', 'Yes'],
+          ['Species', 'Atlantic cod (COD)'],
+          [
+            'Weight above minimum size kept onboard or in keep pots (kg)',
+            String(weight)
+          ]
+        ]
+      )
+      expect(section.rows[0].actions.items[0].href).toBe(
+        '/catch-not-landed?return=/check-answers'
+      )
+      for (const row of section.rows.slice(1)) {
+        expect(row.actions.items[0].href).toBe(
+          '/species-not-landed?return=/check-answers'
+        )
+      }
+      expect(state).toEqual(original)
+    }
+  )
+
+  test.each([false, true])(
+    'Should format live catch weights without example data with reviewLayout=%s',
+    (reviewLayout) => {
+      const state = {
+        departureDate: '2026-11-02',
+        returnDate: '2026-11-02',
+        selectedGearIds: ['beam'],
+        catchNotLanded: false,
+        catchDetailsByGearId: {
+          beam: {
+            statAreaBranch: 'direct',
+            selectedStatisticalArea: '38E95',
+            selectedSpeciesIds: [SPECIES_IDS.cod],
+            speciesWeights: {
+              [SPECIES_IDS.cod]: {
+                weightAboveMinimum: 12,
+                weightBelowMinimum: 0,
+                weightDiscarded: 11
+              }
+            }
+          }
+        }
+      }
+      const model = buildCheckAnswersViewModel(fakeRequest(state), {
+        fallbackDetails: {},
+        reviewLayout,
+        gearCatalogue: [{ id: 'beam', label: 'Beam trawl', measurements: [] }]
+      })
+      const rows = reviewLayout
+        ? model.speciesGroups[0].rows
+        : model.gearGroups[0].rows.filter((row) =>
+            row.key.text.startsWith('Weight')
+          )
+
+      expect(rows.map((row) => row.value.text)).toEqual(
+        reviewLayout ? ['12', '0', '11'] : ['12 kg', '0 kg', '11 kg']
+      )
+      if (reviewLayout) {
+        expect(rows.every((row) => row.key.text.endsWith('(kg)'))).toBe(true)
+      }
+    }
+  )
+
   test('Should use submitted-record section order without row actions in read-only mode', () => {
     const state = {
       selectedVesselName: 'SELECTED VESSEL',
@@ -165,10 +246,16 @@ describe('#buildCheckAnswersViewModel', () => {
       ]
     })
 
-    expect(model.sections[0].heading).toBe('1. Trips details')
-    expect(rowValue(model.sections[0].rows, 'Gear used')).toBe(
-      'Beam trawl, Dredge'
-    )
+    expect(model.sections[0].heading).toBe('Trips details')
+    expect(
+      rowValue(model.sections[0].rows, 'Statistical sub area (Beam trawl)')
+    ).toBe('38E95')
+    expect(
+      rowValue(model.sections[0].rows, 'Statistical sub area (Dredge)')
+    ).toBe('38E96')
+    expect(
+      rowChangeHref(model.sections[0].rows, 'Statistical sub area (Dredge)')
+    ).toContain('gearId=dredge')
     expect(model.gearGroups).toHaveLength(2)
     expect(model.speciesGroups.map((group) => group.heading)).toEqual([
       'Atlantic cod (COD)',
@@ -192,7 +279,7 @@ describe('#buildCheckAnswersViewModel', () => {
     expect(model.speciesGroups[1].rows[0].actions.items[0].href).toContain(
       'gearId=dredge'
     )
-    expect(model.trailingSections[0].heading).toBe('4. Species not landed')
+    expect(model.trailingSections[0].heading).toBe('Species not landed')
     expect(model.trailingSections[0].rows[0].value.text).toBe('No')
     expect(model.trailingSections[0].rows[0].actions.items[0].href).toBe(
       '/catch-not-landed?return=/check-answers'
@@ -231,7 +318,7 @@ describe('#buildCheckAnswersViewModel', () => {
     expect(speciesCaught.value.html).toContain('Haddock (HAD)')
   })
 
-  test('Should include trip dates, ports and selected gears in screenshot order', () => {
+  test('Should include trip dates, ports and statistical sub area in screenshot order', () => {
     const model = buildCheckAnswersViewModel(
       fakeRequest({
         selectedGearIds: ['pots'],
@@ -242,14 +329,13 @@ describe('#buildCheckAnswersViewModel', () => {
 
     expect(model.sections[0].rows.map((row) => row.key.text)).toEqual([
       'Vessel',
-      'Date left',
-      'Port left from',
-      'Date returned',
-      'Port returned to',
-      'Gear used'
+      'Departure date',
+      'Return date',
+      'Departure port',
+      'Return port',
+      'Statistical sub area'
     ])
-    expect(rowValue(model.sections[0].rows, 'Gear used')).toBe('Pots')
-    expect(model.sections[0].rows[0].actions.items).toEqual([])
+    expect(model.sections[0].rows[0].actions).toBeUndefined()
   })
 
   test('Should show gear shot count before dimensions and link to each measurement field', () => {
@@ -278,15 +364,20 @@ describe('#buildCheckAnswersViewModel', () => {
     )
     const rows = model.gearGroups[0].rows
     expect(rows.map((row) => row.key.text)).toEqual([
+      'Gear type',
       'Area majority catch caught',
       'Number of times gear was shot on the trip',
       'Gear dimension by number'
     ])
-    expect(rows[1].value.text).toBe('0')
-    expect(rows[1].actions.items[0].href).toBe(
+    expect(rows[0].value.text).toBe('Dredge')
+    expect(rows[0].actions.items[0].href).toBe(
+      '/gear-selection?return=/check-answers'
+    )
+    expect(rows[2].value.text).toBe('0')
+    expect(rows[2].actions.items[0].href).toBe(
       '/gear-selection?return=/check-answers#dredge-numberOfTimesShot'
     )
-    expect(rows[2].actions.items[0].href).toBe(
+    expect(rows[3].actions.items[0].href).toBe(
       '/gear-selection?return=/check-answers#dredge-count'
     )
   })

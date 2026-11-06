@@ -11,11 +11,17 @@
     <div class="govuk-grid-column-two-thirds">
       {% if notification %}
         {{ govukNotificationBanner(notification) }}
+      {% elif tripEndDate %}
+        {{ govukNotificationBanner({
+          titleText: "Important",
+          text: "This catch record was submitted for a trip that ended on " + (tripEndDate | formatDate("d MMMM yyyy")) + "."
+        }) }}
       {% endif %}
 
       <span class="govuk-caption-l" data-testid="app-edit-reason-caption">{{ reference }}</span>
 
       <form method="post" novalidate>
+        {% if reasonKey %}<input type="hidden" name="reasonKey" value="{{ reasonKey }}">{% endif %}
         {{ govukTextarea({
           name: "editReason",
           id: "editReason",

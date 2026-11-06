@@ -142,21 +142,21 @@ export function speciesCaughtRows(
     { key: `Species${codeSuffix}`, value: species.displayName, changeHref },
     {
       key: `Weight above minimum size retained${codeSuffix}`,
-      value: `${weights.weightAboveMinimum ?? defaultAboveMinimum} ${fallback.weightUnit}`,
+      value: `${weights.weightAboveMinimum ?? defaultAboveMinimum} ${KILOGRAM_UNIT}`,
       changeHref
     }
   ]
   if (weights.weightBelowMinimum !== undefined || useExampleWeights) {
     rows.push({
       key: `Weight below minimum size retained${codeSuffix}`,
-      value: `${weights.weightBelowMinimum ?? fallback.weightBelowMinimumRetained} ${fallback.weightUnit}`,
+      value: `${weights.weightBelowMinimum ?? fallback.weightBelowMinimumRetained} ${KILOGRAM_UNIT}`,
       changeHref
     })
   }
   if (weights.weightDiscarded !== undefined || useExampleWeights) {
     rows.push({
       key: `Weight legally discard${codeSuffix}`,
-      value: `${weights.weightDiscarded ?? fallback.weightLegallyDiscarded} ${fallback.weightUnit}`,
+      value: `${weights.weightDiscarded ?? fallback.weightLegallyDiscarded} ${KILOGRAM_UNIT}`,
       changeHref
     })
   }

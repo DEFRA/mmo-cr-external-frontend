@@ -17,20 +17,20 @@ describe('#statisticalAreaContent', () => {
     })
 
     expect(content.heading).toBe(
-      'Where was the majority of your catch caught using Seine nets?'
+      'Where was the majority of your catch caught using seine nets?'
     )
     expect(content.pageTitle).toBe(content.heading)
     expect(getGearCatalogue).toHaveBeenCalledWith({ vesselLengthMetres: 8 })
   })
 
   test.each([
-    [{ selectedGearIds: ['pots'] }, ' using Pots'],
+    [{ selectedGearIds: ['pots'] }, ' using pots'],
     [
       {
         selectedGearIds: ['api-pots'],
         selectedGearNamesById: { 'api-pots': 'Pots' }
       },
-      ' using Pots'
+      ' using pots'
     ],
     [{}, '']
   ])(
@@ -46,7 +46,7 @@ describe('#statisticalAreaContent', () => {
   )
 
   test.each([
-    [{ selectedGearIds: ['pots'] }, ' using Pots'],
+    [{ selectedGearIds: ['pots'] }, ' using pots'],
     [{}, '']
   ])('Should use the manual-entry heading for %s', async (state, suffix) => {
     const content = await statisticalAreaContent(state, { manualEntry: true })
@@ -55,6 +55,18 @@ describe('#statisticalAreaContent', () => {
       `Select the statistical sub area where the majority of your catch was caught${suffix}`
     )
     expect(content.pageTitle).toBe(content.heading)
+  })
+
+  test('Should lowercase the heading gear name without changing the saved name', async () => {
+    const state = {
+      selectedGearIds: ['api-dredge'],
+      selectedGearNamesById: { 'api-dredge': 'Dredge' }
+    }
+    const content = await statisticalAreaContent(state)
+    expect(content.heading).toBe(
+      'Where was the majority of your catch caught using dredge?'
+    )
+    expect(state.selectedGearNamesById['api-dredge']).toBe('Dredge')
   })
 
   test('Should not silently drop a selected gear when reference data is unavailable', async () => {

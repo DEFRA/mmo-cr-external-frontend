@@ -29,10 +29,11 @@
       <form method="post" novalidate>
         {% if gearCheckboxItems.length %}
           <div class="govuk-form-group{{ ' govuk-form-group--error' if fieldErrors.gearIds }}">
-            <fieldset class="govuk-fieldset" aria-describedby="{{ 'gearIds-error' if fieldErrors.gearIds }}">
+            <fieldset class="govuk-fieldset" aria-describedby="gearIds-hint{{ ' gearIds-error' if fieldErrors.gearIds }}">
               <legend class="govuk-fieldset__legend govuk-fieldset__legend--xl">
                 <h1 class="govuk-fieldset__heading"><span class="govuk-caption-l">{{ caption }}</span>{{ heading }}</h1>
               </legend>
+              <div id="gearIds-hint" class="govuk-hint">Select all that apply</div>
               {% if fieldErrors.gearIds %}
                 <p id="gearIds-error" class="govuk-error-message">
                   <span class="govuk-visually-hidden">Error:</span> {{ fieldErrors.gearIds }}
@@ -48,6 +49,7 @@
                       type="checkbox"
                       value="{{ item.value }}"
                       {{ 'checked' if item.checked }}
+                      {% if item.hint %}aria-describedby="gearIds-{{ loop.index }}-item-hint"{% endif %}
                       {% if item.value == 'pots' or item.measurements.length %}data-aria-controls="gearIds-conditional-{{ loop.index }}"{% endif %}
                     >
                     <label class="govuk-label govuk-checkboxes__label" for="gearIds-{{ loop.index }}">{{ item.text }}</label>
@@ -95,9 +97,9 @@
           {% endif %}
         {% endif %}
 
-        <p><a class="govuk-link" href="/add-gear">Add gear</a></p>
+        <p class="govuk-body"><a class="govuk-link" href="/add-gear">Add gear</a></p>
         {% if gearCheckboxItems.length %}
-          <p><a class="govuk-link" href="/remove-gear">Remove gear</a></p>
+          <p class="govuk-body"><a class="govuk-link" href="/remove-gear">Remove gear</a></p>
         {% endif %}
 
         {{ govukButton({ text: "Save and continue", classes: "govuk-!-margin-top-6" }) }}
@@ -105,4 +107,3 @@
     </div>
   </div>
 {% endblock %}
-

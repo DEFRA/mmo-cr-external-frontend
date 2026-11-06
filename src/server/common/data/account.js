@@ -8,5 +8,11 @@ export const account = {
   addressLines: ['175 Roding Lane', 'Redbridge Lakes', 'Woodford', 'IG8 4ED'],
   contactNumber: '071234 56789',
   skippers: 'N/A',
-  portsUsed: ['Hastings']
+  portsUsed: ['Hastings'],
+  exampleGears: [
+    { id: 'pots', label: 'Pots' },
+    { id: 'seine-nets', label: 'Seine nets', hint: '100mm mesh' },
+    { id: 'beam-trawl', label: 'Beam trawl', hint: '10mm mesh' }
+  ],
+  exampleSpecies: ['Atlantic cod (COD)', 'Haddock (HAD)', 'Salmon (SAL)']
 }

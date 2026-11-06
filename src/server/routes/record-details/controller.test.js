@@ -16,16 +16,22 @@ import {
   mockVesselsReferenceData,
   VESSEL_IDS
 } from '#/test-helpers/mock-vessels-reference-data.js'
+import {
+  mockCatchRecording,
+  restoreCatchRecordingMock
+} from '#/test-helpers/mock-catch-recording.js'
 
 beforeEach(() => {
   mockSpeciesReferenceData()
   mockGearsReferenceData()
   mockPortsReferenceData()
   mockVesselsReferenceData()
+  mockCatchRecording()
 })
 afterEach(() => {
   restoreSpeciesReferenceDataMock()
   restoreGearsReferenceDataMock()
+  restoreCatchRecordingMock()
 })
 
 describe('#recordDetailsController', () => {
@@ -103,6 +109,10 @@ describe('#recordDetailsController', () => {
   })
 
   test('Should show the selected journey vessel, trip, gear and species on the amended record', async () => {
+    const newJourney = await server.inject({
+      method: 'POST',
+      url: '/records/new'
+    })
     let cookie
     for (const [url, payload] of [
       ['/select-vessel', { vesselId: VESSEL_IDS.seaSpray }],
@@ -144,7 +154,9 @@ describe('#recordDetailsController', () => {
         method: 'POST',
         url,
         payload,
-        ...(cookie && { headers: { cookie } })
+        headers: {
+          cookie: cookie || newJourney.headers['set-cookie'][0].split(';')[0]
+        }
       })
       expect(response.statusCode, url).toBe(statusCodes.seeOther)
       cookie = response.headers['set-cookie']?.[0]?.split(';')[0] || cookie

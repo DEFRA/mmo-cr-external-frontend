@@ -1,6 +1,7 @@
 import Joi from 'joi'
 
 import {
+  catchRecordCaption,
   getGearJourneyState as getJourneyState,
   gearPageContext,
   backForStatisticalArea,
@@ -11,6 +12,7 @@ import { getData } from '#/server/common/data/get-data.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 import { offlineMapSubrectangleCodes } from '#/server/common/data/offline-map-subrectangle-codes.js'
 import { statisticalAreaContent } from '#/server/common/helpers/journey/statistical-area-content.js'
+import { statisticalAreaCode } from '#/server/common/helpers/journey/catch-record-mapping.js'
 import {
   getPortCatalogue,
   migratePortJourneyState
@@ -29,7 +31,7 @@ const validAreaIds = [
 async function viewContext(request, overrides = {}) {
   const journeyState = getJourneyState(request)
   const gearContext = gearPageContext(request)
-  const selectedStatisticalArea = journeyState.selectedStatisticalArea
+  const selectedStatisticalArea = statisticalAreaCode(journeyState)
   const departurePort = departurePorts.find(
     (port) => port.code === journeyState.departurePort
   )
@@ -39,7 +41,7 @@ async function viewContext(request, overrides = {}) {
       gearId: gearContext.gearId
     })),
     ...gearContext,
-    caption: 'New catch record',
+    caption: catchRecordCaption(request),
     backLink: {
       href: backForStatisticalArea(request),
       text: 'Back'
@@ -121,6 +123,6 @@ export const statisticalAreaSubmitController = {
           isOther ? '/statistical-area-other' : '/species-selection'
         )
       )
-      .code(303)
+      .code(statusCodes.seeOther)
   }
 }

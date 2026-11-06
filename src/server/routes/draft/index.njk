@@ -6,6 +6,7 @@
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
       <form method="post" novalidate>
+        <input type="hidden" name="actionKey" value="{{ actionKey }}">
         {{ govukRadios({
           name: "draftAction",
           fieldset: {

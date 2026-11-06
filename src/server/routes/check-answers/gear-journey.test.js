@@ -112,9 +112,13 @@ describe('per-gear catch journey', () => {
     expect(
       groups.eq(1).find('dt:contains("Species caught")').next().text().trim()
     ).toBe('Atlantic cod (COD)')
-    expect($('dt:contains("Gear used")').next().text().trim()).toBe(
-      'Pots, Dredge'
-    )
+    expect($('dt:contains("Gear used")')).toHaveLength(0)
+    expect(
+      $('dt:contains("Statistical sub area (Pots)")').next().text().trim()
+    ).toBe('38E95')
+    expect(
+      $('dt:contains("Statistical sub area (Dredge)")').next().text().trim()
+    ).toBe('38E96')
     expect(groups.eq(0).text()).toContain('38E95')
     const speciesGroups = $('section[aria-labelledby^="species-summary-"]')
     expect(speciesGroups).toHaveLength(2)
@@ -130,21 +134,19 @@ describe('per-gear catch journey', () => {
       speciesGroups.eq(1).find('.govuk-summary-list__value').eq(0).text().trim()
     ).toBe('30')
     expect(groups.find('dt:contains("Not landed")')).toHaveLength(0)
-    expect($('dt:contains("Catch kept onboard or in keep pots")')).toHaveLength(
-      1
-    )
+    expect($('dt:contains("Not landed")')).toHaveLength(1)
     expect(
-      $('h2').filter(
-        (_, element) => $(element).text() === '4. Species not landed'
-      )
+      $('h2').filter((_, element) => $(element).text() === 'Species not landed')
     ).toHaveLength(1)
     expect($('h3')).toHaveLength(4)
     expect(
-      $('dt:contains("Weight kept onboard or in keep pots")')
+      $(
+        'dt:contains("Weight above minimum size kept onboard or in keep pots (kg)")'
+      )
         .next()
         .text()
         .trim()
-    ).toBe('5 kg')
+    ).toBe('5')
     expect(
       groups
         .eq(0)
@@ -152,16 +154,19 @@ describe('per-gear catch journey', () => {
         .map((_, element) => $(element).text().trim())
         .get()
     ).toEqual([
+      'Gear type',
       'Area majority catch caught',
       'Species caught',
       'Total pots or traps hauled',
       'Total pots or traps left in water'
     ])
+    expect(groups.eq(0).find('dt').first().next().text().trim()).toBe('Pots')
+    expect(groups.eq(1).find('dt').first().next().text().trim()).toBe('Dredge')
     expect($('.govuk-summary-list').length).toBeGreaterThan(0)
     expect($('input[name="confirmAccurate"]')).toHaveLength(0)
     expect($('main button').text()).toContain('Accept and submit trip details')
     expect(
-      $('h2').filter((_, element) => $(element).text() === '1. Trips details')
+      $('h2').filter((_, element) => $(element).text() === 'Trips details')
     ).toHaveLength(1)
     expect(speciesGroups.eq(1).find('h3').text()).toBe('Atlantic cod (COD)')
     expect(speciesGroups.eq(1).text()).toContain('Caught with Dredge')
@@ -236,12 +241,7 @@ describe('per-gear catch journey', () => {
         .text()
         .trim()
     ).toBe('40')
-    expect(
-      summary('dt:contains("Catch kept onboard or in keep pots")')
-        .next()
-        .text()
-        .trim()
-    ).toBe('No')
+    expect(summary('dt:contains("Not landed")').next().text().trim()).toBe('No')
     expect(
       (await inject('GET', '/species-selection?gearId=removed')).statusCode
     ).toBe(400)
@@ -338,7 +338,7 @@ describe('per-gear catch journey', () => {
     const dredgeSpecies = load(
       (await inject('GET', '/species-selection?gearId=dredge')).result
     )
-    expect(dredgeSpecies('h1').text()).toContain('Dredge')
+    expect(dredgeSpecies('h1').text()).toContain('using dredge?')
     expect(dredgeSpecies('a[hreflang="cy"]').attr('href')).toBe(
       '/species-selection?gearId=dredge&lang=cy'
     )
@@ -482,11 +482,13 @@ describe('per-gear catch journey', () => {
     expect(changed.headers.location).toBe('/check-answers')
     const summary = load((await inject('GET', '/check-answers')).result)
     expect(
-      summary('dt:contains("Weight kept onboard or in keep pots")')
+      summary(
+        'dt:contains("Weight above minimum size kept onboard or in keep pots (kg)")'
+      )
         .next()
         .text()
         .trim()
-    ).toBe('3 kg')
+    ).toBe('3')
     const removed = await inject(
       'POST',
       '/species-selection?gearId=pots&return=/check-answers',

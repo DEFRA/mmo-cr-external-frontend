@@ -27,6 +27,7 @@ import { removeGear } from '../routes/remove-gear/index.js'
 import { statisticalArea } from '../routes/statistical-area/index.js'
 import { mapStatisticalAreasData } from '../routes/map-statistical-areas-data/index.js'
 import { mapLandData } from '../routes/map-land-data/index.js'
+import { mapPortsData } from '../routes/map-ports-data/index.js'
 import { statisticalAreaOther } from '../routes/statistical-area-other/index.js'
 import { speciesSelection } from '../routes/species-selection/index.js'
 import { addSpecies } from '../routes/add-species/index.js'
@@ -41,6 +42,7 @@ import { addSkipper } from '../routes/add-skipper/route.js'
 import { skipperDetails } from '../routes/skipper-details/route.js'
 import { skipperCheck } from '../routes/skipper-check/route.js'
 import { skipperConfirmation } from '../routes/skipper-confirmation/route.js'
+import { removeSkipper } from '../routes/remove-skipper/index.js'
 import { changeEmail } from '../routes/change-email/route.js'
 import { resetPassword } from '../routes/reset-password/route.js'
 import { passwordResetSuccessful } from '../routes/password-reset-successful/route.js'
@@ -50,12 +52,16 @@ import { changeContactNumber } from '../routes/change-contact-number/route.js'
 import { notImplemented } from '../routes/not-implemented/index.js'
 import { serveStaticFiles } from './serve-static-files.js'
 import { config } from '#/config/config.js'
+import { catchRecordPersistence } from './catch-record-persistence.js'
+import { liveRecords } from '../routes/live-records/index.js'
 
 export const router = {
   plugin: {
     name: 'router',
     async register(server) {
       await server.register([inert])
+      await server.register(catchRecordPersistence)
+      await server.register(liveRecords)
 
       // Health-check route. Used by platform to check if service is running, do not remove!
       await server.register([health])
@@ -86,6 +92,7 @@ export const router = {
         addGear,
         removeGear,
         mapLandData,
+        mapPortsData,
         mapStatisticalAreasData,
         statisticalArea,
         statisticalAreaOther,
@@ -102,6 +109,7 @@ export const router = {
         skipperDetails,
         skipperCheck,
         skipperConfirmation,
+        removeSkipper,
         changeEmail,
         resetPassword,
         passwordResetSuccessful,

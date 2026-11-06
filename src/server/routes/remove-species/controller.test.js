@@ -1,4 +1,9 @@
 import { load } from 'cheerio'
+import {
+  mockCatchRecording,
+  restoreCatchRecordingMock,
+  CREATED_DRAFT
+} from '#/test-helpers/mock-catch-recording.js'
 
 import { createServer } from '#/server/server.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
@@ -16,10 +21,12 @@ import {
 beforeEach(() => {
   mockSpeciesReferenceData()
   mockVesselsReferenceData()
+  mockCatchRecording()
 })
 afterEach(() => {
   restoreVesselsReferenceDataMock()
   restoreSpeciesReferenceDataMock()
+  restoreCatchRecordingMock()
 })
 
 describe('#removeSpeciesController', () => {
@@ -89,13 +96,21 @@ describe('#removeSpeciesController', () => {
     }
   )
 
-  test('Should update both species headings when the vessel changes in the same journey', async () => {
+  test('Should update both species headings when starting a new journey for another vessel', async () => {
     let cookie
 
     for (const [vesselId, vesselName] of [
       [VESSEL_IDS.achilles, 'ACHILLES'],
       [VESSEL_IDS.seaSpray, 'SEA SPRAY']
     ]) {
+      if (cookie) {
+        const reset = await server.inject({
+          method: 'POST',
+          url: '/records/new',
+          headers: { cookie }
+        })
+        cookie = reset.headers['set-cookie'][0].split(';')[0]
+      }
       const selection = await server.inject({
         method: 'POST',
         url: '/select-vessel',
@@ -117,7 +132,7 @@ describe('#removeSpeciesController', () => {
         const $ = load(response.result)
         expect(response.statusCode).toBe(statusCodes.ok)
         expect($('h1').text().replace(/\s+/g, ' ').trim()).toBe(
-          `New catch record ${heading} ${vesselName}`
+          `${CREATED_DRAFT.catchRecordReference} ${heading} ${vesselName}`
         )
         expect($('title').text()).toContain(`${heading} ${vesselName}`)
         cookie = response.headers['set-cookie']?.[0]?.split(';')[0] || cookie

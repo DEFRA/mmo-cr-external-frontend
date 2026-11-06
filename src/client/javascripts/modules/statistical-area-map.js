@@ -1,6 +1,6 @@
 import {
   resizeCanvas,
-  loadOfflineMapData,
+  loadMapData,
   findDeparturePort,
   findDepartureCell,
   computeZoomExtents,
@@ -22,6 +22,26 @@ function setMapLoadError(canvas, errorElement, hasError) {
   }
 }
 
+function findSavedCell(subrectangles, selectedArea) {
+  const savedCode = selectedArea?.toUpperCase()
+  return subrectangles.find((area) => area.subCode.toUpperCase() === savedCode)
+}
+
+function focusCoordinate(selectedCell, departurePort) {
+  if (!selectedCell) {
+    return departurePort.coordinate
+  }
+  const { minLongitude, maxLongitude, minLatitude, maxLatitude } =
+    selectedCell.bounds
+  return [(minLongitude + maxLongitude) / 2, (minLatitude + maxLatitude) / 2]
+}
+
+function showInitialSelection(input, status, selectedSubCode) {
+  input.value = selectedSubCode || ''
+  input.disabled = !selectedSubCode
+  status.textContent = selectedSubCode ? `${selectedSubCode} selected` : ''
+}
+
 async function setUpMap(
   map,
   canvas,
@@ -31,7 +51,7 @@ async function setUpMap(
   zoomInButton,
   zoomOutButton
 ) {
-  const mapData = await loadOfflineMapData()
+  const mapData = await loadMapData()
   if (!mapData) {
     return false
   }
@@ -48,16 +68,18 @@ async function setUpMap(
     return false
   }
 
+  const selectedCell = findSavedCell(subrectangles, map.dataset.selectedArea)
   const extents = computeZoomExtents(
     subrectangles,
-    departureCell,
-    departurePort.coordinate,
+    selectedCell || departureCell,
+    focusCoordinate(selectedCell, departurePort),
     canvas
   )
   const state = {
     viewport: { ...extents.defaultZoomExtent },
-    selectedSubCode: map.dataset.selectedArea
+    selectedSubCode: selectedCell?.subCode
   }
+  showInitialSelection(input, status, state.selectedSubCode)
 
   const clientPointToMap = createClientPointToMap(canvas, state)
   const render = createRender({

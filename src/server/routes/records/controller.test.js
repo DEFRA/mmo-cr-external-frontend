@@ -1,407 +1,325 @@
 import { load } from 'cheerio'
-
+import { config } from '#/config/config.js'
 import { createServer } from '#/server/server.js'
-import { statusCodes } from '#/server/common/constants/status-codes.js'
-import * as data from '#/server/common/data/get-data.js'
-import {
-  mockVesselsReferenceData,
-  restoreVesselsReferenceDataMock
-} from '#/test-helpers/mock-vessels-reference-data.js'
+import { canonicalCatchRecord } from '#/test-helpers/canonical-catch-record.js'
+import { getJourneyState } from '#/server/common/helpers/journey/navigation.js'
 
-beforeEach(() => mockVesselsReferenceData())
-afterEach(() => restoreVesselsReferenceDataMock())
-
-describe('#recordsController', () => {
-  let server
+describe('API-backed catch record listing', () => {
+  let server, original, items, fetchMock
 
   beforeAll(async () => {
     server = await createServer()
     await server.initialize()
   })
+  afterAll(async () => server.stop({ timeout: 0 }))
 
-  afterAll(async () => {
-    await server.stop({ timeout: 0 })
+  beforeEach(() => {
+    original = config.get('catchRecording')
+    config.set('catchRecording', {
+      ...original,
+      enabled: false,
+      serviceUrl: 'https://catch-recording.test',
+      token: 'test-token',
+      environment: 'test'
+    })
+    items = [canonicalCatchRecord()]
+    fetchMock = vi.fn(async (url) => ({
+      status: 200,
+      json: async () =>
+        url.includes('?')
+          ? { items, count: items.length, limit: 100 }
+          : items.find((item) => url.endsWith(`/${item.id}`))
+    }))
+    vi.stubGlobal('fetch', fetchMock)
+  })
+  afterEach(() => {
+    config.set('catchRecording', original)
+    vi.unstubAllGlobals()
   })
 
-  test('Should provide expected response', async () => {
-    const { result, statusCode } = await server.inject({
-      method: 'GET',
-      url: '/records'
-    })
-
-    expect(result).toEqual(expect.stringContaining('Your catch records |'))
-    expect(statusCode).toBe(statusCodes.ok)
-  })
-
-  describe('Page content', () => {
-    let $
-
-    beforeAll(async () => {
-      const { result } = await server.inject({
-        method: 'GET',
-        url: '/records'
-      })
-      $ = load(result)
-    })
-
-    test('Should render the page title composed with the service name', () => {
-      expect($('head > title').text().trim()).toBe(
-        'Your catch records | Record your catch'
-      )
-    })
-
-    test('Should render the catch records heading without an account role caption', () => {
-      expect($('[data-testid="app-heading-title"]').text().trim()).toBe(
-        'Your catch records'
-      )
-      expect($('[data-testid="app-heading-caption"]')).toHaveLength(0)
-    })
-
-    test('Should render the Important notification banner', () => {
-      const $banner = $('.govuk-notification-banner')
-      expect($banner).toHaveLength(1)
+  test.each([false, true])(
+    'Should list caller records with journey integration enabled=%s',
+    async (enabled) => {
+      config.set('catchRecording.enabled', enabled)
+      const response = await server.inject('/records')
+      expect(response.statusCode).toBe(200)
+      const $ = load(response.result)
+      expect($('h1').text()).toBe('Your catch records')
+      expect($('tbody').text()).toContain('TEST VESSEL')
+      expect($('tbody').text()).toContain(items[0].catchRecordReference)
+      expect($('tbody').text()).not.toContain('OLGA')
       expect(
-        $banner.find('.govuk-notification-banner__title').text().trim()
-      ).toBe('Important')
-      expect($banner.text()).toContain(
-        'The Catch Records service will be available from 1 October 2026.'
-      )
-    })
-
-    test('Should render exactly 4 record rows', () => {
-      expect($('[data-testid="app-records-row"]')).toHaveLength(4)
-    })
-
-    test('Should show the designed vessel name for each record', () => {
-      const vesselNames = $('[data-testid="app-records-row"]')
-        .map((_i, row) => $(row).find('.govuk-table__cell').eq(1).text().trim())
-        .get()
-
-      expect(vesselNames).toEqual(['OLGA', 'OLGA', 'OLGA', 'OLGA'])
-    })
-
-    test('Should render the table headers in the specified order', () => {
-      const headers = $('.govuk-table__header')
-        .map((_i, el) => $(el).text().trim())
-        .get()
-
-      expect(headers).toEqual([
-        'Trip end date',
-        'Vessel',
-        'Status',
-        'Created by'
-      ])
-    })
-
-    test('Should render all 4 canonical statuses as govukTag values', () => {
-      const statuses = $('[data-testid="app-records-table"] .govuk-tag')
-        .map((_i, el) => $(el).text().trim())
-        .get()
-
-      expect(statuses.sort()).toEqual(
-        ['Amended', 'Late', 'Submitted', 'Unsent'].sort()
-      )
-    })
-
-    test('Should render the results count text', () => {
-      expect($('[data-testid="app-records-results"]').text().trim()).toBe(
-        'Showing 1 to 4 of 4'
-      )
-    })
-
-    test('Should NOT render the old placeholder page', () => {
-      expect($.html()).not.toContain('app-placeholder-page')
-    })
-  })
-
-  describe('Navigation', () => {
-    let $
-
-    beforeAll(async () => {
-      const { result } = await server.inject({
-        method: 'GET',
-        url: '/records'
-      })
-      $ = load(result)
-    })
-
-    test('Should render a Back link to guidance and page-scoped language styling', () => {
-      const backLink = $('[data-testid="app-page-navigation-back-link"]')
-      expect(backLink.attr('href')).toBe('/')
-      expect(backLink.text().trim()).toBe('Back')
-      expect($('body').hasClass('app-records-page')).toBe(true)
-      expect(
-        $('[data-testid="app-page-navigation-language-link"]').attr('href')
-      ).toBe('/records?lang=cy')
-    })
-
-    test('Should link the create action button directly to vessel selection', () => {
-      expect($('.govuk-button[href="/select-vessel"]')).toHaveLength(1)
-      expect($('.govuk-button[href="/draft"]')).toHaveLength(0)
-    })
-
-    test('Should open vessel selection when following the create action', async () => {
-      const { result, statusCode } = await server.inject({
-        method: 'GET',
-        url: $('.govuk-button').attr('href')
-      })
-      const $vesselPage = load(result)
-
-      expect(statusCode).toBe(statusCodes.ok)
-      expect($vesselPage('h1').text()).toContain('Which vessel did you use?')
-      expect($vesselPage('input[name="vesselId"]')).toHaveLength(2)
-      expect($vesselPage('input[name="draftAction"]')).toHaveLength(0)
-      expect(
-        $vesselPage('[data-testid="app-page-navigation-back-link"]').attr(
-          'href'
-        )
-      ).toBe('/records')
-    })
-
-    test('Should link a draft (unsent) record to the draft action page', () => {
-      const $draftLink = $('[data-testid="app-records-row"] a[href="/draft"]')
-      expect($draftLink).toHaveLength(1)
-      expect($draftLink.closest('tr').find('.govuk-tag').text().trim()).toBe(
-        'Unsent'
-      )
-      expect($('a[href="/draft"]')).toHaveLength(1)
-    })
-
-    test('Should open the draft actions when following a draft record link', async () => {
-      const { result, statusCode } = await server.inject({
-        method: 'GET',
-        url: $('[data-testid="app-records-row"] a[href="/draft"]').attr('href')
-      })
-
-      expect(statusCode).toBe(statusCodes.ok)
-      expect(load(result)('h1').text()).toContain(
-        'What do you want to do with your draft record?'
-      )
-    })
-
-    test('Should link every other record to its details page', () => {
-      expect($('a[href="/records/submitted-1"]')).toHaveLength(1)
-      expect($('a[href="/records/amended-1"]')).toHaveLength(1)
-      expect($('a[href="/records/late-1"]')).toHaveLength(1)
-      expect($('a[href="/records/unsent-1"]')).toHaveLength(0)
-    })
-
-    test('Should render a Create a new catch record button linking to vessel selection', () => {
-      const $createButton = $('.govuk-button[href="/select-vessel"]')
-      expect($createButton).toHaveLength(1)
-      expect($createButton.text().trim()).toBe('Create a new catch record')
-    })
-  })
-
-  describe('Pagination', () => {
-    let $
-    let bodyHtml
-
-    beforeAll(async () => {
-      const { result } = await server.inject({
-        method: 'GET',
-        url: '/records'
-      })
-      $ = load(result)
-      bodyHtml = $.html()
-    })
-
-    test('Should render Previous and Next controls with the current page number', () => {
-      const $pagination = $('.govuk-pagination')
-      expect($pagination).toHaveLength(1)
-      expect($pagination.find('.govuk-pagination__next')).toHaveLength(0)
-
-      const $currentItem = $pagination.find('.govuk-pagination__item--current')
-      expect($currentItem.text().trim()).toBe('1')
-      expect(
-        $('.app-records-pagination__summary .app-records-pagination__control')
-      ).toHaveLength(1)
-      expect($('.app-records-pagination__next')).toHaveLength(1)
-      expect(
-        $('.app-records-pagination__control--disabled[aria-disabled="true"]')
-          .map((_i, el) => $(el).find('svg').attr('class'))
+        $('th')
+          .map((_i, element) => $(element).text())
           .get()
-      ).toEqual([
-        'govuk-pagination__icon govuk-pagination__icon--prev',
-        'govuk-pagination__icon govuk-pagination__icon--next'
-      ])
-      expect(
-        $(
-          '.app-records-pagination__control svg[aria-hidden="true"][focusable="false"]'
-        )
-      ).toHaveLength(2)
-      expect(
-        $('.app-records-pagination__next .app-records-pagination__label').text()
-      ).toBe('Next')
-      expect(
-        $('.app-records-pagination__summary .app-records-pagination__label')
-      ).toHaveLength(0)
-      expect($('.app-records-pagination__next').hasClass('govuk-link')).toBe(
-        true
+      ).toEqual(['Reference', 'Vessel', 'Trip end date', 'Status'])
+      expect(fetchMock).toHaveBeenCalledWith(
+        'https://catch-recording.test/v1/catch-records?limit=100',
+        expect.objectContaining({ method: 'GET' })
       )
-      expect(
-        $('.app-records-pagination__summary').find(
-          '.app-records-pagination__control'
-        )
-      ).toHaveLength(1)
-      expect(
-        $('[data-testid="app-records-results"]').hasClass(
-          'govuk-!-font-weight-bold'
-        )
-      ).toBe(true)
-    })
+      expect(getJourneyState(response.request)).toEqual({})
+    }
+  )
 
-    test('Should preserve the enabled Next and Previous page destinations with GOV.UK arrows', async () => {
-      const originalGetData = data.getData
-      const records = originalGetData('allRecords')
-      const getDataSpy = vi.spyOn(data, 'getData').mockImplementation((name) =>
-        name === 'allRecords'
-          ? Array.from({ length: 12 }, (_, index) => ({
-              ...records[index % records.length],
-              recordId: `pagination-record-${index}`
-            }))
-          : originalGetData(name)
-      )
-
-      try {
-        const firstPage = await server.inject({
-          method: 'GET',
-          url: '/records'
-        })
-        const $first = load(firstPage.result)
-        expect(
-          $first('.app-records-pagination__next[rel="next"]').attr('href')
-        ).toBe('/records?page=2')
-        expect(
-          $first('.app-records-pagination__next .govuk-pagination__icon--next')
-        ).toHaveLength(1)
-
-        const secondPage = await server.inject({
-          method: 'GET',
-          url: '/records?page=2'
-        })
-        const $second = load(secondPage.result)
-        expect(
-          $second('.app-records-pagination__summary a[rel="prev"]').attr('href')
-        ).toBe('/records?page=1')
-        expect(
-          $second(
-            '.app-records-pagination__summary .govuk-pagination__icon--prev'
-          )
-        ).toHaveLength(1)
-        expect(
-          $second('.app-records-pagination__next[aria-disabled="true"]')
-        ).toHaveLength(1)
-      } finally {
-        getDataSpy.mockRestore()
-      }
-    })
-
-    test('Should render the create action before the table and pagination after it', () => {
-      const tableIndex = bodyHtml.indexOf('data-testid="app-records-table"')
-      const resultsIndex = bodyHtml.indexOf('data-testid="app-records-results"')
-      const paginationIndex = bodyHtml.indexOf('class="govuk-pagination"')
-      const createButtonIndex = bodyHtml.indexOf('Create a new catch record')
-
-      expect(createButtonIndex).toBeGreaterThan(-1)
-      expect(createButtonIndex).toBeLessThan(tableIndex)
-      expect(tableIndex).toBeGreaterThan(-1)
-      expect(resultsIndex).toBeGreaterThan(tableIndex)
-      expect(paginationIndex).toBeGreaterThan(resultsIndex)
-    })
+  test('Should link drafts to their action page even when journey integration is disabled', async () => {
+    const response = await server.inject('/records')
+    const $ = load(response.result)
+    expect($(`tbody a[href="/draft?recordId=${items[0].id}"]`)).toHaveLength(1)
+    expect($('tbody').text()).toContain(items[0].catchRecordReference)
   })
 
-  describe('Record help sections', () => {
-    let $
-
-    beforeAll(async () => {
-      const { result } = await server.inject({
-        method: 'GET',
-        url: '/records'
-      })
-      $ = load(result)
-    })
-
-    test('Should render both guidance sections expanded', () => {
-      const $details = $('details.govuk-details')
-      expect($details).toHaveLength(2)
-      expect($details.eq(0).attr('open')).toBeDefined()
-      expect($details.eq(1).attr('open')).toBeDefined()
+  test.each([false, true])(
+    'Should show expanded help and status panels below the records list with empty=%s',
+    async (empty) => {
+      if (empty) {
+        items = []
+      }
+      const response = await server.inject('/records')
+      expect(response.statusCode).toBe(200)
+      const $ = load(response.result)
+      const panels = $('main details.govuk-details')
+      expect(panels).toHaveLength(2)
       expect(
-        $details
-          .find('.govuk-details__summary-text')
-          .map((_i, el) => $(el).text().trim())
+        panels
+          .map((_, element) => $(element).find('summary').text().trim())
           .get()
       ).toEqual(['Help with catch recording', 'Catch record statuses'])
-    })
-
-    test('Should render the catch recording guidance', () => {
-      const headings = $('details')
-        .eq(0)
-        .find('h2')
-        .map((_i, el) => $(el).text().trim())
-        .get()
-
-      expect(headings).toEqual([
+      expect(panels.filter('[open]')).toHaveLength(2)
+      expect(
+        panels.first().closest('.govuk-grid-column-two-thirds')
+      ).toHaveLength(1)
+      expect(
+        panels
+          .first()
+          .find('h2')
+          .map((_, element) => $(element).text())
+          .get()
+      ).toEqual([
         'What you need to do',
         'When to create your record',
         'Special cases: ICES areas',
         'Get help with your record'
       ])
-      expect($('details').eq(0).text()).toContain(
-        'You must record all catches unless an exemption applies.'
-      )
-    })
+      expect(panels.first().find('li')).toHaveLength(3)
+      expect(panels.first().text()).toContain('0300 020 3788')
+      expect(panels.first().text()).toContain('4c, 7d or 7e')
+      for (const status of ['Unsent:', 'Submitted:', 'Amended:', 'Late:']) {
+        expect(panels.last().text()).toContain(status)
+      }
+      expect(panels.last().find('a').attr('href')).toBe('/')
+      if (empty) {
+        expect($('main').text()).toContain('No catch records found.')
+      } else {
+        expect($('main').html().indexOf('app-records-pagination')).toBeLessThan(
+          $('main').html().indexOf('help-with-catch-recording')
+        )
+      }
+    }
+  )
 
-    test('Should explain the four catch record statuses', () => {
-      const statuses = $('details')
-        .eq(1)
-        .find('strong')
-        .map((_i, el) => $(el).text().trim())
-        .get()
-
-      expect(statuses).toEqual(['Unsent:', 'Submitted:', 'Amended:', 'Late:'])
-      expect($('details').eq(1).text()).toContain(
-        'Saved on your device and not yet submitted.'
-      )
-      expect($('details').eq(1).text()).toContain(
-        'This record was submitted and received late by the MMO.'
-      )
-      const $guidanceLink = $('details').eq(1).find('a')
-      expect($guidanceLink).toHaveLength(1)
-      expect($guidanceLink.attr('href')).toBe('/')
-    })
-
-    test('Should open the How to record your catch page from the guidance link', async () => {
-      const { result, statusCode } = await server.inject({
-        method: 'GET',
-        url: $('details').eq(1).find('a').attr('href')
-      })
-
-      expect(statusCode).toBe(statusCodes.ok)
-      expect(
-        load(result)('[data-testid="app-heading-title"]').text().trim()
-      ).toBe('How to record your catch')
-    })
+  test('Should link to live details when journey integration is enabled', async () => {
+    config.set('catchRecording.enabled', true)
+    items[0].status = 'SUBMITTED'
+    const response = await server.inject('/records')
+    expect(
+      load(response.result)(`a[href="/records/${items[0].id}"]`)
+    ).toHaveLength(2)
   })
 
-  describe('?page query validation', () => {
-    test('Should clamp an out-of-range page rather than error', async () => {
-      const { statusCode } = await server.inject({
-        method: 'GET',
-        url: '/records?page=99'
-      })
+  test('Should display Draft in a yellow GOV.UK tag', async () => {
+    items[0].displayStatus = 'Draft'
+    const response = await server.inject('/records')
+    expect(
+      load(response.result)('tbody .govuk-tag--yellow').text().trim()
+    ).toBe('Draft')
+  })
 
-      expect(statusCode).toBe(statusCodes.ok)
+  test('Should show an edited record as Draft even when the backend labels it Amended', async () => {
+    items[0].status = 'DRAFT'
+    items[0].displayStatus = 'Amended'
+    items[0].numberOfSubmissions = 2
+    const response = await server.inject('/records')
+    expect(response.statusCode).toBe(200)
+    expect(
+      load(response.result)('tbody .govuk-tag--yellow').text().trim()
+    ).toBe('Draft')
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+  })
+
+  test.each([2, 3])(
+    'Should derive Amended from saved submission count %s without session state',
+    async (count) => {
+      items[0].status = 'SUBMITTED'
+      items[0].displayStatus = 'Submitted'
+      items[0].numberOfSubmissions = count
+      const response = await server.inject('/records')
+      expect(response.statusCode).toBe(200)
+      expect(
+        load(response.result)('tbody .govuk-tag--blue').text().trim()
+      ).toBe('Amended')
+      expect(fetchMock).toHaveBeenCalledTimes(2)
+      expect(fetchMock.mock.calls[1][0]).toBe(
+        `https://catch-recording.test/v1/catch-records/${items[0].id}`
+      )
+    }
+  )
+
+  test('Should surface a failed submission-count read rather than mislabel a resubmitted record', async () => {
+    items[0].status = 'SUBMITTED'
+    fetchMock.mockImplementation(async (url) =>
+      url.includes('?')
+        ? {
+            status: 200,
+            json: async () => ({ items, count: items.length, limit: 100 })
+          }
+        : { status: 503 }
+    )
+    expect((await server.inject('/records')).statusCode).toBe(503)
+  })
+
+  test('Should display Submitted in a light-green GOV.UK tag', async () => {
+    items[0].status = 'SUBMITTED'
+    items[0].displayStatus = 'Submitted'
+    const response = await server.inject('/records')
+    const $ = load(response.result)
+    expect($('tbody .govuk-tag--green').text().trim()).toBe('Submitted')
+  })
+
+  test.each([
+    ['Amended', 'blue'],
+    ['Late', 'pink'],
+    ['Complete', 'grey']
+  ])(
+    'Should display %s with a %s GOV.UK tag',
+    async (displayStatus, colour) => {
+      items[0].status = 'SUBMITTED'
+      items[0].displayStatus = displayStatus
+      items[0].numberOfSubmissions = displayStatus === 'Amended' ? 2 : 1
+      if (displayStatus === 'Complete') {
+        items[0].status = 'COMPLETE'
+      }
+      const response = await server.inject('/records')
+      expect(response.statusCode).toBe(200)
+      const $ = load(response.result)
+      expect($(`tbody .govuk-tag--${colour}`).text().trim()).toBe(displayStatus)
+      expect($('tbody .app-records-status')).toHaveLength(1)
+    }
+  )
+
+  test('Should show design pagination with a current-page tile and disabled Next on the last page', async () => {
+    const response = await server.inject('/records')
+    const $ = load(response.result)
+    expect($('.govuk-pagination__item--current').text().trim()).toBe('1')
+    expect(
+      $('.app-records-pagination__next[aria-disabled="true"]')
+    ).toHaveLength(1)
+    expect(
+      $('.app-records-pagination__next .app-records-pagination__label').text()
+    ).toBe('Next')
+    expect($('.app-records-pagination__next svg')).toHaveLength(1)
+    expect($('a[rel="next"]')).toHaveLength(0)
+  })
+
+  test('Should keep query-based status filtering while hiding the filter controls', async () => {
+    const response = await server.inject('/records?status=SUBMITTED')
+    expect(response.statusCode).toBe(200)
+    expect(fetchMock.mock.calls[0][0]).toContain('limit=100&status=SUBMITTED')
+    const $ = load(response.result)
+    expect($('select[name="status"]')).toHaveLength(0)
+    expect($('form[method="get"][action="/records"]')).toHaveLength(0)
+  })
+
+  test('Should accept the empty all-status filter', async () => {
+    const response = await server.inject('/records?status=')
+    expect(response.statusCode).toBe(200)
+    expect(fetchMock.mock.calls[0][0]).not.toContain('status=')
+  })
+
+  test.each(['status=UNKNOWN', 'page=0', 'page=abc'])(
+    'Should reject invalid query %s before calling the API',
+    async (query) => {
+      expect((await server.inject(`/records?${query}`)).statusCode).toBe(400)
+      expect(fetchMock).not.toHaveBeenCalled()
+    }
+  )
+
+  test('Should paginate only the retrieved set and retain the status filter', async () => {
+    items = Array.from({ length: 25 }, (_, index) => ({
+      ...canonicalCatchRecord(),
+      id: `record-${index}`,
+      catchRecordReference: `REFERENCE-${index}`
+    }))
+    const response = await server.inject('/records?page=2&status=DRAFT')
+    expect(response.statusCode).toBe(200)
+    const $ = load(response.result)
+    expect($('tbody tr')).toHaveLength(10)
+    expect($('tbody').text()).toContain('REFERENCE-10')
+    expect($('tbody').text()).not.toContain('REFERENCE-20')
+    expect($('main').text()).toContain(
+      'Showing 11 to 20 of 25 retrieved records'
+    )
+    expect($('a[rel="next"][href="?page=3&status=DRAFT"]')).toHaveLength(1)
+    expect($('.govuk-pagination__item--current').text().trim()).toBe('2')
+    expect(fetchMock.mock.calls[0][0]).not.toContain('page=')
+  })
+
+  test('Should state the API cap when 100 records are returned', async () => {
+    items = Array.from({ length: 100 }, () => canonicalCatchRecord())
+    const response = await server.inject('/records')
+    expect(response.result).toContain('at most the latest 100 matching records')
+  })
+
+  test('Should render an empty state without fixture fallback', async () => {
+    items = []
+    const response = await server.inject('/records')
+    expect(response.statusCode).toBe(200)
+    expect(response.result).toContain('No catch records found.')
+    expect(load(response.result)('tbody')).toHaveLength(0)
+  })
+
+  test('Should display missing trip dates without inventing a value', async () => {
+    items[0].trip.dateEnded = null
+    const response = await server.inject('/records')
+    expect(load(response.result)('tbody').text()).toContain('Not entered')
+  })
+
+  test.each([401, 403, 503])(
+    'Should surface API errors %s without fixture fallback',
+    async (status) => {
+      fetchMock.mockResolvedValue({ status })
+      const response = await server.inject('/records')
+      expect(response.statusCode).toBe(status)
+      expect(response.result).not.toContain('OLGA')
+    }
+  )
+
+  test('Should reject malformed lists', async () => {
+    fetchMock.mockResolvedValue({
+      status: 200,
+      json: async () => ({ items: [] })
     })
+    expect((await server.inject('/records')).statusCode).toBe(502)
+  })
 
-    test('Should reject a non-numeric page', async () => {
-      const { statusCode } = await server.inject({
-        method: 'GET',
-        url: '/records?page=not-a-number'
-      })
+  test('Should require service configuration even with journey integration disabled', async () => {
+    config.set('catchRecording.token', null)
+    expect((await server.inject('/records')).statusCode).toBe(503)
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
 
-      expect(statusCode).toBe(statusCodes.badRequest)
+  test('Should retain the create-new action without making a list request', async () => {
+    const page = await server.inject('/records')
+    expect(
+      load(page.result)('form[action="/records/new"][method="post"]')
+    ).toHaveLength(1)
+    fetchMock.mockClear()
+    const response = await server.inject({
+      method: 'POST',
+      url: '/records/new'
     })
+    expect(response.statusCode).toBe(303)
+    expect(response.headers.location).toBe('/select-vessel')
+    expect(getJourneyState(response.request)).toEqual({})
+    expect(fetchMock).not.toHaveBeenCalled()
   })
 })

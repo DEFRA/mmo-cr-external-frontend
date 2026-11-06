@@ -1,7 +1,9 @@
 import Boom from '@hapi/boom'
+import { config } from '#/config/config.js'
 
 // Journey state helpers backed by the @hapi/yar session cache (no persistence beyond the session).
 const JOURNEY_SESSION_KEY = 'journey'
+const MAX_VESSEL_ID_LENGTH = 200
 const GEAR_SELECTION_PATH = '/gear-selection'
 const STATISTICAL_AREA_PATH = '/statistical-area'
 const STATISTICAL_AREA_OTHER_PATH = '/statistical-area-other'
@@ -9,6 +11,13 @@ const SPECIES_SELECTION_PATH = '/species-selection'
 const CATCH_NOT_LANDED_PATH = '/catch-not-landed'
 const SPECIES_NOT_LANDED_PATH = '/species-not-landed'
 const CHECK_ANSWERS_PATH = '/check-answers'
+const ADD_SPECIES_PATH = '/add-species'
+const REMOVE_SPECIES_PATH = '/remove-species'
+const ACCOUNT_PATH = '/account'
+
+function liveCatchRecording() {
+  return config.get('catchRecording.enabled')
+}
 
 // Allowlist of known internal route paths. Exact string match only — used to
 // prevent an open redirect via the Empty Page's `return` query parameter.
@@ -32,27 +41,142 @@ const SAFE_RETURN_PATHS = [
   STATISTICAL_AREA_PATH,
   STATISTICAL_AREA_OTHER_PATH,
   SPECIES_SELECTION_PATH,
-  '/add-species',
-  '/remove-species',
+  ADD_SPECIES_PATH,
+  REMOVE_SPECIES_PATH,
   CATCH_NOT_LANDED_PATH,
   SPECIES_NOT_LANDED_PATH,
   CHECK_ANSWERS_PATH,
   '/confirmation',
-  '/account',
+  ACCOUNT_PATH,
   '/remove-port',
   '/not-implemented'
 ]
 
 const DEFAULT_RETURN_PATH = '/records'
+const FAVOURITE_KEYS = new Set([
+  'favouriteGearIds',
+  'favouriteGearMeasurements',
+  'favouriteSpeciesIds',
+  'availableSpeciesIds',
+  'favouritePortIds',
+  'favouritePorts',
+  'accountPortsUsed'
+])
+
+function sessionKey(request) {
+  const accountPage = [
+    ACCOUNT_PATH,
+    '/remove-port',
+    '/add-skipper',
+    '/skipper-details',
+    '/skipper-check',
+    '/skipper-confirmation',
+    '/remove-skipper'
+  ].includes(request.path)
+  const accountFavouritePage =
+    request.query?.return === ACCOUNT_PATH &&
+    [
+      '/add-port',
+      '/add-gear',
+      '/remove-gear',
+      ADD_SPECIES_PATH,
+      REMOVE_SPECIES_PATH
+    ].includes(request.path)
+  if (liveCatchRecording() && (accountPage || accountFavouritePage)) {
+    const vesselId = request.query?.vesselId
+    if (vesselId !== undefined) {
+      if (
+        typeof vesselId !== 'string' ||
+        !vesselId.trim() ||
+        vesselId.length > MAX_VESSEL_ID_LENGTH
+      ) {
+        throw Boom.badRequest('Select a valid vessel')
+      }
+      return `accountJourney:${vesselId}`
+    }
+    if (request.yar.get('accountJourney')) {
+      return 'accountJourney'
+    }
+  }
+  return JOURNEY_SESSION_KEY
+}
 
 export function getJourneyState(request) {
-  return request.yar.get(JOURNEY_SESSION_KEY) || {}
+  const key = sessionKey(request)
+  const state = request.yar.get(key) || {}
+  if (!liveCatchRecording()) {
+    return state
+  }
+  const answers = Object.fromEntries(
+    Object.entries(state).filter(([name]) => !FAVOURITE_KEYS.has(name))
+  )
+  const selectedVesselId = key.startsWith('accountJourney:')
+    ? request.query.vesselId
+    : state.selectedVesselId
+  return {
+    ...answers,
+    ...(selectedVesselId ? { selectedVesselId } : {}),
+    ...request.yar.get('vesselFavourites')?.[selectedVesselId || '']
+  }
+}
+
+export function catchRecordCaption(request) {
+  return getJourneyState(request).reference || 'New catch record'
+}
+
+export function isCatchRecordJourney(request) {
+  return (
+    liveCatchRecording() &&
+    request.query?.return !== ACCOUNT_PATH &&
+    Boolean(getJourneyState(request).catchRecordId)
+  )
 }
 
 export function setJourneyState(request, patch) {
-  const merged = { ...getJourneyState(request), ...patch }
-  request.yar.set(JOURNEY_SESSION_KEY, merged)
+  const current = getJourneyState(request)
+  const changingVessel =
+    liveCatchRecording() &&
+    patch.selectedVesselId !== undefined &&
+    patch.selectedVesselId !== current.selectedVesselId
+  const state = changingVessel
+    ? {
+        ...Object.fromEntries(
+          Object.entries(current).filter(([key]) => !FAVOURITE_KEYS.has(key))
+        ),
+        ...request.yar.get('vesselFavourites')?.[patch.selectedVesselId]
+      }
+    : current
+  const merged = { ...state, ...patch }
+  if (liveCatchRecording()) {
+    const vesselId = merged.selectedVesselId || ''
+    request.yar.set('vesselFavourites', {
+      ...request.yar.get('vesselFavourites'),
+      [vesselId]: Object.fromEntries(
+        Object.entries(merged).filter(([key]) => FAVOURITE_KEYS.has(key))
+      )
+    })
+    request.yar.set(
+      sessionKey(request),
+      Object.fromEntries(
+        Object.entries(merged).filter(([key]) => !FAVOURITE_KEYS.has(key))
+      )
+    )
+    return merged
+  }
+
+  request.yar.set(sessionKey(request), merged)
   return merged
+}
+
+export function accountVesselPath(request, path) {
+  if (
+    !liveCatchRecording() ||
+    !request.query?.vesselId ||
+    path === ACCOUNT_PATH
+  ) {
+    return path
+  }
+  return `${path}${path.includes('?') ? '&' : '?'}vesselId=${encodeURIComponent(request.query.vesselId)}`
 }
 
 export function backForDeparturePort(request) {
@@ -100,8 +224,8 @@ const GEAR_PATHS = new Set([
   STATISTICAL_AREA_PATH,
   STATISTICAL_AREA_OTHER_PATH,
   SPECIES_SELECTION_PATH,
-  '/add-species',
-  '/remove-species'
+  ADD_SPECIES_PATH,
+  REMOVE_SPECIES_PATH
 ])
 const CATCH_KEYS = [
   'statAreaBranch',

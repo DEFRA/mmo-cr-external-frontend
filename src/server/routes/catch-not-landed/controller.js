@@ -1,6 +1,7 @@
 import Joi from 'joi'
 
 import {
+  catchRecordCaption,
   backForCatchNotLanded,
   getJourneyState,
   incompleteGearPath,
@@ -16,7 +17,7 @@ function viewContext(request, overrides = {}) {
     pageTitle,
     heading: pageTitle,
     catchNotLanded: getJourneyState(request).catchNotLanded,
-    caption: 'New catch record',
+    caption: catchRecordCaption(request),
     backLink: {
       href: backForCatchNotLanded(request),
       text: 'Back'

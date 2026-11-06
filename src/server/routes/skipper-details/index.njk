@@ -8,7 +8,10 @@
       <h1 class="govuk-heading-xl">{{ heading }}</h1>
       {{ govukInput({ id: "firstName", name: "firstName", label: { text: "First name" }, value: values.firstName, attributes: { "data-clear-input-error": "true" }, errorMessage: { text: fieldErrors.firstName } if fieldErrors.firstName }) }}
       {{ govukInput({ id: "lastName", name: "lastName", label: { text: "Last name" }, value: values.lastName, attributes: { "data-clear-input-error": "true" }, errorMessage: { text: fieldErrors.lastName } if fieldErrors.lastName }) }}
-      {{ govukInput({ id: "email", name: "email", type: "email", label: { text: "Email address" }, hint: { text: "Use an email address that belongs only to this skipper and is not shared with other skippers." }, value: values.email, attributes: { "data-clear-input-error": "true" }, errorMessage: { text: fieldErrors.email } if fieldErrors.email }) }}
+      {{ govukInput({ id: "email", name: "email", type: "email", label: { text: "Email address (optional)" if liveSkippers else "Email address" }, hint: { text: "Contact details only. This does not send an invitation." if liveSkippers else "Use an email address that belongs only to this skipper and is not shared with other skippers." }, value: values.email, attributes: { "data-clear-input-error": "true" }, errorMessage: { text: fieldErrors.email } if fieldErrors.email }) }}
+      {% if liveSkippers %}
+        {{ govukInput({ id: "phoneNumber", name: "phoneNumber", type: "tel", label: { text: "Phone number (optional)" }, value: values.phoneNumber, errorMessage: { text: fieldErrors.phoneNumber } if fieldErrors.phoneNumber }) }}
+      {% endif %}
       {{ govukButton({ text: "Save and continue" }) }}
     </form>
   </div></div>

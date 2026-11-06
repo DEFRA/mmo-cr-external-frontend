@@ -37,9 +37,9 @@ describe('#speciesSelectionController', () => {
   })
 
   test.each([
-    ['pots', 'pots'],
-    ['dredge', 'dredge'],
-    ['api-seine', 'seine nets']
+    ['pots', 'Pots'],
+    ['dredge', 'Dredge'],
+    ['api-seine', 'Seine nets']
   ])(
     'Should use the selected gear in the question for %s',
     async (id, name) => {
@@ -55,8 +55,8 @@ describe('#speciesSelectionController', () => {
       expect(h.view).toHaveBeenCalledWith(
         'species-selection/index',
         expect.objectContaining({
-          heading: `What species did you catch using ${name}?`,
-          pageTitle: `What species did you catch using ${name}?`
+          heading: `What species did you catch using ${name.toLowerCase()}?`,
+          pageTitle: `What species did you catch using ${name.toLowerCase()}?`
         })
       )
     }

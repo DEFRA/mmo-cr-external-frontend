@@ -1,0 +1,51 @@
+{% extends 'layouts/page.njk' %}
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% block pageContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <span class="govuk-caption-l">{{ record.catchRecordReference }}</span>
+      <h1 class="govuk-heading-xl">Catch record for {{ record.vessel.nameSnapshot }}</h1>
+      {% for section in sections %}
+        {% if section.startsGearSection %}
+          <h2 class="govuk-heading-l">2. Gear used</h2>
+        {% endif %}
+        {% if section.startsSpeciesSection %}
+          <h2 class="govuk-heading-l">3. Species caught</h2>
+        {% endif %}
+        <section aria-labelledby="submitted-summary-{{ loop.index }}"{% if section.gearId %} data-gear-id="{{ section.gearId }}" data-summary-section="{{ section.kind }}"{% endif %}>
+          {% if section.kind == "gear" %}
+            <h3 id="submitted-summary-{{ loop.index }}" class="govuk-heading-m">{{ section.gearName }}</h3>
+          {% elif section.kind == "species" %}
+            <h3 id="submitted-summary-{{ loop.index }}" class="govuk-heading-m">{{ section.speciesName }}</h3>
+          {% else %}
+            <h2 id="submitted-summary-{{ loop.index }}" class="govuk-heading-l">{{ section.heading }}</h2>
+          {% endif %}
+          {% if section.kind == "species" and section.gearName %}
+            <p class="govuk-body">Caught with {{ section.gearName }}</p>
+          {% endif %}
+          {{ govukSummaryList({ rows: section.rows }) }}
+        </section>
+      {% endfor %}
+      <div class="govuk-button-group">
+        {{ govukButton({ text: "Edit catch record", href: recordPath + "/edit-reason" }) }}
+        {% if latestPdf %}
+          {{ govukButton({
+            text: "Download PDF",
+            href: recordPath + "/submissions/" + latestPdf.submissionNumber + "/pdf",
+            classes: "govuk-button--secondary"
+          }) }}
+        {% endif %}
+      </div>
+      {% if completionEnabled %}
+        <h2 class="govuk-heading-l">Staff action</h2>
+        <p class="govuk-body">Mark this submitted record as complete. This action requires staff completion permission.</p>
+        <form method="post" action="{{ recordPath }}/complete">
+          <input type="hidden" name="actionKey" value="{{ actionKey }}">
+          {{ govukButton({ text: "Mark submitted record as complete", classes: "govuk-button--secondary" }) }}
+        </form>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

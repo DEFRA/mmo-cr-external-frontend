@@ -7,6 +7,157 @@ import {
   safeReturnPath,
   setJourneyState
 } from './navigation.js'
+import { config } from '#/config/config.js'
+
+describe('Account favourite session isolation', () => {
+  let enabled
+  beforeEach(() => {
+    enabled = config.get('catchRecording.enabled')
+    config.set('catchRecording.enabled', true)
+  })
+  afterEach(() => config.set('catchRecording.enabled', enabled))
+
+  test('Should not copy favourite IDs or measurement defaults when changing the trip vessel', () => {
+    const sessions = {
+      journey: { selectedVesselId: 'vessel-1' },
+      vesselFavourites: {
+        'vessel-1': {
+          favouriteGearIds: ['gear-1'],
+          favouriteGearMeasurements: { 'gear-1': { mesh: 12 } }
+        },
+        'vessel-2': { favouriteGearIds: ['gear-2'] }
+      }
+    }
+    const request = {
+      path: '/select-vessel',
+      yar: {
+        get: (key) => sessions[key],
+        set: (key, value) => {
+          sessions[key] = value
+        }
+      }
+    }
+    setJourneyState(request, { selectedVesselId: 'vessel-2' })
+    expect(getJourneyState(request).favouriteGearIds).toEqual(['gear-2'])
+    expect(getJourneyState(request).favouriteGearMeasurements).toBeUndefined()
+    setJourneyState(request, { selectedVesselId: 'vessel-3' })
+    expect(getJourneyState(request).favouriteGearIds).toBeUndefined()
+    setJourneyState(request, { selectedVesselId: 'vessel-1' })
+    expect(getJourneyState(request).favouriteGearMeasurements).toEqual({
+      'gear-1': { mesh: 12 }
+    })
+    expect(sessions.vesselFavourites['vessel-2']).toEqual({
+      favouriteGearIds: ['gear-2']
+    })
+  })
+
+  test('Should keep interleaved account forms separate from each other and the trip', () => {
+    const sessions = {
+      journey: { selectedVesselId: 'trip-vessel', catchRecordId: 'trip-record' }
+    }
+    const yar = {
+      get: (key) => sessions[key],
+      set: (key, value) => {
+        sessions[key] = value
+      }
+    }
+    const first = {
+      path: '/skipper-details',
+      query: { vesselId: 'vessel-1' },
+      yar
+    }
+    const second = { ...first, query: { vesselId: 'vessel-2' } }
+    setJourneyState(first, { pendingSkipper: { firstName: 'First' } })
+    setJourneyState(second, { pendingSkipper: { firstName: 'Second' } })
+    expect(getJourneyState(first)).toEqual({
+      selectedVesselId: 'vessel-1',
+      pendingSkipper: { firstName: 'First' }
+    })
+    expect(getJourneyState(second)).toEqual({
+      selectedVesselId: 'vessel-2',
+      pendingSkipper: { firstName: 'Second' }
+    })
+    expect(sessions.journey).toEqual({
+      selectedVesselId: 'trip-vessel',
+      catchRecordId: 'trip-record'
+    })
+  })
+
+  test.each(['', ' ', ['vessel-1', 'vessel-2'], 'a'.repeat(201)])(
+    'Should reject invalid account vessel context %j',
+    (vesselId) => {
+      expect(() =>
+        getJourneyState({ path: '/add-skipper', query: { vesselId } })
+      ).toThrow('Select a valid vessel')
+    }
+  )
+
+  test.each([
+    ['/account', {}],
+    ['/remove-port', {}],
+    ['/skipper-details', {}],
+    ['/add-port', { return: '/account' }],
+    ['/add-gear', { return: '/account', step: 'measurements' }],
+    ['/remove-gear', { return: '/account' }],
+    ['/add-species', { return: '/account' }],
+    ['/remove-species', { return: '/account' }]
+  ])('Should isolate account reads and writes for %s', (path, query) => {
+    const sessions = {
+      journey: {
+        selectedVesselId: 'trip-vessel',
+        catchRecordId: 'trip-record'
+      },
+      accountJourney: { selectedVesselId: 'account-vessel' }
+    }
+    const request = {
+      path,
+      query,
+      yar: {
+        get: (key) => sessions[key],
+        set: (key, value) => {
+          sessions[key] = value
+        }
+      }
+    }
+    expect(getJourneyState(request).selectedVesselId).toBe('account-vessel')
+    setJourneyState(request, { favouriteGearIds: ['gear-1'] })
+    expect(
+      sessions.vesselFavourites['account-vessel'].favouriteGearIds
+    ).toEqual(['gear-1'])
+    expect(sessions.accountJourney.favouriteGearIds).toBeUndefined()
+    expect(
+      getJourneyState({ ...request, path: '/gear-selection', query: {} })
+        .favouriteGearIds
+    ).toBeUndefined()
+    expect(sessions.journey).toEqual({
+      selectedVesselId: 'trip-vessel',
+      catchRecordId: 'trip-record'
+    })
+  })
+
+  test.each([
+    ['/add-gear', {}],
+    ['/add-species', { return: '/species-selection' }],
+    ['/gear-selection', { return: '/account' }],
+    ['/check-answers', {}]
+  ])('Should keep trip forms on the active journey for %s', (path, query) => {
+    const request = {
+      path,
+      query,
+      yar: {
+        get: (key) =>
+          ({
+            journey: { selectedVesselId: 'trip-vessel' },
+            accountJourney: { selectedVesselId: 'account-vessel' }
+          })[key]
+      }
+    }
+    expect(getJourneyState(request).selectedVesselId).toBe('trip-vessel')
+    config.set('catchRecording.enabled', false)
+    request.path = '/account'
+    expect(getJourneyState(request).selectedVesselId).toBe('trip-vessel')
+  })
+})
 
 function createFakeRequest(initialState) {
   let state = initialState

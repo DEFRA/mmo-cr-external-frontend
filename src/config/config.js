@@ -227,6 +227,47 @@ export const config = convict({
       env: 'TRACING_HEADER'
     }
   },
+  catchRecording: {
+    completionEnabled: {
+      doc: 'Show restricted staff completion actions; the backend still enforces completion permission',
+      format: Boolean,
+      default: false,
+      env: 'CATCH_RECORDING_COMPLETION_ENABLED'
+    },
+    enabled: {
+      doc: 'Use live Catch Recording screens and persist journey sections instead of the walkthrough',
+      format: Boolean,
+      default: false,
+      env: 'CATCH_RECORDING_ENABLED'
+    },
+    serviceUrl: {
+      doc: 'Base URL of the Catch Recording Service, including any gateway prefix',
+      format: String,
+      nullable: true,
+      default: null,
+      env: 'CATCH_RECORDING_SERVICE_URL'
+    },
+    token: {
+      doc: 'Dev/mock caller token only; real user authentication is not yet integrated',
+      format: String,
+      nullable: true,
+      sensitive: true,
+      default: null,
+      env: 'CATCH_RECORDING_SERVICE_TOKEN'
+    },
+    timeoutMs: {
+      doc: 'Maximum time in milliseconds for a Catch Recording request',
+      format: 'nat',
+      default: 5000,
+      env: 'CATCH_RECORDING_SERVICE_TIMEOUT_MS'
+    },
+    environment: {
+      doc: 'Deployment environment; mock caller tokens are permitted only in local, dev and test',
+      format: String,
+      default: 'local',
+      env: 'ENVIRONMENT'
+    }
+  },
   referenceData: {
     serviceUrl: {
       doc: 'Base URL of the Reference Data Service',

@@ -1,6 +1,7 @@
 import Joi from 'joi'
 
 import {
+  catchRecordCaption,
   getJourneyState,
   gearPath,
   incompleteGearPath,
@@ -20,6 +21,7 @@ import {
   validateMeasurement
 } from '#/server/common/helpers/gear/measurement-validation.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
+import { loadFavouriteGears } from '#/server/common/helpers/journey/session-favourites.js'
 
 const pageTitle = 'What gear did you use?'
 const titleText = 'There is a problem'
@@ -78,24 +80,34 @@ function gearCheckboxItems(
 }
 
 function defaultMeasurementDetails(journeyState) {
-  return {
-    ...getFavouriteGearMeasurements(journeyState),
-    ...journeyState.gearMeasurementDetails
+  const defaults = getFavouriteGearMeasurements(journeyState)
+  const details = { ...defaults }
+  for (const [gearId, values] of Object.entries(
+    journeyState.gearMeasurementDetails || {}
+  )) {
+    details[gearId] = { ...defaults[gearId], ...values }
   }
+  return details
 }
 
 function viewContext(request, catalogue, overrides = {}) {
   const journeyState = migrateGearJourneyState(request, catalogue)
   const selectedGearIds = journeyState.selectedGearIds || []
   const favouriteOptions = getFavouriteGearOptions(
-    getFavouriteGearIds(journeyState, catalogue),
+    [
+      ...new Set([
+        ...getFavouriteGearIds(journeyState, catalogue),
+        ...(journeyState.journeyGearIds || []),
+        ...selectedGearIds
+      ])
+    ],
     catalogue
   )
 
   return {
     pageTitle,
     heading: pageTitle,
-    caption: 'New catch record',
+    caption: catchRecordCaption(request),
     backLink: {
       href: '/return-port',
       text: 'Back'
@@ -134,7 +146,13 @@ function renderWithErrors(
 ) {
   const journeyState = migrateGearJourneyState(request, catalogue)
   const favouriteOptions = getFavouriteGearOptions(
-    getFavouriteGearIds(journeyState, catalogue),
+    [
+      ...new Set([
+        ...getFavouriteGearIds(journeyState, catalogue),
+        ...(journeyState.journeyGearIds || []),
+        ...(journeyState.selectedGearIds || [])
+      ])
+    ],
     catalogue
   )
 
@@ -270,13 +288,13 @@ function saveSelectedGears(request, gearIds, catalogue, currentState, details) {
     gearMeasurementDetails: {
       ...currentState.gearMeasurementDetails,
       ...details.measurementDetailsByGearId
-    },
-    favouriteGearIds: getFavouriteGearIds(currentState, catalogue)
+    }
   })
 }
 
 export const gearSelectionController = {
   async handler(request, h) {
+    await loadFavouriteGears(request)
     const vesselLengthMetres =
       getJourneyState(request).selectedVesselLengthOverallMetres
     const catalogue = await getGearCatalogue({ vesselLengthMetres })
@@ -295,6 +313,7 @@ export const gearSelectionSubmitController = {
         potsInWater: Joi.string().allow('')
       }).unknown(true),
       async failAction(request, h) {
+        await loadFavouriteGears(request)
         const catalogue = await getGearCatalogue({
           vesselLengthMetres:
             getJourneyState(request).selectedVesselLengthOverallMetres
@@ -313,6 +332,7 @@ export const gearSelectionSubmitController = {
     }
   },
   async handler(request, h) {
+    await loadFavouriteGears(request)
     const vesselLengthMetres =
       getJourneyState(request).selectedVesselLengthOverallMetres
     const catalogue = await getGearCatalogue({ vesselLengthMetres })

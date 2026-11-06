@@ -56,6 +56,8 @@ describe('#confirmSamePortController', () => {
     expect($('input[type="radio"]')).toHaveLength(2)
     expect($('input[value="yes"]')).toHaveLength(1)
     expect($('input[value="no"]')).toHaveLength(1)
+    expect($('.govuk-button')).toHaveLength(1)
+    expect($('.govuk-button').text().trim()).toBe('Save and continue')
   })
 })
 

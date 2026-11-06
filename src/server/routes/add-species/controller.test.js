@@ -1,4 +1,8 @@
 import { load } from 'cheerio'
+import {
+  mockCatchRecording,
+  restoreCatchRecordingMock
+} from '#/test-helpers/mock-catch-recording.js'
 
 import { createServer } from '#/server/server.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
@@ -18,10 +22,12 @@ import {
 beforeEach(() => {
   mockSpeciesReferenceData()
   mockVesselsReferenceData()
+  mockCatchRecording()
 })
 afterEach(() => {
   restoreVesselsReferenceDataMock()
   restoreSpeciesReferenceDataMock()
+  restoreCatchRecordingMock()
 })
 
 describe('#addSpeciesController', () => {
@@ -197,11 +203,11 @@ describe('#addSpeciesSubmitController', () => {
 
     expect(statusCode).toBe(statusCodes.badRequest)
     expect($('.govuk-error-summary').text()).toContain(
-      'This species has already been added.'
+      'Atlantic cod (COD) has already been added.'
     )
     expect($('.govuk-error-summary a').attr('href')).toBe('#species')
     expect($('#species-error').text()).toContain(
-      'This species has already been added.'
+      'Atlantic cod (COD) has already been added.'
     )
     expect($('#species').attr('aria-describedby')).toBe('species-error')
     expect($('#species option[value="Atlantic cod (COD)"]')).toHaveLength(1)
@@ -235,7 +241,7 @@ describe('#addSpeciesSubmitController', () => {
     const $error = load(duplicate.result)
     expect(duplicate.statusCode).toBe(statusCodes.badRequest)
     expect($error('.govuk-error-summary').text()).toContain(
-      'This species has already been added.'
+      'Herring (HER) has already been added.'
     )
     expect($error('#species option[value="Herring (HER)"]')).toHaveLength(1)
     expect(getJourneyState(duplicate.request).availableSpeciesIds).toEqual([
