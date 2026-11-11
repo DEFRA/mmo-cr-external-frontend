@@ -6,9 +6,14 @@ import { getJourneyState } from '#/server/common/helpers/journey/navigation.js'
 
 describe('API-backed catch record listing', () => {
   let server, original, items, fetchMock
+  const errorLogger = vi.fn()
 
   beforeAll(async () => {
     server = await createServer()
+    server.ext('onPreHandler', (request, h) => {
+      vi.spyOn(request.logger, 'error').mockImplementation(errorLogger)
+      return h.continue
+    })
     await server.initialize()
   })
   afterAll(async () => server.stop({ timeout: 0 }))
@@ -290,6 +295,40 @@ describe('API-backed catch record listing', () => {
       const response = await server.inject('/records')
       expect(response.statusCode).toBe(status)
       expect(response.result).not.toContain('OLGA')
+    }
+  )
+
+  test.each([502, 503])(
+    'Should log the stack for a records API failure with status %s without exposing it in HTML',
+    async (statusCode) => {
+      fetchMock.mockResolvedValue(
+        statusCode === 502
+          ? { status: 200, json: async () => ({ items: [] }) }
+          : { status: statusCode }
+      )
+
+      const response = await server.inject('/records')
+
+      expect(response.statusCode).toBe(statusCode)
+      expect(errorLogger).toHaveBeenCalledExactlyOnceWith(
+        {
+          err: expect.any(Error),
+          method: 'get',
+          path: '/records',
+          statusCode
+        },
+        'Request failed'
+      )
+      const { err } = errorLogger.mock.calls[0][0]
+      expect(err.stack).toEqual(expect.stringContaining(err.message))
+      expect(err.stack).toContain('catch-recording')
+      expect(response.result).not.toContain(err.stack)
+      expect(load(response.result)('h1').text()).toBe(String(statusCode))
+      expect(response.result).toContain(
+        statusCode === 503
+          ? 'Catch Recording Service is temporarily unavailable'
+          : 'Something went wrong'
+      )
     }
   )
 

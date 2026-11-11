@@ -28,7 +28,15 @@ export function catchAll(request, h) {
     : statusCodeMessage(statusCode)
 
   if (statusCode >= statusCodes.internalServerError) {
-    request.logger.error(response?.stack)
+    request.logger.error(
+      {
+        err: response,
+        method: request.method,
+        path: request.path,
+        statusCode
+      },
+      'Request failed'
+    )
   }
 
   return h

@@ -91,6 +91,33 @@ Install application dependencies:
 npm install
 ```
 
+### Microsoft Entra sign-in
+
+The application uses Microsoft Entra External ID for web sign-in in production.
+Register a separate web application for this frontend; do not reuse the iOS PoC
+registration. Configure its web redirect URIs to include the exact callback and
+post-logout URLs used below. The app uses the authorization-code flow with PKCE
+and keeps its client credential on the server.
+
+Configure these environment variables for local Entra testing and in the
+deployment secret store:
+
+```text
+AUTHENTICATION_MODE=entra
+ENTRA_TENANT_SUBDOMAIN=<external-tenant-subdomain>
+ENTRA_CLIENT_ID=<web-app-client-id>
+ENTRA_CLIENT_SECRET=<server-side-web-app-secret>
+ENTRA_REDIRECT_URI=https://<frontend-host>/auth/callback
+ENTRA_POST_LOGOUT_REDIRECT_URI=https://<frontend-host>/signed-out
+```
+
+Never commit `ENTRA_CLIENT_SECRET` or put it in browser code. The local development and test default is `AUTHENTICATION_MODE=mock`;
+production and other deployment environments default to Entra and refuse to
+start with mock authentication or incomplete Entra configuration. The
+Entra-hosted sign-in journey handles password entry,
+verification and password reset. The frontend stores only the signed-in flag and
+basic account display details in its server-side session, not tokens.
+
 ### Git hooks
 
 Install git hooks (optional)
@@ -301,6 +328,13 @@ the previous backend draft. Idempotency protection is scoped to the current sess
 
 Missing configuration, API failures, malformed responses and timeouts show the existing error
 page without continuing the journey; server errors use the existing request logger.
+For `/records` and other pages, HTTP 5xx failures are logged as `Request failed`
+with the error stack, request method, path and status code. ECS logs expose the
+stack as `error.stack_trace`; stack traces are not rendered in the error page.
+Logging must be enabled (`LOG_ENABLED=true`) at `LOG_LEVEL=error` or a more verbose
+level such as `info`. Use `LOG_FORMAT=pino-pretty` locally or `LOG_FORMAT=ecs`
+for structured deployment logs. Network failures wrapped by the API client retain
+the generic service-error stack, not the original network exception.
 
 #### Full catch-record integration
 
