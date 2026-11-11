@@ -1,4 +1,5 @@
 import { statusCodes } from '../constants/status-codes.js'
+import { config } from '#/config/config.js'
 
 function statusCodeMessage(statusCode) {
   switch (statusCode) {
@@ -27,8 +28,15 @@ export function catchAll(request, h) {
     ? response.message
     : statusCodeMessage(statusCode)
 
-  if (statusCode >= statusCodes.internalServerError) {
-    request.logger.error(
+  const serverError = statusCode >= statusCodes.internalServerError
+  const diagnosticClientError =
+    statusCode >= statusCodes.badRequest &&
+    statusCode < statusCodes.internalServerError &&
+    ['dev', 'test'].includes(config.get('catchRecording.environment'))
+
+  if (serverError || diagnosticClientError) {
+    const level = serverError ? 'error' : 'warn'
+    request.logger[level](
       {
         err: response,
         method: request.method,
