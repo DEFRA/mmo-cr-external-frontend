@@ -26,6 +26,7 @@ describe('config environment defaults', () => {
       referenceDataUrl
     ) => {
       vi.stubEnv('NODE_ENV', environment)
+      vi.stubEnv('ENVIRONMENT', 'local')
       vi.resetModules()
 
       const { config } = await import('./config.js')
@@ -35,6 +36,9 @@ describe('config environment defaults', () => {
       expect(config.get('isDevelopment')).toBe(environment === 'development')
       expect(config.get('log.format')).toBe(logFormat)
       expect(config.get('isSecureContextEnabled')).toBe(secureContext)
+      expect(config.get('authentication.mode')).toBe(
+        isProduction ? 'entra' : 'mock'
+      )
       expect(config.get('referenceData.serviceUrl')).toBe(referenceDataUrl)
       expect(config.get('catchRecording.serviceUrl')).toBeNull()
       expect(config.get('catchRecording.token')).toBeNull()
@@ -67,5 +71,41 @@ describe('config environment defaults', () => {
       timeoutMs: 8000,
       environment: 'dev'
     })
+  })
+
+  test('Should load Entra web authentication settings from the environment', async () => {
+    vi.stubEnv('AUTHENTICATION_MODE', 'entra')
+    vi.stubEnv('ENTRA_TENANT_SUBDOMAIN', 'external-tenant')
+    vi.stubEnv('ENTRA_CLIENT_ID', 'web-client-id')
+    vi.stubEnv('ENTRA_CLIENT_SECRET', 'server-only-secret')
+    vi.stubEnv('ENTRA_REDIRECT_URI', 'https://frontend.test/auth/callback')
+    vi.stubEnv(
+      'ENTRA_POST_LOGOUT_REDIRECT_URI',
+      'https://frontend.test/signed-out'
+    )
+    vi.resetModules()
+
+    const { config } = await import('./config.js')
+
+    expect(config.get('authentication')).toEqual({
+      mode: 'entra',
+      entra: {
+        tenantSubdomain: 'external-tenant',
+        clientId: 'web-client-id',
+        clientSecret: 'server-only-secret',
+        redirectUri: 'https://frontend.test/auth/callback',
+        postLogoutRedirectUri: 'https://frontend.test/signed-out'
+      }
+    })
+  })
+
+  test('Should default deployment environments to Entra authentication', async () => {
+    vi.stubEnv('NODE_ENV', 'staging')
+    vi.stubEnv('ENVIRONMENT', 'staging')
+    vi.resetModules()
+
+    const { config } = await import('./config.js')
+
+    expect(config.get('authentication.mode')).toBe('entra')
   })
 })

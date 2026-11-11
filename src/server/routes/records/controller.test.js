@@ -7,11 +7,13 @@ import { getJourneyState } from '#/server/common/helpers/journey/navigation.js'
 describe('API-backed catch record listing', () => {
   let server, original, items, fetchMock
   const errorLogger = vi.fn()
+  const warnLogger = vi.fn()
 
   beforeAll(async () => {
     server = await createServer()
     server.ext('onPreHandler', (request, h) => {
       vi.spyOn(request.logger, 'error').mockImplementation(errorLogger)
+      vi.spyOn(request.logger, 'warn').mockImplementation(warnLogger)
       return h.continue
     })
     await server.initialize()
@@ -329,6 +331,34 @@ describe('API-backed catch record listing', () => {
           ? 'Catch Recording Service is temporarily unavailable'
           : 'Something went wrong'
       )
+    }
+  )
+
+  test.each(['dev', 'test'])(
+    'Should log a records permission failure as a warning in %s without exposing its stack',
+    async (environment) => {
+      config.set('catchRecording.environment', environment)
+      fetchMock.mockResolvedValue({ status: 403 })
+
+      const response = await server.inject('/records')
+
+      expect(response.statusCode).toBe(403)
+      expect(warnLogger).toHaveBeenCalledExactlyOnceWith(
+        {
+          err: expect.any(Error),
+          method: 'get',
+          path: '/records',
+          statusCode: 403
+        },
+        'Request failed'
+      )
+      const { err } = warnLogger.mock.calls[0][0]
+      expect(err.message).toBe(
+        'You do not have permission to access this catch record.'
+      )
+      expect(err.stack).toContain('catch-recording')
+      expect(response.result).not.toContain(err.stack)
+      expect(errorLogger).not.toHaveBeenCalled()
     }
   )
 

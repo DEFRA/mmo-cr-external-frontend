@@ -331,8 +331,14 @@ page without continuing the journey; server errors use the existing request logg
 For `/records` and other pages, HTTP 5xx failures are logged as `Request failed`
 with the error stack, request method, path and status code. ECS logs expose the
 stack as `error.stack_trace`; stack traces are not rendered in the error page.
+With `ENVIRONMENT=dev` or `ENVIRONMENT=test`, HTTP 4xx failures (including
+`/records` 403 responses) are also logged as `Request failed` at `warn` level,
+with the error message, stack, method, path and status code. Other environments
+retain 5xx-only logging in this handler. These logs cover errors handled by the
+frontend, not failures returned directly by a gateway before reaching it.
 Logging must be enabled (`LOG_ENABLED=true`) at `LOG_LEVEL=error` or a more verbose
-level such as `info`. Use `LOG_FORMAT=pino-pretty` locally or `LOG_FORMAT=ecs`
+level such as `info`; use `LOG_LEVEL=info` or `warn` to include 4xx warnings.
+Use `LOG_FORMAT=pino-pretty` locally or `LOG_FORMAT=ecs`
 for structured deployment logs. Network failures wrapped by the API client retain
 the generic service-error stack, not the original network exception.
 
