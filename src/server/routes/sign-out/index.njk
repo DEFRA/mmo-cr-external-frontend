@@ -6,6 +6,10 @@
     <div class="govuk-grid-column-full">
       <h1 class="govuk-heading-xl govuk-!-margin-bottom-8">{{ heading }}</h1>
 
+      {% if warning %}
+        <p class="govuk-body govuk-error-message" role="alert">{{ warning }}</p>
+      {% endif %}
+
       <p class="govuk-body">This is a new service &ndash; your <a class="govuk-link" href="{{ feedbackUrl }}">feedback</a> will help us to improve it.</p>
 
       {{ govukButton({ text: "Sign in", href: "/sign-in" }) }}

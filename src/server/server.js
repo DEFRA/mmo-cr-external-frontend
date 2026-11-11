@@ -14,8 +14,11 @@ import { getCacheEngine } from './common/helpers/session-cache/cache-engine.js'
 import { secureContext } from '@defra/hapi-secure-context'
 import { contentSecurityPolicy } from './plugins/content-security-policy.js'
 import { metrics } from '@defra/cdp-metrics'
+import { assertAuthenticationConfiguration } from './common/helpers/auth/entra.js'
 
 export async function createServer() {
+  assertAuthenticationConfiguration()
+
   const server = hapi.server({
     host: config.get('host'),
     port: config.get('port'),

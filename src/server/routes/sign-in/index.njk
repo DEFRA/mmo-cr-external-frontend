@@ -2,36 +2,52 @@
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/details/macro.njk" import govukDetails %}
 {% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
 
 {% block pageContent %}
   {{ appHeading({ text: heading }) }}
 
+  {% if errorSummary %}
+    {{ govukErrorSummary(errorSummary) }}
+  {% endif %}
+
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-      <form method="post" novalidate>
-        {{ govukInput({
-          label: { text: "Email address" },
-          id: "email",
-          name: "email",
-          type: "email",
-          autocomplete: "username"
-        }) }}
+      {% if authenticationMode == "entra" %}
+        <p class="govuk-body">Sign in securely using your Record your catch account.</p>
+        <form method="post" action="/sign-in">
+          {{ govukButton({ text: "Continue to sign in" }) }}
+        </form>
+        <p class="govuk-body">You will be redirected to Microsoft to sign in. Your password is never entered or stored on this website.</p>
+        <p class="govuk-body">To reset your password, use the "Forgot password?" link on the Microsoft sign-in page.</p>
+      {% else %}
+        <p class="govuk-body">This local development sign-in is simulated and does not check your account.</p>
+        <form method="post" novalidate>
+          {{ govukInput({
+            label: { text: "Email address" },
+            id: "email",
+            name: "email",
+            type: "email",
+            autocomplete: "username"
+          }) }}
 
-        {{ govukInput({
-          label: { text: "Password" },
-          id: "password",
-          name: "password",
-          type: "password",
-          autocomplete: "current-password"
-        }) }}
+          {{ govukInput({
+            label: { text: "Password" },
+            id: "password",
+            name: "password",
+            type: "password",
+            autocomplete: "current-password"
+          }) }}
 
-        {{ govukButton({ text: "Sign in" }) }}
-      </form>
+          {{ govukButton({ text: "Sign in" }) }}
+        </form>
 
-      <h2 class="govuk-heading-m">Having trouble signing in?</h2>
-      <p class="govuk-body">
-        <a class="govuk-link" href="/forgotten-password">Forgotten your password?</a>
-      </p>
+        <h2 class="govuk-heading-m">Having trouble signing in?</h2>
+        <p class="govuk-body">
+          <a class="govuk-link" href="/forgotten-password">Forgotten your password?</a>
+        </p>
+      {% endif %}
+
       {% call govukDetails({
         summaryText: "Create an account",
         open: true

@@ -1,4 +1,8 @@
-import { signInController, signInSubmitController } from './controller.js'
+import {
+  entraCallbackController,
+  signInController,
+  signInSubmitController
+} from './controller.js'
 
 /**
  * Sets up the routes used in the sign in page.
@@ -18,6 +22,11 @@ export const signIn = {
           method: 'POST',
           path: '/sign-in',
           ...signInSubmitController
+        },
+        {
+          method: 'GET',
+          path: '/auth/callback',
+          ...entraCallbackController
         }
       ])
     }

@@ -1,10 +1,19 @@
 import Joi from 'joi'
 
+import { config } from '#/config/config.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
+import { createEntraAuthorizationUrl } from '#/server/common/helpers/auth/entra.js'
 
 const heading = 'Forgotten your password?'
 const templatePath = 'forgotten-password/index'
 const confirmationEmailKey = 'forgottenPasswordEmail'
+
+async function redirectToEntraSignIn(request, h, takeover = false) {
+  const authorizationUrl = await createEntraAuthorizationUrl(request)
+  const response = h.redirect(authorizationUrl).code(statusCodes.seeOther)
+
+  return takeover ? response.takeover() : response
+}
 
 function viewContext(overrides = {}) {
   return {
@@ -16,7 +25,11 @@ function viewContext(overrides = {}) {
 }
 
 export const forgottenPasswordController = {
-  handler(_request, h) {
+  async handler(request, h) {
+    if (config.get('authentication.mode') === 'entra') {
+      return redirectToEntraSignIn(request, h)
+    }
+
     return h.view(templatePath, viewContext())
   }
 }
@@ -30,7 +43,11 @@ export const forgottenPasswordSubmitController = {
           .email({ tlds: { allow: false } })
           .required()
       }),
-      failAction(request, h) {
+      async failAction(request, h) {
+        if (config.get('authentication.mode') === 'entra') {
+          return redirectToEntraSignIn(request, h, true)
+        }
+
         const email =
           typeof request.payload?.email === 'string'
             ? request.payload.email
@@ -57,6 +74,10 @@ export const forgottenPasswordSubmitController = {
     }
   },
   handler(request, h) {
+    if (config.get('authentication.mode') === 'entra') {
+      return redirectToEntraSignIn(request, h)
+    }
+
     request.yar.flash(confirmationEmailKey, request.payload.email)
     return h
       .redirect('/forgotten-password-confirmation')
@@ -65,7 +86,11 @@ export const forgottenPasswordSubmitController = {
 }
 
 export const forgottenPasswordConfirmationController = {
-  handler(request, h) {
+  async handler(request, h) {
+    if (config.get('authentication.mode') === 'entra') {
+      return redirectToEntraSignIn(request, h)
+    }
+
     const email = request.yar.flash(confirmationEmailKey).at(-1)
     if (!email) {
       return h.redirect('/forgotten-password').code(statusCodes.seeOther)

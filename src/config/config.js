@@ -12,6 +12,9 @@ const oneWeekMs = 604800000
 const isProduction = process.env.NODE_ENV === 'production'
 const isTest = process.env.NODE_ENV === 'test'
 const isDevelopment = process.env.NODE_ENV === 'development'
+const isLocalEnvironment = ['local', 'dev'].includes(
+  process.env.ENVIRONMENT ?? 'local'
+)
 
 convict.addFormats(convictFormatWithValidator)
 
@@ -165,6 +168,53 @@ export const config = convict({
         format: Boolean,
         default: isProduction,
         env: 'SESSION_COOKIE_SECURE'
+      }
+    }
+  },
+  authentication: {
+    mode: {
+      doc: 'Authentication provider; mock is for local walkthroughs and tests only',
+      format: ['mock', 'entra'],
+      default:
+        isProduction || (!isTest && !isLocalEnvironment) ? 'entra' : 'mock',
+      env: 'AUTHENTICATION_MODE'
+    },
+    entra: {
+      tenantSubdomain: {
+        doc: 'Microsoft Entra External ID tenant subdomain',
+        format: String,
+        nullable: true,
+        default: null,
+        env: 'ENTRA_TENANT_SUBDOMAIN'
+      },
+      clientId: {
+        doc: 'Microsoft Entra web app registration client ID',
+        format: String,
+        nullable: true,
+        default: null,
+        env: 'ENTRA_CLIENT_ID'
+      },
+      clientSecret: {
+        doc: 'Server-side credential for the Microsoft Entra web app registration',
+        format: String,
+        nullable: true,
+        default: null,
+        sensitive: true,
+        env: 'ENTRA_CLIENT_SECRET'
+      },
+      redirectUri: {
+        doc: 'Registered web callback URL for the Entra authorization-code flow',
+        format: String,
+        nullable: true,
+        default: null,
+        env: 'ENTRA_REDIRECT_URI'
+      },
+      postLogoutRedirectUri: {
+        doc: 'Registered post-logout redirect URL for the Entra web app',
+        format: String,
+        nullable: true,
+        default: null,
+        env: 'ENTRA_POST_LOGOUT_REDIRECT_URI'
       }
     }
   },

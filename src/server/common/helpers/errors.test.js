@@ -2,6 +2,7 @@ import { vi } from 'vitest'
 import Boom from '@hapi/boom'
 import pino from 'pino'
 import { ecsFormat } from '@elastic/ecs-pino-format'
+import { config } from '#/config/config.js'
 
 import { catchAll } from './errors.js'
 import { createServer } from '../../server.js'
@@ -34,6 +35,18 @@ describe('#errors', () => {
 
 describe('#catchAll', () => {
   const mockErrorLogger = vi.fn()
+  const mockWarnLogger = vi.fn()
+  let originalEnvironment
+
+  beforeEach(() => {
+    originalEnvironment = config.get('catchRecording.environment')
+    config.set('catchRecording.environment', 'prod')
+  })
+
+  afterEach(() => {
+    config.set('catchRecording.environment', originalEnvironment)
+  })
+
   const mockStack = 'Mock error stack'
   const errorPage = 'error/index'
   const mockRequest = (statusCode) => ({
@@ -46,7 +59,7 @@ describe('#catchAll', () => {
         statusCode
       }
     },
-    logger: { error: mockErrorLogger }
+    logger: { error: mockErrorLogger, warn: mockWarnLogger }
   })
   const mockToolkitView = vi.fn()
   const mockToolkitCode = vi.fn()
@@ -55,30 +68,84 @@ describe('#catchAll', () => {
     code: mockToolkitCode.mockReturnThis()
   }
 
-  test('Should serialize the stack into the ECS error.stack_trace field', () => {
-    const write = vi.fn()
-    const request = {
-      ...mockRequest(statusCodes.internalServerError),
-      response: Boom.internal('Records failed'),
-      logger: pino(ecsFormat(), { write })
-    }
-
-    catchAll(request, mockToolkit)
-
-    expect(write).toHaveBeenCalledTimes(1)
-    expect(JSON.parse(write.mock.calls[0][0])).toMatchObject({
-      'log.level': 'error',
-      message: 'Request failed',
-      method: 'get',
-      path: '/records',
-      statusCode: statusCodes.internalServerError,
-      error: {
-        type: 'Error',
-        message: 'Records failed',
-        stack_trace: request.response.stack
+  test.each([
+    ['prod', 500, 'error'],
+    ['dev', 403, 'warn'],
+    ['test', 403, 'warn']
+  ])(
+    'Should serialize the %s %s stack into ECS at %s level',
+    (environment, statusCode, level) => {
+      config.set('catchRecording.environment', environment)
+      const write = vi.fn()
+      const request = {
+        ...mockRequest(statusCode),
+        response: Boom.boomify(new Error('Records failed'), { statusCode }),
+        logger: pino(ecsFormat(), { write })
       }
-    })
-  })
+
+      catchAll(request, mockToolkit)
+
+      expect(write).toHaveBeenCalledTimes(1)
+      expect(JSON.parse(write.mock.calls[0][0])).toMatchObject({
+        'log.level': level,
+        message: 'Request failed',
+        method: 'get',
+        path: '/records',
+        statusCode,
+        error: {
+          type: 'Error',
+          message: 'Records failed',
+          stack_trace: request.response.stack
+        }
+      })
+    }
+  )
+
+  test.each(['dev', 'test'])(
+    'Should warn for client failures in %s without changing the response',
+    (environment) => {
+      config.set('catchRecording.environment', environment)
+      const request = mockRequest(statusCodes.forbidden)
+
+      catchAll(request, mockToolkit)
+
+      expect(mockWarnLogger).toHaveBeenCalledExactlyOnceWith(
+        {
+          err: request.response,
+          method: 'get',
+          path: '/records',
+          statusCode: statusCodes.forbidden
+        },
+        'Request failed'
+      )
+      expect(mockErrorLogger).not.toHaveBeenCalled()
+      expect(mockToolkitCode).toHaveBeenCalledWith(statusCodes.forbidden)
+    }
+  )
+
+  test.each(['local', 'prod', 'production', 'perf-test'])(
+    'Should not add client-error warnings in %s',
+    (environment) => {
+      config.set('catchRecording.environment', environment)
+
+      catchAll(mockRequest(statusCodes.forbidden), mockToolkit)
+
+      expect(mockWarnLogger).not.toHaveBeenCalled()
+      expect(mockErrorLogger).not.toHaveBeenCalled()
+    }
+  )
+
+  test.each([400, 401, 404, 418, 499])(
+    'Should warn for client status %s in dev',
+    (statusCode) => {
+      config.set('catchRecording.environment', 'dev')
+
+      catchAll(mockRequest(statusCode), mockToolkit)
+
+      expect(mockWarnLogger).toHaveBeenCalledOnce()
+      expect(mockErrorLogger).not.toHaveBeenCalled()
+    }
+  )
 
   test('Should provide expected "Not Found" page', () => {
     catchAll(mockRequest(statusCodes.notFound), mockToolkit)
