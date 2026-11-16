@@ -10,12 +10,16 @@ import { nunjucksConfig } from '#/config/nunjucks/nunjucks.js'
 import { requestTracing } from './plugins/request-tracing.js'
 import { requestLogger } from './plugins/request-logger.js'
 import { sessionCache } from './plugins/session-cache.js'
+import { authGuard } from './plugins/auth-guard.js'
+import { assertAuthenticationConfiguration } from './common/helpers/auth/entra.js'
 import { getCacheEngine } from './common/helpers/session-cache/cache-engine.js'
 import { secureContext } from '@defra/hapi-secure-context'
 import { contentSecurityPolicy } from './plugins/content-security-policy.js'
 import { metrics } from '@defra/cdp-metrics'
 
 export async function createServer() {
+  assertAuthenticationConfiguration()
+
   const server = hapi.server({
     host: config.get('host'),
     port: config.get('port'),
@@ -59,6 +63,7 @@ export async function createServer() {
     secureContext,
     pulse,
     sessionCache,
+    authGuard,
     nunjucksConfig,
     Scooter,
     contentSecurityPolicy,

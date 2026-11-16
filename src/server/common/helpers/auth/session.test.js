@@ -1,4 +1,10 @@
-import { isSignedIn, signIn, signOut } from './session.js'
+import {
+  getSignedInAccount,
+  isSessionExpired,
+  isSignedIn,
+  signIn,
+  signOut
+} from './session.js'
 
 function fakeRequest(initialState) {
   let state = initialState
@@ -51,6 +57,37 @@ describe('#signIn', () => {
     signIn(request)
 
     expect(isSignedIn(request)).toBe(true)
+  })
+
+  test('Should rotate the session and store only basic account details for a real sign-in', () => {
+    const request = fakeRequest({ entraAuthRequest: { state: 'pending' } })
+
+    signIn(request, { email: 'skipper@example.com', name: 'Skipper' })
+
+    expect(request._wasReset()).toBe(true)
+    expect(request.yar.get('entraAuthRequest')).toBeUndefined()
+    expect(getSignedInAccount(request)).toEqual({
+      email: 'skipper@example.com',
+      name: 'Skipper'
+    })
+  })
+})
+
+describe('#isSessionExpired', () => {
+  test('Should be false within the session lifetime', () => {
+    const request = fakeRequest({ signedIn: true, signedInAt: 1000 })
+
+    expect(isSessionExpired(request, 500, 1400)).toBe(false)
+  })
+
+  test('Should be true once the session lifetime has passed', () => {
+    const request = fakeRequest({ signedIn: true, signedInAt: 1000 })
+
+    expect(isSessionExpired(request, 500, 1501)).toBe(true)
+  })
+
+  test('Should be true when no sign-in time was recorded', () => {
+    expect(isSessionExpired(fakeRequest({ signedIn: true }), 500, 0)).toBe(true)
   })
 })
 

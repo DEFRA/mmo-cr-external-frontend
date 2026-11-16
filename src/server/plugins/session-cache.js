@@ -17,10 +17,14 @@ export const sessionCache = {
     },
     storeBlank: false,
     errorOnCacheNotReady: true,
+    // Server-side only, so sign-out and session rotation can revoke a copied cookie.
+    maxCookieSize: 0,
     cookieOptions: {
       password: sessionConfig.cookie.password,
       ttl: sessionConfig.cookie.ttl,
       isSecure: config.get('session.cookie.secure'),
+      isHttpOnly: true,
+      isSameSite: 'Lax',
       clearInvalid: true
     }
   }
