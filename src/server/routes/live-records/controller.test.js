@@ -1706,6 +1706,54 @@ describe('Live catch records and section persistence', () => {
   })
 
   test.each([
+    ['/add-species', 'Add species to your vessel TEST VESSEL'],
+    ['/remove-species', 'Remove species from vessel TEST VESSEL']
+  ])(
+    'Should name the selected vessel at the end of the %s heading',
+    async (path, heading) => {
+      await seed({
+        ...recordJourney(record),
+        selectedVesselName: 'TEST VESSEL'
+      })
+      const response = await call('GET', path)
+      const $ = load(response.result)
+      $('h1 .govuk-caption-l').remove()
+      expect(response.statusCode).toBe(200)
+      expect($('h1').text().replace(/\s+/g, ' ').trim()).toBe(heading)
+      expect($('title').text()).toContain(heading)
+    }
+  )
+
+  test('Should name the account vessel in the species headings opened from the account page', async () => {
+    await call('POST', '/sign-in')
+    const account = load((await call('GET', '/account')).result)
+    const headingFor = async (href) => {
+      const $ = load((await call('GET', href)).result)
+      $('h1 .govuk-caption-l').remove()
+      return $('h1').text().replace(/\s+/g, ' ').trim()
+    }
+
+    for (const [vesselId, vesselName] of [
+      ['vessel-1', 'TEST VESSEL'],
+      ['vessel-2', 'SECOND VESSEL']
+    ]) {
+      const link = (path) =>
+        account(
+          `a[href^="${path}?return=/account"][href$="vesselId=${vesselId}"]`
+        )
+          .first()
+          .attr('href')
+
+      expect(await headingFor(link('/add-species'))).toBe(
+        `Add species to your vessel ${vesselName}`
+      )
+      expect(await headingFor(link('/remove-species'))).toBe(
+        `Remove species from vessel ${vesselName}`
+      )
+    }
+  })
+
+  test.each([
     [
       '/add-port?for=departure&entry=1',
       'Enter the port or closest port you set off from'
@@ -2286,7 +2334,7 @@ describe('Live catch records and section persistence', () => {
     const speciesPath = '/add-species?gearId=gear-1'
     const speciesSearch = await call('GET', speciesPath)
     expect(load(speciesSearch.result)('h1').text()).toContain(
-      'Add species to your catch record'
+      'Add species to your vessel'
     )
     const species = await call('POST', speciesPath, { species: 'Cod' })
     expect(species.statusCode).toBe(303)

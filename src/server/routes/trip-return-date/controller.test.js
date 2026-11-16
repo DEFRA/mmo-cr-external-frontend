@@ -3,6 +3,8 @@ import { load } from 'cheerio'
 import { createServer } from '#/server/server.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 
+const TODAY = '2025-11-01T12:00:00Z'
+
 describe('#tripReturnDateController', () => {
   let server
 
@@ -68,6 +70,15 @@ describe('#tripReturnDateSubmitController', () => {
   beforeAll(async () => {
     server = await createServer()
     await server.initialize()
+  })
+
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(new Date(TODAY))
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
   })
 
   afterAll(async () => {
@@ -361,6 +372,63 @@ describe('#tripReturnDateSubmitController', () => {
     expect(statusCode).toBe(statusCodes.ok)
     expect($('.govuk-error-summary').text()).toContain(
       'Date you returned from your trip must be the same as or after the date you left'
+    )
+  })
+
+  async function postReturnAfterDeparture(departure, returned) {
+    const departureResponse = await server.inject({
+      method: 'POST',
+      url: '/trip-departure-date',
+      payload: {
+        'tripDepartureDate-day': departure[0],
+        'tripDepartureDate-month': departure[1],
+        'tripDepartureDate-year': departure[2]
+      }
+    })
+    const cookie = departureResponse.headers['set-cookie'][0].split(';')[0]
+
+    return server.inject({
+      method: 'POST',
+      url: '/trip-return-date',
+      headers: { cookie },
+      payload: {
+        'tripReturnDate-day': returned[0],
+        'tripReturnDate-month': returned[1],
+        'tripReturnDate-year': returned[2]
+      }
+    })
+  }
+
+  test('Should accept a trip of exactly 30 days', async () => {
+    const { statusCode, headers } = await postReturnAfterDeparture(
+      ['1', '10', '2025'],
+      ['31', '10', '2025']
+    )
+
+    expect(statusCode).toBe(303)
+    expect(headers.location).toBe('/departure-port')
+  })
+
+  test('Should accept a same-day trip', async () => {
+    const { statusCode, headers } = await postReturnAfterDeparture(
+      ['1', '10', '2025'],
+      ['1', '10', '2025']
+    )
+
+    expect(statusCode).toBe(303)
+    expect(headers.location).toBe('/departure-port')
+  })
+
+  test('Should reject a trip longer than 30 days', async () => {
+    const { statusCode, result } = await postReturnAfterDeparture(
+      ['1', '10', '2025'],
+      ['1', '11', '2025']
+    )
+    const $ = load(result)
+
+    expect(statusCode).toBe(statusCodes.ok)
+    expect($('.govuk-error-summary').text()).toContain(
+      'Your trip cannot be longer than 30 days'
     )
   })
 })

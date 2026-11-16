@@ -59,6 +59,18 @@ export function formatIsoDate(isoDate) {
   return `${day} ${monthName} ${year}`
 }
 
+const MS_PER_DAY = 24 * 60 * 60 * 1000
+
+export function addDaysToIsoDate(isoDate, days) {
+  const [year, month, day] = isoDate.split('-').map(Number)
+  const date = new Date(Date.UTC(year, month - 1, day) + days * MS_PER_DAY)
+  return toIsoDate(
+    date.getUTCDate(),
+    date.getUTCMonth() + 1,
+    date.getUTCFullYear()
+  )
+}
+
 export function todayIsoDate() {
   const now = new Date()
   return toIsoDate(
@@ -143,7 +155,9 @@ function checkBounds(isoDate, values, options) {
     maxDate = todayIsoDate(),
     maxDateMessage,
     notBeforeDate,
-    notBeforeMessage
+    notBeforeMessage,
+    notAfterDate,
+    notAfterMessage
   } = options
   const isoValue = isoDateValue(isoDate)
   const fieldErrors = { day: true, month: true, year: true }
@@ -160,6 +174,15 @@ function checkBounds(isoDate, values, options) {
     return {
       isValid: false,
       errorMessage: notBeforeMessage,
+      fieldErrors,
+      values
+    }
+  }
+
+  if (notAfterDate && isoValue > isoDateValue(notAfterDate)) {
+    return {
+      isValid: false,
+      errorMessage: notAfterMessage,
       fieldErrors,
       values
     }
@@ -183,6 +206,8 @@ function checkBounds(isoDate, values, options) {
  * @param {string} [options.maxDateMessage] message shown when the date is after maxDate
  * @param {string} [options.notBeforeDate] another ISO date this one must not be earlier than
  * @param {string} [options.notBeforeMessage] message shown when earlier than notBeforeDate
+ * @param {string} [options.notAfterDate] another ISO date this one must not be later than
+ * @param {string} [options.notAfterMessage] message shown when later than notAfterDate
  */
 export function validateDateInput({ day, month, year }, _fieldPrefix, options) {
   const values = { day, month, year }

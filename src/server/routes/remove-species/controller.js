@@ -1,5 +1,6 @@
 import {
   catchRecordCaption,
+  isCatchRecordJourney,
   resolveNextPath,
   getJourneyState,
   speciesSelectionReturnPath,
@@ -19,20 +20,15 @@ function speciesCheckboxItems(speciesOptions) {
 }
 
 function viewContext(request, speciesData, overrides = {}) {
-  const vesselName = liveCatchRecords()
-    ? ''
-    : speciesData.journeyState.selectedVesselName || ''
-  const heading = liveCatchRecords()
-    ? 'Remove species from your favourites'
-    : 'Remove species from vessel'
+  const favourites = liveCatchRecords() && !isCatchRecordJourney(request)
+  const vesselName = speciesData.journeyState.selectedVesselName || ''
+  const heading = 'Remove species from vessel'
   const pageTitle = vesselName ? `${heading} ${vesselName}` : heading
   return {
     pageTitle,
     heading,
     vesselName,
-    caption: liveCatchRecords()
-      ? 'Your favourites'
-      : catchRecordCaption(request),
+    caption: favourites ? 'Your favourites' : catchRecordCaption(request),
     backLink: {
       href: speciesSelectionReturnPath(request),
       text: 'Back'

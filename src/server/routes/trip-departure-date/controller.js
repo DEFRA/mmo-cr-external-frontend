@@ -9,10 +9,16 @@ import {
   setJourneyState
 } from '#/server/common/helpers/journey/navigation.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
+import { businessDate } from '#/server/common/helpers/journey/catch-record-payload.js'
+import {
+  earliestDepartureDate,
+  earliestDepartureForReturn,
+  TRIP_TOO_LONG_MESSAGE
+} from '#/server/common/helpers/journey/trip-date-rules.js'
 
 const pageTitle = 'Which date did you set off on your trip?'
 const hintText = 'For example, 31/03/2020'
-const MIN_DEPARTURE_DATE = '2025-07-24'
+const CHECK_ANSWERS_PATH = '/check-answers'
 
 function viewContext(request, overrides = {}) {
   return {
@@ -35,9 +41,27 @@ export const tripDepartureDateController = {
   }
 }
 
+// Changing the departure date from check your answers skips the return-date page, so the trip-level
+// rules that page would otherwise apply are checked here against the already-answered return date.
+function returnDateBounds(request) {
+  const { returnDate } = getJourneyState(request)
+  if (request.query?.return !== CHECK_ANSWERS_PATH || !returnDate) {
+    return {}
+  }
+
+  return {
+    notAfterDate: returnDate,
+    notAfterMessage:
+      'Date you left for your trip must be the same as or before the date you returned',
+    notBeforeDate: earliestDepartureForReturn(returnDate),
+    notBeforeMessage: TRIP_TOO_LONG_MESSAGE
+  }
+}
+
 export const tripDepartureDateSubmitController = {
   handler(request, h) {
     const payload = request.payload || {}
+    const today = businessDate()
     const result = validateDateInput(
       {
         day: payload['tripDepartureDate-day'],
@@ -50,11 +74,11 @@ export const tripDepartureDateSubmitController = {
         subjectSuffix: 'you left for your trip',
         formatMessage:
           'Enter a date in the correct format, for example 31 3 2019',
-        minDate: MIN_DEPARTURE_DATE,
-        minDateMessage:
-          'Date you left for your trip must be on or after 24 July 2025',
+        ...earliestDepartureDate(today),
+        maxDate: today,
         maxDateMessage:
-          'Date you left for your trip must be today or in the past'
+          'Date you left for your trip must be today or in the past',
+        ...returnDateBounds(request)
       }
     )
 
