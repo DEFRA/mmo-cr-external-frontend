@@ -1,7 +1,6 @@
 import Joi from 'joi'
 
 import {
-  catchRecordCaption,
   getJourneyState,
   resolveNextPath,
   setJourneyState
@@ -26,7 +25,7 @@ function viewContext(request, vessels, overrides = {}) {
   return {
     pageTitle: errorText,
     heading: errorText,
-    reference: catchRecordCaption(request),
+    reference: getJourneyState(request).reference,
     navigation: buildNavigation(request, { showWhenSignedOut: true }),
     backLink: {
       href: '/records',

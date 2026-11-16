@@ -30,16 +30,13 @@ function gearCheckboxItems(favouriteOptions) {
 function viewContext(request, catalogue, overrides = {}) {
   const journeyState = migrateGearJourneyState(request, catalogue)
   const favouriteGearIds = getFavouriteGearIds(journeyState, catalogue)
-  const vesselName = liveCatchRecords()
-    ? ''
-    : journeyState.selectedVesselName || getData('selectVessel').name
-  const heading = liveCatchRecords()
-    ? 'Remove gear from your favourites'
-    : headingLine1
+  const vesselName =
+    journeyState.selectedVesselName ||
+    (liveCatchRecords() ? '' : getData('selectVessel').name)
 
   return {
-    pageTitle: `${heading} ${vesselName}`.trim(),
-    headingLine1: heading,
+    pageTitle: `${headingLine1} ${vesselName}`.trim(),
+    headingLine1,
     vesselName,
     backLink: {
       href: resolveNextPath(request, GEAR_SELECTION_PATH),

@@ -6,7 +6,9 @@
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
       <form method="post" novalidate>
-        <span class="govuk-caption-l" data-testid="app-catch-reference">{{ reference }}</span>
+        {% if reference %}
+          <span class="govuk-caption-l" data-testid="app-catch-reference">{{ reference }}</span>
+        {% endif %}
         {{ govukRadios({
           name: "vesselId",
           fieldset: {

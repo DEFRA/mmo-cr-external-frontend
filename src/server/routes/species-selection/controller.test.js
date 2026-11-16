@@ -31,7 +31,7 @@ describe('#speciesSelectionController', () => {
     })
 
     expect(result).toEqual(
-      expect.stringContaining('What species did you catch? |')
+      expect.stringContaining('Which species did you catch? |')
     )
     expect(statusCode).toBe(statusCodes.ok)
   })
@@ -55,8 +55,8 @@ describe('#speciesSelectionController', () => {
       expect(h.view).toHaveBeenCalledWith(
         'species-selection/index',
         expect.objectContaining({
-          heading: `What species did you catch using ${name.toLowerCase()}?`,
-          pageTitle: `What species did you catch using ${name.toLowerCase()}?`
+          heading: `Which species did you catch with ${name.toLowerCase()}?`,
+          pageTitle: `Which species did you catch with ${name.toLowerCase()}?`
         })
       )
     }

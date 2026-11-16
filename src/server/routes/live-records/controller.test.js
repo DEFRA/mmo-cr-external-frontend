@@ -594,9 +594,7 @@ describe('Live catch records and section persistence', () => {
   test('Should replace the new-record caption as soon as vessel submission creates a draft', async () => {
     await call('POST', '/records/new')
     const vessel = await call('GET', '/select-vessel')
-    expect(load(vessel.result)('.govuk-caption-l').text().trim()).toBe(
-      'New catch record'
-    )
+    expect(load(vessel.result)('.govuk-caption-l')).toHaveLength(0)
     expect(fetchMock).not.toHaveBeenCalled()
     const created = await call('POST', '/select-vessel', {
       vesselId: 'vessel-1'
@@ -612,9 +610,7 @@ describe('Live catch records and section persistence', () => {
     )
     await call('POST', '/records/new')
     const fresh = await call('GET', '/select-vessel')
-    expect(load(fresh.result)('.govuk-caption-l').text().trim()).toBe(
-      'New catch record'
-    )
+    expect(load(fresh.result)('.govuk-caption-l')).toHaveLength(0)
   })
 
   test.each([
@@ -1688,7 +1684,6 @@ describe('Live catch records and section persistence', () => {
     '/add-gear',
     '/add-species',
     '/remove-port',
-    '/remove-gear',
     '/remove-species'
   ])(
     'Should manage session favourites without a vessel on %s',
@@ -1700,6 +1695,15 @@ describe('Live catch records and section persistence', () => {
       expect(fetchMock).not.toHaveBeenCalled()
     }
   )
+
+  test('Should name the selected vessel in the Remove gear heading', async () => {
+    await seed({ ...recordJourney(record), selectedVesselName: 'TEST VESSEL' })
+    const response = await call('GET', '/remove-gear')
+    const $ = load(response.result)
+    expect(response.statusCode).toBe(200)
+    expect($('h1').html()).toContain('Remove gear from vessel <br>TEST VESSEL')
+    expect($('title').text()).toContain('Remove gear from vessel TEST VESSEL')
+  })
 
   test.each([
     [
