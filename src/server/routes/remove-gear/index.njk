@@ -6,7 +6,7 @@
     <div class="govuk-grid-column-two-thirds">
       <form method="post" novalidate>
         <h1 class="govuk-heading-xl">
-          {{ headingLine1 }} <br>{{ vesselName }}
+          {{ headingLine1 }}{% if vesselName %} <br>{{ vesselName }}{% endif %}
         </h1>
         {% if gearCheckboxItems.length %}
           <div class="govuk-form-group{{ ' govuk-form-group--error' if fieldErrors.gearIds }}">
