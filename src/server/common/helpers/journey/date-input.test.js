@@ -1,4 +1,8 @@
-import { validateDateInput, formatIsoDate } from './date-input.js'
+import {
+  validateDateInput,
+  formatIsoDate,
+  addDaysToIsoDate
+} from './date-input.js'
 
 const departureOptions = {
   subject: 'the date you left for your trip',
@@ -377,6 +381,44 @@ describe('#validateDateInput', () => {
 
     expect(result.isValid).toBe(true)
     expect(result.isoDate).toBe('2025-08-10')
+  })
+
+  test('Should reject a date later than notAfterDate and accept one on it', () => {
+    const options = {
+      subject: 'the date you returned from your trip',
+      subjectSuffix: 'you returned from your trip',
+      maxDate: '2026-01-01',
+      notAfterDate: '2025-08-31',
+      notAfterMessage: 'Your trip cannot be longer than 30 days'
+    }
+
+    const rejected = validateDateInput(
+      { day: '1', month: '9', year: '2025' },
+      'tripReturnDate',
+      options
+    )
+    const accepted = validateDateInput(
+      { day: '31', month: '8', year: '2025' },
+      'tripReturnDate',
+      options
+    )
+
+    expect(rejected.isValid).toBe(false)
+    expect(rejected.errorMessage).toBe(
+      'Your trip cannot be longer than 30 days'
+    )
+    expect(accepted.isValid).toBe(true)
+  })
+})
+
+describe('#addDaysToIsoDate', () => {
+  test.each([
+    ['2026-11-16', -365, '2025-11-16'],
+    ['2024-03-01', -365, '2023-03-02'],
+    ['2025-10-01', 30, '2025-10-31'],
+    ['2025-12-20', 30, '2026-01-19']
+  ])('Should add %s + %s days = %s', (isoDate, days, expected) => {
+    expect(addDaysToIsoDate(isoDate, days)).toBe(expected)
   })
 })
 

@@ -3,6 +3,9 @@ import { load } from 'cheerio'
 import { createServer } from '#/server/server.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 
+// Midday on 1 Nov 2025 (Europe/London), so the 365-day floor is still earlier than the 24 July 2025 launch floor.
+const TODAY = '2025-11-01T12:00:00Z'
+
 describe('#tripDepartureDateController', () => {
   let server
 
@@ -66,6 +69,15 @@ describe('#tripDepartureDateSubmitController', () => {
   beforeAll(async () => {
     server = await createServer()
     await server.initialize()
+  })
+
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(new Date(TODAY))
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
   })
 
   afterAll(async () => {
@@ -333,5 +345,97 @@ describe('#tripDepartureDateSubmitController', () => {
     expect($('.govuk-error-summary').text()).toContain(
       'Date you left for your trip must be today or in the past'
     )
+  })
+
+  function postDeparture(day, month, year, { url, cookie } = {}) {
+    return server.inject({
+      method: 'POST',
+      url: url ?? '/trip-departure-date',
+      headers: cookie ? { cookie } : {},
+      payload: {
+        'tripDepartureDate-day': day,
+        'tripDepartureDate-month': month,
+        'tripDepartureDate-year': year
+      }
+    })
+  }
+
+  async function cookieWithReturnDate(day, month, year) {
+    const response = await server.inject({
+      method: 'POST',
+      url: '/trip-return-date',
+      payload: {
+        'tripReturnDate-day': day,
+        'tripReturnDate-month': month,
+        'tripReturnDate-year': year
+      }
+    })
+    return response.headers['set-cookie'][0].split(';')[0]
+  }
+
+  describe('once the 365-day window is past the launch floor', () => {
+    beforeEach(() => {
+      vi.setSystemTime(new Date('2026-11-16T12:00:00Z'))
+    })
+
+    test('Should accept a departure date exactly 365 days before today', async () => {
+      const { statusCode, headers } = await postDeparture('16', '11', '2025')
+
+      expect(statusCode).toBe(303)
+      expect(headers.location).toBe('/trip-return-date')
+    })
+
+    test('Should reject a departure date more than 365 days before today', async () => {
+      const { statusCode, result } = await postDeparture('15', '11', '2025')
+      const $ = load(result)
+
+      expect(statusCode).toBe(statusCodes.ok)
+      expect($('.govuk-error-summary').text()).toContain(
+        'Date you left for your trip cannot be more than 365 days in the past'
+      )
+    })
+  })
+
+  describe('when changing the departure date from check your answers', () => {
+    const fromCheckAnswers = '/trip-departure-date?return=/check-answers'
+
+    test('Should accept a trip of exactly 30 days', async () => {
+      const cookie = await cookieWithReturnDate('30', '9', '2025')
+      const { statusCode, headers } = await postDeparture('31', '8', '2025', {
+        url: fromCheckAnswers,
+        cookie
+      })
+
+      expect(statusCode).toBe(303)
+      expect(headers.location).toBe('/check-answers')
+    })
+
+    test('Should reject a trip longer than 30 days', async () => {
+      const cookie = await cookieWithReturnDate('30', '9', '2025')
+      const { statusCode, result } = await postDeparture('30', '8', '2025', {
+        url: fromCheckAnswers,
+        cookie
+      })
+      const $ = load(result)
+
+      expect(statusCode).toBe(statusCodes.ok)
+      expect($('.govuk-error-summary').text()).toContain(
+        'Your trip cannot be longer than 30 days'
+      )
+    })
+
+    test('Should reject a departure date after the return date', async () => {
+      const cookie = await cookieWithReturnDate('30', '9', '2025')
+      const { statusCode, result } = await postDeparture('1', '10', '2025', {
+        url: fromCheckAnswers,
+        cookie
+      })
+      const $ = load(result)
+
+      expect(statusCode).toBe(statusCodes.ok)
+      expect($('.govuk-error-summary').text()).toContain(
+        'Date you left for your trip must be the same as or before the date you returned'
+      )
+    })
   })
 })

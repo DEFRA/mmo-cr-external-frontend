@@ -84,9 +84,16 @@ describe('#removeSpeciesController', () => {
           expect(statusCode).toBe(
             method === 'GET' ? statusCodes.ok : statusCodes.badRequest
           )
-          expect($('h1 [class~="govuk-!-display-block"]').text()).toBe(
-            vesselName
-          )
+          const headingText = $('h1')
+            .clone()
+            .find('.govuk-caption-l')
+            .remove()
+            .end()
+            .text()
+            .replace(/\s+/g, ' ')
+            .trim()
+          expect(headingText).toBe(`${heading} ${vesselName}`)
+          expect($('h1 [class~="govuk-!-display-block"]')).toHaveLength(0)
           expect($('title').text()).toContain(`${heading} ${vesselName}`)
           expect(
             $('[data-testid="app-page-navigation-back-link"]').attr('href')

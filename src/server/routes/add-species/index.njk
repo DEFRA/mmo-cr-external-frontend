@@ -8,8 +8,7 @@
         <h1 class="govuk-label-wrapper">
           <span class="govuk-caption-l">{{ caption }}</span>
           <label class="govuk-label govuk-label--xl" for="species">
-            {{ heading }}
-            {% if vesselName %}<span class="govuk-!-display-block">{{ vesselName }}</span>{% endif %}
+            {{ heading }}{% if vesselName %} {{ vesselName }}{% endif %}
           </label>
         </h1>
 

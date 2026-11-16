@@ -109,6 +109,11 @@ describe('#recordDetailsController', () => {
   })
 
   test('Should show the selected journey vessel, trip, gear and species on the amended record', async () => {
+    // Keeps the August 2025 trip dates within the 365-day backdating window.
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(new Date('2025-11-01T12:00:00Z'))
+    onTestFinished(() => vi.useRealTimers())
+
     const newJourney = await server.inject({
       method: 'POST',
       url: '/records/new'
