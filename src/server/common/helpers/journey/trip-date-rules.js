@@ -19,7 +19,7 @@ export const TRIP_TOO_LONG_MESSAGE = `Your trip cannot be longer than ${MAX_TRIP
 export function earliestDepartureDate(today) {
   const rollingFloor = addDaysToIsoDate(today, -MAX_TRIP_START_AGE_DAYS)
 
-  return rollingFloor > MIN_DEPARTURE_DATE
+  return Date.parse(rollingFloor) > Date.parse(MIN_DEPARTURE_DATE)
     ? { minDate: rollingFloor, minDateMessage: TRIP_TOO_FAR_IN_PAST_MESSAGE }
     : {
         minDate: MIN_DEPARTURE_DATE,
