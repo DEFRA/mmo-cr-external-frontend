@@ -338,7 +338,7 @@ describe('per-gear catch journey', () => {
     const dredgeSpecies = load(
       (await inject('GET', '/species-selection?gearId=dredge')).result
     )
-    expect(dredgeSpecies('h1').text()).toContain('using dredge?')
+    expect(dredgeSpecies('h1').text()).toContain('with dredge?')
     expect(dredgeSpecies('a[hreflang="cy"]').attr('href')).toBe(
       '/species-selection?gearId=dredge&lang=cy'
     )

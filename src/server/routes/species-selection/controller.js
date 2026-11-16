@@ -261,13 +261,13 @@ function speciesCheckboxItems(
 async function viewContext(request, speciesData, overrides = {}) {
   const { journeyState, speciesOptions } = speciesData
   const gears = await selectedGearDescription(journeyState)
-  const gearSuffix = gears ? ` using ${gears.toLowerCase()}` : ''
-  const pageTitle = `What species did you catch${gearSuffix}?`
+  const gearSuffix = gears ? ` with ${gears.toLowerCase()}` : ''
+  const pageTitle = `Which species did you catch${gearSuffix}?`
   const selectedSpeciesIds = journeyState.selectedSpeciesIds || []
   const speciesWeights = journeyState.speciesWeights || {}
   const gearContext = gearPageContext(request)
   const heading = gearContext.gearLabel
-    ? `What species did you catch using ${gearContext.gearLabel.toLowerCase()}?`
+    ? `Which species did you catch with ${gearContext.gearLabel.toLowerCase()}?`
     : pageTitle
 
   return {
