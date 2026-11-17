@@ -121,18 +121,15 @@ describe('#buildCheckAnswersViewModel', () => {
         reviewLayout,
         gearCatalogue: [{ id: 'beam', label: 'Beam trawl', measurements: [] }]
       })
-      const rows = reviewLayout
-        ? model.speciesGroups[0].rows
-        : model.gearGroups[0].rows.filter((row) =>
-            row.key.text.startsWith('Weight')
-          )
+      const rows = (
+        reviewLayout ? model.speciesGroups[0].rows : model.gearGroups[0].rows
+      ).filter((row) => row.key.text.startsWith('Weight'))
 
-      expect(rows.map((row) => row.value.text)).toEqual(
-        reviewLayout ? ['12', '0', '11'] : ['12 kg', '0 kg', '11 kg']
-      )
-      if (reviewLayout) {
-        expect(rows.every((row) => row.key.text.endsWith('(kg)'))).toBe(true)
-      }
+      expect(rows.map((row) => row.value.text)).toEqual([
+        '12 kg',
+        '0 kg',
+        '11 kg'
+      ])
     }
   )
 
@@ -248,35 +245,50 @@ describe('#buildCheckAnswersViewModel', () => {
 
     expect(model.sections[0].heading).toBe('Trips details')
     expect(
-      rowValue(model.sections[0].rows, 'Statistical sub area (Beam trawl)')
-    ).toBe('38E95')
-    expect(
-      rowValue(model.sections[0].rows, 'Statistical sub area (Dredge)')
-    ).toBe('38E96')
-    expect(
-      rowChangeHref(model.sections[0].rows, 'Statistical sub area (Dredge)')
-    ).toContain('gearId=dredge')
+      model.sections[0].rows.some((row) =>
+        row.key.text.startsWith('Statistical sub area')
+      )
+    ).toBe(false)
     expect(model.gearGroups).toHaveLength(2)
+    expect(rowValue(model.gearGroups[0].rows, 'Area majority caught')).toBe(
+      '38E95'
+    )
+    expect(rowValue(model.gearGroups[1].rows, 'Area majority caught')).toBe(
+      '38E96'
+    )
+    expect(
+      rowChangeHref(model.gearGroups[1].rows, 'Area majority caught')
+    ).toContain('gearId=dredge')
     expect(model.speciesGroups.map((group) => group.heading)).toEqual([
       'Atlantic cod (COD)',
       'Atlantic cod (COD)'
     ])
+    expect(model.speciesGroups.map((group) => group.showGear)).toEqual([
+      true,
+      true
+    ])
     expect(
-      model.speciesGroups.map((group) => group.rows[0].value.text)
-    ).toEqual(['12', '25'])
+      model.speciesGroups.map((group) => [
+        group.rows[0].key.text,
+        group.rows[1].value.text
+      ])
+    ).toEqual([
+      ['Species', '12 kg'],
+      ['Species', '25 kg']
+    ])
     expect(rowValue(model.gearGroups[0].rows, 'Species caught')).toBe(
       'Atlantic cod (COD)'
     )
     expect(rowValue(model.gearGroups[1].rows, 'Species caught')).toBe(
       'Atlantic cod (COD)'
     )
-    expect(model.speciesGroups[0].rows[0].actions.items[0].href).toContain(
+    expect(model.speciesGroups[0].rows[1].actions.items[0].href).toContain(
       'gearId=beam'
     )
-    expect(model.speciesGroups[0].rows[0].actions.items[0].href).toContain(
+    expect(model.speciesGroups[0].rows[1].actions.items[0].href).toContain(
       `#weightAboveMinimum-${SPECIES_IDS.cod}`
     )
-    expect(model.speciesGroups[1].rows[0].actions.items[0].href).toContain(
+    expect(model.speciesGroups[1].rows[1].actions.items[0].href).toContain(
       'gearId=dredge'
     )
     expect(model.trailingSections[0].heading).toBe('Species not landed')
@@ -316,9 +328,13 @@ describe('#buildCheckAnswersViewModel', () => {
     expect(speciesCaught.value.text).toContain('Atlantic cod (COD)')
     expect(speciesCaught.value.html).toContain('<br>')
     expect(speciesCaught.value.html).toContain('Haddock (HAD)')
+    expect(model.speciesGroups.map((group) => group.showGear)).toEqual([
+      false,
+      false
+    ])
   })
 
-  test('Should include trip dates, ports and statistical sub area in screenshot order', () => {
+  test('Should include trip dates and ports without statistical sub area in Figma order', () => {
     const model = buildCheckAnswersViewModel(
       fakeRequest({
         selectedGearIds: ['pots'],
@@ -332,8 +348,7 @@ describe('#buildCheckAnswersViewModel', () => {
       'Departure date',
       'Return date',
       'Departure port',
-      'Return port',
-      'Statistical sub area'
+      'Return port'
     ])
     expect(model.sections[0].rows[0].actions).toBeUndefined()
   })
@@ -364,13 +379,13 @@ describe('#buildCheckAnswersViewModel', () => {
     )
     const rows = model.gearGroups[0].rows
     expect(rows.map((row) => row.key.text)).toEqual([
+      'Statistical sub area',
       'Gear type',
-      'Area majority catch caught',
       'Number of times gear was shot on the trip',
       'Gear dimension by number'
     ])
-    expect(rows[0].value.text).toBe('Dredge')
-    expect(rows[0].actions.items[0].href).toBe(
+    expect(rows[1].value.text).toBe('Dredge')
+    expect(rows[1].actions.items[0].href).toBe(
       '/gear-selection?return=/check-answers'
     )
     expect(rows[2].value.text).toBe('0')

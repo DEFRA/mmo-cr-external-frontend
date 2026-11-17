@@ -73,8 +73,8 @@ describe('#checkAnswersController', () => {
         .get()
     ).toEqual([
       'Trips details',
-      '2. Gear used',
-      '3. Species caught',
+      'Gear used',
+      'Species caught',
       'Species not landed'
     ])
   })
@@ -126,11 +126,10 @@ describe('#checkAnswersController', () => {
       'Departure date',
       'Return date',
       'Departure port',
-      'Return port',
-      'Statistical sub area'
+      'Return port'
     ])
     expect(tripRows.first().find('a')).toHaveLength(0)
-    expect(tripRows.slice(1).find('a')).toHaveLength(5)
+    expect(tripRows.slice(1).find('a')).toHaveLength(4)
     expect($('dt').text()).toContain('Not landed')
   })
 
