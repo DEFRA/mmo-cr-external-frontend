@@ -11,6 +11,7 @@ import { requestTracing } from './plugins/request-tracing.js'
 import { requestLogger } from './plugins/request-logger.js'
 import { sessionCache } from './plugins/session-cache.js'
 import { authGuard } from './plugins/auth-guard.js'
+import { signInThrottle } from './common/helpers/auth/sign-in-throttle.js'
 import { assertAuthenticationConfiguration } from './common/helpers/auth/entra.js'
 import { getCacheEngine } from './common/helpers/session-cache/cache-engine.js'
 import { secureContext } from '@defra/hapi-secure-context'
@@ -64,6 +65,7 @@ export async function createServer() {
     pulse,
     sessionCache,
     authGuard,
+    signInThrottle,
     nunjucksConfig,
     Scooter,
     contentSecurityPolicy,

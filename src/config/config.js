@@ -189,6 +189,34 @@ export const config = convict({
         nullable: true,
         default: null,
         env: 'ENTRA_CLIENT_ID'
+      },
+      tenantId: {
+        doc: 'Optional directory (tenant) ID; when set, ID tokens from any other tenant are rejected',
+        format: String,
+        nullable: true,
+        default: null,
+        env: 'ENTRA_TENANT_ID'
+      },
+      redirectUri: {
+        doc: 'Optional browser fallback callback (must end in /auth/callback); fallback is off when unset',
+        format: String,
+        nullable: true,
+        default: null,
+        env: 'ENTRA_REDIRECT_URI'
+      },
+      postLogoutRedirectUri: {
+        doc: 'Optional post-logout return URL (must end in /signed-out) for browser fallback sessions',
+        format: String,
+        nullable: true,
+        default: null,
+        env: 'ENTRA_POST_LOGOUT_REDIRECT_URI'
+      },
+      apiScopes: {
+        doc: 'Optional space-separated backend API scopes; when set, access tokens are kept server-side and refreshed',
+        format: String,
+        nullable: true,
+        default: null,
+        env: 'ENTRA_API_SCOPES'
       }
     }
   },

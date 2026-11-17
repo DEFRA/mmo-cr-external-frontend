@@ -19,6 +19,8 @@ const PUBLIC_PATHS = new Set([
   '/favicon.ico',
   '/sign-in',
   '/sign-in/code',
+  '/sign-in/code/resend',
+  '/auth/callback',
   '/sign-out',
   '/signed-out',
   '/forgotten-password',

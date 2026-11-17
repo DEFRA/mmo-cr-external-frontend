@@ -1,10 +1,24 @@
-import { signOut } from '#/server/common/helpers/auth/session.js'
+import {
+  getSignedInAccount,
+  signOut
+} from '#/server/common/helpers/auth/session.js'
+import {
+  createBrowserLogoutUrl,
+  isEntraMode
+} from '#/server/common/helpers/auth/entra.js'
 
 export const signOutController = {
   handler(request, h) {
+    const account = getSignedInAccount(request)
     signOut(request)
 
-    return h.redirect('/signed-out').code(303)
+    // Only the browser fallback creates a Microsoft session that needs ending.
+    const logoutUrl =
+      isEntraMode() && account?.method === 'browser'
+        ? createBrowserLogoutUrl()
+        : null
+
+    return h.redirect(logoutUrl ?? '/signed-out').code(303)
   }
 }
 

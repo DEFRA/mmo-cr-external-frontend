@@ -8,17 +8,22 @@ const ENTRA_BASE =
   'https://external-tenant.ciamlogin.com/external-tenant.onmicrosoft.com/oauth2/v2.0/'
 const EMAIL = 'skipper@example.com'
 const PASSWORD = 'correct horse battery staple'
+const TENANT_ID = '00000000-0000-4000-8000-0000000000aa'
+const OTHER_TENANT_ID = '00000000-0000-4000-8000-0000000000bb'
 
 function idToken(claimOverrides = {}) {
   const encode = (value) =>
     Buffer.from(JSON.stringify(value)).toString('base64url')
+  // Mirrors a real External ID token: no email, name or preferred_username claims.
   return [
     encode({ alg: 'RS256', typ: 'JWT' }),
     encode({
       aud: CLIENT_ID,
+      iss: 'https://tenant-id.ciamlogin.com/tenant-id/v2.0',
       exp: Math.floor(Date.now() / 1000) + 3600,
-      email: EMAIL,
-      name: 'Test Skipper',
+      sub: 'user-subject-id',
+      tid: 'tenant-id',
+      ver: '2.0',
       ...claimOverrides
     }),
     'signature'
@@ -146,7 +151,7 @@ describe('Entra native sign-in', () => {
           continuation_token: 'ct-challenge',
           grant_type: 'password',
           password: PASSWORD,
-          scope: 'openid offline_access'
+          scope: 'openid'
         }
       }
     ])
@@ -243,6 +248,40 @@ describe('Entra native sign-in', () => {
     )
   })
 
+  test('Rejects an ID token from another tenant when the tenant ID is configured', async () => {
+    config.set('authentication.entra.tenantId', TENANT_ID)
+    entra.token.mockImplementation(() =>
+      json(200, { id_token: idToken({ tid: OTHER_TENANT_ID }) })
+    )
+
+    try {
+      expect((await submitSignIn()).statusCode).toBe(503)
+    } finally {
+      config.set('authentication.entra.tenantId', null)
+    }
+  })
+
+  test('Locks sign-in for an email address after repeated wrong passwords', async () => {
+    const email = 'brute-force-target@example.com'
+    entra.token.mockImplementation(() =>
+      json(400, { error: 'invalid_grant', error_codes: [50126] })
+    )
+
+    for (let attempt = 0; attempt < 10; attempt++) {
+      expect(
+        (await submitSignIn({ email, password: 'guess' })).statusCode
+      ).toBe(400)
+    }
+    const callsBeforeLock = entraCalls().length
+    const locked = await submitSignIn({ email, password: PASSWORD })
+
+    expect(locked.statusCode).toBe(429)
+    expect(load(locked.result)('.govuk-error-summary').text()).toContain(
+      'You have tried to sign in too many times'
+    )
+    expect(entraCalls()).toHaveLength(callsBeforeLock)
+  })
+
   describe('One-time email code', () => {
     beforeEach(() => {
       entra.challenge.mockImplementation(() =>
@@ -291,7 +330,7 @@ describe('Entra native sign-in', () => {
           continuation_token: 'ct-oob',
           grant_type: 'oob',
           oob: '12345678',
-          scope: 'openid offline_access'
+          scope: 'openid'
         }
       })
       expect(
@@ -338,6 +377,57 @@ describe('Entra native sign-in', () => {
       })
 
       expect(response.headers.location).toBe('/sign-in')
+    })
+
+    test('Sends a new code when asked', async () => {
+      const { cookie } = await startCodeSignIn()
+      entra.challenge.mockImplementation(() =>
+        json(200, {
+          continuation_token: 'ct-oob-2',
+          challenge_type: 'oob',
+          code_length: 8
+        })
+      )
+
+      const resent = await server.inject({
+        method: 'POST',
+        url: '/sign-in/code/resend',
+        headers: { cookie }
+      })
+      const resentCookie = cookieFrom(resent, cookie)
+
+      expect(resent.statusCode).toBe(200)
+      expect(resent.result).toContain('We have sent you a new code.')
+      expect(entraCalls().at(-1)).toMatchObject({
+        endpoint: 'challenge',
+        body: { continuation_token: 'ct-oob' }
+      })
+
+      await submitCode(resentCookie, '12345678')
+      expect(entraCalls().at(-1).body.continuation_token).toBe('ct-oob-2')
+    })
+
+    test('Ends the attempt after too many wrong codes', async () => {
+      entra.token.mockImplementation(() =>
+        json(400, { error: 'invalid_grant', suberror: 'invalid_oob_value' })
+      )
+      let { cookie } = await startCodeSignIn()
+
+      for (let attempt = 0; attempt < 5; attempt++) {
+        cookie = cookieFrom(await submitCode(cookie, '00000000'), cookie)
+      }
+      const blocked = await submitCode(cookie, '00000000')
+      const signInPage = await server.inject({
+        method: 'GET',
+        url: '/sign-in',
+        headers: { cookie: cookieFrom(blocked, cookie) }
+      })
+
+      expect(blocked.headers.location).toBe('/sign-in')
+      expect(signInPage.result).toContain(
+        'You have entered the wrong code too many times'
+      )
+      expect(entra.token).toHaveBeenCalledTimes(5)
     })
   })
 

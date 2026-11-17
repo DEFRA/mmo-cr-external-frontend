@@ -1,9 +1,12 @@
 import {
+  authCallbackController,
   signInCodeController,
+  signInCodeResendController,
   signInCodeSubmitController,
   signInController,
   signInSubmitController
 } from './controller.js'
+import { CALLBACK_PATH } from '#/server/common/helpers/auth/entra.js'
 
 /**
  * Sets up the routes used in the sign in page.
@@ -33,6 +36,16 @@ export const signIn = {
           method: 'POST',
           path: '/sign-in/code',
           ...signInCodeSubmitController
+        },
+        {
+          method: 'POST',
+          path: '/sign-in/code/resend',
+          ...signInCodeResendController
+        },
+        {
+          method: 'GET',
+          path: CALLBACK_PATH,
+          ...authCallbackController
         }
       ])
     }

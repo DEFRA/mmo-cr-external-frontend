@@ -1,5 +1,5 @@
 // Signed-in state backed by the server-side @hapi/yar session cache. Only the
-// signed-in flag, sign-in time and basic account details are stored — never tokens.
+// signed-in flag, sign-in time and basic account details are stored here.
 const SIGNED_IN_SESSION_KEY = 'signedIn'
 const SIGNED_IN_AT_SESSION_KEY = 'signedInAt'
 const ACCOUNT_SESSION_KEY = 'signedInAccount'
@@ -16,13 +16,15 @@ export function isSignedIn(request) {
   return request.yar.get(SIGNED_IN_SESSION_KEY) === true
 }
 
-export function signIn(request, account) {
+export function signIn(request, account, method = 'native') {
   if (account) {
     // A new session id on authentication prevents session fixation.
     request.yar.reset()
     request.yar.set(ACCOUNT_SESSION_KEY, {
+      userId: account.userId ?? null,
       email: account.email,
-      name: account.name
+      name: account.name,
+      method
     })
   }
   request.yar.set(SIGNED_IN_SESSION_KEY, true)

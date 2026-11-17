@@ -62,13 +62,19 @@ describe('#signIn', () => {
   test('Should rotate the session and store only basic account details for a real sign-in', () => {
     const request = fakeRequest({ entraAuthRequest: { state: 'pending' } })
 
-    signIn(request, { email: 'skipper@example.com', name: 'Skipper' })
+    signIn(
+      request,
+      { userId: 'user-1', email: 'skipper@example.com', name: 'Skipper' },
+      'browser'
+    )
 
     expect(request._wasReset()).toBe(true)
     expect(request.yar.get('entraAuthRequest')).toBeUndefined()
     expect(getSignedInAccount(request)).toEqual({
+      userId: 'user-1',
       email: 'skipper@example.com',
-      name: 'Skipper'
+      name: 'Skipper',
+      method: 'browser'
     })
   })
 })

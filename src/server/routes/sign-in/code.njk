@@ -2,6 +2,7 @@
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/input/macro.njk" import govukInput %}
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
 
 {% block pageContent %}
   {{ appHeading({ text: heading }) }}
@@ -10,6 +11,10 @@
     <div class="govuk-grid-column-two-thirds">
       {% if errorSummary %}
         {{ govukErrorSummary(errorSummary) }}
+      {% endif %}
+
+      {% if notice %}
+        {{ govukNotificationBanner({ type: "success", text: notice }) }}
       {% endif %}
 
       <p class="govuk-body">
@@ -32,8 +37,12 @@
         {{ govukButton({ text: "Continue" }) }}
       </form>
 
+      <form method="post" action="/sign-in/code/resend">
+        {{ govukButton({ text: "Send a new code", classes: "govuk-button--secondary" }) }}
+      </form>
+
       <p class="govuk-body">
-        <a class="govuk-link" href="/sign-in">Not received a code? Sign in again</a>
+        <a class="govuk-link" href="/sign-in">Use a different email address</a>
       </p>
     </div>
   </div>
