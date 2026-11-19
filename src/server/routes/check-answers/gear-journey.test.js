@@ -133,19 +133,17 @@ describe('per-gear catch journey', () => {
     expect(groups.eq(0).text()).toContain('38E95')
     const speciesGroups = $('section[aria-labelledby^="species-summary-"]')
     expect(speciesGroups).toHaveLength(2)
+    expect(speciesGroups.eq(0).find('dt:contains("Species")')).toHaveLength(0)
     expect(
       speciesGroups.eq(0).find('.govuk-summary-list__value').eq(0).text().trim()
-    ).toBe('Atlantic cod')
-    expect(
-      speciesGroups.eq(0).find('.govuk-summary-list__value').eq(1).text().trim()
     ).toBe('15 kg')
     expect(
-      speciesGroups.eq(0).find('.govuk-summary-list__value').eq(2).text().trim()
+      speciesGroups.eq(0).find('.govuk-summary-list__value').eq(1).text().trim()
     ).toBe('2 kg')
     expect(groups.eq(1).find('h3').text()).toBe('Dredge')
     expect(groups.eq(1).text()).toContain('38E96')
     expect(
-      speciesGroups.eq(1).find('.govuk-summary-list__value').eq(1).text().trim()
+      speciesGroups.eq(1).find('.govuk-summary-list__value').eq(0).text().trim()
     ).toBe('30 kg')
     expect(groups.find('dt:contains("Not landed")')).toHaveLength(0)
     expect($('dt:contains("Not landed")')).toHaveLength(1)
@@ -170,16 +168,10 @@ describe('per-gear catch journey', () => {
     ).toEqual([
       'Area majority caught',
       'Species caught',
-      'Gear type',
       'Total pots or traps hauled',
       'Total pots or traps left in water'
     ])
-    expect(
-      groups.eq(0).find('dt:contains("Gear type")').next().text().trim()
-    ).toBe('Pots')
-    expect(
-      groups.eq(1).find('dt:contains("Gear type")').next().text().trim()
-    ).toBe('Dredge')
+    expect($('dt:contains("Gear type")')).toHaveLength(0)
     expect($('.govuk-summary-list').length).toBeGreaterThan(0)
     expect($('input[name="confirmAccurate"]')).toHaveLength(0)
     expect($('main button').text()).toContain('Accept and submit trip details')
@@ -247,7 +239,7 @@ describe('per-gear catch journey', () => {
       summary('section[aria-labelledby^="species-summary-"]')
         .eq(0)
         .find('.govuk-summary-list__value')
-        .eq(1)
+        .eq(0)
         .text()
         .trim()
     ).toBe('15 kg')
@@ -255,7 +247,7 @@ describe('per-gear catch journey', () => {
       summary('section[aria-labelledby^="species-summary-"]')
         .eq(1)
         .find('.govuk-summary-list__value')
-        .eq(1)
+        .eq(0)
         .text()
         .trim()
     ).toBe('40 kg')
@@ -463,7 +455,7 @@ describe('per-gear catch journey', () => {
     )
     expect(speciesGroups).toHaveLength(1)
     expect(
-      speciesGroups.find('.govuk-summary-list__value').eq(1).text().trim()
+      speciesGroups.find('.govuk-summary-list__value').eq(0).text().trim()
     ).toBe('30 kg')
   })
 

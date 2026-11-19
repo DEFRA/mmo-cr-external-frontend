@@ -2,8 +2,7 @@ import {
   KEPT_WEIGHT,
   STATISTICAL_AREA_LABEL,
   STATISTICAL_SUB_AREA,
-  stripKilogramSuffix,
-  toSummaryListRow
+  stripKilogramSuffix
 } from './summary-sections.js'
 
 function weightFieldForLabel(label) {
@@ -57,13 +56,7 @@ function reviewSpeciesGroups(group, speciesCatalogue) {
         speciesId: species?.id,
         gearId: group.gearId,
         gearHeading: group.heading,
-        rows: [
-          {
-            ...row,
-            key: { text: 'Species' },
-            value: { text: species?.displayName || row.value.text }
-          }
-        ]
+        rows: []
       })
       continue
     }
@@ -145,13 +138,6 @@ function reviewGearRows(group, context, speciesGroups, multipleGears) {
       }
     })
   }
-  rows.push(
-    toSummaryListRow({
-      key: 'Gear type',
-      value: group.heading,
-      changeHref: context.buildChangeHref('/gear-selection')
-    })
-  )
   const measurements = group.rows
     .filter(
       (row) =>

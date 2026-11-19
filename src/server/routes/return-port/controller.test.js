@@ -112,6 +112,20 @@ describe('#returnPortController', () => {
     expect($('.govuk-hint')).toHaveLength(0)
   })
 
+  test('Should render an Add port link that preserves the review return', async () => {
+    const cookie = await withDeparturePort(server, 'hastings')
+
+    const { result } = await server.inject({
+      method: 'GET',
+      url: '/return-port?return=/check-answers',
+      headers: { cookie }
+    })
+
+    expect(load(result)('a.govuk-link:contains("Add port")').attr('href')).toBe(
+      '/add-port?for=return&return=/check-answers'
+    )
+  })
+
   test('Should render the Back link to the departure port page', async () => {
     const cookie = await withDeparturePort(server, 'hastings')
 
