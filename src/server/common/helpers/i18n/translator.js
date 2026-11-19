@@ -60,7 +60,7 @@ export function buildMessages(entries) {
   return messages
 }
 
-const messages = buildMessages(loadCatalog())
+const catalogMessages = buildMessages(loadCatalog())
 const reportedMissingKeys = new Set()
 const pluralRules = new Map()
 
@@ -98,8 +98,8 @@ function reportMissingKey(key) {
  * Pass `count` in params to select a plural form.
  */
 export function translate(lang, key, params = {}) {
-  const localised = messages[lang]?.[key]
-  const value = localised ?? messages.en[key]
+  const localised = catalogMessages[lang]?.[key]
+  const value = localised ?? catalogMessages.en[key]
 
   if (value === undefined) {
     reportMissingKey(key)
@@ -115,7 +115,7 @@ export function translate(lang, key, params = {}) {
 }
 
 export function hasTranslation(key) {
-  return Object.hasOwn(messages.en, key)
+  return Object.hasOwn(catalogMessages.en, key)
 }
 
 export function createTranslator(lang) {

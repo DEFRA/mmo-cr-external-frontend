@@ -8,7 +8,9 @@ import {
 import { translate } from '#/server/common/helpers/i18n/translator.js'
 
 export const LANGUAGE_COOKIE = 'lang'
-const ONE_YEAR_MS = 365 * 24 * 60 * 60 * 1000
+const MS_PER_DAY = 86_400_000
+const LANGUAGE_COOKIE_TTL_DAYS = 365
+const LANGUAGE_COOKIE_TTL_MS = LANGUAGE_COOKIE_TTL_DAYS * MS_PER_DAY
 
 // Runs a private request stage inside the request's language store. `_reply` is wrapped as
 // well as `_lifecycle` because views are rendered during transmission, after the lifecycle ends
@@ -50,7 +52,7 @@ export const i18n = {
     name: 'i18n',
     register(server) {
       server.state(LANGUAGE_COOKIE, {
-        ttl: ONE_YEAR_MS,
+        ttl: LANGUAGE_COOKIE_TTL_MS,
         path: '/',
         encoding: 'none',
         isSecure: config.get('session.cookie.secure'),

@@ -25,10 +25,12 @@ describe('#localizeSummarySections', () => {
     )
 
     expect(localized[0].heading).not.toBe('Trips details')
-    expect(localized[0].rows[0].key.text).toContain('Pots')
+    expect(localized[0].rows[0].key.text).toBe('Is-ardal ystadegol (Pots)')
     expect(localized[0].rows[0].value.text).toBe('38E95')
-    expect(localized[0].rows[1].key.text).toContain('COD')
-    expect(localized[0].rows[2].key.text).toContain('COD')
+    expect(localized[0].rows[1].key.text).toBe(
+      'Pwysau uwch na’r maint lleiaf a gedwir (COD)'
+    )
+    expect(localized[0].rows[2].key.text).toBe('Rhywogaeth (COD)')
     expect(localized[0].rows[2].value.text).toBe('Atlantic cod')
   })
 

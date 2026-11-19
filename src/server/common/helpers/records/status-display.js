@@ -1,35 +1,55 @@
 // Status display mapping only (label + govukTag colour) — routing lives in journey/records.js.
 import { t } from '#/server/common/helpers/i18n/translator.js'
 
+const STATUS_KEYS = {
+  submitted: 'records.status.submitted',
+  amended: 'records.status.amended',
+  draft: 'records.status.draft',
+  unsent: 'records.status.unsent',
+  late: 'records.status.late',
+  complete: 'records.status.complete',
+  unknown: 'records.status.unknown'
+}
+
+const DISPLAY_STATUS_KEYS = {
+  Amended: STATUS_KEYS.amended,
+  Complete: STATUS_KEYS.complete,
+  Draft: STATUS_KEYS.draft,
+  Late: STATUS_KEYS.late,
+  Submitted: STATUS_KEYS.submitted,
+  Unsent: STATUS_KEYS.unsent,
+  Unknown: STATUS_KEYS.unknown
+}
+
 const STATUS_DISPLAY = {
   submitted: {
-    text: () => t('records.status.submitted'),
+    text: () => t(STATUS_KEYS.submitted),
     tagClasses: 'govuk-tag--green'
   },
   amended: {
-    text: () => t('records.status.amended'),
+    text: () => t(STATUS_KEYS.amended),
     tagClasses: 'govuk-tag--blue'
   },
   draft: {
-    text: () => t('records.status.draft'),
+    text: () => t(STATUS_KEYS.draft),
     tagClasses: 'govuk-tag--yellow'
   },
   unsent: {
-    text: () => t('records.status.unsent'),
+    text: () => t(STATUS_KEYS.unsent),
     tagClasses: 'govuk-tag--yellow'
   },
   late: {
-    text: () => t('records.status.late'),
+    text: () => t(STATUS_KEYS.late),
     tagClasses: 'govuk-tag--pink'
   },
   complete: {
-    text: () => t('records.status.complete'),
+    text: () => t(STATUS_KEYS.complete),
     tagClasses: 'govuk-tag--grey'
   }
 }
 
 const UNKNOWN_STATUS_DISPLAY = {
-  text: () => t('records.status.unknown'),
+  text: () => t(STATUS_KEYS.unknown),
   tagClasses: 'govuk-tag--grey'
 }
 
@@ -44,22 +64,14 @@ export function getStatusDisplay(status) {
 
 export function getRecordDisplayStatus(record) {
   if (record.status === 'DRAFT') {
-    return t('records.status.draft')
+    return t(STATUS_KEYS.draft)
   }
   if (record.status === 'SUBMITTED' && record.displayStatus !== 'Late') {
     return record.numberOfSubmissions > 1
-      ? t('records.status.amended')
-      : t('records.status.submitted')
+      ? t(STATUS_KEYS.amended)
+      : t(STATUS_KEYS.submitted)
   }
-  const statusKey = {
-    Amended: 'records.status.amended',
-    Complete: 'records.status.complete',
-    Draft: 'records.status.draft',
-    Late: 'records.status.late',
-    Submitted: 'records.status.submitted',
-    Unsent: 'records.status.unsent',
-    Unknown: 'records.status.unknown'
-  }[record.displayStatus]
+  const statusKey = DISPLAY_STATUS_KEYS[record.displayStatus]
 
   return statusKey ? t(statusKey) : record.displayStatus
 }

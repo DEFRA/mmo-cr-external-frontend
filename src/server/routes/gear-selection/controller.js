@@ -65,14 +65,14 @@ function gearCheckboxItems(
       option,
       favouriteGearMeasurements[option.id]
     )
+    const optionHint =
+      option.hint === 'Hint text' ? t('gear.hint.handlines') : option.hint
     return {
       value: option.id,
       text: option.label,
       hint: savedMeasurements.length
         ? savedMeasurements.join(', ')
-        : option.hint === 'Hint text'
-          ? t('gear.hint.handlines')
-          : option.hint,
+        : optionHint,
       checked: selectedGearIds.includes(option.id),
       measurements: gearMeasurementItems(
         option.id,

@@ -56,34 +56,40 @@ const CHANGE_FIELD_KEYS = new Map([
   ['mesh size', 'summary.meshSize']
 ])
 
+const CODED_WEIGHT_KEYS = [
+  ['Weight above minimum size retained', 'summary.weightAboveCode'],
+  ['Weight below minimum size retained', 'summary.weightBelowCode'],
+  ['Weight legally discard', 'summary.weightDiscardedCode']
+]
+
+// Returns the text inside a trailing " (…)" when `value` is exactly `prefix (…)`.
+function bracketedSuffix(value, prefix) {
+  const start = `${prefix} (`
+  return value.startsWith(start) && value.endsWith(')')
+    ? value.slice(start.length, -1)
+    : null
+}
+
 function translatedLabel(value) {
-  const key = SUMMARY_KEYS.get(value)
-  if (key) {
-    return t(key)
+  const summaryKey = SUMMARY_KEYS.get(value)
+  if (summaryKey) {
+    return t(summaryKey)
   }
 
-  const statisticalArea = /^Statistical sub area \((.+)\)$/.exec(value)
-  if (statisticalArea) {
-    return t('summary.statisticalSubAreaForGear', {
-      gear: statisticalArea[1]
-    })
+  const gear = bracketedSuffix(value, 'Statistical sub area')
+  if (gear) {
+    return t('summary.statisticalSubAreaForGear', { gear })
   }
 
-  const species = /^Species \((.+)\)$/.exec(value)
-  if (species) {
-    return t('summary.speciesWithCode', { code: species[1] })
+  const speciesCode = bracketedSuffix(value, 'Species')
+  if (speciesCode) {
+    return t('summary.speciesWithCode', { code: speciesCode })
   }
 
-  for (const [prefix, key] of [
-    ['Weight above minimum size retained', 'summary.weightAboveCode'],
-    ['Weight below minimum size retained', 'summary.weightBelowCode'],
-    ['Weight legally discard', 'summary.weightDiscardedCode']
-  ]) {
-    const weightCode = new RegExp(
-      `^${prefix.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&')} \\\\((.+)\\\\)$`
-    ).exec(value)
+  for (const [prefix, weightKey] of CODED_WEIGHT_KEYS) {
+    const weightCode = bracketedSuffix(value, prefix)
     if (weightCode) {
-      return t(key, { code: weightCode[1] })
+      return t(weightKey, { code: weightCode })
     }
   }
 

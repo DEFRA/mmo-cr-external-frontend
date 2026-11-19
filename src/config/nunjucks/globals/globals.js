@@ -21,8 +21,7 @@ function t(key, params) {
  * template (`{ link: linkHtml | safe }`) are inserted as HTML.
  */
 function tHtml(key, params = {}) {
-  const { escape } = nunjucks.lib
-  const template = escape(
+  const template = nunjucks.lib.escape(
     translate(currentLanguage(), key, { count: params.count })
   )
   const safeParams = Object.fromEntries(
@@ -30,7 +29,7 @@ function tHtml(key, params = {}) {
       name,
       value instanceof nunjucks.runtime.SafeString
         ? value.toString()
-        : escape(String(value))
+        : nunjucks.lib.escape(String(value))
     ])
   )
 

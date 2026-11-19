@@ -30,7 +30,9 @@ import Joi from 'joi'
 import Boom from '@hapi/boom'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 
-const ACCOUNT_PAGE_TITLE = () => t('account.title')
+const accountPageTitle = () => t('account.title')
+const CHANGE_LINK_KEY = 'common.change'
+const SKIPPER_HIDDEN_TEXT_KEY = 'account.row.skippers.hidden'
 const NOT_IMPLEMENTED_HREF = '/not-implemented?return=/account'
 
 function row(key, value, href, actionText, visuallyHiddenText) {
@@ -70,42 +72,42 @@ function buildPersonalDetailsSection(account, vesselLabel) {
         t('signIn.email.label'),
         account.email,
         '/change-email',
-        t('common.change'),
+        t(CHANGE_LINK_KEY),
         t('account.row.email.hidden')
       ),
       row(
         t('signIn.password.label'),
         account.passwordMasked,
         '/reset-password',
-        t('common.change'),
+        t(CHANGE_LINK_KEY),
         t('account.row.password.hidden')
       ),
       row(
         t('account.row.vesselOwned.key'),
         vesselLabel,
         '/change-vessel-owner',
-        t('common.change'),
+        t(CHANGE_LINK_KEY),
         t('account.row.vesselOwned.hidden')
       ),
       row(
         t('account.row.vesselsSkipperOf.key'),
         account.vesselsSkipperOf,
         NOT_IMPLEMENTED_HREF,
-        t('common.change'),
+        t(CHANGE_LINK_KEY),
         t('account.row.vesselsSkipperOf.hidden')
       ),
       row(
         t('account.row.address.key'),
         joinLines(account.addressLines),
         '/change-address',
-        t('common.change'),
+        t(CHANGE_LINK_KEY),
         t('account.row.address.hidden')
       ),
       row(
         t('account.row.contactNumber.key'),
         account.contactNumber,
         '/change-contact-number',
-        t('common.change'),
+        t(CHANGE_LINK_KEY),
         t('account.row.contactNumber.hidden')
       )
     ]
@@ -126,14 +128,14 @@ function skippersRow(account, skipper) {
           {
             href: '/add-skipper',
             text: t('account.row.skippers.add'),
-            visuallyHiddenText: t('account.row.skippers.hidden')
+            visuallyHiddenText: t(SKIPPER_HIDDEN_TEXT_KEY)
           },
           ...(skipper.length
             ? [
                 {
                   href: '/remove-skipper',
                   text: t('account.row.skippers.remove'),
-                  visuallyHiddenText: t('account.row.skippers.hidden')
+                  visuallyHiddenText: t(SKIPPER_HIDDEN_TEXT_KEY)
                 }
               ]
             : [])
@@ -153,7 +155,7 @@ function skippersRow(account, skipper) {
         {
           href: '/add-skipper',
           text: t('account.row.skippers.add'),
-          visuallyHiddenText: t('account.row.skippers.hidden')
+          visuallyHiddenText: t(SKIPPER_HIDDEN_TEXT_KEY)
         }
       ]
     }
@@ -322,8 +324,8 @@ async function liveAccountView(request, h) {
     vessels.map((item) => buildLiveVesselSection(request, account, item))
   )
   return h.view('account/index', {
-    pageTitle: ACCOUNT_PAGE_TITLE(),
-    heading: ACCOUNT_PAGE_TITLE(),
+    pageTitle: accountPageTitle(),
+    heading: accountPageTitle(),
     backLink: { href: '/records', text: t('header.back') },
     sections: [
       buildPersonalDetailsSection(
@@ -375,8 +377,8 @@ async function offlineAccountView(request, h) {
 
   return h
     .view('account/index', {
-      pageTitle: ACCOUNT_PAGE_TITLE(),
-      heading: ACCOUNT_PAGE_TITLE(),
+      pageTitle: accountPageTitle(),
+      heading: accountPageTitle(),
       ...accountErrorContext(accountVesselError),
       backLink: {
         href: '/records',

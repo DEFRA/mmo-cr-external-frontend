@@ -63,15 +63,12 @@ async function viewContext(request, recordId, overrides = {}) {
     reference: details.reference,
     notification: {
       titleText: t('common.important'),
-      html:
-        '<p class="govuk-body govuk-!-font-weight-bold govuk-!-margin-bottom-1">' +
-        t('editReview.banner.submitted') +
-        '</p>' +
-        `<p class="govuk-body">${formatDate(details.submittedDate, 'd MMMM yyyy')} ${details.submittedTime}</p>` +
-        '<p class="govuk-body govuk-!-font-weight-bold govuk-!-margin-bottom-1">' +
-        t('editReview.banner.submittedBy') +
-        '</p>' +
+      html: [
+        `<p class="govuk-body govuk-!-font-weight-bold govuk-!-margin-bottom-1">${t('editReview.banner.submitted')}</p>`,
+        `<p class="govuk-body">${formatDate(details.submittedDate, 'd MMMM yyyy')} ${details.submittedTime}</p>`,
+        `<p class="govuk-body govuk-!-font-weight-bold govuk-!-margin-bottom-1">${t('editReview.banner.submittedBy')}</p>`,
         `<p class="govuk-body">${details.submittedBy}</p>`
+      ].join('')
     },
     backLink: {
       href: `/records/${recordId}`,

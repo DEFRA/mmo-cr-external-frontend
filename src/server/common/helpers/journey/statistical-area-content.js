@@ -39,13 +39,10 @@ export async function statisticalAreaContent(
   { manualEntry = false, gearId } = {}
 ) {
   const gears = await selectedGearDescription(journeyState, gearId)
-  const headingKey = manualEntry
-    ? gears
-      ? 'statisticalArea.manualTitleWithGear'
-      : 'statisticalArea.manualTitle'
-    : gears
-      ? 'statisticalArea.titleWithGear'
-      : 'statisticalArea.title'
+  const baseKey = manualEntry
+    ? 'statisticalArea.manualTitle'
+    : 'statisticalArea.title'
+  const headingKey = gears ? `${baseKey}WithGear` : baseKey
   const heading = t(
     headingKey,
     gears ? { gear: gears.toLowerCase() } : undefined

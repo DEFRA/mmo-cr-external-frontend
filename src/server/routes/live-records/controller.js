@@ -24,6 +24,7 @@ import { localizeSummarySections } from '#/server/common/helpers/records/localiz
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 
 const RECORD_LIST_LIMIT = 100
+const BACK_LINK_TEXT_KEY = 'header.back'
 
 export async function listLiveRecords(request, h) {
   const { client, correlationId } = catchRecordService()
@@ -56,7 +57,7 @@ export async function listLiveRecords(request, h) {
     pageTitle: t('home.title'),
     heading: t('home.title'),
     bodyClasses: 'app-records-page',
-    backLink: { href: '/', text: t('header.back') },
+    backLink: { href: '/', text: t(BACK_LINK_TEXT_KEY) },
     recordDetailsEnabled: liveCatchRecords(),
     records,
     pagination,
@@ -107,7 +108,7 @@ export async function showLiveRecord(request, h) {
     completionEnabled: config.get('catchRecording.completionEnabled'),
     submissions: submissions.submissions,
     recordPath: `/records/${encodeURIComponent(record.id)}`,
-    backLink: { href: '/records', text: t('header.back') },
+    backLink: { href: '/records', text: t(BACK_LINK_TEXT_KEY) },
     actionKey: request.yar.get('recordAction').key
   })
 }
@@ -204,7 +205,7 @@ export async function showHistory(request, h) {
     history: { ...history, displayStatus: getRecordDisplayStatus(record) },
     backLink: {
       href: `/records/${encodeURIComponent(request.params.recordId)}`,
-      text: t('header.back')
+      text: t(BACK_LINK_TEXT_KEY)
     }
   })
 }

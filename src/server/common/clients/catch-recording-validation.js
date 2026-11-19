@@ -223,9 +223,17 @@ export function isValidHistoryEvent(event) {
   return isString(event?.eventType) && isString(event.timestamp)
 }
 
+const VESSEL_FAVOURITE_ERROR_STATUSES = [
+  statusCodes.badRequest,
+  statusCodes.forbidden,
+  statusCodes.notFound,
+  statusCodes.conflict,
+  statusCodes.unprocessableEntity
+]
+
 function vesselFavouriteErrorMessages(label) {
   return Object.fromEntries(
-    [400, 403, 404, 409, 422].map((status) => [
+    VESSEL_FAVOURITE_ERROR_STATUSES.map((status) => [
       status,
       `catchRecord.error.favourite.${label}.${status}`
     ])
