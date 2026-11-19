@@ -1643,7 +1643,7 @@ describe('Live catch records and section persistence', () => {
       expect(confirmation.statusCode).toBe(200)
       expect(confirmation.result).toContain(record.catchRecordReference)
       expect(getJourneyState(confirmation.request)).toMatchObject({
-        favouritePortIds: [],
+        favouritePortIds: ['port-1'],
         favouriteGearIds: [],
         favouriteGearMeasurements: {},
         favouriteSpeciesIds: []
@@ -1859,14 +1859,17 @@ describe('Live catch records and section persistence', () => {
           2
         )
       } else {
-        expect(returning.headers.location).toBe('/add-port?for=return')
-        expect((await call('GET', returning.headers.location)).statusCode).toBe(
-          200
-        )
+        expect(returning.statusCode).toBe(200)
+        const $returning = load(returning.result)
+        expect($returning('input[name="returnPort"]')).toHaveLength(1)
+        expect($returning('input[value="GBABC"]').prop('checked')).toBe(false)
+        expect(
+          $returning('a.govuk-link:contains("Add port")').attr('href')
+        ).toBe('/add-port?for=return')
       }
       const saved = favourites
         ? await call('POST', '/return-port', { returnPort: 'GBDEF' })
-        : await call('POST', returning.headers.location, {
+        : await call('POST', '/add-port?for=return', {
             port: 'Second port'
           })
       expect(saved.statusCode).toBe(303)
@@ -1874,7 +1877,7 @@ describe('Live catch records and section persistence', () => {
       expect(getJourneyState(saved.request)).toMatchObject({
         departurePort: 'GBABC',
         returnPort: 'GBDEF',
-        favouritePortIds: favourites ? ['port-1', 'port-2'] : []
+        favouritePortIds: ['port-1', 'port-2']
       })
       expect(record.trip.departurePort.id).toBe('port-1')
       expect(record.trip.returnPort.id).toBe('port-2')
@@ -1883,7 +1886,7 @@ describe('Live catch records and section persistence', () => {
           ([url, options]) =>
             url.includes('/favourite-ports') && options.method !== 'GET'
         )
-      ).toBe(false)
+      ).toBe(!favourites)
     }
   )
 
@@ -2030,13 +2033,15 @@ describe('Live catch records and section persistence', () => {
   })
 
   test.each(['departure', 'return'])(
-    'Should select another %s port without changing favourites and preserve review return',
+    'Should select another %s port, save it to favourites and preserve review return',
     async (phase) => {
       await seed({ ...recordJourney(record), returnPort: 'GBDEF' })
       await seedFavourites({ favouritePortIds: ['port-1'] })
       const screen = await call('GET', `/${phase}-port?return=/check-answers`)
       const href = `/add-port?for=${phase}&return=/check-answers`
-      expect(load(screen.result)('a.govuk-button--secondary')).toHaveLength(0)
+      expect(
+        load(screen.result)('a.govuk-link:contains("Add port")').attr('href')
+      ).toBe(href)
       const search = await call('GET', href)
       expect(load(search.result)('form').attr('action')).toBe(href)
       const saved = await call('POST', href, { port: 'Second port' })
@@ -2044,16 +2049,20 @@ describe('Live catch records and section persistence', () => {
       expect(saved.headers.location).toBe('/check-answers')
       expect(getJourneyState(saved.request)).toMatchObject({
         [phase === 'departure' ? 'departurePort' : 'returnPort']: 'GBDEF',
-        favouritePortIds: ['port-1'],
-        favouritePorts: ['GBABC']
+        favouritePortIds: ['port-1', 'port-2'],
+        favouritePorts: ['GBABC', 'GBDEF']
       })
       expect(
-        fetchMock.mock.calls.filter(([, options]) => options.method !== 'GET')
-      ).toHaveLength(1)
-      expect(
-        fetchMock.mock.calls.find(([, options]) => options.method !== 'GET')[1]
-          .method
-      ).toBe('PATCH')
+        fetchMock.mock.calls
+          .filter(([, options]) => options.method !== 'GET')
+          .map(([url, options]) => [
+            options.method,
+            url.includes('/favourite-ports')
+          ])
+      ).toEqual([
+        ['POST', true],
+        ['PATCH', false]
+      ])
     }
   )
 
@@ -2107,6 +2116,13 @@ describe('Live catch records and section persistence', () => {
         status: 200,
         json: async () => ({ vesselId: 'vessel-1', favouritePortIds: [] })
       })
+      fetchMock.mockResolvedValueOnce({
+        status: 200,
+        json: async () => ({
+          vesselId: 'vessel-1',
+          favouritePortIds: ['port-2']
+        })
+      })
       fetchMock.mockResolvedValueOnce({ status })
       fetchMock.mockClear()
       const failed = await call('POST', '/add-port?for=departure', {
@@ -2117,7 +2133,7 @@ describe('Live catch records and section persistence', () => {
         departurePort: 'GBABC',
         returnPort: 'GBDEF',
         catchRecordReloadRequired: true,
-        favouritePortIds: []
+        favouritePortIds: ['port-2']
       })
       expect(
         fetchMock.mock.calls.filter(([, options]) => options.method === 'PATCH')
@@ -2274,7 +2290,7 @@ describe('Live catch records and section persistence', () => {
     ).toBe(true)
   })
 
-  test('Should keep journey gear, measurements, species and ports out of favourites', async () => {
+  test('Should keep journey gear, measurements and species out of favourites but save journey ports', async () => {
     await seed({
       ...recordJourney(record),
       selectedGearIds: [],
@@ -2356,8 +2372,12 @@ describe('Live catch records and section persistence', () => {
       port: 'Test port'
     })
     expect(port.statusCode).toBe(303)
-    expect(getJourneyState(port.request)).toMatchObject({
+    const savedPreferences = {
       ...preferences,
+      favouritePortIds: ['port-2', 'port-1']
+    }
+    expect(getJourneyState(port.request)).toMatchObject({
+      ...savedPreferences,
       departurePort: 'GBABC'
     })
     await call('POST', '/sign-in')
@@ -2373,10 +2393,10 @@ describe('Live catch records and section persistence', () => {
     expect(accountValue('Species caught')).toContain('Haddock')
     expect(accountValue('Species caught')).not.toContain('Cod')
     expect(accountValue('Ports used')).toContain('Second port')
-    expect(accountValue('Ports used')).not.toContain('Test port')
+    expect(accountValue('Ports used')).toContain('Test port')
     const fresh = await call('POST', '/records/new')
     expect(fresh.request.yar.get('vesselFavourites')['vessel-1']).toMatchObject(
-      preferences
+      savedPreferences
     )
     expect(getJourneyState(fresh.request).journeyGearIds).toBeUndefined()
     expect(getJourneyState(fresh.request).journeySpeciesIds).toBeUndefined()

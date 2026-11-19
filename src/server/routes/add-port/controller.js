@@ -185,8 +185,12 @@ async function renderError(
     .takeover()
 }
 
-function selectTripPort(request, h, matchedPort) {
+async function selectTripPort(request, h, matchedPort, ports) {
   const returning = resolvePhase(request) === returnPhase
+  // Save the port to the vessel's favourites so it is offered on later records.
+  if (!getJourneyState(request).favouritePortIds.includes(matchedPort.id)) {
+    await addFavouritePort(request, matchedPort.id, ports)
+  }
   rememberPortName(request, matchedPort)
   setJourneyState(request, {
     [returning ? 'returnPort' : 'departurePort']: matchedPort.code,
@@ -265,7 +269,7 @@ export const addPortSubmitController = {
     }
 
     if (liveCatchRecords() && isTripSelection(request)) {
-      return selectTripPort(request, h, matchedPort)
+      return selectTripPort(request, h, matchedPort, ports)
     }
 
     if (isPortAlreadySaved(request, matchedPort, ports)) {

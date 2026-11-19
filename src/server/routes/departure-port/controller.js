@@ -26,6 +26,7 @@ import { liveCatchRecords } from '#/server/common/helpers/journey/catch-record-s
 const pageTitle = 'Select the port you set off from'
 const templatePath = 'departure-port/index'
 const errorSummaryTitle = 'There is a problem'
+const errorText = 'Select the port you left from'
 function favouritePorts(request, ports) {
   const codes = [...getFavouritePortCodes(request)]
   if (liveCatchRecords() && getJourneyState(request).departurePort) {
@@ -47,6 +48,7 @@ function viewContext(request, ports, overrides = {}) {
     pageTitle,
     heading: pageTitle,
     caption: catchRecordCaption(request),
+    addPortHref: portSelectionPath(request, '/add-port?for=departure'),
     backLink: {
       href: backForDeparturePort(request),
       text: 'Back'
@@ -95,8 +97,6 @@ export const departurePortSubmitController = {
       async failAction(request, h) {
         const ports = await getPortCatalogue()
         await loadFavouritePorts(request, ports)
-        const errorText = pageTitle
-
         return h
           .view(
             templatePath,
@@ -119,7 +119,6 @@ export const departurePortSubmitController = {
     const { departurePort } = request.payload
     const port = findPortByCode(departurePort, ports)
     if (!port) {
-      const errorText = pageTitle
       return h
         .view(
           templatePath,

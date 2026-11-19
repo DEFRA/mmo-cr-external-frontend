@@ -269,12 +269,12 @@ describe('#buildCheckAnswersViewModel', () => {
     ])
     expect(
       model.speciesGroups.map((group) => [
-        group.rows[0].key.text,
-        group.rows[1].value.text
+        group.rows.some((row) => row.key.text === 'Species'),
+        group.rows[0].value.text
       ])
     ).toEqual([
-      ['Species', '12 kg'],
-      ['Species', '25 kg']
+      [false, '12 kg'],
+      [false, '25 kg']
     ])
     expect(rowValue(model.gearGroups[0].rows, 'Species caught')).toBe(
       'Atlantic cod (COD)'
@@ -282,13 +282,13 @@ describe('#buildCheckAnswersViewModel', () => {
     expect(rowValue(model.gearGroups[1].rows, 'Species caught')).toBe(
       'Atlantic cod (COD)'
     )
-    expect(model.speciesGroups[0].rows[1].actions.items[0].href).toContain(
+    expect(model.speciesGroups[0].rows[0].actions.items[0].href).toContain(
       'gearId=beam'
     )
-    expect(model.speciesGroups[0].rows[1].actions.items[0].href).toContain(
+    expect(model.speciesGroups[0].rows[0].actions.items[0].href).toContain(
       `#weightAboveMinimum-${SPECIES_IDS.cod}`
     )
-    expect(model.speciesGroups[1].rows[1].actions.items[0].href).toContain(
+    expect(model.speciesGroups[1].rows[0].actions.items[0].href).toContain(
       'gearId=dredge'
     )
     expect(model.trailingSections[0].heading).toBe('Species not landed')
@@ -380,19 +380,14 @@ describe('#buildCheckAnswersViewModel', () => {
     const rows = model.gearGroups[0].rows
     expect(rows.map((row) => row.key.text)).toEqual([
       'Statistical sub area',
-      'Gear type',
       'Number of times gear was shot on the trip',
       'Gear dimension by number'
     ])
-    expect(rows[1].value.text).toBe('Dredge')
+    expect(rows[1].value.text).toBe('0')
     expect(rows[1].actions.items[0].href).toBe(
-      '/gear-selection?return=/check-answers'
-    )
-    expect(rows[2].value.text).toBe('0')
-    expect(rows[2].actions.items[0].href).toBe(
       '/gear-selection?return=/check-answers#dredge-numberOfTimesShot'
     )
-    expect(rows[3].actions.items[0].href).toBe(
+    expect(rows[2].actions.items[0].href).toBe(
       '/gear-selection?return=/check-answers#dredge-count'
     )
   })
