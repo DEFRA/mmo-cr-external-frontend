@@ -1,3 +1,5 @@
+import { t } from '#/server/common/helpers/i18n/translator.js'
+
 import Joi from 'joi'
 
 import {
@@ -10,17 +12,17 @@ import {
 } from '#/server/common/helpers/journey/navigation.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 
-const pageTitle = 'Is there any catch you won\u2019t be landing straight away?'
+const pageTitle = () => t('web.catch-not-landed.controller.js.copy.14.1')
 
 function viewContext(request, overrides = {}) {
   return {
-    pageTitle,
-    heading: pageTitle,
+    pageTitle: pageTitle(),
+    heading: pageTitle(),
     catchNotLanded: getJourneyState(request).catchNotLanded,
     caption: catchRecordCaption(request),
     backLink: {
       href: backForCatchNotLanded(request),
-      text: 'Back'
+      text: t('header.back')
     },
     ...overrides
   }
@@ -39,15 +41,14 @@ export const catchNotLandedSubmitController = {
         catchNotLanded: Joi.string().valid('yes', 'no').required()
       }),
       failAction(request, h) {
-        const errorText =
-          'Select yes if any catch will not be landed straight away'
+        const errorText = t('web.catch-not-landed.controller.js.copy.44.1')
 
         return h
           .view(
             'catch-not-landed/index',
             viewContext(request, {
               errorSummary: {
-                titleText: 'There is a problem',
+                titleText: t('common.errorSummary.title'),
                 errorList: [{ text: errorText, href: '#catchNotLanded' }]
               },
               fieldErrors: { catchNotLanded: errorText }

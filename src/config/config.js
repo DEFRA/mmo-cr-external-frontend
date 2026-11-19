@@ -53,8 +53,8 @@ export const config = convict({
     env: 'FEEDBACK_URL'
   },
   defaultLocale: {
-    doc: 'Default locale used for the <html lang> attribute and language selector',
-    format: String,
+    doc: 'Default language (en or cy) used when the user has not chosen one via the language switcher',
+    format: ['en', 'cy'],
     default: 'en',
     env: 'DEFAULT_LOCALE'
   },

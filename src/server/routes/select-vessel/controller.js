@@ -1,3 +1,5 @@
+import { t } from '#/server/common/helpers/i18n/translator.js'
+
 import Joi from 'joi'
 
 import {
@@ -16,20 +18,20 @@ import {
   prepareDraftCreation
 } from '#/server/common/helpers/journey/create-draft.js'
 
-const errorText = 'Which vessel did you use?'
-const errorSummaryTitle = 'There is a problem'
+const errorText = () => t('catchRecord.selectVessel.heading')
+const errorSummaryTitle = () => t('common.errorSummary.title')
 const templatePath = 'select-vessel/index'
 
 function viewContext(request, vessels, overrides = {}) {
   const selectedId = getJourneyState(request).selectedVesselId
   return {
-    pageTitle: errorText,
-    heading: errorText,
+    pageTitle: errorText(),
+    heading: errorText(),
     reference: getJourneyState(request).reference,
     navigation: buildNavigation(request, { showWhenSignedOut: true }),
     backLink: {
       href: '/records',
-      text: 'Back'
+      text: t('header.back')
     },
     vesselOptions: vessels.map((vessel) => ({
       value: vessel.id,
@@ -61,10 +63,10 @@ export const selectVesselSubmitController = {
             templatePath,
             viewContext(request, vessels, {
               errorSummary: {
-                titleText: errorSummaryTitle,
-                errorList: [{ text: errorText, href: '#vesselId' }]
+                titleText: errorSummaryTitle(),
+                errorList: [{ text: errorText(), href: '#vesselId' }]
               },
-              fieldErrors: { vesselId: errorText }
+              fieldErrors: { vesselId: errorText() }
             })
           )
           .code(statusCodes.badRequest)
@@ -81,10 +83,10 @@ export const selectVesselSubmitController = {
           templatePath,
           viewContext(request, vessels, {
             errorSummary: {
-              titleText: errorSummaryTitle,
-              errorList: [{ text: errorText, href: '#vesselId' }]
+              titleText: errorSummaryTitle(),
+              errorList: [{ text: errorText(), href: '#vesselId' }]
             },
-            fieldErrors: { vesselId: errorText }
+            fieldErrors: { vesselId: errorText() }
           })
         )
         .code(statusCodes.badRequest)
@@ -92,13 +94,13 @@ export const selectVesselSubmitController = {
     const selectedVessel = await getVesselItem(vessel.id)
     if (!(await ensureCatchRecordDraft(request, selectedVessel))) {
       const message =
-        'You cannot change vessel for this record. Start a new catch record from Your catch records.'
+        t('selectVessel.error.cannotChange')
       return h
         .view(
           templatePath,
           viewContext(request, vessels, {
             errorSummary: {
-              titleText: errorSummaryTitle,
+              titleText: errorSummaryTitle(),
               errorList: [{ text: message, href: '#vesselId' }]
             },
             fieldErrors: { vesselId: message }

@@ -1,3 +1,6 @@
+import { t } from '#/server/common/helpers/i18n/translator.js'
+import { localizeSummarySections } from '#/server/common/helpers/records/localize-summary.js'
+
 import Joi from 'joi'
 import Boom from '@hapi/boom'
 
@@ -51,26 +54,33 @@ async function viewContext(request, recordId, overrides = {}) {
   })
   const heading =
     record.recordId === 'late-1'
-      ? `Edit the record for ${vesselName}`
-      : `Catch record for ${vesselName}`
+      ? t('editReview.titleToEdit', { vessel: vesselName })
+      : t('editReview.titleForRecord', { vessel: vesselName })
 
   return {
     pageTitle: heading,
     heading,
     reference: details.reference,
     notification: {
-      titleText: 'Important',
+      titleText: t('common.important'),
       html:
-        '<p class="govuk-body govuk-!-font-weight-bold govuk-!-margin-bottom-1">Catch record submitted:</p>' +
+        '<p class="govuk-body govuk-!-font-weight-bold govuk-!-margin-bottom-1">' +
+        t('editReview.banner.submitted') +
+        '</p>' +
         `<p class="govuk-body">${formatDate(details.submittedDate, 'd MMMM yyyy')} ${details.submittedTime}</p>` +
-        '<p class="govuk-body govuk-!-font-weight-bold govuk-!-margin-bottom-1">Submitted by:</p>' +
+        '<p class="govuk-body govuk-!-font-weight-bold govuk-!-margin-bottom-1">' +
+        t('editReview.banner.submittedBy') +
+        '</p>' +
         `<p class="govuk-body">${details.submittedBy}</p>`
     },
     backLink: {
       href: `/records/${recordId}`,
-      text: 'Back'
+      text: t('header.back')
     },
     ...summary,
+    sections: localizeSummarySections(summary.sections),
+    gearGroups: localizeSummarySections(summary.gearGroups),
+    trailingSections: localizeSummarySections(summary.trailingSections),
     ...overrides
   }
 }
@@ -109,8 +119,8 @@ export const editCatchRecordReviewController = {
   }
 }
 
-const CONFIRM_ACCURATE_ERROR =
-  'Select I confirm the information is complete and accurate'
+const confirmAccurateError = () =>
+  t('editReview.error.confirmDeclaration')
 
 export const editCatchRecordReviewSubmitController = {
   options: {
@@ -129,12 +139,12 @@ export const editCatchRecordReviewSubmitController = {
             h,
             {
               errorSummary: {
-                titleText: 'There is a problem',
+                titleText: t('common.errorSummary.title'),
                 errorList: [
-                  { text: CONFIRM_ACCURATE_ERROR, href: '#confirmAccurate' }
+                  { text: confirmAccurateError(), href: '#confirmAccurate' }
                 ]
               },
-              fieldErrors: { confirmAccurate: CONFIRM_ACCURATE_ERROR }
+              fieldErrors: { confirmAccurate: confirmAccurateError() }
             },
             statusCodes.badRequest
           )
@@ -155,12 +165,12 @@ export const editCatchRecordReviewSubmitController = {
             'edit-catch-record-review/index',
             await viewContext(request, recordId, {
               errorSummary: {
-                titleText: 'There is a problem',
+                titleText: t('common.errorSummary.title'),
                 errorList: [
-                  { text: CONFIRM_ACCURATE_ERROR, href: '#confirmAccurate' }
+                  { text: confirmAccurateError(), href: '#confirmAccurate' }
                 ]
               },
-              fieldErrors: { confirmAccurate: CONFIRM_ACCURATE_ERROR }
+              fieldErrors: { confirmAccurate: confirmAccurateError() }
             })
           )
           .code(statusCodes.badRequest)

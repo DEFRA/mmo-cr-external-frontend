@@ -1,3 +1,5 @@
+import { t } from '#/server/common/helpers/i18n/translator.js'
+
 import Joi from 'joi'
 
 import {
@@ -19,11 +21,11 @@ import { statisticalAreaCode } from '#/server/common/helpers/journey/catch-recor
 
 const templatePath = 'statistical-area-other/index'
 const subrectangleFormat = /^\d{2}[A-Z]\d{2}$/i
-const selectionErrorText = 'Select a statistical subrectangle'
-const subrectangleFormatErrorText =
-  'Enter a statistical subrectangle in the correct format, for example 38E84'
-const subrectangleErrorText = 'Enter a valid statistical sub area code.'
-const errorSummaryTitle = 'There is a problem'
+const selectionErrorText = () => t('statisticalAreaOther.error.select')
+const subrectangleFormatErrorText = () =>
+  t('statisticalAreaOther.error.format')
+const subrectangleErrorText = () => t('statisticalAreaOther.error.invalid')
+const errorSummaryTitle = () => t('common.errorSummary.title')
 const alternativeStatisticalAreaHref = '#alternativeStatisticalArea'
 const nearbyAreaCount = 9
 const statisticalAreasClient = createMapStatisticalAreasReferenceDataClient({
@@ -70,7 +72,11 @@ function areaRadioItems(codes, selectedArea) {
       text: code,
       checked: code === selectedArea
     })),
-    { value: 'other', text: 'Other', checked: selectedArea === 'other' }
+    {
+      value: 'other',
+      text: t('common.other'),
+      checked: selectedArea === 'other'
+    }
   ]
 }
 
@@ -158,7 +164,7 @@ async function viewContext(request, overrides = {}) {
         undefined,
         request.query?.return
       ),
-      text: 'Back'
+      text: t('header.back')
     },
     areaOptions: areaRadioItems(nearbyAreaCodes, selectedArea),
     selectedArea,
@@ -208,16 +214,16 @@ async function handleManualAreaSubmission(request, h) {
         templatePath,
         await viewContext(request, {
           errorSummary: {
-            titleText: errorSummaryTitle,
+            titleText: errorSummaryTitle(),
             errorList: [
               {
-                text: subrectangleFormatErrorText,
+                text: subrectangleFormatErrorText(),
                 href: alternativeStatisticalAreaHref
               }
             ]
           },
           fieldErrors: {
-            alternativeStatisticalArea: subrectangleFormatErrorText
+            alternativeStatisticalArea: subrectangleFormatErrorText()
           },
           alternativeStatisticalArea: submitted
         })
@@ -236,16 +242,16 @@ async function handleManualAreaSubmission(request, h) {
         templatePath,
         await viewContext(request, {
           errorSummary: {
-            titleText: errorSummaryTitle,
+            titleText: errorSummaryTitle(),
             errorList: [
               {
-                text: subrectangleErrorText,
+                text: subrectangleErrorText(),
                 href: alternativeStatisticalAreaHref
               }
             ]
           },
           fieldErrors: {
-            alternativeStatisticalArea: subrectangleErrorText
+            alternativeStatisticalArea: subrectangleErrorText()
           },
           alternativeStatisticalArea: submitted
         })
@@ -282,8 +288,8 @@ export const statisticalAreaOtherSubmitController = {
       async failAction(request, h) {
         const isManualEntry = request.payload.statisticalArea === 'other'
         const errorText = isManualEntry
-          ? subrectangleErrorText
-          : selectionErrorText
+          ? subrectangleErrorText()
+          : selectionErrorText()
         const errorField = isManualEntry
           ? 'alternativeStatisticalArea'
           : 'statisticalArea'
@@ -296,7 +302,7 @@ export const statisticalAreaOtherSubmitController = {
             templatePath,
             await viewContext(request, {
               errorSummary: {
-                titleText: errorSummaryTitle,
+                titleText: errorSummaryTitle(),
                 errorList: [{ text: errorText, href: errorHref }]
               },
               fieldErrors: { [errorField]: errorText },

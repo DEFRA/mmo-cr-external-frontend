@@ -1,3 +1,5 @@
+import { t } from '#/server/common/helpers/i18n/translator.js'
+
 import Joi from 'joi'
 import {
   getJourneyState,
@@ -11,11 +13,11 @@ import {
   addPendingVesselSkipper
 } from '#/server/common/helpers/journey/vessel-skippers.js'
 const context = (request, overrides = {}) => ({
-  pageTitle: 'Check skipper details',
-  heading: 'Check skipper details',
+  pageTitle: t('skipperCheck.title'),
+  heading: t('skipperCheck.title'),
   backLink: {
     href: accountVesselPath(request, '/skipper-details'),
-    text: 'Back'
+    text: t('header.back')
   },
   changeSkipperHref: accountVesselPath(request, '/skipper-details'),
   skipper: liveCatchRecords()
@@ -34,13 +36,13 @@ export const skipperCheckSubmitController = {
         confirmSkipper: Joi.string().valid('true').required()
       }),
       failAction(request, h) {
-        const errorText = 'Confirm the skipper details are complete and correct'
+        const errorText = t('skipperCheck.error')
         return h
           .view(
             'skipper-check/index',
             context(request, {
               errorSummary: {
-                titleText: 'There is a problem',
+                titleText: t('common.errorSummary.title'),
                 errorList: [{ text: errorText, href: '#confirmSkipper' }]
               },
               fieldErrors: { confirmSkipper: errorText }

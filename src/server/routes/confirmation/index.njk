@@ -7,18 +7,18 @@
     <div class="govuk-grid-column-two-thirds">
       {{ govukPanel({
         titleText: heading,
-        html: 'Your reference number<br><strong>' + reference + '</strong>'
+        html: t('confirmation.reference') + '<br><strong>' + reference + '</strong>'
       }) }}
 
-      <h2 class="govuk-heading-m">What happens next</h2>
+      <h2 class="govuk-heading-m">{{ t('common.whatHappensNext') }}</h2>
       <ul class="govuk-list govuk-list--bullet">
-        <li>Your catch record has been received by the relevant fishing authority</li>
-        <li>You'll receive a confirmation email within 24 hours</li>
-        <li>You can view your submitted records in your account at any time</li>
-        <li>Save your catch record reference for your records</li>
+        <li>{{ t('catchRecord.submissionSuccess.bullet.received') }}</li>
+        <li>{{ t('catchRecord.submissionSuccess.bullet.email') }}</li>
+        <li>{{ t('catchRecord.submissionSuccess.bullet.view') }}</li>
+        <li>{{ t('catchRecord.submissionSuccess.bullet.save') }}</li>
       </ul>
 
-      {{ govukButton({ text: "View your catch records", href: "/records" }) }}
+      {{ govukButton({ text: t('web.confirmation.index.copy.21.1'), href: "/records" }) }}
     </div>
   </div>
 {% endblock %}

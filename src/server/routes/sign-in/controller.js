@@ -1,3 +1,5 @@
+import { t } from '#/server/common/helpers/i18n/translator.js'
+
 import { signIn } from '#/server/common/helpers/auth/session.js'
 
 /**
@@ -7,11 +9,11 @@ import { signIn } from '#/server/common/helpers/auth/session.js'
 export const signInController = {
   handler(_request, h) {
     return h.view('sign-in/index', {
-      pageTitle: 'Sign in',
-      heading: 'Sign in',
+      pageTitle: t('signIn.button'),
+      heading: t('signIn.button'),
       backLink: {
         href: '/guidance',
-        text: 'Back'
+        text: t('header.back')
       }
     })
   }

@@ -11,11 +11,11 @@
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
       {% if liveAmendment %}
-        {% call govukNotificationBanner({ titleText: "Important" }) %}
-          <p class="govuk-body govuk-!-font-weight-bold">Catch record submitted:</p>
-          <p class="govuk-body">{{ submittedAt | formatDate("d MMMM yyyy HH:mm") if submittedAt else "Not available" }}</p>
-          <p class="govuk-body govuk-!-font-weight-bold">Submitted by:</p>
-          <p class="govuk-body">{{ submittedBy or "Not available" }}</p>
+        {% call govukNotificationBanner({ titleText: t('common.important') }) %}
+          <p class="govuk-body govuk-!-font-weight-bold">{{ t('web.edit-catch-record-review.index.copy.15.1') }}</p>
+          <p class="govuk-body">{{ submittedAt | formatDate("d MMMM yyyy HH:mm") if submittedAt else t('common.notAvailable') }}</p>
+          <p class="govuk-body govuk-!-font-weight-bold">{{ t('web.edit-catch-record-review.index.copy.17.1') }}</p>
+          <p class="govuk-body">{{ submittedBy or t('common.notAvailable') }}</p>
         {% endcall %}
       {% endif %}
       <span class="govuk-caption-l" data-testid="app-edit-review-caption">{{ reference }}</span>

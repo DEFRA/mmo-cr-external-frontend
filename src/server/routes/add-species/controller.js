@@ -1,3 +1,5 @@
+import { t } from '#/server/common/helpers/i18n/translator.js'
+
 import Joi from 'joi'
 
 import {
@@ -17,8 +19,10 @@ import { liveCatchRecords } from '#/server/common/helpers/journey/catch-record-s
 
 function viewContext(request, speciesData, overrides = {}) {
   const vesselName = getJourneyState(request).selectedVesselName || ''
-  const heading = 'Add species to your vessel'
-  const pageTitle = vesselName ? `${heading} ${vesselName}` : heading
+  const heading = t('speciesSelection.addSpeciesToVessel')
+  const pageTitle = vesselName
+    ? t('speciesSelection.titleForVessel', { heading, vesselName })
+    : heading
   return {
     pageTitle,
     heading,
@@ -27,11 +31,11 @@ function viewContext(request, speciesData, overrides = {}) {
       liveCatchRecords() &&
       (request.query.return === '/account' ||
         !getJourneyState(request).reference)
-        ? 'Your favourites'
+        ? t('common.yourFavourites')
         : catchRecordCaption(request),
     backLink: {
       href: speciesSelectionReturnPath(request),
-      text: 'Back'
+      text: t('header.back')
     },
     speciesOptionLabels: speciesData.catalogue.map((species) => species.text),
     ...overrides
@@ -45,7 +49,7 @@ async function renderError(request, h, errorText, speciesData) {
       'add-species/index',
       viewContext(request, data, {
         errorSummary: {
-          titleText: 'There is a problem',
+          titleText: t('common.errorSummary.title'),
           errorList: [{ text: errorText, href: '#species' }]
         },
         fieldErrors: { species: errorText }
@@ -102,7 +106,7 @@ export const addSpeciesSubmitController = {
         return renderError(
           request,
           h,
-          'Enter the species you want to add',
+          t('speciesSelection.error.enterToAdd'),
           speciesData
         )
       }
@@ -118,7 +122,7 @@ export const addSpeciesSubmitController = {
       return renderError(
         request,
         h,
-        'Enter the species you want to add',
+        t('speciesSelection.error.enterToAdd'),
         speciesData
       )
     }
@@ -129,14 +133,21 @@ export const addSpeciesSubmitController = {
     )
 
     if (!matchedSpecies) {
-      return renderError(request, h, 'Select a species to add', speciesData)
+      return renderError(
+        request,
+        h,
+        t('speciesSelection.error.selectToAdd'),
+        speciesData
+      )
     }
 
     if (existingSpeciesIds(request, speciesData).includes(matchedSpecies.id)) {
       return renderError(
         request,
         h,
-        `${matchedSpecies.text} has already been added.`,
+        t('speciesSelection.error.alreadyAdded', {
+          species: matchedSpecies.text
+        }),
         speciesData
       )
     }

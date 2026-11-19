@@ -13,6 +13,7 @@ Core delivery platform Node.js Frontend Template.
 - [Local Development](#local-development)
   - [Setup](#setup)
   - [Development](#development)
+  - [Welsh and English (localisation)](#welsh-and-english-localisation)
   - [Production](#production)
   - [Npm scripts](#npm-scripts)
   - [Update dependencies](#update-dependencies)
@@ -623,6 +624,41 @@ Multiple deletions are separate operations, with successful removals reflected
 locally if a subsequent deletion fails. Reload to reconcile an uncertain result.
 With live integration disabled, the session-only Add skipper walkthrough remains
 unchanged and the new Remove skipper route is unavailable.
+
+### Welsh and English (localisation)
+
+All user-facing text is looked up by translation key; there are no hard-coded strings in
+templates, controllers or helpers. English is the default language and users switch with the
+English | Cymraeg links under the phase banner.
+
+- **Catalog:** `src/server/common/locales/*.json`, one file per area. Each key follows the same
+  shape as the iOS String Catalog:
+
+  ```json
+  "common.button.saveAndContinue": {
+    "comment": "Primary button on question pages.",
+    "en": "Save and continue",
+    "cy": { "value": "Cadw a pharhau", "state": "needs_review" }
+  }
+  ```
+
+  `cy.state` is `needs_review` until a Welsh translator approves the text, `translated` once
+  approved, or `new` when there is no Welsh yet (English is shown). Plurals use an object of
+  `Intl.PluralRules` categories, e.g. `{ "one": "…", "other": "{{count}} …" }`.
+
+- **Using keys:** `t('key', { name })` from `#/server/common/helpers/i18n/translator.js` in server
+  code, and the `t()` / `tHtml()` globals in Nunjucks templates and macros. `tHtml` is for
+  sentences that embed markup: pass the markup with `| safe`, e.g.
+  `tHtml('layout.footer.licence', { link: licenceLink | safe })`.
+- **Switching and persistence:** `src/server/plugins/i18n.js` reads `?lang=en|cy`, stores the
+  choice in the essential `lang` cookie (1 year) and redirects to the same URL without `lang`.
+  Later requests use the cookie; `DEFAULT_LOCALE` (`en` or `cy`, default `en`) applies otherwise.
+- **Missing text:** missing Welsh falls back to English. An unknown key renders as the key itself
+  and is logged once as `Missing translation key`. `src/server/common/helpers/i18n/catalog.test.js`
+  fails the build if a key used in `src/` is missing, an entry is malformed, or English and Welsh
+  placeholders differ.
+- **Not translated:** reference data (vessel, species, gear and port names), API values, the PDF,
+  logs and internal errors.
 
 ### Production
 

@@ -1,3 +1,5 @@
+import { t } from '#/server/common/helpers/i18n/translator.js'
+
 import Joi from 'joi'
 import {
   getJourneyState,
@@ -46,9 +48,12 @@ function savedSkipperValues(request) {
 }
 
 const viewContext = (request, overrides = {}) => ({
-  pageTitle: 'Enter skipper details',
-  heading: 'Enter skipper details',
-  backLink: { href: accountVesselPath(request, '/add-skipper'), text: 'Back' },
+  pageTitle: t('skipperDetails.title'),
+  heading: t('skipperDetails.title'),
+  backLink: {
+    href: accountVesselPath(request, '/add-skipper'),
+    text: t('header.back')
+  },
   values: savedSkipperValues(request),
   liveSkippers: liveCatchRecords(),
   ...overrides
@@ -74,12 +79,12 @@ function nameError(value, missingText, tooLongText) {
 
 function emailError(payload) {
   if (!trimmedValue(payload, 'email') && !liveCatchRecords()) {
-    return 'Enter the skipper’s email address'
+    return t('skipperDetails.error.email.empty')
   }
   const invalid =
     payload.email &&
     Joi.string().email().max(emailMaxLength).validate(payload.email).error
-  return invalid ? 'Enter an email address in the correct format' : undefined
+  return invalid ? t('skipperDetails.error.email.format') : undefined
 }
 
 function phoneNumberError(payload) {
@@ -87,7 +92,7 @@ function phoneNumberError(payload) {
     payload.phoneNumber &&
     Joi.string().trim().max(phoneNumberMaxLength).validate(payload.phoneNumber)
       .error
-  return invalid ? 'Phone number must be 30 characters or fewer' : undefined
+  return invalid ? t('skipperDetails.error.phoneNumber.tooLong') : undefined
 }
 
 function skipperErrors(payload) {
@@ -98,23 +103,23 @@ function skipperErrors(payload) {
   const errors = Object.fromEntries(
     Object.entries({
       firstName: fullNameTooLong
-        ? 'The full skipper name must be 100 characters or fewer'
+        ? t('skipperDetails.error.fullName.tooLong')
         : nameError(
             firstName,
-            'Enter the skipper’s first name',
-            'First name must be 100 characters or fewer'
+            t('skipperDetails.error.firstName.empty'),
+            t('skipperDetails.error.firstName.tooLong')
           ),
       lastName: nameError(
         lastName,
-        'Enter the skipper’s last name',
-        'Last name must be 100 characters or fewer'
+        t('skipperDetails.error.lastName.empty'),
+        t('skipperDetails.error.lastName.tooLong')
       ),
       email: emailError(payload),
       phoneNumber: phoneNumberError(payload)
     }).filter(([, text]) => text)
   )
   if (!Object.keys(errors).length) {
-    errors.firstName = 'Check the skipper details and try again'
+    errors.firstName = t('skipperDetails.error.generic')
   }
   return errors
 }
@@ -135,7 +140,7 @@ export const skipperDetailsSubmitController = {
             viewContext(request, {
               values: payload,
               errorSummary: {
-                titleText: 'There is a problem',
+                titleText: t('common.errorSummary.title'),
                 errorList: Object.entries(errors).map(([field, text]) => ({
                   text,
                   href: `#${field}`

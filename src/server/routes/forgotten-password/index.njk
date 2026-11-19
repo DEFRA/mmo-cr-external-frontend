@@ -9,13 +9,13 @@
       {% if sent %}
         {{ govukPanel({ titleText: heading, text: email, classes: "app-password-reset-confirmation" }) }}
 
-        <h2 class="govuk-heading-m">What happens next</h2>
-        <p class="govuk-body">Click the link in the email to reset your password.</p>
-        <p class="govuk-body">If you do not receive the email check your spam folder.</p>
-        {{ govukButton({ text: "Sign in", href: "/sign-in" }) }}
+        <h2 class="govuk-heading-m">{{ t('common.whatHappensNext') }}</h2>
+        <p class="govuk-body">{{ t('common.passwordReset.clickLink') }}</p>
+        <p class="govuk-body">{{ t('common.passwordReset.checkSpam') }}</p>
+        {{ govukButton({ text: t('signIn.button'), href: "/sign-in" }) }}
       {% else %}
         <h1 class="govuk-heading-xl govuk-!-margin-bottom-8">{{ heading }}</h1>
-        <p class="govuk-body govuk-!-margin-bottom-5">Enter your email address and we will send you a link to reset your password.</p>
+        <p class="govuk-body govuk-!-margin-bottom-5">{{ t('forgottenPassword.intro') }}</p>
 
         <form method="post" action="/forgotten-password" novalidate>
           {{ govukInput({
@@ -24,13 +24,13 @@
             type: "email",
             autocomplete: "email",
             classes: "govuk-input--width-20",
-            label: { text: "Email address" },
+            label: { text: t('common.emailAddress') },
             value: email,
             errorMessage: { text: fieldErrors.email } if fieldErrors.email else false,
             attributes: { spellcheck: "false", autocapitalize: "none" }
           }) }}
 
-          {{ govukButton({ text: "Send email" }) }}
+          {{ govukButton({ text: t('forgottenPassword.button') }) }}
         </form>
       {% endif %}
     </div>

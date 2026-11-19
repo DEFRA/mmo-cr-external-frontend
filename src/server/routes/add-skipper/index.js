@@ -1,3 +1,5 @@
+import { t } from '#/server/common/helpers/i18n/translator.js'
+
 import Joi from 'joi'
 import {
   getJourneyState,
@@ -15,9 +17,9 @@ function vesselName(request) {
 }
 
 const viewContext = (request, overrides = {}) => ({
-  pageTitle: `Do you want to add a skipper for ${vesselName(request)}?`,
-  heading: `Do you want to add a skipper for ${vesselName(request)}?`,
-  backLink: { href: '/account', text: 'Back' },
+  pageTitle: t('addSkipper.title', { vesselName: vesselName(request) }),
+  heading: t('addSkipper.title', { vesselName: vesselName(request) }),
+  backLink: { href: '/account', text: t('header.back') },
   checked: getJourneyState(request).wantsToAddSkipper,
   ...overrides
 })
@@ -41,13 +43,13 @@ export const addSkipperSubmitController = {
         if (liveCatchRecords()) {
           requireSkipperVessel(request)
         }
-        const errorText = 'Select yes if you want to add a skipper'
+        const errorText = t('addSkipper.error')
         return h
           .view(
             'add-skipper/index',
             viewContext(request, {
               errorSummary: {
-                titleText: 'There is a problem',
+                titleText: t('common.errorSummary.title'),
                 errorList: [{ text: errorText, href: '#wantsToAddSkipper' }]
               },
               fieldErrors: { wantsToAddSkipper: errorText }

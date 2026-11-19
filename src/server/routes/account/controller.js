@@ -1,3 +1,5 @@
+import { t } from '#/server/common/helpers/i18n/translator.js'
+
 import { getData } from '#/server/common/data/get-data.js'
 import { isSignedIn } from '#/server/common/helpers/auth/session.js'
 import {
@@ -28,7 +30,7 @@ import Joi from 'joi'
 import Boom from '@hapi/boom'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 
-const ACCOUNT_PAGE_TITLE = 'Your account'
+const ACCOUNT_PAGE_TITLE = () => t('account.title')
 const NOT_IMPLEMENTED_HREF = '/not-implemented?return=/account'
 
 function row(key, value, href, actionText, visuallyHiddenText) {
@@ -62,49 +64,49 @@ function escapeHtml(value) {
 
 function buildPersonalDetailsSection(account, vesselLabel) {
   return {
-    heading: 'Personal details',
+    heading: t('account.personalDetails.heading'),
     rows: [
       row(
-        'Email address',
+        t('signIn.email.label'),
         account.email,
         '/change-email',
-        'Change',
-        'email address'
+        t('common.change'),
+        t('account.row.email.hidden')
       ),
       row(
-        'Password',
+        t('signIn.password.label'),
         account.passwordMasked,
         '/reset-password',
-        'Change',
-        'password'
+        t('common.change'),
+        t('account.row.password.hidden')
       ),
       row(
-        'Vessel owned',
+        t('account.row.vesselOwned.key'),
         vesselLabel,
         '/change-vessel-owner',
-        'Change',
-        'vessel owned'
+        t('common.change'),
+        t('account.row.vesselOwned.hidden')
       ),
       row(
-        'Vessels skipper of',
+        t('account.row.vesselsSkipperOf.key'),
         account.vesselsSkipperOf,
         NOT_IMPLEMENTED_HREF,
-        'Change',
-        'vessels skipper of'
+        t('common.change'),
+        t('account.row.vesselsSkipperOf.hidden')
       ),
       row(
-        'Address',
+        t('account.row.address.key'),
         joinLines(account.addressLines),
         '/change-address',
-        'Change',
-        'address'
+        t('common.change'),
+        t('account.row.address.hidden')
       ),
       row(
-        'Contact number',
+        t('account.row.contactNumber.key'),
         account.contactNumber,
         '/change-contact-number',
-        'Change',
-        'contact number'
+        t('common.change'),
+        t('account.row.contactNumber.hidden')
       )
     ]
   }
@@ -113,25 +115,25 @@ function buildPersonalDetailsSection(account, vesselLabel) {
 function skippersRow(account, skipper) {
   if (liveCatchRecords() && Array.isArray(skipper)) {
     return {
-      key: { text: 'Skippers' },
+      key: { text: t('account.row.skippers.key') },
       value: {
         html: skipper.length
           ? joinLines(skipper.map((item) => escapeHtml(item.name)))
-          : 'N/A'
+          : t('account.row.skippers.none')
       },
       actions: {
         items: [
           {
             href: '/add-skipper',
-            text: 'Add skipper',
-            visuallyHiddenText: 'skipper'
+            text: t('account.row.skippers.add'),
+            visuallyHiddenText: t('account.row.skippers.hidden')
           },
           ...(skipper.length
             ? [
                 {
                   href: '/remove-skipper',
-                  text: 'Remove skipper',
-                  visuallyHiddenText: 'skipper'
+                  text: t('account.row.skippers.remove'),
+                  visuallyHiddenText: t('account.row.skippers.hidden')
                 }
               ]
             : [])
@@ -140,7 +142,7 @@ function skippersRow(account, skipper) {
     }
   }
   return {
-    key: { text: 'Skippers' },
+    key: { text: t('account.row.skippers.key') },
     value: {
       html: skipper
         ? `${escapeHtml(skipper.firstName)} ${escapeHtml(skipper.lastName)}`
@@ -150,8 +152,8 @@ function skippersRow(account, skipper) {
       items: [
         {
           href: '/add-skipper',
-          text: 'Add skipper',
-          visuallyHiddenText: 'skipper'
+          text: t('account.row.skippers.add'),
+          visuallyHiddenText: t('account.row.skippers.hidden')
         }
       ]
     }
@@ -160,19 +162,19 @@ function skippersRow(account, skipper) {
 
 function portsUsedRow(portsUsed) {
   return {
-    key: { text: 'Ports used' },
+    key: { text: t('account.row.portsUsed.key') },
     value: { html: joinLines(portsUsed.map(escapeHtml)) },
     actions: {
       items: [
         {
           href: '/add-port?for=departure&return=/account',
-          text: 'Add port',
-          visuallyHiddenText: 'port'
+          text: t('account.row.portsUsed.add'),
+          visuallyHiddenText: t('account.row.portsUsed.hidden')
         },
         {
           href: '/remove-port',
-          text: 'Remove port',
-          visuallyHiddenText: 'port'
+          text: t('account.row.portsUsed.remove'),
+          visuallyHiddenText: t('account.row.portsUsed.hidden')
         }
       ]
     }
@@ -202,19 +204,19 @@ function gearOnboardRow(favouriteGearOptions, favouriteGearMeasurements = {}) {
   })
 
   return {
-    key: { text: 'Gear onboard' },
+    key: { text: t('account.row.gearOnboard.key') },
     value: { html: joinLines(gearOnboardLines) },
     actions: {
       items: [
         {
           href: '/add-gear?return=/account',
-          text: 'Add gear',
-          visuallyHiddenText: 'gear'
+          text: t('account.row.gearOnboard.add'),
+          visuallyHiddenText: t('account.row.gearOnboard.hidden')
         },
         {
           href: '/remove-gear?return=/account',
-          text: 'Remove gear',
-          visuallyHiddenText: 'gear'
+          text: t('account.row.gearOnboard.remove'),
+          visuallyHiddenText: t('account.row.gearOnboard.hidden')
         }
       ]
     }
@@ -223,19 +225,19 @@ function gearOnboardRow(favouriteGearOptions, favouriteGearMeasurements = {}) {
 
 function speciesCaughtRow(speciesCaught) {
   return {
-    key: { text: 'Species caught' },
+    key: { text: t('account.row.speciesCaught.key') },
     value: { html: joinLines(speciesCaught) },
     actions: {
       items: [
         {
           href: '/add-species?return=/account',
-          text: 'Add species',
-          visuallyHiddenText: 'species'
+          text: t('account.row.speciesCaught.add'),
+          visuallyHiddenText: t('account.row.speciesCaught.hidden')
         },
         {
           href: '/remove-species?return=/account',
-          text: 'Remove species',
-          visuallyHiddenText: 'species'
+          text: t('account.row.speciesCaught.remove'),
+          visuallyHiddenText: t('account.row.speciesCaught.hidden')
         }
       ]
     }
@@ -252,7 +254,7 @@ function buildVesselDetailsSection(
   favouriteGearMeasurements
 ) {
   return {
-    heading: 'Vessel details',
+    heading: t('account.vesselDetails.heading'),
     vesselLabel,
     rows: [
       skippersRow(account, skipper),
@@ -305,7 +307,7 @@ function accountErrorContext(error) {
   }
   return {
     errorSummary: {
-      titleText: 'There is a problem',
+      titleText: t('common.errorSummary.title'),
       errorList: [{ text: error, href: '#vesselId' }]
     },
     fieldErrors: { vesselId: error }
@@ -320,9 +322,9 @@ async function liveAccountView(request, h) {
     vessels.map((item) => buildLiveVesselSection(request, account, item))
   )
   return h.view('account/index', {
-    pageTitle: ACCOUNT_PAGE_TITLE,
-    heading: ACCOUNT_PAGE_TITLE,
-    backLink: { href: '/records', text: 'Back' },
+    pageTitle: ACCOUNT_PAGE_TITLE(),
+    heading: ACCOUNT_PAGE_TITLE(),
+    backLink: { href: '/records', text: t('header.back') },
     sections: [
       buildPersonalDetailsSection(
         account,
@@ -330,7 +332,7 @@ async function liveAccountView(request, h) {
       ),
       ...vesselSections.map((section, index) => ({
         ...section,
-        heading: index === 0 ? 'Vessel details' : ''
+        heading: index === 0 ? t('account.vesselDetails.heading') : ''
       }))
     ]
   })
@@ -373,12 +375,12 @@ async function offlineAccountView(request, h) {
 
   return h
     .view('account/index', {
-      pageTitle: ACCOUNT_PAGE_TITLE,
-      heading: ACCOUNT_PAGE_TITLE,
+      pageTitle: ACCOUNT_PAGE_TITLE(),
+      heading: ACCOUNT_PAGE_TITLE(),
       ...accountErrorContext(accountVesselError),
       backLink: {
         href: '/records',
-        text: 'Back'
+        text: t('header.back')
       },
       sections: [
         buildPersonalDetailsSection(account, vesselLabel),
@@ -418,8 +420,7 @@ export const accountVesselSubmitController = {
         if (!liveCatchRecords()) {
           throw Boom.notFound()
         }
-        request.app.accountVesselError =
-          'Select a vessel to manage its favourites'
+        request.app.accountVesselError = t('account.error.selectVessel')
         return (await accountController.handler(request, h)).takeover()
       }
     }
@@ -434,7 +435,7 @@ export const accountVesselSubmitController = {
     const vessels = await getVesselCatalogue()
     const vessel = vessels.find((item) => item.id === request.payload.vesselId)
     if (!vessel) {
-      request.app.accountVesselError = 'Select a vessel from the list'
+      request.app.accountVesselError = t('account.error.selectVesselFromList')
       return accountController.handler(request, h)
     }
     const selected = await getVesselItem(vessel.id)

@@ -1,5 +1,7 @@
 import { getData } from '#/server/common/data/get-data.js'
 import { getGearCatalogue } from '#/server/common/helpers/gear/favourite-gear.js'
+import { currentLanguage } from '#/server/common/helpers/i18n/language-context.js'
+import { t } from '#/server/common/helpers/i18n/translator.js'
 
 export async function selectedGearDescription(journeyState, gearId) {
   const selectedGearIds = gearId ? [gearId] : journeyState.selectedGearIds || []
@@ -26,7 +28,7 @@ export async function selectedGearDescription(journeyState, gearId) {
         catalogue.find((gear) => gear.id === id)?.label
     )
     .filter(Boolean)
-  return new Intl.ListFormat('en', {
+  return new Intl.ListFormat(currentLanguage(), {
     style: 'long',
     type: 'conjunction'
   }).format(gearNames)
@@ -37,17 +39,21 @@ export async function statisticalAreaContent(
   { manualEntry = false, gearId } = {}
 ) {
   const gears = await selectedGearDescription(journeyState, gearId)
-  const gearSuffix = gears ? ` using ${gears.toLowerCase()}` : ''
-  const heading = manualEntry
-    ? `Select the statistical sub area where the majority of your catch was caught${gearSuffix}`
-    : `Where was the majority of your catch caught${gearSuffix}?`
+  const headingKey = manualEntry
+    ? gears
+      ? 'statisticalArea.manualTitleWithGear'
+      : 'statisticalArea.manualTitle'
+    : gears
+      ? 'statisticalArea.titleWithGear'
+      : 'statisticalArea.title'
+  const heading = t(
+    headingKey,
+    gears ? { gear: gears.toLowerCase() } : undefined
+  )
 
   return {
     pageTitle: heading,
     heading,
-    bodyText: [
-      'The statistical areas nearest to your departure port are shown below. Select the area where most of your catch was caught.',
-      "If it is not listed, select 'Other' to enter it."
-    ]
+    bodyText: [t('statisticalArea.body1'), t('statisticalArea.body2')]
   }
 }

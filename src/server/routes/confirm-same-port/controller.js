@@ -1,3 +1,5 @@
+import { t } from '#/server/common/helpers/i18n/translator.js'
+
 import Joi from 'joi'
 
 import {
@@ -40,7 +42,7 @@ async function resolvePort(request) {
 }
 
 function heading(portName) {
-  return `Was ${portName} the port or the closest port you set off from and returned to?`
+  return t('confirmSamePort.title', { port: portName })
 }
 
 function viewContext(request, port, overrides = {}) {
@@ -50,7 +52,7 @@ function viewContext(request, port, overrides = {}) {
     caption: catchRecordCaption(request),
     backLink: {
       href: backForDeparturePort(request),
-      text: 'Back'
+      text: t('header.back')
     },
     formAction: portSelectionPath(
       request,
@@ -88,14 +90,14 @@ export const confirmSamePortSubmitController = {
             .takeover()
         }
 
-        const errorText = `Select whether ${port.name} was the port you set off from and returned to`
+        const errorText = t('confirmSamePort.error', { port: port.name })
 
         return h
           .view(
             'confirm-same-port/index',
             viewContext(request, port, {
               errorSummary: {
-                titleText: 'There is a problem',
+                titleText: t('common.errorSummary.title'),
                 errorList: [{ text: errorText, href: '#confirmSamePort' }]
               },
               fieldErrors: { confirmSamePort: errorText }

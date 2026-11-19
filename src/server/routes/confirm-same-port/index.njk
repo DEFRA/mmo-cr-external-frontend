@@ -19,12 +19,12 @@
           },
           errorMessage: radioErrorMessage,
           items: [
-            { value: "yes", text: "Yes" },
-            { value: "no", text: "No" }
+            { value: "yes", text: t('confirmSamePort.yes') },
+            { value: "no", text: t('confirmSamePort.no') }
           ]
         }) }}
 
-        {{ govukButton({ text: "Save and continue" }) }}
+        {{ govukButton({ text: t('common.button.saveAndContinue') }) }}
       </form>
     </div>
   </div>

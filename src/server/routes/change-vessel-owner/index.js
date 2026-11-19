@@ -1,7 +1,9 @@
+import { t } from '#/server/common/helpers/i18n/translator.js'
+
 const viewContext = () => ({
-  pageTitle: 'Change in vessel ownership',
-  heading: 'Change in vessel ownership',
-  backLink: { href: '/account', text: 'Back' }
+  pageTitle: t('changeVesselOwner.title'),
+  heading: t('changeVesselOwner.title'),
+  backLink: { href: '/account', text: t('header.back') }
 })
 
 export const changeVesselOwnerController = {

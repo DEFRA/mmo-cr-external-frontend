@@ -1,3 +1,5 @@
+import { t } from '#/server/common/helpers/i18n/translator.js'
+
 import Joi from 'joi'
 import Boom from '@hapi/boom'
 
@@ -13,8 +15,10 @@ import {
 
 const templatePath = 'edit-catch-record-reason/index'
 const EDIT_REASON_MAX_LENGTH = 2000
-const defaultPageTitle = 'Why are you editing this catch record?'
-const lateRecordPageTitle = 'Why are you editing this record?'
+const defaultPageTitle = () =>
+  t('web.edit-catch-record-reason.controller.js.copy.18.1')
+const lateRecordPageTitle = () =>
+  t('web.edit-catch-record-reason.controller.js.copy.19.1')
 
 function findRecord(recordId) {
   const record = getData('allRecords').find(
@@ -32,7 +36,9 @@ function viewContext(recordId, overrides = {}) {
   const record = findRecord(recordId)
   const details = record.details || getData('catchRecordDetails')
   const isLateRecord = record.recordId === 'late-1'
-  const pageTitle = isLateRecord ? lateRecordPageTitle : defaultPageTitle
+  const pageTitle = isLateRecord
+    ? lateRecordPageTitle()
+    : defaultPageTitle()
 
   return {
     pageTitle,
@@ -41,12 +47,14 @@ function viewContext(recordId, overrides = {}) {
     notification: isLateRecord
       ? undefined
       : {
-          titleText: 'Important',
-          text: `This catch record was submitted for a trip that ended on ${formatDate(details.returnDate, 'd MMMM yyyy')}.`
+          titleText: t('common.important'),
+          text: t('editReason.notification', {
+            date: formatDate(details.returnDate, 'd MMMM yyyy')
+          })
         },
     backLink: {
       href: `/records/${recordId}`,
-      text: 'Back'
+      text: t('header.back')
     },
     ...overrides
   }
@@ -87,14 +95,16 @@ export const editCatchRecordReasonSubmitController = {
       }),
       async failAction(request, h) {
         if (liveCatchRecords()) {
-          const liveErrorText = `Enter a reason for editing this catch record (${EDIT_REASON_MAX_LENGTH} characters or fewer)`
+          const liveErrorText = t('editReason.error.maxLength', {
+            max: EDIT_REASON_MAX_LENGTH
+          })
           return h
             .view(
               templatePath,
               await reasonContext(request, {
                 values: request.payload,
                 errorSummary: {
-                  titleText: 'There is a problem',
+                  titleText: t('common.errorSummary.title'),
                   errorList: [{ text: liveErrorText, href: '#editReason' }]
                 },
                 fieldErrors: { editReason: liveErrorText }
@@ -106,14 +116,16 @@ export const editCatchRecordReasonSubmitController = {
         const { recordId } = request.params
         findRecord(recordId)
 
-        const errorText = 'Enter the reason for editing this catch record'
+        const errorText = t(
+          'web.edit-catch-record-reason.controller.js.copy.110.1'
+        )
 
         return h
           .view(
             templatePath,
             viewContext(recordId, {
               errorSummary: {
-                titleText: 'There is a problem',
+                titleText: t('common.errorSummary.title'),
                 errorList: [{ text: errorText, href: '#editReason' }]
               },
               fieldErrors: { editReason: errorText },

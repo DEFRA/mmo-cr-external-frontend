@@ -1,3 +1,5 @@
+import { t } from '#/server/common/helpers/i18n/translator.js'
+
 import Boom from '@hapi/boom'
 
 function fieldsWithValues(object) {
@@ -12,7 +14,7 @@ function portReference(ports, code) {
   }
   const port = ports.find((item) => item.code === code || item.id === code)
   if (!port) {
-    throw Boom.badRequest('Select an available port')
+    throw Boom.badRequest(t('catchRecord.error.selectAvailablePort'))
   }
   return { id: port.id }
 }
@@ -75,7 +77,7 @@ function gearCharacteristics(state, gear) {
     .map(([measurementId, value]) => {
       const definition = measurementDefinition(gear, measurementId)
       if (!definition) {
-        throw Boom.badRequest('Select an available gear measurement')
+        throw Boom.badRequest(t('catchRecord.error.selectAvailableGearMeasurement'))
       }
       return { characteristicId: definition.id, value }
     })
@@ -89,7 +91,7 @@ function gearStatisticalArea(answers, areaIds) {
   const areaId = areaIds[code.toUpperCase()]
   if (!areaId) {
     throw Boom.badRequest(
-      'Select a statistical area available from the Reference Data Service',
+      t('catchRecord.error.selectAvailableStatisticalArea'),
       { catchRecordError: true }
     )
   }
@@ -100,7 +102,7 @@ export function gearPayload(state, catalogue, areaIds) {
   return (state.selectedGearIds || []).map((id) => {
     const gear = catalogue.find((item) => item.id === id)
     if (!gear) {
-      throw Boom.badRequest('Select an available gear')
+      throw Boom.badRequest(t('catchRecord.error.selectAvailableGear'))
     }
     const answers = state.catchDetailsByGearId?.[id] || {}
     const characteristics = gearCharacteristics(state, gear)
@@ -127,7 +129,7 @@ export function gearPayload(state, catalogue, areaIds) {
 function assertUniqueGears(gears) {
   if (new Set(gears.map((entry) => entry.gear.id)).size !== gears.length) {
     throw Boom.conflict(
-      'This record contains repeated gear types and cannot be edited in the web journey',
+      t('catchRecord.error.repeatedGearTypes'),
       { catchRecordError: true }
     )
   }

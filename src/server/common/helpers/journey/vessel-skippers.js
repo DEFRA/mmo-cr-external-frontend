@@ -1,3 +1,5 @@
+import { t } from '#/server/common/helpers/i18n/translator.js'
+
 import { randomUUID } from 'node:crypto'
 import Boom from '@hapi/boom'
 import { getJourneyState, setJourneyState } from './navigation.js'
@@ -7,7 +9,7 @@ import { forEachSequentially } from '#/server/common/helpers/sequential.js'
 export function requireSkipperVessel(request) {
   const vesselId = getJourneyState(request).selectedVesselId
   if (!vesselId) {
-    throw Boom.badRequest('Select a vessel before managing saved skippers', {
+    throw Boom.badRequest(t('catchRecord.error.selectVesselForSkippers'), {
       catchRecordError: true
     })
   }
@@ -60,7 +62,7 @@ export function requirePendingSkipper(request) {
     !state.skipperAdditionKey
   ) {
     throw Boom.badRequest(
-      'Enter skipper details for the selected vessel first',
+      t('catchRecord.error.enterSkipperFirst'),
       {
         catchRecordError: true
       }

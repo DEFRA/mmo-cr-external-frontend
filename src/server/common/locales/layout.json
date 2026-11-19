@@ -1,0 +1,274 @@
+{
+  "errors.badRequest": {
+    "comment": "Error page title and message for a 400 response.",
+    "en": "Bad Request",
+    "cy": {
+      "value": "Cais annilys",
+      "state": "needs_review"
+    }
+  },
+  "errors.forbidden": {
+    "comment": "Error page title and message for a 403 response.",
+    "en": "Forbidden",
+    "cy": {
+      "value": "Gwaharddedig",
+      "state": "needs_review"
+    }
+  },
+  "errors.generic": {
+    "comment": "Error page title and message for any other error.",
+    "en": "Something went wrong",
+    "cy": {
+      "value": "Aeth rhywbeth o'i le",
+      "state": "needs_review"
+    }
+  },
+  "errors.notFound": {
+    "comment": "Error page title and message for a 404 response.",
+    "en": "Page not found",
+    "cy": {
+      "value": "Heb ddod o hyd i'r dudalen",
+      "state": "needs_review"
+    }
+  },
+  "errors.unauthorised": {
+    "comment": "Error page title and message for a 401 response. English spelling kept as currently shown.",
+    "en": "Unauthorized",
+    "cy": {
+      "value": "Heb awdurdod",
+      "state": "needs_review"
+    }
+  },
+  "govuk.dateInput.day": {
+    "comment": "Label for the day field of a date input.",
+    "en": "Day",
+    "cy": {
+      "value": "Diwrnod",
+      "state": "needs_review"
+    }
+  },
+  "govuk.dateInput.month": {
+    "comment": "Label for the month field of a date input.",
+    "en": "Month",
+    "cy": {
+      "value": "Mis",
+      "state": "needs_review"
+    }
+  },
+  "govuk.dateInput.year": {
+    "comment": "Label for the year field of a date input.",
+    "en": "Year",
+    "cy": {
+      "value": "Blwyddyn",
+      "state": "needs_review"
+    }
+  },
+  "govuk.notificationBanner.success": {
+    "comment": "Title of a success notification banner.",
+    "en": "Success",
+    "cy": {
+      "value": "Llwyddiant",
+      "state": "needs_review"
+    }
+  },
+  "govuk.pagination.landmark": {
+    "comment": "Accessible name of the pagination navigation landmark.",
+    "en": "Pagination",
+    "cy": {
+      "value": "Tudalennu",
+      "state": "needs_review"
+    }
+  },
+  "govuk.pagination.next": {
+    "comment": "Pagination link to the next page.",
+    "en": "Next",
+    "cy": {
+      "value": "Nesaf",
+      "state": "needs_review"
+    }
+  },
+  "govuk.pagination.page": {
+    "comment": "Accessible name of a numbered pagination link. {{number}} is the page number.",
+    "en": "Page {{number}}",
+    "cy": {
+      "value": "Tudalen {{number}}",
+      "state": "needs_review"
+    }
+  },
+  "govuk.pagination.previous": {
+    "comment": "Pagination link to the previous page.",
+    "en": "Previous",
+    "cy": {
+      "value": "Blaenorol",
+      "state": "needs_review"
+    }
+  },
+  "govuk.pagination.previousPage": {
+    "comment": "Visually hidden label for the previous page arrow.",
+    "en": "Previous page",
+    "cy": {
+      "value": "Tudalen flaenorol",
+      "state": "needs_review"
+    }
+  },
+  "govuk.warningText.iconFallback": {
+    "comment": "Visually hidden text read before GOV.UK warning text.",
+    "en": "Warning",
+    "cy": {
+      "value": "Rhybudd",
+      "state": "needs_review"
+    }
+  },
+  "header.language.toEnglish": {
+    "comment": "Language switcher link to English. Always written in English. Shared key with the iOS app.",
+    "en": "English",
+    "cy": {
+      "value": "English",
+      "state": "translated"
+    }
+  },
+  "header.language.toWelsh": {
+    "comment": "Language switcher link to Welsh. Always written in Welsh. Shared key with the iOS app.",
+    "en": "Cymraeg",
+    "cy": {
+      "value": "Cymraeg",
+      "state": "translated"
+    }
+  },
+  "layout.footer.accessibility": {
+    "comment": "Footer link to the accessibility statement.",
+    "en": "Accessibility Statement",
+    "cy": {
+      "value": "Datganiad hygyrchedd",
+      "state": "needs_review"
+    }
+  },
+  "layout.footer.copyright": {
+    "comment": "Footer copyright link.",
+    "en": "© Crown copyright",
+    "cy": {
+      "value": "© Hawlfraint y Goron",
+      "state": "needs_review"
+    }
+  },
+  "layout.footer.feedback": {
+    "comment": "Footer link.",
+    "en": "Feedback",
+    "cy": {
+      "value": "Adborth",
+      "state": "needs_review"
+    }
+  },
+  "layout.footer.licence": {
+    "comment": "Footer licence statement. {{link}} is a link whose text is layout.footer.licenceLink.",
+    "en": "All content is available under the {{link}}, except where otherwise stated",
+    "cy": {
+      "value": "Mae'r holl gynnwys ar gael o dan y {{link}}, oni nodir yn wahanol",
+      "state": "needs_review"
+    }
+  },
+  "layout.footer.licenceLink": {
+    "comment": "Link text inside the footer licence statement.",
+    "en": "Open Government Licence v3.0",
+    "cy": {
+      "value": "Drwydded Llywodraeth Agored v3.0",
+      "state": "needs_review"
+    }
+  },
+  "layout.footer.privacy": {
+    "comment": "Footer link to the privacy notice page.",
+    "en": "Privacy policy",
+    "cy": {
+      "value": "Polisi preifatrwydd",
+      "state": "needs_review"
+    }
+  },
+  "layout.footer.supportLinks": {
+    "comment": "Visually hidden heading for the footer links.",
+    "en": "Support links",
+    "cy": {
+      "value": "Dolenni cymorth",
+      "state": "needs_review"
+    }
+  },
+  "layout.language.navLabel": {
+    "comment": "Accessible name of the language switcher navigation landmark.",
+    "en": "Language switcher",
+    "cy": {
+      "value": "Newid iaith",
+      "state": "needs_review"
+    }
+  },
+  "layout.nav.account": {
+    "comment": "Service navigation link to the account page.",
+    "en": "Your account",
+    "cy": {
+      "value": "Eich cyfrif",
+      "state": "needs_review"
+    }
+  },
+  "layout.nav.home": {
+    "comment": "Service navigation link to the catch records list.",
+    "en": "Home",
+    "cy": {
+      "value": "Hafan",
+      "state": "needs_review"
+    }
+  },
+  "layout.nav.menu": {
+    "comment": "Button that opens the service navigation on small screens.",
+    "en": "Menu",
+    "cy": {
+      "value": "Dewislen",
+      "state": "needs_review"
+    }
+  },
+  "layout.nav.signOut": {
+    "comment": "Service navigation button that signs the user out.",
+    "en": "Sign out",
+    "cy": {
+      "value": "Allgofnodi",
+      "state": "needs_review"
+    }
+  },
+  "layout.phaseBanner.feedbackLink": {
+    "comment": "Link text inside the phase banner sentence.",
+    "en": "feedback",
+    "cy": {
+      "value": "adborth",
+      "state": "needs_review"
+    }
+  },
+  "layout.phaseBanner.tag": {
+    "comment": "Phase banner tag. GOV.UK services keep 'Beta' in Welsh.",
+    "en": "Beta",
+    "cy": {
+      "value": "Beta",
+      "state": "needs_review"
+    }
+  },
+  "layout.phaseBanner.text": {
+    "comment": "Phase banner sentence. {{feedbackLink}} is a link whose text is layout.phaseBanner.feedbackLink.",
+    "en": "This is a new service – your {{feedbackLink}} will help us to improve it.",
+    "cy": {
+      "value": "Mae hwn yn wasanaeth newydd – bydd eich {{feedbackLink}} yn ein helpu i'w wella.",
+      "state": "needs_review"
+    }
+  },
+  "layout.serviceName": {
+    "comment": "Service name in the header and the browser tab title.",
+    "en": "Record your catch",
+    "cy": {
+      "value": "Cofnodi eich dalfa",
+      "state": "needs_review"
+    }
+  },
+  "layout.skipLink": {
+    "comment": "Skip link, the first focusable element on every page.",
+    "en": "Skip to main content",
+    "cy": {
+      "value": "Neidio i'r prif gynnwys",
+      "state": "needs_review"
+    }
+  }
+}

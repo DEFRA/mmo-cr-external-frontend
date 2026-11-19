@@ -1,3 +1,5 @@
+import { t } from '#/server/common/helpers/i18n/translator.js'
+
 import { randomUUID } from 'node:crypto'
 import Boom from '@hapi/boom'
 import { config } from '#/config/config.js'
@@ -18,6 +20,7 @@ import {
   getRecordDisplayStatus
 } from '#/server/common/helpers/records/status-display.js'
 import { submittedSummary } from './submitted-summary.js'
+import { localizeSummarySections } from '#/server/common/helpers/records/localize-summary.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 
 const RECORD_LIST_LIMIT = 100
@@ -50,10 +53,10 @@ export async function listLiveRecords(request, h) {
     })
   )
   return h.view('live-records/list', {
-    pageTitle: 'Your catch records',
-    heading: 'Your catch records',
+    pageTitle: t('home.title'),
+    heading: t('home.title'),
     bodyClasses: 'app-records-page',
-    backLink: { href: '/', text: 'Back' },
+    backLink: { href: '/', text: t('header.back') },
     recordDetailsEnabled: liveCatchRecords(),
     records,
     pagination,
@@ -87,9 +90,13 @@ export async function showLiveRecord(request, h) {
   })
   const submitted = record.status === 'SUBMITTED'
   return h.view(submitted ? 'live-records/submitted' : 'live-records/details', {
-    pageTitle: `Catch record for ${record.vessel.nameSnapshot}`,
+    pageTitle: t('liveRecords.recordFor', {
+      vesselName: record.vessel.nameSnapshot
+    }),
     record: { ...record, displayStatus: getRecordDisplayStatus(record) },
-    sections: submitted ? submittedSummary(record) : undefined,
+    sections: submitted
+      ? localizeSummarySections(submittedSummary(record))
+      : undefined,
     latestPdf: submissions.submissions
       .filter((submission) =>
         submission.artifacts.some((artifact) => artifact.type === 'pdf')
@@ -100,7 +107,7 @@ export async function showLiveRecord(request, h) {
     completionEnabled: config.get('catchRecording.completionEnabled'),
     submissions: submissions.submissions,
     recordPath: `/records/${encodeURIComponent(record.id)}`,
-    backLink: { href: '/records', text: 'Back' },
+    backLink: { href: '/records', text: t('header.back') },
     actionKey: request.yar.get('recordAction').key
   })
 }
@@ -118,7 +125,7 @@ function requireRecordAction(request) {
     action.id !== request.params.recordId ||
     request.payload?.actionKey !== action.key
   ) {
-    throw Boom.badRequest('Open the record before taking this action')
+    throw Boom.badRequest(t('catchRecord.error.openRecordBeforeAction'))
   }
   return action
 }
@@ -134,7 +141,7 @@ async function deleteRecordAction(request, h, client, input) {
 
 async function completeRecordAction(request, h, client, input, record) {
   if (record.status !== 'SUBMITTED') {
-    throw Boom.conflict('Only a submitted catch record may be completed')
+    throw Boom.conflict(t('catchRecord.error.onlySubmittedCompletable'))
   }
   await client.completeRecord(input)
   request.yar.clear('recordAction')
@@ -147,7 +154,7 @@ async function openRecordJourney(request, h, client, input, record) {
   const journey = recordJourney(record)
   const editing = request.params.action === 'edit'
   if (!editing && record.status !== 'DRAFT') {
-    throw Boom.conflict('Only a draft can be resumed')
+    throw Boom.conflict(t('catchRecord.error.onlyDraftResumable'))
   }
   if (editing && record.status === 'SUBMITTED') {
     return h
@@ -193,11 +200,11 @@ export async function showHistory(request, h) {
     client.getRecord(input)
   ])
   return h.view('live-records/history', {
-    pageTitle: 'Catch record history',
+    pageTitle: t('web.live-records.history.copy.3.1'),
     history: { ...history, displayStatus: getRecordDisplayStatus(record) },
     backLink: {
       href: `/records/${encodeURIComponent(request.params.recordId)}`,
-      text: 'Back'
+      text: t('header.back')
     }
   })
 }
@@ -224,22 +231,20 @@ export async function downloadArtifact(request, h) {
 export async function submitLiveRecord(request, h) {
   const state = getJourneyState(request)
   if (state.catchRecordPendingTrip) {
-    throw Boom.badRequest(
-      'Complete the trip dates and both ports before submitting',
-      { catchRecordError: true }
-    )
+    throw Boom.badRequest(t('catchRecord.error.completeTripBeforeSubmit'), {
+      catchRecordError: true
+    })
   }
   if (state.catchRecordReloadRequired) {
-    throw Boom.conflict(
-      'Reopen this record from Your catch records before submitting',
-      { catchRecordError: true }
-    )
+    throw Boom.conflict(t('catchRecord.error.reopenBeforeSubmitting'), {
+      catchRecordError: true
+    })
   }
   if (request.payload?.submissionKey !== state.submissionKey) {
-    throw Boom.badRequest('Review your record before submitting')
+    throw Boom.badRequest(t('catchRecord.error.reviewBeforeSubmitting'))
   }
   if (!state.catchRecordId || !state.submissionKey) {
-    throw Boom.badRequest('Review your record before submitting')
+    throw Boom.badRequest(t('catchRecord.error.reviewBeforeSubmitting'))
   }
   const { client, correlationId } = catchRecordService()
   await saveReviewedRecord(request, client, correlationId)
@@ -268,10 +273,9 @@ async function saveReviewedRecord(request, client, correlationId) {
     correlationId
   })
   if (record.status !== 'DRAFT' || record.version !== state.submissionVersion) {
-    throw Boom.conflict(
-      'The record changed. Reopen it from Your catch records before submitting',
-      { catchRecordError: true }
-    )
+    throw Boom.conflict(t('catchRecord.error.recordChangedBeforeSubmitting'), {
+      catchRecordError: true
+    })
   }
   let payload
   try {
@@ -279,7 +283,7 @@ async function saveReviewedRecord(request, client, correlationId) {
   } catch (error) {
     if (error instanceof MapStatisticalAreasReferenceDataError) {
       throw Boom.serverUnavailable(
-        'Statistical-area reference data is temporarily unavailable',
+        t('catchRecord.error.statisticalAreasUnavailable'),
         { catchRecordError: true }
       )
     }
