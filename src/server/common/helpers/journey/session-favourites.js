@@ -107,10 +107,9 @@ export async function removeFavouriteSpecies(request, ids) {
 function storePorts(request, ids, catalogue) {
   const ports = ids.map((id) => catalogue.find((port) => port.id === id))
   if (ports.some((port) => !port)) {
-    throw Boom.conflict(
-      t('catchRecord.error.favouritePortUnavailable'),
-      { catchRecordError: true }
-    )
+    throw Boom.conflict(t('catchRecord.error.favouritePortUnavailable'), {
+      catchRecordError: true
+    })
   }
   return setJourneyState(request, {
     favouritePortIds: ids,

@@ -119,8 +119,7 @@ export const editCatchRecordReviewController = {
   }
 }
 
-const confirmAccurateError = () =>
-  t('editReview.error.confirmDeclaration')
+const confirmAccurateError = () => t('editReview.error.confirmDeclaration')
 
 export const editCatchRecordReviewSubmitController = {
   options: {

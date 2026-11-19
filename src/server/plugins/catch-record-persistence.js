@@ -88,10 +88,9 @@ async function syncGearAssociations(request, before, saved, service) {
     correlationId: service.correlationId
   })
   if (canonical.version !== saved.version) {
-    throw Boom.conflict(
-      t('catchRecord.error.recordChangedDuringSaving'),
-      { catchRecordError: true }
-    )
+    throw Boom.conflict(t('catchRecord.error.recordChangedDuringSaving'), {
+      catchRecordError: true
+    })
   }
   setJourneyState(request, {
     gearAssociationIds: recordJourney(canonical).gearAssociationIds
@@ -172,10 +171,9 @@ export const catchRecordPersistence = {
       if (liveCatchRecords() && request.method === 'post' && section) {
         const state = getJourneyState(request)
         if (state.catchRecordReloadRequired) {
-          throw Boom.conflict(
-            t('catchRecord.error.reopenBeforeSaving'),
-            { catchRecordError: true }
-          )
+          throw Boom.conflict(t('catchRecord.error.reopenBeforeSaving'), {
+            catchRecordError: true
+          })
         }
         if (!state.catchRecordId) {
           throw Boom.badRequest(t('catchRecord.error.openRecordBeforeAction'))

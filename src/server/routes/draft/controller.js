@@ -63,10 +63,9 @@ export const draftController = {
       correlationId
     })
     if (record.status !== 'DRAFT') {
-      throw Boom.conflict(
-        t('catchRecord.error.noLongerDraft'),
-        { catchRecordError: true }
-      )
+      throw Boom.conflict(t('catchRecord.error.noLongerDraft'), {
+        catchRecordError: true
+      })
     }
     const action = {
       id: record.id,
@@ -117,10 +116,9 @@ export const draftSubmitController = {
     const { client, correlationId } = catchRecordService()
     if (draftAction === 'delete') {
       if (action.numberOfSubmissions !== 0) {
-        throw Boom.conflict(
-          t('catchRecord.error.draftHasSubmissions'),
-          { catchRecordError: true }
-        )
+        throw Boom.conflict(t('catchRecord.error.draftHasSubmissions'), {
+          catchRecordError: true
+        })
       }
       await client.deleteRecord({
         catchRecordId: action.id,
@@ -134,20 +132,18 @@ export const draftSubmitController = {
       return h.redirect('/records').code(statusCodes.seeOther)
     }
     if (!liveCatchRecords()) {
-      throw Boom.conflict(
-        t('catchRecord.error.liveSavingRequired'),
-        { catchRecordError: true }
-      )
+      throw Boom.conflict(t('catchRecord.error.liveSavingRequired'), {
+        catchRecordError: true
+      })
     }
     const record = await client.getRecord({
       catchRecordId: action.id,
       correlationId
     })
     if (record.status !== 'DRAFT' || record.version !== action.version) {
-      throw Boom.conflict(
-        t('catchRecord.error.draftChanged'),
-        { catchRecordError: true }
-      )
+      throw Boom.conflict(t('catchRecord.error.draftChanged'), {
+        catchRecordError: true
+      })
     }
     request.yar.set('journey', recordJourney(record))
     request.yar.clear('draftAction')

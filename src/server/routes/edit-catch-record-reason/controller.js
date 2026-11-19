@@ -36,9 +36,7 @@ function viewContext(recordId, overrides = {}) {
   const record = findRecord(recordId)
   const details = record.details || getData('catchRecordDetails')
   const isLateRecord = record.recordId === 'late-1'
-  const pageTitle = isLateRecord
-    ? lateRecordPageTitle()
-    : defaultPageTitle()
+  const pageTitle = isLateRecord ? lateRecordPageTitle() : defaultPageTitle()
 
   return {
     pageTitle,

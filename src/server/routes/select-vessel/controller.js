@@ -93,8 +93,7 @@ export const selectVesselSubmitController = {
     }
     const selectedVessel = await getVesselItem(vessel.id)
     if (!(await ensureCatchRecordDraft(request, selectedVessel))) {
-      const message =
-        t('selectVessel.error.cannotChange')
+      const message = t('selectVessel.error.cannotChange')
       return h
         .view(
           templatePath,

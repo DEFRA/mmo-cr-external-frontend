@@ -107,9 +107,7 @@ function viewContext(request, ports, overrides = {}) {
     (isAccountReturn(request) || (!request.query.for && !isEntry(request)))
   const heading = favouritesPage
     ? t('addPort.favourites.title')
-    : t(
-        `addPort.${resolvePhase(request)}.title`
-      )
+    : t(`addPort.${resolvePhase(request)}.title`)
   const state = getJourneyState(request)
   const selectedCode =
     resolvePhase(request) === returnPhase
@@ -123,7 +121,9 @@ function viewContext(request, ports, overrides = {}) {
   return {
     pageTitle: heading,
     heading,
-    caption: favouritesPage ? t('common.yourFavourites') : catchRecordCaption(request),
+    caption: favouritesPage
+      ? t('common.yourFavourites')
+      : catchRecordCaption(request),
     backLink: {
       href: backLink(request),
       text: t('header.back')

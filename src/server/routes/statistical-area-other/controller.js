@@ -22,8 +22,7 @@ import { statisticalAreaCode } from '#/server/common/helpers/journey/catch-recor
 const templatePath = 'statistical-area-other/index'
 const subrectangleFormat = /^\d{2}[A-Z]\d{2}$/i
 const selectionErrorText = () => t('statisticalAreaOther.error.select')
-const subrectangleFormatErrorText = () =>
-  t('statisticalAreaOther.error.format')
+const subrectangleFormatErrorText = () => t('statisticalAreaOther.error.format')
 const subrectangleErrorText = () => t('statisticalAreaOther.error.invalid')
 const errorSummaryTitle = () => t('common.errorSummary.title')
 const alternativeStatisticalAreaHref = '#alternativeStatisticalArea'

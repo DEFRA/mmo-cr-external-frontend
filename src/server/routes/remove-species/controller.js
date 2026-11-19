@@ -30,7 +30,9 @@ function viewContext(request, speciesData, overrides = {}) {
     pageTitle,
     heading,
     vesselName,
-    caption: favourites ? t('common.yourFavourites') : catchRecordCaption(request),
+    caption: favourites
+      ? t('common.yourFavourites')
+      : catchRecordCaption(request),
     backLink: {
       href: speciesSelectionReturnPath(request),
       text: t('header.back')

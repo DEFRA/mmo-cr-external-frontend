@@ -77,7 +77,9 @@ function gearCharacteristics(state, gear) {
     .map(([measurementId, value]) => {
       const definition = measurementDefinition(gear, measurementId)
       if (!definition) {
-        throw Boom.badRequest(t('catchRecord.error.selectAvailableGearMeasurement'))
+        throw Boom.badRequest(
+          t('catchRecord.error.selectAvailableGearMeasurement')
+        )
       }
       return { characteristicId: definition.id, value }
     })
@@ -128,10 +130,9 @@ export function gearPayload(state, catalogue, areaIds) {
 
 function assertUniqueGears(gears) {
   if (new Set(gears.map((entry) => entry.gear.id)).size !== gears.length) {
-    throw Boom.conflict(
-      t('catchRecord.error.repeatedGearTypes'),
-      { catchRecordError: true }
-    )
+    throw Boom.conflict(t('catchRecord.error.repeatedGearTypes'), {
+      catchRecordError: true
+    })
   }
 }
 

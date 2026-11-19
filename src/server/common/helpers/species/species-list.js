@@ -76,10 +76,9 @@ function assertSavedSpeciesAvailable(journeyState, catalogue) {
       (id) => !catalogue.some((species) => species.id === id)
     )
   ) {
-    throw Boom.conflict(
-      t('catchRecord.error.savedSpeciesUnavailable'),
-      { catchRecordError: true }
-    )
+    throw Boom.conflict(t('catchRecord.error.savedSpeciesUnavailable'), {
+      catchRecordError: true
+    })
   }
 }
 
@@ -176,10 +175,9 @@ export async function getSpeciesPageData(
       (id) => !catalogue.some((species) => species.id === id)
     )
   ) {
-    throw Boom.conflict(
-      t('catchRecord.error.favouriteSpeciesUnavailable'),
-      { catchRecordError: true }
-    )
+    throw Boom.conflict(t('catchRecord.error.favouriteSpeciesUnavailable'), {
+      catchRecordError: true
+    })
   }
   const optionIds =
     includeSelected && liveCatchRecording()

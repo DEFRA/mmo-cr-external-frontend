@@ -61,12 +61,9 @@ export function requirePendingSkipper(request) {
     !state.pendingSkipper ||
     !state.skipperAdditionKey
   ) {
-    throw Boom.badRequest(
-      t('catchRecord.error.enterSkipperFirst'),
-      {
-        catchRecordError: true
-      }
-    )
+    throw Boom.badRequest(t('catchRecord.error.enterSkipperFirst'), {
+      catchRecordError: true
+    })
   }
   return state.pendingSkipper
 }
