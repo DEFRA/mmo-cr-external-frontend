@@ -1,3 +1,5 @@
+import { t } from '#/server/common/helpers/i18n/translator.js'
+
 import { isDeepStrictEqual } from 'node:util'
 import Boom from '@hapi/boom'
 import {
@@ -86,10 +88,9 @@ async function syncGearAssociations(request, before, saved, service) {
     correlationId: service.correlationId
   })
   if (canonical.version !== saved.version) {
-    throw Boom.conflict(
-      'The record changed during saving. Reopen it from Your catch records.',
-      { catchRecordError: true }
-    )
+    throw Boom.conflict(t('catchRecord.error.recordChangedDuringSaving'), {
+      catchRecordError: true
+    })
   }
   setJourneyState(request, {
     gearAssociationIds: recordJourney(canonical).gearAssociationIds
@@ -149,7 +150,7 @@ function restoreBeforeFailure(request, before, mutationAttempted) {
 function toPersistenceError(error) {
   if (error instanceof MapStatisticalAreasReferenceDataError) {
     return Boom.serverUnavailable(
-      'Statistical-area reference data is temporarily unavailable',
+      t('catchRecord.error.statisticalAreasUnavailable'),
       { catchRecordError: true }
     )
   }
@@ -170,13 +171,12 @@ export const catchRecordPersistence = {
       if (liveCatchRecords() && request.method === 'post' && section) {
         const state = getJourneyState(request)
         if (state.catchRecordReloadRequired) {
-          throw Boom.conflict(
-            'Reopen this record from Your catch records before saving again',
-            { catchRecordError: true }
-          )
+          throw Boom.conflict(t('catchRecord.error.reopenBeforeSaving'), {
+            catchRecordError: true
+          })
         }
         if (!state.catchRecordId) {
-          throw Boom.badRequest('Start or resume a catch record first')
+          throw Boom.badRequest(t('catchRecord.error.openRecordBeforeAction'))
         }
         request.app.catchRecordBeforeSave = structuredClone(state)
       }

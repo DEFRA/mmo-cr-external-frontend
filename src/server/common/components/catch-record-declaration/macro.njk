@@ -4,15 +4,15 @@
 
 {% macro appCatchRecordDeclaration(fieldErrors, showLegacyHeadingBeforeButton = false, reviewDesign = false, submissionKey = null) %}
   {{ govukWarningText({
-    text: "By submitting this record, you agree that the information you've given is complete and correct.",
-    iconFallbackText: "Warning"
+    text: t("declaration.warning"),
+    iconFallbackText: t('govuk.warningText.iconFallback')
   }) }}
 
-  <p class="govuk-body">By submitting your catch record, you're confirming:</p>
+  <p class="govuk-body">{{ t('web.common.components.catch-record-declaration.macro.copy.11.1') }}</p>
   <ul class="govuk-list govuk-list--bullet">
-    <li>The weight of fish you have landed is accurate</li>
-    <li>This is within permitted tolerance levels</li>
-    <li>Fishing authorities may take action in respect of inaccurate catch recording</li>
+    <li>{{ t('catchRecord.checkYourAnswers.declaration.bullet.weight') }}</li>
+    <li>{{ t('catchRecord.checkYourAnswers.declaration.bullet.tolerance') }}</li>
+    <li>{{ t('catchRecord.checkYourAnswers.declaration.bullet.action') }}</li>
   </ul>
 
   <form method="post" novalidate>
@@ -22,7 +22,7 @@
         name: "confirmAccurate",
         fieldset: {
           legend: {
-            text: "Declaration",
+            text: t('web.common.components.catch-record-declaration.macro.copy.25.1'),
             classes: "govuk-visually-hidden"
           }
         },
@@ -30,7 +30,7 @@
         items: [
           {
             value: "true",
-            text: "I confirm the information is complete and accurate"
+            text: t('web.common.components.catch-record-declaration.macro.copy.33.1')
           }
         ]
       }) }}
@@ -38,9 +38,9 @@
 
     {# Reproduces a duplicate heading present in the create-mode design's PNG only #}
     {% if showLegacyHeadingBeforeButton %}
-      <h2 class="govuk-heading-l">Trips details</h2>
+      <h2 class="govuk-heading-l">{{ t('web.common.components.catch-record-declaration.macro.copy.41.1') }}</h2>
     {% endif %}
 
-    {{ govukButton({ text: "Accept and submit trip details" }) }}
+    {{ govukButton({ text: t('catchRecord.checkYourAnswers.accept') }) }}
   </form>
 {% endmacro %}

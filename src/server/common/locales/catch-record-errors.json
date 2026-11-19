@@ -1,0 +1,434 @@
+{
+  "catchRecord.error.completeTripBeforeSubmit": {
+    "comment": "Catch-record error displayed to the user on the error page. Welsh draft requires professional review.",
+    "en": "Complete the trip dates and both ports before submitting",
+    "cy": {
+      "value": "Cwblhewch ddyddiadau’r daith a’r ddau borthladd cyn cyflwyno",
+      "state": "needs_review"
+    }
+  },
+  "catchRecord.error.draftChanged": {
+    "comment": "Catch-record error displayed to the user on the error page. Welsh draft requires professional review.",
+    "en": "This draft has changed. Reopen it from Your catch records.",
+    "cy": {
+      "value": "Mae’r drafft hwn wedi newid. Ailagorwch ef o’ch cofnodion dalfa.",
+      "state": "needs_review"
+    }
+  },
+  "catchRecord.error.draftHasSubmissions": {
+    "comment": "Catch-record error displayed to the user on the error page. Welsh draft requires professional review.",
+    "en": "A draft with previous submissions cannot be deleted.",
+    "cy": {
+      "value": "Ni ellir dileu drafft sydd â chyflwyniadau blaenorol.",
+      "state": "needs_review"
+    }
+  },
+  "catchRecord.error.enterSkipperFirst": {
+    "comment": "Catch-record error displayed to the user on the error page. Welsh draft requires professional review.",
+    "en": "Enter skipper details for the selected vessel first",
+    "cy": {
+      "value": "Rhowch fanylion y sgipper ar gyfer y llong a ddewiswyd yn gyntaf",
+      "state": "needs_review"
+    }
+  },
+  "catchRecord.error.favourite.gear.400": {
+    "comment": "Error when updating the vessel favourite gears.",
+    "en": "The vessel favourite gears could not be updated. Check your selection.",
+    "cy": {
+      "value": "Nid oedd modd diweddaru gears ffefryn y llong. Gwiriwch eich dewis.",
+      "state": "needs_review"
+    }
+  },
+  "catchRecord.error.favourite.gear.403": {
+    "comment": "Error when the user has no permission to access a vessel.",
+    "en": "You do not have permission to access this vessel.",
+    "cy": {
+      "value": "Nid oes gennych ganiatâd i gael mynediad at y llong hon.",
+      "state": "needs_review"
+    }
+  },
+  "catchRecord.error.favourite.gear.404": {
+    "comment": "Error when a vessel or favourite gear cannot be found.",
+    "en": "The vessel or favourite gear could not be found.",
+    "cy": {
+      "value": "Nid oedd modd dod o hyd i’r llong neu’r gear ffefryn.",
+      "state": "needs_review"
+    }
+  },
+  "catchRecord.error.favourite.gear.409": {
+    "comment": "Error when the favourite gear update is still in progress.",
+    "en": "The favourite gear request is still in progress. Reload the page before trying again.",
+    "cy": {
+      "value": "Mae cais am gear ffefryn yn dal i fynd rhagddo. Ail-lwythwch y dudalen cyn rhoi cynnig arall arni.",
+      "state": "needs_review"
+    }
+  },
+  "catchRecord.error.favourite.gear.422": {
+    "comment": "Error when the selected gear cannot be added to the vessel favourites.",
+    "en": "The selected gear cannot be added to the vessel favourites.",
+    "cy": {
+      "value": "Ni ellir ychwanegu’r gear a ddewiswyd at ffefrynnau’r llong.",
+      "state": "needs_review"
+    }
+  },
+  "catchRecord.error.favourite.port.400": {
+    "comment": "Error when updating the vessel favourite ports.",
+    "en": "The vessel favourite ports could not be updated. Check your selection.",
+    "cy": {
+      "value": "Nid oedd modd diweddaru ports ffefryn y llong. Gwiriwch eich dewis.",
+      "state": "needs_review"
+    }
+  },
+  "catchRecord.error.favourite.port.403": {
+    "comment": "Error when the user has no permission to access a vessel.",
+    "en": "You do not have permission to access this vessel.",
+    "cy": {
+      "value": "Nid oes gennych ganiatâd i gael mynediad at y llong hon.",
+      "state": "needs_review"
+    }
+  },
+  "catchRecord.error.favourite.port.404": {
+    "comment": "Error when a vessel or favourite port cannot be found.",
+    "en": "The vessel or favourite port could not be found.",
+    "cy": {
+      "value": "Nid oedd modd dod o hyd i’r llong neu’r port ffefryn.",
+      "state": "needs_review"
+    }
+  },
+  "catchRecord.error.favourite.port.409": {
+    "comment": "Error when the favourite port update is still in progress.",
+    "en": "The favourite port request is still in progress. Reload the page before trying again.",
+    "cy": {
+      "value": "Mae cais am port ffefryn yn dal i fynd rhagddo. Ail-lwythwch y dudalen cyn rhoi cynnig arall arni.",
+      "state": "needs_review"
+    }
+  },
+  "catchRecord.error.favourite.port.422": {
+    "comment": "Error when the selected port cannot be added to the vessel favourites.",
+    "en": "The selected port cannot be added to the vessel favourites.",
+    "cy": {
+      "value": "Ni ellir ychwanegu’r port a ddewiswyd at ffefrynnau’r llong.",
+      "state": "needs_review"
+    }
+  },
+  "catchRecord.error.favourite.species.400": {
+    "comment": "Error when updating the vessel favourite species.",
+    "en": "The vessel favourite species could not be updated. Check your selection.",
+    "cy": {
+      "value": "Nid oedd modd diweddaru species ffefryn y llong. Gwiriwch eich dewis.",
+      "state": "needs_review"
+    }
+  },
+  "catchRecord.error.favourite.species.403": {
+    "comment": "Error when the user has no permission to access a vessel.",
+    "en": "You do not have permission to access this vessel.",
+    "cy": {
+      "value": "Nid oes gennych ganiatâd i gael mynediad at y llong hon.",
+      "state": "needs_review"
+    }
+  },
+  "catchRecord.error.favourite.species.404": {
+    "comment": "Error when a vessel or favourite species cannot be found.",
+    "en": "The vessel or favourite species could not be found.",
+    "cy": {
+      "value": "Nid oedd modd dod o hyd i’r llong neu’r species ffefryn.",
+      "state": "needs_review"
+    }
+  },
+  "catchRecord.error.favourite.species.409": {
+    "comment": "Error when the favourite species update is still in progress.",
+    "en": "The favourite species request is still in progress. Reload the page before trying again.",
+    "cy": {
+      "value": "Mae cais am species ffefryn yn dal i fynd rhagddo. Ail-lwythwch y dudalen cyn rhoi cynnig arall arni.",
+      "state": "needs_review"
+    }
+  },
+  "catchRecord.error.favourite.species.422": {
+    "comment": "Error when the selected species cannot be added to the vessel favourites.",
+    "en": "The selected species cannot be added to the vessel favourites.",
+    "cy": {
+      "value": "Ni ellir ychwanegu’r species a ddewiswyd at ffefrynnau’r llong.",
+      "state": "needs_review"
+    }
+  },
+  "catchRecord.error.favouritePortUnavailable": {
+    "comment": "Catch-record error displayed to the user on the error page. Welsh draft requires professional review.",
+    "en": "A favourite port is no longer available in Reference Data. Reload the page before trying again.",
+    "cy": {
+      "value": "Nid yw hoff borthladd ar gael yn y Data Cyfeirio mwyach. Ail-lwythwch y dudalen cyn rhoi cynnig arall arni.",
+      "state": "needs_review"
+    }
+  },
+  "catchRecord.error.favouriteSpeciesUnavailable": {
+    "comment": "Catch-record error displayed to the user on the error page. Welsh draft requires professional review.",
+    "en": "A favourite species is no longer available in Reference Data. Reload the page before trying again.",
+    "cy": {
+      "value": "Nid yw hoff rywogaeth ar gael yn y Data Cyfeirio mwyach. Ail-lwythwch y dudalen cyn rhoi cynnig arall arni.",
+      "state": "needs_review"
+    }
+  },
+  "catchRecord.error.liveSavingRequired": {
+    "comment": "Catch-record error displayed to the user on the error page. Welsh draft requires professional review.",
+    "en": "Live journey saving must be enabled before completing a saved draft.",
+    "cy": {
+      "value": "Rhaid galluogi cadw taith fyw cyn cwblhau drafft sydd wedi’i gadw.",
+      "state": "needs_review"
+    }
+  },
+  "catchRecord.error.noLongerDraft": {
+    "comment": "Catch-record error displayed to the user on the error page. Welsh draft requires professional review.",
+    "en": "This record is no longer a draft. Return to Your catch records.",
+    "cy": {
+      "value": "Nid yw’r cofnod hwn yn ddrafft mwyach. Dychwelwch i’ch cofnodion dalfa.",
+      "state": "needs_review"
+    }
+  },
+  "catchRecord.error.onlyDraftResumable": {
+    "comment": "Catch-record error displayed to the user on the error page. Welsh draft requires professional review.",
+    "en": "Only a draft can be resumed",
+    "cy": {
+      "value": "Dim ond drafft y gellir ei ailddechrau",
+      "state": "needs_review"
+    }
+  },
+  "catchRecord.error.onlySubmittedCompletable": {
+    "comment": "Catch-record error displayed to the user on the error page. Welsh draft requires professional review.",
+    "en": "Only a submitted catch record may be completed",
+    "cy": {
+      "value": "Dim ond cofnod dalfa a gyflwynwyd y gellir ei gwblhau",
+      "state": "needs_review"
+    }
+  },
+  "catchRecord.error.openDraftBeforeAction": {
+    "comment": "Catch-record error displayed to the user on the error page. Welsh draft requires professional review.",
+    "en": "Open the draft record before choosing an action",
+    "cy": {
+      "value": "Agorwch y cofnod drafft cyn dewis cam gweithredu",
+      "state": "needs_review"
+    }
+  },
+  "catchRecord.error.openRecordBeforeAction": {
+    "comment": "Catch-record error displayed to the user on the error page. Welsh draft requires professional review.",
+    "en": "Open the record before taking this action",
+    "cy": {
+      "value": "Agorwch y cofnod cyn cymryd y cam hwn",
+      "state": "needs_review"
+    }
+  },
+  "catchRecord.error.recordChangedBeforeSubmitting": {
+    "comment": "Catch-record error displayed to the user on the error page. Welsh draft requires professional review.",
+    "en": "The record changed. Reopen it from Your catch records before submitting",
+    "cy": {
+      "value": "Mae’r cofnod wedi newid. Ailagorwch ef o’ch cofnodion dalfa cyn cyflwyno",
+      "state": "needs_review"
+    }
+  },
+  "catchRecord.error.recordChangedDuringSaving": {
+    "comment": "Catch-record error displayed to the user on the error page. Welsh draft requires professional review.",
+    "en": "The record changed during saving. Reopen it from Your catch records.",
+    "cy": {
+      "value": "Newidiodd y cofnod wrth ei gadw. Ailagorwch ef o’ch cofnodion dalfa.",
+      "state": "needs_review"
+    }
+  },
+  "catchRecord.error.reopenBeforeContinuing": {
+    "comment": "Catch-record error displayed to the user on the error page. Welsh draft requires professional review.",
+    "en": "Reopen this record from Your catch records before continuing",
+    "cy": {
+      "value": "Ailagorwch y cofnod hwn o’ch cofnodion dalfa cyn parhau",
+      "state": "needs_review"
+    }
+  },
+  "catchRecord.error.reopenBeforeSaving": {
+    "comment": "Catch-record error displayed to the user on the error page. Welsh draft requires professional review.",
+    "en": "Reopen this record from Your catch records before saving again",
+    "cy": {
+      "value": "Ailagorwch y cofnod hwn o’ch cofnodion dalfa cyn ei gadw eto",
+      "state": "needs_review"
+    }
+  },
+  "catchRecord.error.reopenBeforeSubmitting": {
+    "comment": "Catch-record error displayed to the user on the error page. Welsh draft requires professional review.",
+    "en": "Reopen this record from Your catch records before submitting",
+    "cy": {
+      "value": "Ailagorwch y cofnod hwn o’ch cofnodion dalfa cyn cyflwyno",
+      "state": "needs_review"
+    }
+  },
+  "catchRecord.error.repeatedGearTypes": {
+    "comment": "Catch-record error displayed to the user on the error page. Welsh draft requires professional review.",
+    "en": "This record contains repeated gear types and cannot be edited in the web journey",
+    "cy": {
+      "value": "Mae’r cofnod hwn yn cynnwys mathau o offer sydd wedi’u hailadrodd ac ni ellir ei olygu yn y daith ar y we",
+      "state": "needs_review"
+    }
+  },
+  "catchRecord.error.reviewBeforeSubmitting": {
+    "comment": "Catch-record error displayed to the user on the error page. Welsh draft requires professional review.",
+    "en": "Review your record before submitting",
+    "cy": {
+      "value": "Adolygwch eich cofnod cyn ei gyflwyno",
+      "state": "needs_review"
+    }
+  },
+  "catchRecord.error.save.400": {
+    "comment": "Error when saving a catch record fails validation.",
+    "en": "The catch record could not be saved. Check your answers.",
+    "cy": {
+      "value": "Nid oedd modd cadw’r cofnod dalfa. Gwiriwch eich atebion.",
+      "state": "needs_review"
+    }
+  },
+  "catchRecord.error.save.401": {
+    "comment": "Error when the catch-recording service rejects authentication.",
+    "en": "Catch Recording authentication failed.",
+    "cy": {
+      "value": "Methodd dilysu’r Gwasanaeth Cofnodi Dalfa.",
+      "state": "needs_review"
+    }
+  },
+  "catchRecord.error.save.403": {
+    "comment": "Error when the user has no permission to access a catch record.",
+    "en": "You do not have permission to access this catch record.",
+    "cy": {
+      "value": "Nid oes gennych ganiatâd i gael mynediad at y cofnod dalfa hwn.",
+      "state": "needs_review"
+    }
+  },
+  "catchRecord.error.save.404": {
+    "comment": "Error when a requested catch record does not exist.",
+    "en": "The catch record could not be found.",
+    "cy": {
+      "value": "Nid oedd modd dod o hyd i’r cofnod dalfa.",
+      "state": "needs_review"
+    }
+  },
+  "catchRecord.error.save.409": {
+    "comment": "Error when saving conflicts with a changed record or in-progress request.",
+    "en": "The record has changed or a request is still in progress. Reload it before trying again.",
+    "cy": {
+      "value": "Mae’r cofnod wedi newid neu mae cais yn dal i fynd rhagddo. Ail-lwythwch ef cyn rhoi cynnig arall arni.",
+      "state": "needs_review"
+    }
+  },
+  "catchRecord.error.save.412": {
+    "comment": "Error when the catch record has changed since it was loaded.",
+    "en": "The record has changed. Reload it before trying again.",
+    "cy": {
+      "value": "Mae’r cofnod wedi newid. Ail-lwythwch ef cyn rhoi cynnig arall arni.",
+      "state": "needs_review"
+    }
+  },
+  "catchRecord.error.save.422": {
+    "comment": "Error when the catch record cannot be submitted yet.",
+    "en": "The catch record is not ready. Check your answers.",
+    "cy": {
+      "value": "Nid yw’r cofnod dalfa’n barod. Gwiriwch eich atebion.",
+      "state": "needs_review"
+    }
+  },
+  "catchRecord.error.savedSpeciesUnavailable": {
+    "comment": "Catch-record error displayed to the user on the error page. Welsh draft requires professional review.",
+    "en": "A saved species is no longer available. This record cannot be edited without changing its saved selections.",
+    "cy": {
+      "value": "Nid yw rhywogaeth a gadwyd ar gael mwyach. Ni ellir golygu’r cofnod hwn heb newid y dewisiadau a gadwyd.",
+      "state": "needs_review"
+    }
+  },
+  "catchRecord.error.selectAvailableGear": {
+    "comment": "Catch-record error displayed to the user on the error page. Welsh draft requires professional review.",
+    "en": "Select an available gear",
+    "cy": {
+      "value": "Dewiswch offer sydd ar gael",
+      "state": "needs_review"
+    }
+  },
+  "catchRecord.error.selectAvailableGearMeasurement": {
+    "comment": "Catch-record error displayed to the user on the error page. Welsh draft requires professional review.",
+    "en": "Select an available gear measurement",
+    "cy": {
+      "value": "Dewiswch fesuriad offer sydd ar gael",
+      "state": "needs_review"
+    }
+  },
+  "catchRecord.error.selectAvailablePort": {
+    "comment": "Catch-record error displayed to the user on the error page. Welsh draft requires professional review.",
+    "en": "Select an available port",
+    "cy": {
+      "value": "Dewiswch borthladd sydd ar gael",
+      "state": "needs_review"
+    }
+  },
+  "catchRecord.error.selectAvailableStatisticalArea": {
+    "comment": "Catch-record error displayed to the user on the error page. Welsh draft requires professional review.",
+    "en": "Select a statistical area available from the Reference Data Service",
+    "cy": {
+      "value": "Dewiswch ardal ystadegol sydd ar gael gan y Gwasanaeth Data Cyfeirio",
+      "state": "needs_review"
+    }
+  },
+  "catchRecord.error.selectVesselForFavourites": {
+    "comment": "Catch-record error displayed to the user on the error page. Welsh draft requires professional review.",
+    "en": "Select a vessel before managing its favourites",
+    "cy": {
+      "value": "Dewiswch long cyn rheoli ei ffefrynnau",
+      "state": "needs_review"
+    }
+  },
+  "catchRecord.error.selectVesselForSkippers": {
+    "comment": "Catch-record error displayed to the user on the error page. Welsh draft requires professional review.",
+    "en": "Select a vessel before managing saved skippers",
+    "cy": {
+      "value": "Dewiswch long cyn rheoli sgipwyr sydd wedi’u cadw",
+      "state": "needs_review"
+    }
+  },
+  "catchRecord.error.skipper.400": {
+    "comment": "Error when saving skipper details fails validation.",
+    "en": "The skipper could not be saved. Check the skipper details.",
+    "cy": {
+      "value": "Nid oedd modd cadw’r sgipper. Gwiriwch fanylion y sgipper.",
+      "state": "needs_review"
+    }
+  },
+  "catchRecord.error.skipper.404": {
+    "comment": "Error when the vessel or skipper cannot be found.",
+    "en": "The vessel or skipper could not be found.",
+    "cy": {
+      "value": "Nid oedd modd dod o hyd i’r llong neu’r sgipper.",
+      "state": "needs_review"
+    }
+  },
+  "catchRecord.error.skipper.409": {
+    "comment": "Error when adding a skipper conflicts with an existing or ongoing request.",
+    "en": "The skipper request conflicts with an existing entry or is still in progress. Reload the page before trying again.",
+    "cy": {
+      "value": "Mae cais y sgipper yn gwrthdaro â chofnod sy’n bodoli eisoes neu mae’n dal i fynd rhagddo. Ail-lwythwch y dudalen cyn rhoi cynnig arall arni.",
+      "state": "needs_review"
+    }
+  },
+  "catchRecord.error.skipper.422": {
+    "comment": "Error when the skipper cannot be added.",
+    "en": "The skipper could not be added. Check the skipper details.",
+    "cy": {
+      "value": "Nid oedd modd ychwanegu’r sgipper. Gwiriwch fanylion y sgipper.",
+      "state": "needs_review"
+    }
+  },
+  "catchRecord.error.statisticalAreasUnavailable": {
+    "comment": "Catch-record error displayed to the user on the error page. Welsh draft requires professional review.",
+    "en": "Statistical-area reference data is temporarily unavailable",
+    "cy": {
+      "value": "Nid yw data cyfeirio’r ardaloedd ystadegol ar gael dros dro",
+      "state": "needs_review"
+    }
+  },
+  "catchRecord.error.unavailable": {
+    "comment": "Error shown when the catch-recording service is unavailable.",
+    "en": "Catch Recording Service is temporarily unavailable",
+    "cy": {
+      "value": "Nid yw’r Gwasanaeth Cofnodi Dalfa ar gael dros dro",
+      "state": "needs_review"
+    }
+  }
+}

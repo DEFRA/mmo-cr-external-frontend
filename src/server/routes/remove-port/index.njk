@@ -12,10 +12,10 @@
                 {{ headingLine1 }} <br>{{ vesselName }}
               </h1>
             </legend>
-            <div id="ports-hint" class="govuk-hint">Select all that apply</div>
+            <div id="ports-hint" class="govuk-hint">{{ t('common.hint.selectAllThatApply') }}</div>
             {% if fieldErrors.ports %}
               <p id="ports-error" class="govuk-error-message">
-                <span class="govuk-visually-hidden">Error:</span> {{ fieldErrors.ports }}
+                <span class="govuk-visually-hidden">{{ t('a11y.errorPrefix') }}</span> {{ fieldErrors.ports }}
               </p>
             {% endif %}
             <div class="govuk-checkboxes" data-module="govuk-checkboxes">
@@ -35,7 +35,7 @@
           </fieldset>
         </div>
 
-        {{ govukButton({ text: "Continue", classes: "govuk-!-margin-top-6" }) }}
+        {{ govukButton({ text: t('common.button.continue'), classes: "govuk-!-margin-top-6" }) }}
       </form>
     </div>
   </div>

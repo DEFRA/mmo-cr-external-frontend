@@ -1,3 +1,5 @@
+import { t } from '#/server/common/helpers/i18n/translator.js'
+
 // Structural + business-rule validation for a GOV.UK date-input day/month/year triple.
 const MONTHS_IN_YEAR = 12
 const YEAR_DIGITS = 4
@@ -86,16 +88,25 @@ function checkMissingFields(values, options) {
   if (missingParts.length === DATE_PARTS.length) {
     return {
       isValid: false,
-      errorMessage: `Enter ${options.subject}`,
+      errorMessage: options.missingMessages?.all ?? `Enter ${options.subject}`,
       fieldErrors: { day: true, month: true, year: true },
       values
     }
   }
 
   if (missingParts.length > 0) {
+    const missingMessageKey =
+      missingParts[0] +
+      missingParts
+        .slice(1)
+        .map((part) => part[0].toUpperCase() + part.slice(1))
+        .join('')
+
     return {
       isValid: false,
-      errorMessage: `Enter the ${missingParts.join(' and ')} ${options.subjectSuffix}`,
+      errorMessage:
+        options.missingMessages?.[missingMessageKey] ??
+        `Enter the ${missingParts.join(' and ')} ${options.subjectSuffix}`,
       fieldErrors: {
         day: missingParts.includes('day'),
         month: missingParts.includes('month'),
@@ -110,7 +121,7 @@ function checkMissingFields(values, options) {
 
 function checkFormat(values, options) {
   const { day, month, year } = values
-  const formatMessage = options.formatMessage ?? 'Date must be a real date'
+  const formatMessage = options.formatMessage ?? t('validation.date.realDate')
 
   if (isNumeric(day) && isNumeric(month) && isYearFormatValid(year)) {
     return null
@@ -134,7 +145,7 @@ function checkRealDate(values, options) {
   const yearNum = Number(values.year)
   const monthValid = monthNum >= 1 && monthNum <= MONTHS_IN_YEAR
   const dayValid = monthValid && isValidCalendarDate(dayNum, monthNum, yearNum)
-  const formatMessage = options.formatMessage ?? 'Date must be a real date'
+  const formatMessage = options.formatMessage ?? t('validation.date.realDate')
 
   if (monthValid && dayValid) {
     return null

@@ -1,0 +1,912 @@
+{
+  "account.button.viewAllRecords": {
+    "comment": "Secondary button on the account page that goes to the catch records list.",
+    "en": "View all catch records",
+    "cy": {
+      "value": "Gweld pob cofnod dalfa",
+      "state": "needs_review"
+    }
+  },
+  "account.error.selectVessel": {
+    "comment": "Error when the user submits the account vessel picker without choosing a vessel.",
+    "en": "Select a vessel to manage its favourites",
+    "cy": {
+      "value": "Dewiswch long i reoli ei ffefrynnau",
+      "state": "needs_review"
+    }
+  },
+  "account.error.selectVesselFromList": {
+    "comment": "Error when the chosen vessel is not in the user's vessel list.",
+    "en": "Select a vessel from the list",
+    "cy": {
+      "value": "Dewiswch long o'r rhestr",
+      "state": "needs_review"
+    }
+  },
+  "account.personalDetails.heading": {
+    "comment": "Section heading on the account page.",
+    "en": "Personal details",
+    "cy": {
+      "value": "Manylion personol",
+      "state": "needs_review"
+    }
+  },
+  "account.row.address.hidden": {
+    "comment": "Visually hidden text after the \"Change\" link on the Address row.",
+    "en": "address",
+    "cy": {
+      "value": "cyfeiriad",
+      "state": "needs_review"
+    }
+  },
+  "account.row.address.key": {
+    "comment": "Summary row label: the user's postal address.",
+    "en": "Address",
+    "cy": {
+      "value": "Cyfeiriad",
+      "state": "needs_review"
+    }
+  },
+  "account.row.contactNumber.hidden": {
+    "comment": "Visually hidden text after the \"Change\" link on the Contact number row.",
+    "en": "contact number",
+    "cy": {
+      "value": "rhif cyswllt",
+      "state": "needs_review"
+    }
+  },
+  "account.row.contactNumber.key": {
+    "comment": "Summary row label: the user's phone number.",
+    "en": "Contact number",
+    "cy": {
+      "value": "Rhif cyswllt",
+      "state": "needs_review"
+    }
+  },
+  "account.row.email.hidden": {
+    "comment": "Visually hidden text after the \"Change\" link on the Email address row, read by screen readers as \"Change email address\".",
+    "en": "email address",
+    "cy": {
+      "value": "cyfeiriad e-bost",
+      "state": "needs_review"
+    }
+  },
+  "account.row.gearOnboard.add": {
+    "comment": "Action link on the Gear onboard row.",
+    "en": "Add gear",
+    "cy": {
+      "value": "Ychwanegu offer",
+      "state": "needs_review"
+    }
+  },
+  "account.row.gearOnboard.hidden": {
+    "comment": "Visually hidden text read after the Add gear / Remove gear links.",
+    "en": "gear",
+    "cy": {
+      "value": "offer",
+      "state": "needs_review"
+    }
+  },
+  "account.row.gearOnboard.key": {
+    "comment": "Summary row label listing the vessel's favourite fishing gear.",
+    "en": "Gear onboard",
+    "cy": {
+      "value": "Offer ar fwrdd",
+      "state": "needs_review"
+    }
+  },
+  "account.row.gearOnboard.remove": {
+    "comment": "Action link on the Gear onboard row.",
+    "en": "Remove gear",
+    "cy": {
+      "value": "Dileu offer",
+      "state": "needs_review"
+    }
+  },
+  "account.row.password.hidden": {
+    "comment": "Visually hidden text after the \"Change\" link on the Password row.",
+    "en": "password",
+    "cy": {
+      "value": "cyfrinair",
+      "state": "needs_review"
+    }
+  },
+  "account.row.password.key": {
+    "comment": "Summary row label on the account page.",
+    "en": "Password",
+    "cy": {
+      "value": "Cyfrinair",
+      "state": "needs_review"
+    }
+  },
+  "account.row.portsUsed.add": {
+    "comment": "Action link on the Ports used row.",
+    "en": "Add port",
+    "cy": {
+      "value": "Ychwanegu porthladd",
+      "state": "needs_review"
+    }
+  },
+  "account.row.portsUsed.hidden": {
+    "comment": "Visually hidden text read after the Add port / Remove port links.",
+    "en": "port",
+    "cy": {
+      "value": "porthladd",
+      "state": "needs_review"
+    }
+  },
+  "account.row.portsUsed.key": {
+    "comment": "Summary row label listing the vessel's favourite ports.",
+    "en": "Ports used",
+    "cy": {
+      "value": "Porthladdoedd a ddefnyddir",
+      "state": "needs_review"
+    }
+  },
+  "account.row.portsUsed.remove": {
+    "comment": "Action link on the Ports used row.",
+    "en": "Remove port",
+    "cy": {
+      "value": "Dileu porthladd",
+      "state": "needs_review"
+    }
+  },
+  "account.row.skippers.add": {
+    "comment": "Action link on the Skippers row.",
+    "en": "Add skipper",
+    "cy": {
+      "value": "Ychwanegu sgipper",
+      "state": "needs_review"
+    }
+  },
+  "account.row.skippers.hidden": {
+    "comment": "Visually hidden text read after the Add skipper / Remove skipper links.",
+    "en": "skipper",
+    "cy": {
+      "value": "sgipper",
+      "state": "needs_review"
+    }
+  },
+  "account.row.skippers.key": {
+    "comment": "Summary row label listing the skippers saved for a vessel.",
+    "en": "Skippers",
+    "cy": {
+      "value": "Sgipperiaid",
+      "state": "needs_review"
+    }
+  },
+  "account.row.skippers.none": {
+    "comment": "Value shown when no skippers are saved for the vessel (not applicable).",
+    "en": "N/A",
+    "cy": {
+      "value": "Amherthnasol",
+      "state": "needs_review"
+    }
+  },
+  "account.row.skippers.remove": {
+    "comment": "Action link on the Skippers row.",
+    "en": "Remove skipper",
+    "cy": {
+      "value": "Dileu sgipper",
+      "state": "needs_review"
+    }
+  },
+  "account.row.speciesCaught.add": {
+    "comment": "Action link on the Species caught row.",
+    "en": "Add species",
+    "cy": {
+      "value": "Ychwanegu rhywogaethau",
+      "state": "needs_review"
+    }
+  },
+  "account.row.speciesCaught.hidden": {
+    "comment": "Visually hidden text read after the Add species / Remove species links.",
+    "en": "species",
+    "cy": {
+      "value": "rhywogaethau",
+      "state": "needs_review"
+    }
+  },
+  "account.row.speciesCaught.key": {
+    "comment": "Summary row label listing the vessel's favourite species.",
+    "en": "Species caught",
+    "cy": {
+      "value": "Rhywogaethau a ddaliwyd",
+      "state": "needs_review"
+    }
+  },
+  "account.row.speciesCaught.remove": {
+    "comment": "Action link on the Species caught row.",
+    "en": "Remove species",
+    "cy": {
+      "value": "Dileu rhywogaethau",
+      "state": "needs_review"
+    }
+  },
+  "account.row.vesselOwned.hidden": {
+    "comment": "Visually hidden text after the \"Change\" link on the Vessel owned row.",
+    "en": "vessel owned",
+    "cy": {
+      "value": "llong yn eich perchnogaeth",
+      "state": "needs_review"
+    }
+  },
+  "account.row.vesselOwned.key": {
+    "comment": "Summary row label: the vessel the user owns.",
+    "en": "Vessel owned",
+    "cy": {
+      "value": "Llong yn eich perchnogaeth",
+      "state": "needs_review"
+    }
+  },
+  "account.row.vesselsSkipperOf.hidden": {
+    "comment": "Visually hidden text after the \"Change\" link on the Vessels skipper of row.",
+    "en": "vessels skipper of",
+    "cy": {
+      "value": "llongau rydych yn sgipper arnynt",
+      "state": "needs_review"
+    }
+  },
+  "account.row.vesselsSkipperOf.key": {
+    "comment": "Summary row label: vessels the user is the skipper of.",
+    "en": "Vessels skipper of",
+    "cy": {
+      "value": "Llongau rydych yn sgipper arnynt",
+      "state": "needs_review"
+    }
+  },
+  "account.title": {
+    "comment": "Page title and heading of the Your account page.",
+    "en": "Your account",
+    "cy": {
+      "value": "Eich cyfrif",
+      "state": "needs_review"
+    }
+  },
+  "account.vesselDetails.heading": {
+    "comment": "Section heading on the account page for the vessel favourites.",
+    "en": "Vessel details",
+    "cy": {
+      "value": "Manylion y llong",
+      "state": "needs_review"
+    }
+  },
+  "addSkipper.error": {
+    "comment": "Error when no answer is selected on the add skipper question.",
+    "en": "Select yes if you want to add a skipper",
+    "cy": {
+      "value": "Dewiswch 'Ydw' os ydych eisiau ychwanegu sgipper",
+      "state": "needs_review"
+    }
+  },
+  "addSkipper.no": {
+    "comment": "Answer \"no\" to addSkipper.title (\"Ydych chi...\" -> \"Nac ydw\").",
+    "en": "No",
+    "cy": {
+      "value": "Nac ydw",
+      "state": "needs_review"
+    }
+  },
+  "addSkipper.title": {
+    "comment": "Question page title and heading. {{vesselName}} is the vessel name from reference data (not translated).",
+    "en": "Do you want to add a skipper for {{vesselName}}?",
+    "cy": {
+      "value": "Ydych chi eisiau ychwanegu sgipper ar gyfer {{vesselName}}?",
+      "state": "needs_review"
+    }
+  },
+  "addSkipper.titleThisVessel": {
+    "comment": "Question page title and heading used when the vessel name is unknown.",
+    "en": "Do you want to add a skipper for this vessel?",
+    "cy": {
+      "value": "Ydych chi eisiau ychwanegu sgipper ar gyfer y llong hon?",
+      "state": "needs_review"
+    }
+  },
+  "addSkipper.yes": {
+    "comment": "Answer \"yes\" to addSkipper.title. Welsh answers repeat the verb of the question (\"Ydych chi...\" -> \"Ydw\").",
+    "en": "Yes",
+    "cy": {
+      "value": "Ydw",
+      "state": "needs_review"
+    }
+  },
+  "changeAddress.body": {
+    "comment": "Instruction. {{email}} is the service contact email address (not translated). English kept as currently shown (no comma).",
+    "en": "To change your address email {{email}}",
+    "cy": {
+      "value": "I newid eich cyfeiriad, anfonwch e-bost at {{email}}",
+      "state": "needs_review"
+    }
+  },
+  "changeAddress.title": {
+    "comment": "Page title and heading.",
+    "en": "Change address",
+    "cy": {
+      "value": "Newid cyfeiriad",
+      "state": "needs_review"
+    }
+  },
+  "changeContactNumber.body": {
+    "comment": "Instruction. {{email}} is the service contact email address (not translated).",
+    "en": "To change your contact number, send an email to {{email}}",
+    "cy": {
+      "value": "I newid eich rhif cyswllt, anfonwch e-bost at {{email}}",
+      "state": "needs_review"
+    }
+  },
+  "changeContactNumber.title": {
+    "comment": "Page title and heading.",
+    "en": "Change contact number",
+    "cy": {
+      "value": "Newid rhif cyswllt",
+      "state": "needs_review"
+    }
+  },
+  "changeEmail.body": {
+    "comment": "Instruction. {{email}} is the service contact email address (not translated).",
+    "en": "To change your email address contact {{email}}.",
+    "cy": {
+      "value": "I newid eich cyfeiriad e-bost, cysylltwch â {{email}}.",
+      "state": "needs_review"
+    }
+  },
+  "changeEmail.title": {
+    "comment": "Page title and heading.",
+    "en": "Change email address",
+    "cy": {
+      "value": "Newid cyfeiriad e-bost",
+      "state": "needs_review"
+    }
+  },
+  "changeVesselOwner.paragraph1": {
+    "comment": "Regulatory text about notifying a change in vessel ownership. Legal text: needs a professional translator.",
+    "en": "Any change in vessel ownership must be notified immediately to the Registry of Shipping and Seamen and the MMO office where the fishing vessel licence was issued. When a change in ownership occurs, the licence attached to the vessel must be turned into an entitlement, and the licence transferred to the new owners.",
+    "cy": {
+      "state": "new"
+    }
+  },
+  "changeVesselOwner.paragraph2": {
+    "comment": "Regulatory text about licence validity. Legal text: needs a professional translator.",
+    "en": "A fishing vessel licence is invalid if there are any changes to sections 1-5 of the licence. In the event of any such changes, you should contact your local MMO office. Fishing with an invalid licence is a criminal offence and could lead to enforcement action being taken against you.",
+    "cy": {
+      "state": "new"
+    }
+  },
+  "changeVesselOwner.title": {
+    "comment": "Page title and heading.",
+    "en": "Change in vessel ownership",
+    "cy": {
+      "value": "Newid ym mherchnogaeth llong",
+      "state": "needs_review"
+    }
+  },
+  "favourites.error.noVessel": {
+    "comment": "Error page message when the user tries to manage favourites without a selected vessel.",
+    "en": "Select a vessel before managing its favourites",
+    "cy": {
+      "value": "Dewiswch long cyn rheoli ei ffefrynnau",
+      "state": "needs_review"
+    }
+  },
+  "favourites.error.portUnavailable": {
+    "comment": "Error page message when a saved favourite port no longer exists in reference data.",
+    "en": "A favourite port is no longer available in Reference Data. Reload the page before trying again.",
+    "cy": {
+      "value": "Nid yw porthladd ffefryn ar gael yn y Data Cyfeirio mwyach. Ail-lwythwch y dudalen cyn rhoi cynnig arall arni.",
+      "state": "needs_review"
+    }
+  },
+  "forgottenPassword.button": {
+    "comment": "Button that sends the reset email.",
+    "en": "Send email",
+    "cy": {
+      "value": "Anfon e-bost",
+      "state": "needs_review"
+    }
+  },
+  "forgottenPassword.error.email.format": {
+    "comment": "Validation error. The example address is illustrative and can be localised.",
+    "en": "Enter an email address in the correct format, like name@example.com",
+    "cy": {
+      "value": "Rhowch gyfeiriad e-bost yn y fformat cywir, fel enw@enghraifft.com",
+      "state": "needs_review"
+    }
+  },
+  "forgottenPassword.intro": {
+    "comment": "Intro text above the email field.",
+    "en": "Enter your email address and we will send you a link to reset your password.",
+    "cy": {
+      "value": "Rhowch eich cyfeiriad e-bost a byddwn yn anfon dolen atoch i ailosod eich cyfrinair.",
+      "state": "needs_review"
+    }
+  },
+  "forgottenPassword.title": {
+    "comment": "Page title and heading of the forgotten password page.",
+    "en": "Forgotten your password?",
+    "cy": {
+      "value": "Wedi anghofio'ch cyfrinair?",
+      "state": "needs_review"
+    }
+  },
+  "passwordReset.sent.heading": {
+    "comment": "Confirmation panel title; the user's email address is shown on the line below it.",
+    "en": "A reset password email has been sent to",
+    "cy": {
+      "value": "Mae e-bost ailosod cyfrinair wedi'i anfon at",
+      "state": "needs_review"
+    }
+  },
+  "passwordReset.sent.title": {
+    "comment": "Browser tab title after a reset password email is sent.",
+    "en": "A reset password email has been sent",
+    "cy": {
+      "value": "Mae e-bost ailosod cyfrinair wedi'i anfon",
+      "state": "needs_review"
+    }
+  },
+  "removeSkipper.button": {
+    "comment": "Primary button that removes the checked skippers.",
+    "en": "Remove selected skippers",
+    "cy": {
+      "value": "Dileu'r sgipperiaid a ddewiswyd",
+      "state": "needs_review"
+    }
+  },
+  "removeSkipper.error": {
+    "comment": "Error when no skipper is selected.",
+    "en": "Select the skipper you want to remove",
+    "cy": {
+      "value": "Dewiswch y sgipper rydych eisiau ei ddileu",
+      "state": "needs_review"
+    }
+  },
+  "removeSkipper.none": {
+    "comment": "Shown when the vessel has no saved skippers.",
+    "en": "There are no saved skippers for this vessel.",
+    "cy": {
+      "value": "Nid oes unrhyw sgipperiaid wedi'u cadw ar gyfer y llong hon.",
+      "state": "needs_review"
+    }
+  },
+  "removeSkipper.returnToAccount": {
+    "comment": "Link back to the account page.",
+    "en": "Return to account",
+    "cy": {
+      "value": "Dychwelyd i'r cyfrif",
+      "state": "needs_review"
+    }
+  },
+  "removeSkipper.title": {
+    "comment": "Page title and heading (checkbox list of saved skippers).",
+    "en": "Remove skippers from vessel",
+    "cy": {
+      "value": "Dileu sgipperiaid o'r llong",
+      "state": "needs_review"
+    }
+  },
+  "resetPassword.body": {
+    "comment": "Explanation above the button.",
+    "en": "To reset or change your password we need to send you an email containing a link.",
+    "cy": {
+      "value": "I ailosod neu newid eich cyfrinair, mae angen i ni anfon e-bost atoch sy'n cynnwys dolen.",
+      "state": "needs_review"
+    }
+  },
+  "resetPassword.button": {
+    "comment": "Button that sends the reset password email.",
+    "en": "Send reset password email",
+    "cy": {
+      "value": "Anfon e-bost ailosod cyfrinair",
+      "state": "needs_review"
+    }
+  },
+  "resetPassword.title": {
+    "comment": "Page title and heading.",
+    "en": "Reset password",
+    "cy": {
+      "value": "Ailosod cyfrinair",
+      "state": "needs_review"
+    }
+  },
+  "signIn.button": {
+    "comment": "Sign in button (also used on sign-out and password reset sent pages). Shared key with the iOS app.",
+    "en": "Sign in",
+    "cy": {
+      "value": "Mewngofnodi",
+      "state": "needs_review"
+    }
+  },
+  "signIn.createAccount.skipper.body": {
+    "comment": "Text for skippers/agents in the Create an account section. Shared key with the iOS app.",
+    "en": "Ask your vessel owner to add you. They can do this from their account.",
+    "cy": {
+      "value": "Gofynnwch i berchennog eich llong eich ychwanegu. Gallant wneud hyn o'u cyfrif.",
+      "state": "needs_review"
+    }
+  },
+  "signIn.createAccount.skipper.heading": {
+    "comment": "Sub-heading in the Create an account section. Shared key with the iOS app.",
+    "en": "Skipper or agent:",
+    "cy": {
+      "value": "Sgipper neu asiant:",
+      "state": "needs_review"
+    }
+  },
+  "signIn.createAccount.vesselOwner.body": {
+    "comment": "Text for vessel owners in the Create an account section. Shared key with the iOS app.",
+    "en": "You will receive an email invitation to register when your vessel is added to the system.",
+    "cy": {
+      "value": "Byddwch yn derbyn gwahoddiad drwy e-bost i gofrestru pan fydd eich llong yn cael ei hychwanegu at y system.",
+      "state": "needs_review"
+    }
+  },
+  "signIn.createAccount.vesselOwner.heading": {
+    "comment": "Sub-heading in the Create an account section. Shared key with the iOS app.",
+    "en": "Vessel owner:",
+    "cy": {
+      "value": "Perchennog llong:",
+      "state": "needs_review"
+    }
+  },
+  "signIn.email.label": {
+    "comment": "Email field label on sign in. Shared key with the iOS app.",
+    "en": "Email address",
+    "cy": {
+      "value": "Cyfeiriad e-bost",
+      "state": "needs_review"
+    }
+  },
+  "signIn.error.email.empty": {
+    "comment": "Validation error when the email address is empty (sign in and forgotten password). Shared key with the iOS app.",
+    "en": "Enter your email address",
+    "cy": {
+      "value": "Rhowch eich cyfeiriad e-bost",
+      "state": "needs_review"
+    }
+  },
+  "signIn.heading": {
+    "comment": "Sign in page heading. Shared key with the iOS app.",
+    "en": "Sign in",
+    "cy": {
+      "value": "Mewngofnodi",
+      "state": "needs_review"
+    }
+  },
+  "signIn.link.createAccount": {
+    "comment": "Expandable section title about creating an account. Shared key with the iOS app.",
+    "en": "Create an account",
+    "cy": {
+      "value": "Creu cyfrif",
+      "state": "needs_review"
+    }
+  },
+  "signIn.link.forgottenPassword": {
+    "comment": "Link to the forgotten password page. Shared key with the iOS app.",
+    "en": "Forgotten your password?",
+    "cy": {
+      "value": "Wedi anghofio'ch cyfrinair?",
+      "state": "needs_review"
+    }
+  },
+  "signIn.password.label": {
+    "comment": "Password field label on sign in. Shared key with the iOS app.",
+    "en": "Password",
+    "cy": {
+      "value": "Cyfrinair",
+      "state": "needs_review"
+    }
+  },
+  "signIn.title": {
+    "comment": "Sign in page title. Shared key with the iOS app.",
+    "en": "Sign in",
+    "cy": {
+      "value": "Mewngofnodi",
+      "state": "needs_review"
+    }
+  },
+  "signIn.trouble.heading": {
+    "comment": "Heading above help links on sign in. Shared key with the iOS app.",
+    "en": "Having trouble signing in?",
+    "cy": {
+      "value": "Cael trafferth mewngofnodi?",
+      "state": "needs_review"
+    }
+  },
+  "signOut.title": {
+    "comment": "Page title and heading after signing out.",
+    "en": "You have been signed out",
+    "cy": {
+      "value": "Rydych wedi allgofnodi",
+      "state": "needs_review"
+    }
+  },
+  "skipper.email.labelOptional": {
+    "comment": "Label for the optional skipper email field.",
+    "en": "Email address (optional)",
+    "cy": {
+      "value": "Cyfeiriad e-bost (dewisol)",
+      "state": "needs_review"
+    }
+  },
+  "skipper.error.noPendingSkipper": {
+    "comment": "Error page message when the user reaches the check page without entering skipper details.",
+    "en": "Enter skipper details for the selected vessel first",
+    "cy": {
+      "value": "Rhowch fanylion y sgipper ar gyfer y llong a ddewiswyd yn gyntaf",
+      "state": "needs_review"
+    }
+  },
+  "skipper.error.noVessel": {
+    "comment": "Error page message when the user tries to manage skippers without a selected vessel.",
+    "en": "Select a vessel before managing saved skippers",
+    "cy": {
+      "value": "Dewiswch long cyn rheoli sgipperiaid sydd wedi'u cadw",
+      "state": "needs_review"
+    }
+  },
+  "skipper.firstName.label": {
+    "comment": "Label for the skipper's first name (form field and summary row). Same wording as iOS manageAccount.firstName.label.",
+    "en": "First name",
+    "cy": {
+      "value": "Enw cyntaf",
+      "state": "needs_review"
+    }
+  },
+  "skipper.lastName.label": {
+    "comment": "Label for the skipper's last name (form field and summary row). Same wording as iOS manageAccount.lastName.label.",
+    "en": "Last name",
+    "cy": {
+      "value": "Cyfenw",
+      "state": "needs_review"
+    }
+  },
+  "skipper.phoneNumber.label": {
+    "comment": "Summary row label for the skipper's phone number.",
+    "en": "Phone number",
+    "cy": {
+      "value": "Rhif ffôn",
+      "state": "needs_review"
+    }
+  },
+  "skipper.phoneNumber.labelOptional": {
+    "comment": "Label for the optional skipper phone number field.",
+    "en": "Phone number (optional)",
+    "cy": {
+      "value": "Rhif ffôn (dewisol)",
+      "state": "needs_review"
+    }
+  },
+  "skipperCheck.confirm.label": {
+    "comment": "Label of the single confirmation radio option.",
+    "en": "I confirm the information is complete and correct",
+    "cy": {
+      "value": "Rwy'n cadarnhau bod y wybodaeth yn gyflawn ac yn gywir",
+      "state": "needs_review"
+    }
+  },
+  "skipperCheck.confirm.legend": {
+    "comment": "Visually hidden legend of the confirmation radio.",
+    "en": "Confirm skipper details",
+    "cy": {
+      "value": "Cadarnhau manylion y sgipper",
+      "state": "needs_review"
+    }
+  },
+  "skipperCheck.declaration": {
+    "comment": "Declaration above the confirmation checkbox.",
+    "en": "By submitting this information, you confirm that it is complete and correct.",
+    "cy": {
+      "value": "Drwy gyflwyno'r wybodaeth hon, rydych yn cadarnhau ei bod yn gyflawn ac yn gywir.",
+      "state": "needs_review"
+    }
+  },
+  "skipperCheck.email.hidden": {
+    "comment": "Visually hidden text after the \"Change\" link on the Email address row.",
+    "en": "email address",
+    "cy": {
+      "value": "cyfeiriad e-bost",
+      "state": "needs_review"
+    }
+  },
+  "skipperCheck.error": {
+    "comment": "Error when the confirmation option is not selected.",
+    "en": "Confirm the skipper details are complete and correct",
+    "cy": {
+      "value": "Cadarnhewch fod manylion y sgipper yn gyflawn ac yn gywir",
+      "state": "needs_review"
+    }
+  },
+  "skipperCheck.firstName.hidden": {
+    "comment": "Visually hidden text after the \"Change\" link on the First name row.",
+    "en": "first name",
+    "cy": {
+      "value": "enw cyntaf",
+      "state": "needs_review"
+    }
+  },
+  "skipperCheck.lastName.hidden": {
+    "comment": "Visually hidden text after the \"Change\" link on the Last name row.",
+    "en": "last name",
+    "cy": {
+      "value": "cyfenw",
+      "state": "needs_review"
+    }
+  },
+  "skipperCheck.phoneNumber.hidden": {
+    "comment": "Visually hidden text after the \"Change\" link on the Phone number row.",
+    "en": "phone number",
+    "cy": {
+      "value": "rhif ffôn",
+      "state": "needs_review"
+    }
+  },
+  "skipperCheck.title": {
+    "comment": "Page title and heading of the check skipper details page.",
+    "en": "Check skipper details",
+    "cy": {
+      "value": "Gwirio manylion y sgipper",
+      "state": "needs_review"
+    }
+  },
+  "skipperConfirmation.button.addAnother": {
+    "comment": "Button to add another skipper.",
+    "en": "Add another skipper",
+    "cy": {
+      "value": "Ychwanegu sgipper arall",
+      "state": "needs_review"
+    }
+  },
+  "skipperConfirmation.button.goToAccount": {
+    "comment": "Secondary button to the account page.",
+    "en": "Go to account",
+    "cy": {
+      "value": "Mynd i'r cyfrif",
+      "state": "needs_review"
+    }
+  },
+  "skipperConfirmation.emailSent": {
+    "comment": "What happens next text (walkthrough mode).",
+    "en": "We’ve sent the skipper an email with instructions on how to access the service.",
+    "cy": {
+      "value": "Rydym wedi anfon e-bost at y sgipper gyda chyfarwyddiadau ar sut i gael mynediad i'r gwasanaeth.",
+      "state": "needs_review"
+    }
+  },
+  "skipperConfirmation.manageAccess": {
+    "comment": "What happens next text (walkthrough mode).",
+    "en": "You can manage skipper access and add skippers for other vessels from your account.",
+    "cy": {
+      "value": "Gallwch reoli mynediad sgipperiaid ac ychwanegu sgipperiaid ar gyfer llongau eraill o'ch cyfrif.",
+      "state": "needs_review"
+    }
+  },
+  "skipperConfirmation.noInvitation": {
+    "comment": "What happens next text after saving a skipper.",
+    "en": "Saving a skipper does not send an invitation or give them access to the service.",
+    "cy": {
+      "value": "Nid yw cadw sgipper yn anfon gwahoddiad nac yn rhoi mynediad iddynt i'r gwasanaeth.",
+      "state": "needs_review"
+    }
+  },
+  "skipperConfirmation.saved": {
+    "comment": "What happens next text after saving a skipper.",
+    "en": "The skipper has been saved to this vessel. You can add or remove saved skippers from your account.",
+    "cy": {
+      "value": "Mae'r sgipper wedi'i gadw i'r llong hon. Gallwch ychwanegu neu ddileu sgipperiaid sydd wedi'u cadw o'ch cyfrif.",
+      "state": "needs_review"
+    }
+  },
+  "skipperConfirmation.title": {
+    "comment": "Confirmation panel title. {{vesselName}} is the vessel name from reference data (not translated).",
+    "en": "Skipper added for vessel {{vesselName}}",
+    "cy": {
+      "value": "Sgipper wedi'i ychwanegu ar gyfer y llong {{vesselName}}",
+      "state": "needs_review"
+    }
+  },
+  "skipperConfirmation.titleSelectedVessel": {
+    "comment": "Confirmation panel title used when the vessel name is unknown. English kept as currently shown; \"for vessel selected vessel\" looks like an oversight.",
+    "en": "Skipper added for vessel selected vessel",
+    "cy": {
+      "value": "Sgipper wedi'i ychwanegu ar gyfer y llong a ddewiswyd",
+      "state": "needs_review"
+    }
+  },
+  "skipperDetails.email.hint": {
+    "comment": "Hint under the skipper email field (walkthrough mode, where an invitation is sent).",
+    "en": "Use an email address that belongs only to this skipper and is not shared with other skippers.",
+    "cy": {
+      "value": "Defnyddiwch gyfeiriad e-bost sy'n perthyn i'r sgipper hwn yn unig ac nad yw'n cael ei rannu â sgipperiaid eraill.",
+      "state": "needs_review"
+    }
+  },
+  "skipperDetails.email.hintContactOnly": {
+    "comment": "Hint under the optional skipper email field (no invitation is sent).",
+    "en": "Contact details only. This does not send an invitation.",
+    "cy": {
+      "value": "Manylion cyswllt yn unig. Nid yw hyn yn anfon gwahoddiad.",
+      "state": "needs_review"
+    }
+  },
+  "skipperDetails.error.email.empty": {
+    "comment": "Validation error.",
+    "en": "Enter the skipper’s email address",
+    "cy": {
+      "value": "Rhowch gyfeiriad e-bost y sgipper",
+      "state": "needs_review"
+    }
+  },
+  "skipperDetails.error.email.format": {
+    "comment": "Validation error.",
+    "en": "Enter an email address in the correct format",
+    "cy": {
+      "value": "Rhowch gyfeiriad e-bost yn y fformat cywir",
+      "state": "needs_review"
+    }
+  },
+  "skipperDetails.error.firstName.empty": {
+    "comment": "Validation error.",
+    "en": "Enter the skipper’s first name",
+    "cy": {
+      "value": "Rhowch enw cyntaf y sgipper",
+      "state": "needs_review"
+    }
+  },
+  "skipperDetails.error.firstName.tooLong": {
+    "comment": "Validation error.",
+    "en": "First name must be 100 characters or fewer",
+    "cy": {
+      "value": "Rhaid i'r enw cyntaf fod yn 100 nod neu lai",
+      "state": "needs_review"
+    }
+  },
+  "skipperDetails.error.fullName.tooLong": {
+    "comment": "Validation error: first and last name together are too long.",
+    "en": "The full skipper name must be 100 characters or fewer",
+    "cy": {
+      "value": "Rhaid i enw llawn y sgipper fod yn 100 nod neu lai",
+      "state": "needs_review"
+    }
+  },
+  "skipperDetails.error.generic": {
+    "comment": "Validation error when the form is invalid but no specific field error applies.",
+    "en": "Check the skipper details and try again",
+    "cy": {
+      "value": "Gwiriwch fanylion y sgipper a rhowch gynnig arall arni",
+      "state": "needs_review"
+    }
+  },
+  "skipperDetails.error.lastName.empty": {
+    "comment": "Validation error.",
+    "en": "Enter the skipper’s last name",
+    "cy": {
+      "value": "Rhowch gyfenw'r sgipper",
+      "state": "needs_review"
+    }
+  },
+  "skipperDetails.error.lastName.tooLong": {
+    "comment": "Validation error.",
+    "en": "Last name must be 100 characters or fewer",
+    "cy": {
+      "value": "Rhaid i'r cyfenw fod yn 100 nod neu lai",
+      "state": "needs_review"
+    }
+  },
+  "skipperDetails.error.phoneNumber.tooLong": {
+    "comment": "Validation error.",
+    "en": "Phone number must be 30 characters or fewer",
+    "cy": {
+      "value": "Rhaid i'r rhif ffôn fod yn 30 nod neu lai",
+      "state": "needs_review"
+    }
+  },
+  "skipperDetails.title": {
+    "comment": "Page title and heading of the skipper details form.",
+    "en": "Enter skipper details",
+    "cy": {
+      "value": "Rhowch fanylion y sgipper",
+      "state": "needs_review"
+    }
+  }
+}

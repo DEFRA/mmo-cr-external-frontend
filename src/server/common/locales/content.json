@@ -1,0 +1,1668 @@
+{
+  "addGear.measurements.heading": {
+    "comment": "Heading for the gear measurement page.",
+    "en": "Enter the measurements for {{gear}}",
+    "cy": {
+      "value": "Rhowch y mesuriadau ar gyfer {{gear}}",
+      "state": "needs_review"
+    }
+  },
+  "addPort.error.alreadySaved": {
+    "comment": "Error shown when a port is already in the user’s favourites; port name is reference data. Welsh draft requires review.",
+    "en": "{{port}} is already saved in your favourites",
+    "cy": {
+      "value": "Mae {{port}} eisoes wedi’i gadw yn eich ffefrynnau",
+      "state": "needs_review"
+    }
+  },
+  "autocomplete.assistiveHint": {
+    "comment": "Screen-reader instructions for using the accessible autocomplete.",
+    "en": "When autocomplete results are available use up and down arrows to review and enter to select. Touch device users, explore by touch or with swipe gestures.",
+    "cy": {
+      "value": "Pan fydd canlyniadau awtogwblhau ar gael, defnyddiwch y saethau i fyny ac i lawr i’w hadolygu a’r fysell enter i ddewis. Gall defnyddwyr dyfeisiau cyffwrdd archwilio drwy gyffwrdd neu drwy lithro.",
+      "state": "needs_review"
+    }
+  },
+  "autocomplete.noResults": {
+    "comment": "Message when a search has no matching options.",
+    "en": "No results found",
+    "cy": {
+      "value": "Heb ganfod canlyniadau",
+      "state": "needs_review"
+    }
+  },
+  "autocomplete.placeholder": {
+    "comment": "Placeholder shown while searching for a species.",
+    "en": "Start typing to display the list",
+    "cy": {
+      "value": "Dechreuwch deipio i ddangos y rhestr",
+      "state": "needs_review"
+    }
+  },
+  "autocomplete.status.noResults": {
+    "comment": "Accessible status message when there are no matching options.",
+    "en": "No search results",
+    "cy": {
+      "value": "Dim canlyniadau chwilio",
+      "state": "needs_review"
+    }
+  },
+  "autocomplete.status.queryTooShort": {
+    "comment": "Accessible status message before the minimum search length is reached.",
+    "en": "Type in {{count}} or more characters for results",
+    "cy": {
+      "value": "Teipiwch {{count}} neu fwy o nodau i gael canlyniadau",
+      "state": "needs_review"
+    }
+  },
+  "autocomplete.status.results": {
+    "comment": "Accessible status message announcing the number of suggestions.",
+    "en": "{{count}} results available",
+    "cy": {
+      "value": "{{count}} o ganlyniadau ar gael",
+      "state": "needs_review"
+    }
+  },
+  "autocomplete.status.selectedOption": {
+    "comment": "Accessible status message announcing the highlighted suggestion.",
+    "en": "{{option}} {{index}} of {{length}} is highlighted",
+    "cy": {
+      "value": "Amlygwyd {{option}} {{index}} o {{length}}",
+      "state": "needs_review"
+    }
+  },
+  "checkAnswers.pendingTrip": {
+    "comment": "Warning shown when trip answers have not been saved; link is the translated action text.",
+    "en": "Trip answers have not been saved yet. {{link}} before submitting.",
+    "cy": {
+      "value": "Nid yw atebion y daith wedi’u cadw eto. {{link}} cyn cyflwyno.",
+      "state": "needs_review"
+    }
+  },
+  "checkAnswers.pendingTripLink": {
+    "comment": "Link that takes the user to the trip questions.",
+    "en": "Complete the trip dates and both ports",
+    "cy": {
+      "value": "Cwblhewch ddyddiadau’r daith a’r ddau borthladd",
+      "state": "needs_review"
+    }
+  },
+  "confirmSamePort.error": {
+    "comment": "Validation error when the user has not confirmed the shared port.",
+    "en": "Select whether {{port}} was the port you set off from and returned to",
+    "cy": {
+      "value": "Dewiswch ai {{port}} oedd y porthladd y gwnaethoch adael ohono a dychwelyd iddo",
+      "state": "needs_review"
+    }
+  },
+  "confirmSamePort.no": {
+    "comment": "No answer for the port confirmation question.",
+    "en": "No",
+    "cy": {
+      "value": "Na",
+      "state": "needs_review"
+    }
+  },
+  "confirmSamePort.title": {
+    "comment": "Question asking the user to confirm the departure and return port.",
+    "en": "Was {{port}} the port or the closest port you set off from and returned to?",
+    "cy": {
+      "value": "Ai {{port}} oedd y porthladd, neu’r porthladd agosaf, y gwnaethoch adael ohono a dychwelyd iddo?",
+      "state": "needs_review"
+    }
+  },
+  "confirmSamePort.yes": {
+    "comment": "Yes answer for the port confirmation question.",
+    "en": "Yes",
+    "cy": {
+      "value": "Ie",
+      "state": "needs_review"
+    }
+  },
+  "cookies.essential.body": {
+    "comment": "Description of the essential session cookie.",
+    "en": "This service uses an essential session cookie to keep you signed in and remember your progress while you record your catch. This cookie is necessary for the service to work and does not require your consent.",
+    "cy": {
+      "value": "Mae’r gwasanaeth hwn yn defnyddio cwci sesiwn hanfodol i’ch cadw wedi mewngofnodi a chofio eich cynnydd wrth i chi gofnodi eich dalfa. Mae’r cwci hwn yn angenrheidiol er mwyn i’r gwasanaeth weithio ac nid oes angen eich caniatâd arno.",
+      "state": "needs_review"
+    }
+  },
+  "cookies.essential.heading": {
+    "comment": "Heading for the essential cookies section.",
+    "en": "Essential cookies",
+    "cy": {
+      "value": "Cwcis hanfodol",
+      "state": "needs_review"
+    }
+  },
+  "cookies.expiry.browserClose": {
+    "comment": "Expiry description when session cookie has no configured TTL.",
+    "en": "When you close your browser",
+    "cy": {
+      "value": "Pan fyddwch yn cau eich porwr",
+      "state": "needs_review"
+    }
+  },
+  "cookies.expiry.hours": {
+    "comment": "Expiry duration for the session cookie. Welsh has separate plural forms for each count.",
+    "en": {
+      "one": "{{count}} hour",
+      "other": "{{count}} hours"
+    },
+    "cy": {
+      "value": {
+        "zero": "{{count}} awr",
+        "one": "{{count}} awr",
+        "two": "{{count}} awr",
+        "few": "{{count}} awr",
+        "many": "{{count}} awr",
+        "other": "{{count}} awr"
+      },
+      "state": "needs_review"
+    }
+  },
+  "cookies.intro": {
+    "comment": "Introductory paragraph on the cookies page.",
+    "en": "Cookies are small files saved on your phone, tablet or computer when you visit a website.",
+    "cy": {
+      "value": "Ffeiliau bach yw cwcis sy’n cael eu cadw ar eich ffôn, llechen neu gyfrifiadur pan fyddwch yn ymweld â gwefan.",
+      "state": "needs_review"
+    }
+  },
+  "cookies.lang.expiry": {
+    "comment": "Expiry period of the lang cookie.",
+    "en": "1 year",
+    "cy": {
+      "value": "1 flwyddyn",
+      "state": "needs_review"
+    }
+  },
+  "cookies.lang.purpose": {
+    "comment": "Purpose of the lang cookie.",
+    "en": "Remembers the language you have chosen for this service.",
+    "cy": {
+      "value": "Yn cofio’r iaith rydych wedi’i dewis ar gyfer y gwasanaeth hwn.",
+      "state": "needs_review"
+    }
+  },
+  "cookies.managing.body": {
+    "comment": "Instructions about managing cookies.",
+    "en": "You can delete or block cookies in your browser settings. If you block the essential session cookie, you will not be able to sign in or save your progress in this service.",
+    "cy": {
+      "value": "Gallwch ddileu neu rwystro cwcis yng ngosodiadau eich porwr. Os byddwch yn rhwystro’r cwci sesiwn hanfodol, ni fyddwch yn gallu mewngofnodi na chadw eich cynnydd yn y gwasanaeth hwn.",
+      "state": "needs_review"
+    }
+  },
+  "cookies.managing.heading": {
+    "comment": "Heading for the cookie management section.",
+    "en": "Managing cookies",
+    "cy": {
+      "value": "Rheoli cwcis",
+      "state": "needs_review"
+    }
+  },
+  "cookies.managing.privacy": {
+    "comment": "Privacy notice link sentence at the bottom of the page.",
+    "en": "Read our {{link}} for information about how we use your personal data.",
+    "cy": {
+      "value": "Darllenwch ein {{link}} i gael gwybodaeth am sut rydym yn defnyddio eich data personol.",
+      "state": "needs_review"
+    }
+  },
+  "cookies.table.caption": {
+    "comment": "Visually hidden caption for the cookies table.",
+    "en": "Essential cookies",
+    "cy": {
+      "value": "Cwcis hanfodol",
+      "state": "needs_review"
+    }
+  },
+  "cookies.table.expires": {
+    "comment": "Third column heading of the cookies table.",
+    "en": "Expires",
+    "cy": {
+      "value": "Yn dod i ben",
+      "state": "needs_review"
+    }
+  },
+  "cookies.table.name": {
+    "comment": "First column heading of the cookies table.",
+    "en": "Name",
+    "cy": {
+      "value": "Enw",
+      "state": "needs_review"
+    }
+  },
+  "cookies.table.purpose": {
+    "comment": "Second column heading of the cookies table.",
+    "en": "Purpose",
+    "cy": {
+      "value": "Diben",
+      "state": "needs_review"
+    }
+  },
+  "cookies.table.sessionPurpose": {
+    "comment": "Purpose of the essential session cookie.",
+    "en": "Keeps you signed in and remembers your progress.",
+    "cy": {
+      "value": "Yn eich cadw wedi mewngofnodi ac yn cofio eich cynnydd.",
+      "state": "needs_review"
+    }
+  },
+  "cookies.title": {
+    "comment": "Page title and heading.",
+    "en": "Cookies",
+    "cy": {
+      "value": "Cwcis",
+      "state": "needs_review"
+    }
+  },
+  "editReason.error.maxLength": {
+    "comment": "Validation error when the edit reason exceeds the maximum length.",
+    "en": "Enter a reason for editing this catch record ({{max}} characters or fewer)",
+    "cy": {
+      "value": "Rhowch reswm dros olygu’r cofnod dalfa hwn ({{max}} nod neu lai)",
+      "state": "needs_review"
+    }
+  },
+  "editReason.notification": {
+    "comment": "Notification shown when editing a late catch record.",
+    "en": "This catch record was submitted for a trip that ended on {{date}}.",
+    "cy": {
+      "value": "Cyflwynwyd y cofnod dalfa hwn ar gyfer taith a ddaeth i ben ar {{date}}.",
+      "state": "needs_review"
+    }
+  },
+  "editReview.banner.submitted": {
+    "comment": "Label in the submitted catch record notification banner. Welsh draft requires review.",
+    "en": "Catch record submitted:",
+    "cy": {
+      "value": "Cofnod dalfa wedi’i gyflwyno:",
+      "state": "needs_review"
+    }
+  },
+  "editReview.banner.submittedBy": {
+    "comment": "Label in the submitted catch record notification banner. Welsh draft requires review.",
+    "en": "Submitted by:",
+    "cy": {
+      "value": "Cyflwynwyd gan:",
+      "state": "needs_review"
+    }
+  },
+  "editReview.titleForAmendment": {
+    "comment": "Heading on the live amendment review page, with the vessel name as a placeholder.",
+    "en": "Edit catch record for {{vessel}}",
+    "cy": {
+      "value": "Golygu cofnod dalfa ar gyfer {{vessel}}",
+      "state": "needs_review"
+    }
+  },
+  "editReview.titleForRecord": {
+    "comment": "Heading shown while reviewing an amendment.",
+    "en": "Catch record for {{vessel}}",
+    "cy": {
+      "value": "Cofnod dalfa ar gyfer {{vessel}}",
+      "state": "needs_review"
+    }
+  },
+  "editReview.titleToEdit": {
+    "comment": "Heading shown while editing a late record.",
+    "en": "Edit the record for {{vessel}}",
+    "cy": {
+      "value": "Golygu’r cofnod ar gyfer {{vessel}}",
+      "state": "needs_review"
+    }
+  },
+  "guidance.copy.01": {
+    "comment": "User-facing text from src/server/routes/guidance/index.njk; entry 1. Welsh draft requires professional review.",
+    "en": "A catch record includes details of the fish caught, including the\n          species, weight, date and location of the catch. You must create a\n          catch record for every fishing trip.",
+    "cy": {
+      "value": "Mae cofnod dalfa’n cynnwys manylion y pysgod a ddaliwyd, gan gynnwys y rhywogaeth, y pwysau, dyddiad a lleoliad y ddalfa. Rhaid creu cofnod dalfa ar gyfer pob taith bysgota.",
+      "state": "needs_review"
+    }
+  },
+  "guidance.copy.02": {
+    "comment": "User-facing text from src/server/routes/guidance/index.njk; entry 2. Welsh draft requires professional review.",
+    "en": "From:",
+    "cy": {
+      "value": "Gan:",
+      "state": "needs_review"
+    }
+  },
+  "guidance.copy.03": {
+    "comment": "User-facing text from src/server/routes/guidance/index.njk; entry 3. Welsh draft requires professional review.",
+    "en": "Department for Environment, Food & Rural Affairs",
+    "cy": {
+      "value": "Adran yr Amgylchedd, Bwyd a Materion Gwledig",
+      "state": "needs_review"
+    }
+  },
+  "guidance.copy.04": {
+    "comment": "User-facing text from src/server/routes/guidance/index.njk; entry 4. Welsh draft requires professional review.",
+    "en": "and",
+    "cy": {
+      "value": "a",
+      "state": "needs_review"
+    }
+  },
+  "guidance.copy.05": {
+    "comment": "User-facing text from src/server/routes/guidance/index.njk; entry 5. Welsh draft requires professional review.",
+    "en": "Marine Management Organisation",
+    "cy": {
+      "value": "Sefydliad Rheoli Morol",
+      "state": "needs_review"
+    }
+  },
+  "guidance.copy.06": {
+    "comment": "User-facing text from src/server/routes/guidance/index.njk; entry 6. Welsh draft requires professional review.",
+    "en": "Applies to England",
+    "cy": {
+      "value": "Yn berthnasol i Loegr",
+      "state": "needs_review"
+    }
+  },
+  "guidance.copy.07": {
+    "comment": "User-facing text from src/server/routes/guidance/index.njk; entry 7. Welsh draft requires professional review.",
+    "en": "Contents",
+    "cy": {
+      "value": "Cynnwys",
+      "state": "needs_review"
+    }
+  },
+  "guidance.copy.08": {
+    "comment": "User-facing text from src/server/routes/guidance/index.njk; entry 8. Welsh draft requires professional review.",
+    "en": "What we need from you",
+    "cy": {
+      "value": "Beth sydd ei angen arnom gennych",
+      "state": "needs_review"
+    }
+  },
+  "guidance.copy.09": {
+    "comment": "User-facing text from src/server/routes/guidance/index.njk; entry 9. Welsh draft requires professional review.",
+    "en": "When to create your record",
+    "cy": {
+      "value": "Pryd i greu eich cofnod",
+      "state": "needs_review"
+    }
+  },
+  "guidance.copy.10": {
+    "comment": "User-facing text from src/server/routes/guidance/index.njk; entry 10. Welsh draft requires professional review.",
+    "en": "Special cases",
+    "cy": {
+      "value": "Achosion arbennig",
+      "state": "needs_review"
+    }
+  },
+  "guidance.copy.11": {
+    "comment": "User-facing text from src/server/routes/guidance/index.njk; entry 11. Welsh draft requires professional review.",
+    "en": "How to create a record",
+    "cy": {
+      "value": "Sut i greu cofnod",
+      "state": "needs_review"
+    }
+  },
+  "guidance.copy.12": {
+    "comment": "User-facing text from src/server/routes/guidance/index.njk; entry 12. Welsh draft requires professional review.",
+    "en": "Get help",
+    "cy": {
+      "value": "Cael help",
+      "state": "needs_review"
+    }
+  },
+  "guidance.copy.13": {
+    "comment": "User-facing text from src/server/routes/guidance/index.njk; entry 13. Welsh draft requires professional review.",
+    "en": "Print this page",
+    "cy": {
+      "value": "Argraffu’r dudalen hon",
+      "state": "needs_review"
+    }
+  },
+  "helpPanel.copy.01": {
+    "comment": "User-facing text from src/server/common/templates/partials/catch-record-help.njk; entry 1. Welsh draft requires professional review.",
+    "en": "What you need to do",
+    "cy": {
+      "value": "Beth sydd angen i chi ei wneud",
+      "state": "needs_review"
+    }
+  },
+  "helpPanel.copy.02": {
+    "comment": "User-facing text from src/server/common/templates/partials/catch-record-help.njk; entry 2. Welsh draft requires professional review.",
+    "en": "You must record all catches unless an exemption applies.",
+    "cy": {
+      "value": "Rhaid i chi gofnodi pob dalfa oni bai bod eithriad yn berthnasol.",
+      "state": "needs_review"
+    }
+  },
+  "helpPanel.copy.03": {
+    "comment": "User-facing text from src/server/common/templates/partials/catch-record-help.njk; entry 3. Welsh draft requires professional review.",
+    "en": "We’ll ask whether you caught any species subject to catch limits (quota).",
+    "cy": {
+      "value": "Byddwn yn gofyn a wnaethoch ddal unrhyw rywogaethau sy’n ddarostyngedig i derfynau dalfa (cwota).",
+      "state": "needs_review"
+    }
+  },
+  "helpPanel.copy.04": {
+    "comment": "User-facing text from src/server/common/templates/partials/catch-record-help.njk; entry 4. Welsh draft requires professional review.",
+    "en": "When to create your record",
+    "cy": {
+      "value": "Pryd i greu eich cofnod",
+      "state": "needs_review"
+    }
+  },
+  "helpPanel.copy.05": {
+    "comment": "User-facing text from src/server/common/templates/partials/catch-record-help.njk; entry 5. Welsh draft requires professional review.",
+    "en": "Create your catch record before moving your catch off the vessel if you:",
+    "cy": {
+      "value": "Crëwch eich cofnod dalfa cyn symud eich dalfa oddi ar y llong os ydych chi:",
+      "state": "needs_review"
+    }
+  },
+  "helpPanel.copy.06": {
+    "comment": "User-facing text from src/server/common/templates/partials/catch-record-help.njk; entry 6. Welsh draft requires professional review.",
+    "en": "caught any species subject to catch limits (quota)",
+    "cy": {
+      "value": "wedi dal unrhyw rywogaethau sy'n ddarostyngedig i derfynau dalfa (cwota)",
+      "state": "needs_review"
+    }
+  },
+  "helpPanel.copy.07": {
+    "comment": "User-facing text from src/server/common/templates/partials/catch-record-help.njk; entry 7. Welsh draft requires professional review.",
+    "en": "caught only non-quota species",
+    "cy": {
+      "value": "wedi dal rhywogaethau di-gwota yn unig",
+      "state": "needs_review"
+    }
+  },
+  "helpPanel.copy.08": {
+    "comment": "User-facing text from src/server/common/templates/partials/catch-record-help.njk; entry 8. Welsh draft requires professional review.",
+    "en": "crossed an ICES area boundary while fishing",
+    "cy": {
+      "value": "wedi croesi ffin ardal ICES wrth bysgota",
+      "state": "needs_review"
+    }
+  },
+  "helpPanel.copy.09": {
+    "comment": "User-facing text from src/server/common/templates/partials/catch-record-help.njk; entry 9. Welsh draft requires professional review.",
+    "en": "Special cases: ICES areas",
+    "cy": {
+      "value": "Achosion arbennig: ardaloedd ICES",
+      "state": "needs_review"
+    }
+  },
+  "helpPanel.copy.10": {
+    "comment": "User-facing text from src/server/common/templates/partials/catch-record-help.njk; entry 10. Welsh draft requires professional review.",
+    "en": "If you fish in or cross ICES areas 4c, 7d or 7e, you must create a separate\n    catch record each time you cross a boundary.",
+    "cy": {
+      "value": "Os ydych yn pysgota yn ardaloedd ICES 4c, 7d neu 7e, neu’n croesi’r ardaloedd hynny, rhaid creu cofnod dalfa ar wahân bob tro y byddwch yn croesi ffin.",
+      "state": "needs_review"
+    }
+  },
+  "helpPanel.copy.11": {
+    "comment": "User-facing text from src/server/common/templates/partials/catch-record-help.njk; entry 11. Welsh draft requires professional review.",
+    "en": "If you need to record catches without an internet connection, use the\n    mobile app.",
+    "cy": {
+      "value": "Os oes angen i chi gofnodi dalfeydd heb gysylltiad â’r rhyngrwyd, defnyddiwch yr ap symudol.",
+      "state": "needs_review"
+    }
+  },
+  "helpPanel.copy.12": {
+    "comment": "User-facing text from src/server/common/templates/partials/catch-record-help.njk; entry 12. Welsh draft requires professional review.",
+    "en": "Get help with your record",
+    "cy": {
+      "value": "Cael help gyda'ch cofnod",
+      "state": "needs_review"
+    }
+  },
+  "helpPanel.copy.13": {
+    "comment": "User-facing text from src/server/common/templates/partials/catch-record-help.njk; entry 13. Welsh draft requires professional review.",
+    "en": "Call 0300 020 3788, Monday to Friday, 8am to 6pm.",
+    "cy": {
+      "value": "Ffoniwch 0300 020 3788, dydd Llun i ddydd Gwener, 8am i 6pm.",
+      "state": "needs_review"
+    }
+  },
+  "helpPanel.copy.14": {
+    "comment": "User-facing text from src/server/common/templates/partials/catch-record-help.njk; entry 14. Welsh draft requires professional review.",
+    "en": "Calls to 03 numbers cost the same as calls to 01 or 02 numbers.",
+    "cy": {
+      "value": "Mae galwadau i rifau 03 yn costio'r un fath â galwadau i rifau 01 neu 02.",
+      "state": "needs_review"
+    }
+  },
+  "helpPanel.copy.15": {
+    "comment": "User-facing text from src/server/common/templates/partials/catch-record-help.njk; entry 15. Welsh draft requires professional review.",
+    "en": "Outside these hours, leave a catch record on our automated line.",
+    "cy": {
+      "value": "Y tu allan i'r oriau hyn, gadewch gofnod dalfa ar ein llinell awtomataidd.",
+      "state": "needs_review"
+    }
+  },
+  "helpPanel.copy.16": {
+    "comment": "User-facing text from src/server/common/templates/partials/catch-record-help.njk; entry 16. Welsh draft requires professional review.",
+    "en": "Unsent:",
+    "cy": {
+      "value": "Heb ei anfon:",
+      "state": "needs_review"
+    }
+  },
+  "helpPanel.copy.17": {
+    "comment": "User-facing text from src/server/common/templates/partials/catch-record-help.njk; entry 17. Welsh draft requires professional review.",
+    "en": "Saved on your device and not yet submitted.",
+    "cy": {
+      "value": "Wedi'i gadw ar eich dyfais ac heb ei gyflwyno eto.",
+      "state": "needs_review"
+    }
+  },
+  "helpPanel.copy.18": {
+    "comment": "User-facing text from src/server/common/templates/partials/catch-record-help.njk; entry 18. Welsh draft requires professional review.",
+    "en": "Submitted:",
+    "cy": {
+      "value": "Wedi'i gyflwyno:",
+      "state": "needs_review"
+    }
+  },
+  "helpPanel.copy.19": {
+    "comment": "User-facing text from src/server/common/templates/partials/catch-record-help.njk; entry 19. Welsh draft requires professional review.",
+    "en": "Received by the MMO.",
+    "cy": {
+      "value": "Derbyniwyd gan y Sefydliad Rheoli Morol.",
+      "state": "needs_review"
+    }
+  },
+  "helpPanel.copy.20": {
+    "comment": "User-facing text from src/server/common/templates/partials/catch-record-help.njk; entry 20. Welsh draft requires professional review.",
+    "en": "Amended:",
+    "cy": {
+      "value": "Wedi'i ddiwygio:",
+      "state": "needs_review"
+    }
+  },
+  "helpPanel.copy.21": {
+    "comment": "User-facing text from src/server/common/templates/partials/catch-record-help.njk; entry 21. Welsh draft requires professional review.",
+    "en": "This record was changed after it was submitted.",
+    "cy": {
+      "value": "Newidiwyd y cofnod hwn ar ôl iddo gael ei gyflwyno.",
+      "state": "needs_review"
+    }
+  },
+  "helpPanel.copy.22": {
+    "comment": "User-facing text from src/server/common/templates/partials/catch-record-help.njk; entry 22. Welsh draft requires professional review.",
+    "en": "Late:",
+    "cy": {
+      "value": "Hwyr:",
+      "state": "needs_review"
+    }
+  },
+  "helpPanel.copy.23": {
+    "comment": "User-facing text from src/server/common/templates/partials/catch-record-help.njk; entry 23. Welsh draft requires professional review.",
+    "en": "This record was submitted and received late by the MMO.",
+    "cy": {
+      "value": "Cyflwynwyd y cofnod hwn a chafodd ei dderbyn gan yr MMO yn hwyr.",
+      "state": "needs_review"
+    }
+  },
+  "helpPanel.copy.24": {
+    "comment": "User-facing text from src/server/common/templates/partials/catch-record-help.njk; entry 24. Welsh draft requires professional review.",
+    "en": "Check the How to record a catch tab",
+    "cy": {
+      "value": "Gwiriwch y tab Sut i gofnodi dalfa",
+      "state": "needs_review"
+    }
+  },
+  "helpPanel.copy.25": {
+    "comment": "User-facing text from src/server/common/templates/partials/catch-record-help.njk; entry 25. Welsh draft requires professional review.",
+    "en": "to make sure this record meets the recording requirements for your catch and fishing area.",
+    "cy": {
+      "value": "i sicrhau bod y cofnod hwn yn bodloni’r gofynion cofnodi ar gyfer eich dalfa a’ch ardal bysgota.",
+      "state": "needs_review"
+    }
+  },
+  "howToRecord.copy.01": {
+    "comment": "User-facing text from src/server/common/templates/partials/how-to-record-a-catch.njk; entry 1. Welsh draft requires professional review.",
+    "en": "What we need from you",
+    "cy": {
+      "value": "Beth sydd ei angen arnom gennych",
+      "state": "needs_review"
+    }
+  },
+  "howToRecord.copy.02": {
+    "comment": "User-facing text from src/server/common/templates/partials/how-to-record-a-catch.njk; entry 2. Welsh draft requires professional review.",
+    "en": "We need your trip details and the estimated live weight of your catch.",
+    "cy": {
+      "value": "Mae angen manylion eich taith a phwysau byw amcangyfrifedig eich dalfa arnom.",
+      "state": "needs_review"
+    }
+  },
+  "howToRecord.copy.03": {
+    "comment": "User-facing text from src/server/common/templates/partials/how-to-record-a-catch.njk; entry 3. Welsh draft requires professional review.",
+    "en": "We will ask if you caught species subject to catch limits (quota). If\n  you did, all sizes of fish must be recorded unless exemptions apply.",
+    "cy": {
+      "value": "Byddwn yn gofyn a wnaethoch ddal rhywogaethau sy’n ddarostyngedig i derfynau dalfa (cwota). Os gwnaethoch, rhaid cofnodi pysgod o bob maint oni bai bod eithriadau’n berthnasol.",
+      "state": "needs_review"
+    }
+  },
+  "howToRecord.copy.04": {
+    "comment": "User-facing text from src/server/common/templates/partials/how-to-record-a-catch.njk; entry 4. Welsh draft requires professional review.",
+    "en": "When to create your record",
+    "cy": {
+      "value": "Pryd i greu eich cofnod",
+      "state": "needs_review"
+    }
+  },
+  "howToRecord.copy.05": {
+    "comment": "User-facing text from src/server/common/templates/partials/how-to-record-a-catch.njk; entry 5. Welsh draft requires professional review.",
+    "en": "Create your record before you move your catch off the boat if:",
+    "cy": {
+      "value": "Crëwch eich cofnod cyn symud eich dalfa oddi ar y cwch os:",
+      "state": "needs_review"
+    }
+  },
+  "howToRecord.copy.06": {
+    "comment": "User-facing text from src/server/common/templates/partials/how-to-record-a-catch.njk; entry 6. Welsh draft requires professional review.",
+    "en": "You caught any species with catch limits (quota)",
+    "cy": {
+      "value": "Gwnaethoch ddal unrhyw rywogaethau â therfynau dalfa (cwota)",
+      "state": "needs_review"
+    }
+  },
+  "howToRecord.copy.07": {
+    "comment": "User-facing text from src/server/common/templates/partials/how-to-record-a-catch.njk; entry 7. Welsh draft requires professional review.",
+    "en": "You crossed an ICES area boundary while fishing animal productivity",
+    "cy": {
+      "value": "Gwnaethoch groesi ffin ardal ICES wrth bysgota",
+      "state": "needs_review"
+    }
+  },
+  "howToRecord.copy.08": {
+    "comment": "User-facing text from src/server/common/templates/partials/how-to-record-a-catch.njk; entry 8. Welsh draft requires professional review.",
+    "en": "You caught only non-quota species.",
+    "cy": {
+      "value": "Dim ond rhywogaethau heb gwota a ddaliwyd gennych.",
+      "state": "needs_review"
+    }
+  },
+  "howToRecord.copy.09": {
+    "comment": "User-facing text from src/server/common/templates/partials/how-to-record-a-catch.njk; entry 9. Welsh draft requires professional review.",
+    "en": "Special cases: ICES areas",
+    "cy": {
+      "value": "Achosion arbennig: ardaloedd ICES",
+      "state": "needs_review"
+    }
+  },
+  "howToRecord.copy.10": {
+    "comment": "User-facing text from src/server/common/templates/partials/how-to-record-a-catch.njk; entry 10. Welsh draft requires professional review.",
+    "en": "If you fished in or crossed ICES areas 4c, 7d or 7e, create a separate\n  catch record each time you cross a boundary. You must use the mobile\n  app for offline recording.",
+    "cy": {
+      "value": "Os gwnaethoch bysgota yn ardaloedd ICES 4c, 7d neu 7e, neu eu croesi, crëwch gofnod dalfa ar wahân bob tro y byddwch yn croesi ffin. Rhaid defnyddio’r ap symudol i gofnodi all-lein.",
+      "state": "needs_review"
+    }
+  },
+  "howToRecord.copy.11": {
+    "comment": "User-facing text from src/server/common/templates/partials/how-to-record-a-catch.njk; entry 11. Welsh draft requires professional review.",
+    "en": "How to create a record",
+    "cy": {
+      "value": "Sut i greu cofnod",
+      "state": "needs_review"
+    }
+  },
+  "howToRecord.copy.12": {
+    "comment": "User-facing text from src/server/common/templates/partials/how-to-record-a-catch.njk; entry 12. Welsh draft requires professional review.",
+    "en": "Use the web service or download the",
+    "cy": {
+      "value": "Defnyddiwch y gwasanaeth gwe neu lawrlwythwch yr",
+      "state": "needs_review"
+    }
+  },
+  "howToRecord.copy.13": {
+    "comment": "User-facing text from src/server/common/templates/partials/how-to-record-a-catch.njk; entry 13. Welsh draft requires professional review.",
+    "en": "Android",
+    "cy": {
+      "value": "Android",
+      "state": "needs_review"
+    }
+  },
+  "howToRecord.copy.14": {
+    "comment": "User-facing text from src/server/common/templates/partials/how-to-record-a-catch.njk; entry 14. Welsh draft requires professional review.",
+    "en": "or",
+    "cy": {
+      "value": "neu",
+      "state": "needs_review"
+    }
+  },
+  "howToRecord.copy.15": {
+    "comment": "User-facing text from src/server/common/templates/partials/how-to-record-a-catch.njk; entry 15. Welsh draft requires professional review.",
+    "en": "Apple",
+    "cy": {
+      "value": "Apple",
+      "state": "needs_review"
+    }
+  },
+  "howToRecord.copy.16": {
+    "comment": "User-facing text from src/server/common/templates/partials/how-to-record-a-catch.njk; entry 16. Welsh draft requires professional review.",
+    "en": "app.",
+    "cy": {
+      "value": "ap.",
+      "state": "needs_review"
+    }
+  },
+  "howToRecord.copy.17": {
+    "comment": "User-facing text from src/server/common/templates/partials/how-to-record-a-catch.njk; entry 17. Welsh draft requires professional review.",
+    "en": "Get help with your record",
+    "cy": {
+      "value": "Cael help gyda'ch cofnod",
+      "state": "needs_review"
+    }
+  },
+  "howToRecord.copy.18": {
+    "comment": "User-facing text from src/server/common/templates/partials/how-to-record-a-catch.njk; entry 18. Welsh draft requires professional review.",
+    "en": "Call 0300 020 3788, Monday to Friday, 9am to 5pm.",
+    "cy": {
+      "value": "Ffoniwch 0300 020 3788, dydd Llun i ddydd Gwener, 9am i 5pm.",
+      "state": "needs_review"
+    }
+  },
+  "howToRecord.copy.19": {
+    "comment": "User-facing text from src/server/common/templates/partials/how-to-record-a-catch.njk; entry 19. Welsh draft requires professional review.",
+    "en": "(Calls to 03 numbers cost the same as 01 or 02 calls.)",
+    "cy": {
+      "value": "(Mae galwadau i rifau 03 yn costio’r un faint â galwadau i rifau 01 neu 02.)",
+      "state": "needs_review"
+    }
+  },
+  "howToRecord.copy.20": {
+    "comment": "User-facing text from src/server/common/templates/partials/how-to-record-a-catch.njk; entry 20. Welsh draft requires professional review.",
+    "en": "Outside these hours, leave a catch record on our automated line.",
+    "cy": {
+      "value": "Y tu allan i'r oriau hyn, gadewch gofnod dalfa ar ein llinell awtomataidd.",
+      "state": "needs_review"
+    }
+  },
+  "liveRecords.downloadArtifact": {
+    "comment": "Download link for a generated submission artifact.",
+    "en": "Download {{type}} (submission {{number}})",
+    "cy": {
+      "value": "Lawrlwytho {{type}} (cyflwyniad {{number}})",
+      "state": "needs_review"
+    }
+  },
+  "liveRecords.notReadyToSubmit": {
+    "comment": "Message shown when the catch record cannot yet be submitted.",
+    "en": "Not ready to submit",
+    "cy": {
+      "value": "Ddim yn barod i gyflwyno",
+      "state": "needs_review"
+    }
+  },
+  "liveRecords.pairedSkipper": {
+    "comment": "Paired skipper detail on the live record page.",
+    "en": "Paired skipper: {{skipper}}",
+    "cy": {
+      "value": "Sgipper pâr: {{skipper}}",
+      "state": "needs_review"
+    }
+  },
+  "liveRecords.pairedVessel": {
+    "comment": "Paired vessel detail on the live record page.",
+    "en": "Paired vessel: {{vessel}}",
+    "cy": {
+      "value": "Llong bâr: {{vessel}}",
+      "state": "needs_review"
+    }
+  },
+  "liveRecords.preliminaryChecksPassed": {
+    "comment": "Message shown when preliminary submission validation passes.",
+    "en": "Preliminary submission checks passed. Final validation takes place when you submit.",
+    "cy": {
+      "value": "Pasiwyd y gwiriadau cyflwyno rhagarweiniol. Bydd y dilysu terfynol yn digwydd pan fyddwch yn cyflwyno.",
+      "state": "needs_review"
+    }
+  },
+  "liveRecords.recordFor": {
+    "comment": "Page title and heading for a catch record; vessel name is reference data.",
+    "en": "Catch record for {{vesselName}}",
+    "cy": {
+      "value": "Cofnod dalfa ar gyfer {{vesselName}}",
+      "state": "needs_review"
+    }
+  },
+  "liveRecords.speciesWeightLine": {
+    "comment": "Species weights shown as a list item on the live record page.",
+    "en": "{{name}} ({{code}}): above minimum {{above}} kg; below minimum {{below}} kg; legally discarded {{discarded}} kg",
+    "cy": {
+      "value": "{{name}} ({{code}}): uwchlaw’r lleiafswm {{above}} kg; islaw’r lleiafswm {{below}} kg; a daflwyd yn gyfreithlon {{discarded}} kg",
+      "state": "needs_review"
+    }
+  },
+  "liveRecords.statisticalArea": {
+    "comment": "Statistical area detail on the live record page.",
+    "en": "Statistical area: {{area}}",
+    "cy": {
+      "value": "Ardal ystadegol: {{area}}",
+      "state": "needs_review"
+    }
+  },
+  "liveRecords.status.complete": {
+    "comment": "Section completion state.",
+    "en": "Complete",
+    "cy": {
+      "value": "Wedi’i gwblhau",
+      "state": "needs_review"
+    }
+  },
+  "liveRecords.status.notComplete": {
+    "comment": "Section completion state.",
+    "en": "Not complete",
+    "cy": {
+      "value": "Heb ei gwblhau",
+      "state": "needs_review"
+    }
+  },
+  "liveRecords.submissionLabel": {
+    "comment": "Label introducing a submission and its downloadable artifacts.",
+    "en": "Submission {{number}}:",
+    "cy": {
+      "value": "Cyflwyniad {{number}}:",
+      "state": "needs_review"
+    }
+  },
+  "map.status.none": {
+    "comment": "Screen-reader announcement when an empty area on the map is selected.",
+    "en": "No statistical area selected",
+    "cy": {
+      "value": "Heb ddewis ardal ystadegol",
+      "state": "needs_review"
+    }
+  },
+  "map.status.selected": {
+    "comment": "Screen-reader announcement when an area on the map is selected.",
+    "en": "{{code}} selected",
+    "cy": {
+      "value": "Dewiswyd {{code}}",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.01": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 1. Requires a professional Welsh translation.",
+    "en": "This privacy notice explains how the Marine Management Organisation\n        (MMO) and other UK fisheries authorities collect and use your\n        personal data when you use the Under 10 Metre Catch Recording\n        Service.",
+    "cy": {
+      "value": "Mae'r hysbysiad preifatrwydd hwn yn esbonio sut mae'r Sefydliad Rheoli Morol (MMO) ac awdurdodau pysgodfeydd eraill y DU yn casglu ac yn defnyddio eich data personol pan fyddwch yn defnyddio'r Gwasanaeth Cofnodi Dalfeydd Llongau Dan 10 Metr.",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.02": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 2. Requires a professional Welsh translation.",
+    "en": "Who collects your data",
+    "cy": {
+      "value": "Pwy sy'n casglu eich data",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.03": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 3. Requires a professional Welsh translation.",
+    "en": "The Marine Management Organisation (MMO) is the lead service owner\n        and data controller for this service.",
+    "cy": {
+      "value": "Y Sefydliad Rheoli Morol (MMO) yw perchennog arweiniol y gwasanaeth a'r rheolydd data ar gyfer y gwasanaeth hwn.",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.04": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 4. Requires a professional Welsh translation.",
+    "en": "MMO works with fisheries authorities across the UK and Crown\n        Dependencies to manage and regulate fisheries. These organisations\n        may process personal data collected through this service where\n        required to carry out their statutory responsibilities.",
+    "cy": {
+      "value": "Mae'r MMO yn gweithio gydag awdurdodau pysgodfeydd ledled y DU a Thiriogaethau Dibynnol y Goron i reoli a rheoleiddio pysgodfeydd. Gall y sefydliadau hyn brosesu data personol a gesglir drwy'r gwasanaeth hwn pan fo angen er mwyn cyflawni eu cyfrifoldebau statudol.",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.05": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 5. Requires a professional Welsh translation.",
+    "en": "What personal data we collect",
+    "cy": {
+      "value": "Pa ddata personol rydym yn ei gasglu",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.06": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 6. Requires a professional Welsh translation.",
+    "en": "To provide this service, we collect and process:",
+    "cy": {
+      "value": "Er mwyn darparu'r gwasanaeth hwn, rydym yn casglu ac yn prosesu:",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.07": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 7. Requires a professional Welsh translation.",
+    "en": "your name",
+    "cy": {
+      "value": "eich enw",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.08": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 8. Requires a professional Welsh translation.",
+    "en": "your address",
+    "cy": {
+      "value": "eich cyfeiriad",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.09": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 9. Requires a professional Welsh translation.",
+    "en": "your email address",
+    "cy": {
+      "value": "eich cyfeiriad e-bost",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.10": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 10. Requires a professional Welsh translation.",
+    "en": "information about vessels you own or operate",
+    "cy": {
+      "value": "gwybodaeth am longau rydych yn berchen arnynt neu'n eu gweithredu",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.11": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 11. Requires a professional Welsh translation.",
+    "en": "catch record information you submit through the service",
+    "cy": {
+      "value": "gwybodaeth am gofnodion dalfeydd rydych yn eu cyflwyno drwy'r gwasanaeth",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.12": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 12. Requires a professional Welsh translation.",
+    "en": "You must ensure that the information you provide is accurate and\n        kept up to date.",
+    "cy": {
+      "value": "Rhaid i chi sicrhau bod yr wybodaeth a roddwch yn gywir ac yn gyfredol.",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.13": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 13. Requires a professional Welsh translation.",
+    "en": "Why we collect your data",
+    "cy": {
+      "value": "Pam rydym yn casglu eich data",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.14": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 14. Requires a professional Welsh translation.",
+    "en": "We collect and use your personal data to:",
+    "cy": {
+      "value": "Rydym yn casglu ac yn defnyddio eich data personol er mwyn:",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.15": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 15. Requires a professional Welsh translation.",
+    "en": "provide the Under 10 Metre Catch Recording Service",
+    "cy": {
+      "value": "darparu'r Gwasanaeth Cofnodi Dalfeydd Llongau Dan 10 Metr",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.16": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 16. Requires a professional Welsh translation.",
+    "en": "record and manage catch information",
+    "cy": {
+      "value": "cofnodi a rheoli gwybodaeth am ddalfeydd",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.17": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 17. Requires a professional Welsh translation.",
+    "en": "meet legal requirements relating to fisheries management and regulation",
+    "cy": {
+      "value": "bodloni gofynion cyfreithiol sy'n ymwneud â rheoli a rheoleiddio pysgodfeydd",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.18": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 18. Requires a professional Welsh translation.",
+    "en": "verify information submitted through the service",
+    "cy": {
+      "value": "gwirio gwybodaeth a gyflwynir drwy'r gwasanaeth",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.19": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 19. Requires a professional Welsh translation.",
+    "en": "prevent and detect fraud",
+    "cy": {
+      "value": "atal a chanfod twyll",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.20": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 20. Requires a professional Welsh translation.",
+    "en": "support monitoring, enforcement and compliance activities",
+    "cy": {
+      "value": "cefnogi gweithgareddau monitro, gorfodi a chydymffurfio",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.21": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 21. Requires a professional Welsh translation.",
+    "en": "Our legal basis for processing",
+    "cy": {
+      "value": "Ein sail gyfreithiol dros brosesu",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.22": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 22. Requires a professional Welsh translation.",
+    "en": "We process personal data because we are required to do so to carry\n        out tasks in the public interest and to comply with legal\n        obligations relating to fisheries management and regulation.",
+    "cy": {
+      "value": "Rydym yn prosesu data personol oherwydd bod yn ofynnol i ni wneud hynny er mwyn cyflawni tasgau er budd y cyhoedd ac i gydymffurfio â rhwymedigaethau cyfreithiol sy'n ymwneud â rheoli a rheoleiddio pysgodfeydd.",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.23": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 23. Requires a professional Welsh translation.",
+    "en": "This includes legislation governing catch recording, fisheries\n        monitoring and the management of marine resources.",
+    "cy": {
+      "value": "Mae hyn yn cynnwys deddfwriaeth sy'n llywodraethu cofnodi dalfeydd, monitro pysgodfeydd a rheoli adnoddau morol.",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.24": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 24. Requires a professional Welsh translation.",
+    "en": "Who we share your data with",
+    "cy": {
+      "value": "Gyda phwy rydym yn rhannu eich data",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.25": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 25. Requires a professional Welsh translation.",
+    "en": "We may share your data with:",
+    "cy": {
+      "value": "Efallai y byddwn yn rhannu eich data gyda:",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.26": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 26. Requires a professional Welsh translation.",
+    "en": "fisheries authorities across the United Kingdom",
+    "cy": {
+      "value": "awdurdodau pysgodfeydd ledled y Deyrnas Unedig",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.27": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 27. Requires a professional Welsh translation.",
+    "en": "Crown Dependency fisheries authorities",
+    "cy": {
+      "value": "awdurdodau pysgodfeydd Tiriogaethau Dibynnol y Goron",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.28": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 28. Requires a professional Welsh translation.",
+    "en": "Defra and its agencies",
+    "cy": {
+      "value": "Defra a'i asiantaethau",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.29": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 29. Requires a professional Welsh translation.",
+    "en": "public bodies responsible for auditing, regulation or enforcement",
+    "cy": {
+      "value": "cyrff cyhoeddus sy'n gyfrifol am archwilio, rheoleiddio neu orfodi",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.30": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 30. Requires a professional Welsh translation.",
+    "en": "organisations where sharing is required by law",
+    "cy": {
+      "value": "sefydliadau lle mae'r gyfraith yn ei gwneud yn ofynnol i rannu",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.31": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 31. Requires a professional Welsh translation.",
+    "en": "We will only share personal information where there is a lawful\n        basis to do so.",
+    "cy": {
+      "value": "Dim ond pan fo sail gyfreithlon dros wneud hynny y byddwn yn rhannu gwybodaeth bersonol.",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.32": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 32. Requires a professional Welsh translation.",
+    "en": "We will not allow any unwarranted breach of confidentiality and will\n        process your information in accordance with UK data protection\n        legislation.",
+    "cy": {
+      "value": "Ni fyddwn yn caniatáu unrhyw achos o dorri cyfrinachedd heb gyfiawnhad a byddwn yn prosesu eich gwybodaeth yn unol â deddfwriaeth diogelu data y DU.",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.33": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 33. Requires a professional Welsh translation.",
+    "en": "How we protect your data",
+    "cy": {
+      "value": "Sut rydym yn diogelu eich data",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.34": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 34. Requires a professional Welsh translation.",
+    "en": "Your personal information is processed securely using appropriate\n        technical and organisational measures designed to protect it from\n        unauthorised access, loss or misuse.",
+    "cy": {
+      "value": "Caiff eich gwybodaeth bersonol ei phrosesu'n ddiogel gan ddefnyddio mesurau technegol a threfniadol priodol sydd wedi'u cynllunio i'w diogelu rhag mynediad heb awdurdod, colled neu gamddefnydd.",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.35": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 35. Requires a professional Welsh translation.",
+    "en": "How long we keep your data",
+    "cy": {
+      "value": "Am ba hyd rydym yn cadw eich data",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.36": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 36. Requires a professional Welsh translation.",
+    "en": "We keep your information in accordance with our records management\n        and retention policies.",
+    "cy": {
+      "value": "Rydym yn cadw eich gwybodaeth yn unol â'n polisïau rheoli a chadw cofnodion.",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.37": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 37. Requires a professional Welsh translation.",
+    "en": "Information may be retained for longer where there is a legal\n        requirement or where it is needed for:",
+    "cy": {
+      "value": "Gellir cadw gwybodaeth am gyfnod hirach pan fo gofyniad cyfreithiol neu pan fo ei hangen ar gyfer:",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.38": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 38. Requires a professional Welsh translation.",
+    "en": "audits",
+    "cy": {
+      "value": "archwiliadau",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.39": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 39. Requires a professional Welsh translation.",
+    "en": "investigations or complaints",
+    "cy": {
+      "value": "ymchwiliadau neu gwynion",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.40": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 40. Requires a professional Welsh translation.",
+    "en": "legal proceedings",
+    "cy": {
+      "value": "achosion cyfreithiol",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.41": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 41. Requires a professional Welsh translation.",
+    "en": "scientific or historical research",
+    "cy": {
+      "value": "ymchwil wyddonol neu hanesyddol",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.42": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 42. Requires a professional Welsh translation.",
+    "en": "matters that establish an important precedent",
+    "cy": {
+      "value": "materion sy'n gosod cynsail pwysig",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.43": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 43. Requires a professional Welsh translation.",
+    "en": "What happens if you do not provide your data",
+    "cy": {
+      "value": "Beth sy'n digwydd os na fyddwch yn darparu eich data",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.44": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 44. Requires a professional Welsh translation.",
+    "en": "Providing the information requested by this service is necessary to\n        meet legal obligations relating to catch recording and fisheries\n        management.",
+    "cy": {
+      "value": "Mae angen darparu'r wybodaeth y gofynnir amdani gan y gwasanaeth hwn er mwyn bodloni rhwymedigaethau cyfreithiol sy'n ymwneud â chofnodi dalfeydd a rheoli pysgodfeydd.",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.45": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 45. Requires a professional Welsh translation.",
+    "en": "If you do not provide the required information, you may not be able\n        to use the service or comply with these legal requirements.",
+    "cy": {
+      "value": "Os na fyddwch yn darparu'r wybodaeth ofynnol, efallai na fyddwch yn gallu defnyddio'r gwasanaeth na chydymffurfio â'r gofynion cyfreithiol hyn.",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.46": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 46. Requires a professional Welsh translation.",
+    "en": "Automated decision-making",
+    "cy": {
+      "value": "Gwneud penderfyniadau awtomataidd",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.47": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 47. Requires a professional Welsh translation.",
+    "en": "Your information is not used to make decisions solely by automated\n        means without human involvement.",
+    "cy": {
+      "value": "Nid yw eich gwybodaeth yn cael ei defnyddio i wneud penderfyniadau drwy ddulliau awtomataidd yn unig heb gyfranogiad dynol.",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.48": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 48. Requires a professional Welsh translation.",
+    "en": "International transfers",
+    "cy": {
+      "value": "Trosglwyddiadau rhyngwladol",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.49": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 49. Requires a professional Welsh translation.",
+    "en": "Your personal data is not normally transferred outside the United\n        Kingdom or European Economic Area (EEA).",
+    "cy": {
+      "value": "Fel arfer, nid yw eich data personol yn cael ei drosglwyddo y tu allan i'r Deyrnas Unedig na'r Ardal Economaidd Ewropeaidd (AEE).",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.50": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 50. Requires a professional Welsh translation.",
+    "en": "In limited circumstances, data may be transferred where there is a\n        lawful basis and appropriate safeguards are in place.",
+    "cy": {
+      "value": "Mewn amgylchiadau cyfyngedig, gellir trosglwyddo data pan fo sail gyfreithlon a mesurau diogelu priodol ar waith.",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.51": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 51. Requires a professional Welsh translation.",
+    "en": "Your rights",
+    "cy": {
+      "value": "Eich hawliau",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.52": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 52. Requires a professional Welsh translation.",
+    "en": "Under UK data protection legislation, you have rights relating to\n        your personal information, including the right to:",
+    "cy": {
+      "value": "O dan ddeddfwriaeth diogelu data y DU, mae gennych hawliau sy'n ymwneud â'ch gwybodaeth bersonol, gan gynnwys yr hawl i:",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.53": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 53. Requires a professional Welsh translation.",
+    "en": "request access to your personal data",
+    "cy": {
+      "value": "gofyn am gael gweld eich data personol",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.54": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 54. Requires a professional Welsh translation.",
+    "en": "request correction of inaccurate data",
+    "cy": {
+      "value": "gofyn am gywiro data anghywir",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.55": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 55. Requires a professional Welsh translation.",
+    "en": "request erasure of personal data in certain circumstances",
+    "cy": {
+      "value": "gofyn am ddileu data personol mewn rhai amgylchiadau",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.56": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 56. Requires a professional Welsh translation.",
+    "en": "restrict how your data is processed in certain circumstances",
+    "cy": {
+      "value": "cyfyngu ar sut mae eich data'n cael ei brosesu mewn rhai amgylchiadau",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.57": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 57. Requires a professional Welsh translation.",
+    "en": "object to processing in certain circumstances",
+    "cy": {
+      "value": "gwrthwynebu prosesu mewn rhai amgylchiadau",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.58": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 58. Requires a professional Welsh translation.",
+    "en": "You can find out more about your rights on the Information\n        Commissioner's Office (ICO) website.",
+    "cy": {
+      "value": "Gallwch gael rhagor o wybodaeth am eich hawliau ar wefan Swyddfa'r Comisiynydd Gwybodaeth (ICO).",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.59": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 59. Requires a professional Welsh translation.",
+    "en": "Contact us",
+    "cy": {
+      "value": "Cysylltu â ni",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.60": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 60. Requires a professional Welsh translation.",
+    "en": "If you have any questions about how your personal data is used, contact:",
+    "cy": {
+      "value": "Os oes gennych unrhyw gwestiynau am sut mae eich data personol yn cael ei ddefnyddio, cysylltwch â:",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.61": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 61. Requires a professional Welsh translation.",
+    "en": "Data Protection Manager",
+    "cy": {
+      "value": "Rheolwr Diogelu Data",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.62": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 62. Requires a professional Welsh translation.",
+    "en": "Marine Management Organisation",
+    "cy": {
+      "value": "Sefydliad Rheoli Morol",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.63": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 63. Requires a professional Welsh translation.",
+    "en": "Data Protection Officer",
+    "cy": {
+      "value": "Swyddog Diogelu Data",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.64": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 64. Requires a professional Welsh translation.",
+    "en": "The MMO's Data Protection Officer can be contacted at:",
+    "cy": {
+      "value": "Gellir cysylltu â Swyddog Diogelu Data yr MMO yn:",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.65": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 65. Requires a professional Welsh translation.",
+    "en": "Data Protection Officer",
+    "cy": {
+      "value": "Swyddog Diogelu Data",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.66": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 66. Requires a professional Welsh translation.",
+    "en": "Department for Environment, Food and Rural Affairs",
+    "cy": {
+      "value": "Adran yr Amgylchedd, Bwyd a Materion Gwledig",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.67": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 67. Requires a professional Welsh translation.",
+    "en": "Complaints",
+    "cy": {
+      "value": "Cwynion",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.68": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 68. Requires a professional Welsh translation.",
+    "en": "If you are unhappy with how your personal data has been handled, you\n        can make a complaint to the Information Commissioner's Office (ICO).",
+    "cy": {
+      "value": "Os ydych yn anhapus â'r ffordd yr ymdriniwyd â'ch data personol, gallwch wneud cwyn i Swyddfa'r Comisiynydd Gwybodaeth (ICO).",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.69": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 69. Requires a professional Welsh translation.",
+    "en": "Visit:",
+    "cy": {
+      "value": "Ewch i:",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.copy.70": {
+    "comment": "Legal text shown on the privacy notice page; paragraph or label 70. Requires a professional Welsh translation.",
+    "en": "https://ico.org.uk",
+    "cy": {
+      "value": "https://ico.org.uk",
+      "state": "needs_review"
+    }
+  },
+  "privacyNotice.title": {
+    "comment": "Page title and name of the privacy notice link.",
+    "en": "Privacy notice",
+    "cy": {
+      "value": "Hysbysiad preifatrwydd",
+      "state": "needs_review"
+    }
+  },
+  "records.pagination.showing": {
+    "comment": "Results summary showing the current page range and total matching records.",
+    "en": "Showing {{first}} to {{last}} of {{total}}",
+    "cy": {
+      "value": "Yn dangos {{first}} i {{last}} o {{total}}",
+      "state": "needs_review"
+    }
+  },
+  "skipperConfirmation.titleForVessel": {
+    "comment": "Confirmation heading; vessel name is reference data.",
+    "en": "Skipper added for vessel {{vesselName}}",
+    "cy": {
+      "value": "Ychwanegwyd sgipper ar gyfer y llong {{vesselName}}",
+      "state": "needs_review"
+    }
+  },
+  "species.weight.error.decimals": {
+    "comment": "Weight validation error for too many decimal places.",
+    "en": "The weight for {{species}} must be a number with up to one decimal place",
+    "cy": {
+      "value": "Rhaid i bwysau {{species}} fod yn rhif gydag un lle degol ar y mwyaf",
+      "state": "needs_review"
+    }
+  },
+  "species.weight.error.max": {
+    "comment": "Weight validation error when the value exceeds the maximum.",
+    "en": "The weight for {{species}} must be 10,000kg or less",
+    "cy": {
+      "value": "Rhaid i bwysau {{species}} fod yn 10,000kg neu lai",
+      "state": "needs_review"
+    }
+  },
+  "species.weight.error.missing": {
+    "comment": "Weight validation error when a species weight is required.",
+    "en": "Enter the {{field}} for {{species}}",
+    "cy": {
+      "value": "Rhowch {{field}} ar gyfer {{species}}",
+      "state": "needs_review"
+    }
+  },
+  "species.weight.error.notNumber": {
+    "comment": "Weight validation error when the value is not numeric.",
+    "en": "The weight for {{species}} must be a number",
+    "cy": {
+      "value": "Rhaid i bwysau {{species}} fod yn rhif",
+      "state": "needs_review"
+    }
+  },
+  "species.weight.error.positive": {
+    "comment": "Weight validation error when the value must be positive.",
+    "en": "The weight for {{species}} must be more than 0kg",
+    "cy": {
+      "value": "Rhaid i bwysau {{species}} fod yn fwy na 0kg",
+      "state": "needs_review"
+    }
+  },
+  "speciesNotLanded.error.enterWeight": {
+    "comment": "Error when a weight is required for a species not being landed.",
+    "en": "Enter a weight for {{species}}",
+    "cy": {
+      "value": "Rhowch bwysau ar gyfer {{species}}",
+      "state": "needs_review"
+    }
+  },
+  "speciesSelection.addSpeciesToRecord": {
+    "comment": "User-facing add-species page text with reference-data placeholders; Welsh draft requires review.",
+    "en": "Add species to your catch record",
+    "cy": {
+      "value": "Ychwanegu rhywogaethau at eich cofnod dalfa",
+      "state": "needs_review"
+    }
+  },
+  "speciesSelection.addSpeciesToVessel": {
+    "comment": "User-facing add-species page text with reference-data placeholders; Welsh draft requires review.",
+    "en": "Add species to your vessel",
+    "cy": {
+      "value": "Ychwanegu rhywogaethau at eich llong",
+      "state": "needs_review"
+    }
+  },
+  "speciesSelection.error.alreadyAdded": {
+    "comment": "User-facing add-species page text with reference-data placeholders; Welsh draft requires review.",
+    "en": "{{species}} has already been added.",
+    "cy": {
+      "value": "Mae {{species}} eisoes wedi’i ychwanegu.",
+      "state": "needs_review"
+    }
+  },
+  "speciesSelection.error.discardedExceedsRetained": {
+    "comment": "Validation error when legally discarded weight is not lower than retained weight.",
+    "en": "Weight above minimum size retained must be higher than weight legally discarded for {{species}}",
+    "cy": {
+      "value": "Rhaid i’r pwysau a gedwir uwchlaw’r maint lleiaf fod yn fwy na’r pwysau a daflwyd yn gyfreithlon ar gyfer {{species}}",
+      "state": "needs_review"
+    }
+  },
+  "speciesSelection.error.enterToAdd": {
+    "comment": "User-facing add-species page text with reference-data placeholders; Welsh draft requires review.",
+    "en": "Enter the species you want to add",
+    "cy": {
+      "value": "Rhowch y rhywogaeth rydych am ei hychwanegu",
+      "state": "needs_review"
+    }
+  },
+  "speciesSelection.title": {
+    "comment": "Question title when the user has not selected a specific gear.",
+    "en": "Which species did you catch?",
+    "cy": {
+      "value": "Pa rywogaethau wnaethoch chi eu dal?",
+      "state": "needs_review"
+    }
+  },
+  "speciesSelection.titleForVessel": {
+    "comment": "Page title when adding a species to a vessel; heading and vessel name are separate placeholders. Welsh text needs professional review.",
+    "en": "{{heading}} {{vesselName}}",
+    "cy": {
+      "value": "{{heading}} {{vesselName}}",
+      "state": "needs_review"
+    }
+  },
+  "speciesSelection.titleWithGear": {
+    "comment": "Question title when editing a specific gear.",
+    "en": "Which species did you catch with {{gear}}?",
+    "cy": {
+      "value": "Pa rywogaethau wnaethoch chi eu dal gyda {{gear}}?",
+      "state": "needs_review"
+    }
+  },
+  "speciesSelection.titleWithGears": {
+    "comment": "Question title scoped to selected gear; gear names are reference data.",
+    "en": "What species did you catch with {{gear}}?",
+    "cy": {
+      "value": "Pa rywogaethau wnaethoch chi eu dal gyda {{gear}}?",
+      "state": "needs_review"
+    }
+  },
+  "speciesSelection.weightToggle.addBelow": {
+    "comment": "Link that reveals the below-minimum retained weight input.",
+    "en": "Add weight below minimum size retained (kg)",
+    "cy": {
+      "value": "Ychwanegu pwysau a gedwir islaw’r maint lleiaf (kg)",
+      "state": "needs_review"
+    }
+  },
+  "speciesSelection.weightToggle.addDiscarded": {
+    "comment": "Link that reveals the legally discarded weight input.",
+    "en": "Add weight legally discarded (kg)",
+    "cy": {
+      "value": "Ychwanegu pwysau a daflwyd yn gyfreithlon (kg)",
+      "state": "needs_review"
+    }
+  },
+  "speciesSelection.weightToggle.removeBelow": {
+    "comment": "Link that hides the below-minimum retained weight input.",
+    "en": "Remove weight below minimum size retained (kg)",
+    "cy": {
+      "value": "Dileu pwysau a gedwir islaw’r maint lleiaf (kg)",
+      "state": "needs_review"
+    }
+  },
+  "speciesSelection.weightToggle.removeDiscarded": {
+    "comment": "Link that hides the legally discarded weight input.",
+    "en": "Remove weight legally discarded (kg)",
+    "cy": {
+      "value": "Dileu pwysau a daflwyd yn gyfreithlon (kg)",
+      "state": "needs_review"
+    }
+  },
+  "statisticalArea.body1": {
+    "comment": "Statistical-area question and supporting text; Welsh draft requires professional review.",
+    "en": "The statistical areas nearest to your departure port are shown below. Select the area where most of your catch was caught.",
+    "cy": {
+      "value": "Dangosir isod yr ardaloedd ystadegol sydd agosaf at eich porthladd ymadael. Dewiswch yr ardal lle cafodd y rhan fwyaf o’ch dalfa ei dal.",
+      "state": "needs_review"
+    }
+  },
+  "statisticalArea.body2": {
+    "comment": "Statistical-area question and supporting text; Welsh draft requires professional review.",
+    "en": "If it is not listed, select 'Other' to enter it.",
+    "cy": {
+      "value": "Os nad yw wedi’i rhestru, dewiswch 'Arall' i’w nodi.",
+      "state": "needs_review"
+    }
+  },
+  "statisticalArea.manualTitle": {
+    "comment": "Statistical-area question and supporting text; Welsh draft requires professional review.",
+    "en": "Select the statistical sub area where the majority of your catch was caught",
+    "cy": {
+      "value": "Dewiswch yr is-ardal ystadegol lle cafodd y rhan fwyaf o’ch dalfa ei dal",
+      "state": "needs_review"
+    }
+  },
+  "statisticalArea.manualTitleWithGear": {
+    "comment": "Statistical-area question and supporting text; Welsh draft requires professional review.",
+    "en": "Select the statistical sub area where the majority of your catch was caught using {{gear}}",
+    "cy": {
+      "value": "Dewiswch yr is-ardal ystadegol lle cafodd y rhan fwyaf o’ch dalfa ei dal gan ddefnyddio {{gear}}",
+      "state": "needs_review"
+    }
+  },
+  "statisticalArea.title": {
+    "comment": "Statistical-area question and supporting text; Welsh draft requires professional review.",
+    "en": "Where was the majority of your catch caught?",
+    "cy": {
+      "value": "Ble cafodd y rhan fwyaf o’ch dalfa ei dal?",
+      "state": "needs_review"
+    }
+  },
+  "statisticalArea.titleWithGear": {
+    "comment": "Statistical-area question and supporting text; Welsh draft requires professional review.",
+    "en": "Where was the majority of your catch caught using {{gear}}?",
+    "cy": {
+      "value": "Ble cafodd y rhan fwyaf o’ch dalfa ei dal gan ddefnyddio {{gear}}?",
+      "state": "needs_review"
+    }
+  }
+}

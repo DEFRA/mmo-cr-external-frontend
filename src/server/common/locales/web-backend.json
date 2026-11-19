@@ -1,0 +1,482 @@
+{
+  "addGear.error.selectFromList": {
+    "comment": "User-facing heading, hint or validation message. Welsh draft requires professional review.",
+    "en": "Select a gear type from the list",
+    "cy": {
+      "value": "Dewiswch fath o offer o’r rhestr",
+      "state": "needs_review"
+    }
+  },
+  "addGear.error.selectToAdd": {
+    "comment": "User-facing heading, hint or validation message. Welsh draft requires professional review.",
+    "en": "Select the gear you want to add",
+    "cy": {
+      "value": "Dewiswch yr offer rydych am eu hychwanegu",
+      "state": "needs_review"
+    }
+  },
+  "addGear.favourites.title": {
+    "comment": "User-facing heading, hint or validation message. Welsh draft requires professional review.",
+    "en": "Add gear to your favourites",
+    "cy": {
+      "value": "Ychwanegu offer at eich ffefrynnau",
+      "state": "needs_review"
+    }
+  },
+  "addPort.departure.title": {
+    "comment": "User-facing heading, hint or validation message. Welsh draft requires professional review.",
+    "en": "Enter the port or closest port you set off from",
+    "cy": {
+      "value": "Rhowch y porthladd neu’r porthladd agosaf y gwnaethoch adael ohono",
+      "state": "needs_review"
+    }
+  },
+  "addPort.favourites.title": {
+    "comment": "User-facing heading, hint or validation message. Welsh draft requires professional review.",
+    "en": "Add a port to your favourites",
+    "cy": {
+      "value": "Ychwanegu porthladd at eich ffefrynnau",
+      "state": "needs_review"
+    }
+  },
+  "addPort.return.title": {
+    "comment": "User-facing heading, hint or validation message. Welsh draft requires professional review.",
+    "en": "Enter the port or closest port you returned to",
+    "cy": {
+      "value": "Rhowch y porthladd neu’r porthladd agosaf y gwnaethoch ddychwelyd iddo",
+      "state": "needs_review"
+    }
+  },
+  "catchRecord.addPort.validation.none": {
+    "comment": "User-facing text from src/server/routes/add-port/controller.js at line 36. Welsh translation requires professional review.",
+    "en": "Select a port from the list",
+    "cy": {
+      "value": "Dewiswch borthladd o'r rhestr",
+      "state": "needs_review"
+    }
+  },
+  "catchRecord.catchLocation.validation.none": {
+    "comment": "User-facing text from src/server/routes/statistical-area-other/controller.js at line 24. Welsh translation requires professional review.",
+    "en": "Select a statistical subrectangle",
+    "cy": {
+      "value": "Dewiswch is-betryal ystadegol",
+      "state": "needs_review"
+    }
+  },
+  "catchRecord.draftAction.heading": {
+    "comment": "User-facing text from src/server/routes/draft/controller.js at line 36. Welsh translation requires professional review.",
+    "en": "What do you want to do with your draft record?",
+    "cy": {
+      "value": "Beth hoffech chi ei wneud gyda'ch cofnod drafft?",
+      "state": "needs_review"
+    }
+  },
+  "catchRecord.draftAction.validation.none": {
+    "comment": "User-facing text from src/server/routes/draft/controller.js at line 13. Welsh translation requires professional review.",
+    "en": "Select what you want to do with this draft record",
+    "cy": {
+      "value": "Dewiswch beth hoffech ei wneud gyda'r cofnod drafft hwn",
+      "state": "needs_review"
+    }
+  },
+  "catchRecord.landingStorageSpecies.heading": {
+    "comment": "User-facing text from src/server/routes/species-not-landed/controller.js at line 24. Welsh translation requires professional review.",
+    "en": "Which species from this trip are you not landing straight away?",
+    "cy": {
+      "value": "Pa rywogaethau o'r daith hon nad ydych yn eu glanio ar unwaith?",
+      "state": "needs_review"
+    }
+  },
+  "catchRecord.selectGear.validation.none": {
+    "comment": "User-facing text from src/server/routes/gear-selection/controller.js at line 323. Welsh translation requires professional review.",
+    "en": "Select the gear used on this trip",
+    "cy": {
+      "value": "Dewiswch y gêr a ddefnyddiwyd ar y daith hon",
+      "state": "needs_review"
+    }
+  },
+  "catchRecord.selectPort.return.validation.none": {
+    "comment": "User-facing text from src/server/routes/return-port/controller.js at line 25. Welsh translation requires professional review.",
+    "en": "Select the port you returned to",
+    "cy": {
+      "value": "Dewiswch y porthladd y gwnaethoch ddychwelyd iddo",
+      "state": "needs_review"
+    }
+  },
+  "catchRecord.selectVessel.heading": {
+    "comment": "User-facing text from src/server/routes/select-vessel/controller.js at line 20. Welsh translation requires professional review.",
+    "en": "Which vessel did you use?",
+    "cy": {
+      "value": "Pa long wnaethoch chi ei defnyddio?",
+      "state": "needs_review"
+    }
+  },
+  "catchRecord.submissionSuccess.heading": {
+    "comment": "User-facing text from src/server/routes/confirmation/controller.js at line 7. Welsh translation requires professional review.",
+    "en": "Your catch record has been submitted",
+    "cy": {
+      "value": "Mae eich cofnod dalfa wedi'i gyflwyno",
+      "state": "needs_review"
+    }
+  },
+  "catchRecord.tripDate.departure.title": {
+    "comment": "User-facing text from src/server/routes/trip-departure-date/controller.js at line 20. Welsh translation requires professional review.",
+    "en": "Which date did you set off on your trip?",
+    "cy": {
+      "value": "Ar ba ddyddiad wnaethoch chi gychwyn ar eich taith?",
+      "state": "needs_review"
+    }
+  },
+  "catchRecord.tripDate.return.title": {
+    "comment": "User-facing text from src/server/routes/trip-return-date/controller.js at line 19. Welsh translation requires professional review.",
+    "en": "Which date did you return from your trip?",
+    "cy": {
+      "value": "Ar ba ddyddiad wnaethoch chi ddychwelyd o'ch taith?",
+      "state": "needs_review"
+    }
+  },
+  "checkAnswers.title": {
+    "comment": "User-facing heading, hint or validation message. Welsh draft requires professional review.",
+    "en": "Check your catch record",
+    "cy": {
+      "value": "Gwiriwch eich cofnod dalfa",
+      "state": "needs_review"
+    }
+  },
+  "editReview.error.confirmDeclaration": {
+    "comment": "User-facing heading, hint or validation message. Welsh draft requires professional review.",
+    "en": "Select I confirm the information is complete and accurate",
+    "cy": {
+      "value": "Dewiswch Rwy’n cadarnhau bod yr wybodaeth yn gyflawn ac yn gywir",
+      "state": "needs_review"
+    }
+  },
+  "home.title": {
+    "comment": "User-facing text from src/server/routes/live-records/controller.js at line 55. Welsh translation requires professional review.",
+    "en": "Your catch records",
+    "cy": {
+      "value": "Eich cofnodion dalfa",
+      "state": "needs_review"
+    }
+  },
+  "removeGear.error.select": {
+    "comment": "User-facing heading, hint or validation message. Welsh draft requires professional review.",
+    "en": "Select the gear you want to remove",
+    "cy": {
+      "value": "Dewiswch yr offer rydych am eu dileu",
+      "state": "needs_review"
+    }
+  },
+  "removeGear.favourites.title": {
+    "comment": "User-facing heading, hint or validation message. Welsh draft requires professional review.",
+    "en": "Remove gear from your favourites",
+    "cy": {
+      "value": "Dileu offer o’ch ffefrynnau",
+      "state": "needs_review"
+    }
+  },
+  "removeGear.title": {
+    "comment": "User-facing heading, hint or validation message. Welsh draft requires professional review.",
+    "en": "Remove gear from vessel",
+    "cy": {
+      "value": "Dileu offer o’r llong",
+      "state": "needs_review"
+    }
+  },
+  "removePort.error.select": {
+    "comment": "User-facing heading, hint or validation message. Welsh draft requires professional review.",
+    "en": "Select the port you want to remove",
+    "cy": {
+      "value": "Dewiswch y porthladd rydych am ei ddileu",
+      "state": "needs_review"
+    }
+  },
+  "removePort.favourites.title": {
+    "comment": "User-facing heading, hint or validation message. Welsh draft requires professional review.",
+    "en": "Remove ports from your favourites",
+    "cy": {
+      "value": "Dileu porthladdoedd o’ch ffefrynnau",
+      "state": "needs_review"
+    }
+  },
+  "removePort.title": {
+    "comment": "User-facing heading, hint or validation message. Welsh draft requires professional review.",
+    "en": "Remove ports from vessel",
+    "cy": {
+      "value": "Dileu porthladdoedd o’r llong",
+      "state": "needs_review"
+    }
+  },
+  "removeSpecies.caption.favourites": {
+    "comment": "User-facing heading, hint or validation message. Welsh draft requires professional review.",
+    "en": "Your favourites",
+    "cy": {
+      "value": "Eich ffefrynnau",
+      "state": "needs_review"
+    }
+  },
+  "removeSpecies.error.select": {
+    "comment": "User-facing heading, hint or validation message. Welsh draft requires professional review.",
+    "en": "Select the species you want to remove",
+    "cy": {
+      "value": "Dewiswch y rhywogaeth rydych am ei dileu",
+      "state": "needs_review"
+    }
+  },
+  "removeSpecies.favourites.title": {
+    "comment": "User-facing heading, hint or validation message. Welsh draft requires professional review.",
+    "en": "Remove species from your favourites",
+    "cy": {
+      "value": "Dileu rhywogaethau o’ch ffefrynnau",
+      "state": "needs_review"
+    }
+  },
+  "removeSpecies.title": {
+    "comment": "User-facing heading, hint or validation message. Welsh draft requires professional review.",
+    "en": "Remove species from vessel",
+    "cy": {
+      "value": "Dileu rhywogaethau o’r llong",
+      "state": "needs_review"
+    }
+  },
+  "selectVessel.error.cannotChange": {
+    "comment": "User-facing heading, hint or validation message. Welsh draft requires professional review.",
+    "en": "You cannot change vessel for this record. Start a new catch record from Your catch records.",
+    "cy": {
+      "value": "Ni allwch newid y llong ar gyfer y cofnod hwn. Dechreuwch gofnod dalfa newydd o’ch cofnodion dalfa.",
+      "state": "needs_review"
+    }
+  },
+  "speciesSelection.error.selectSpeciesToAdd": {
+    "comment": "User-facing heading, hint or validation message. Welsh draft requires professional review.",
+    "en": "Select a species to add",
+    "cy": {
+      "value": "Dewiswch rywogaeth i’w hychwanegu",
+      "state": "needs_review"
+    }
+  },
+  "speciesSelection.error.selectToAdd": {
+    "comment": "User-facing heading, hint or validation message. Welsh draft requires professional review.",
+    "en": "Select a species to add",
+    "cy": {
+      "value": "Dewiswch rywogaeth i’w hychwanegu",
+      "state": "needs_review"
+    }
+  },
+  "speciesSelection.favourites.title": {
+    "comment": "User-facing heading, hint or validation message. Welsh draft requires professional review.",
+    "en": "Add species to your favourites",
+    "cy": {
+      "value": "Ychwanegu rhywogaethau at eich ffefrynnau",
+      "state": "needs_review"
+    }
+  },
+  "statisticalAreaOther.error.format": {
+    "comment": "User-facing heading, hint or validation message. Welsh draft requires professional review.",
+    "en": "Enter a statistical subrectangle in the correct format, for example 38E84",
+    "cy": {
+      "value": "Rhowch is-betryal ystadegol yn y fformat cywir, er enghraifft 38E84",
+      "state": "needs_review"
+    }
+  },
+  "statisticalAreaOther.error.invalid": {
+    "comment": "User-facing heading, hint or validation message. Welsh draft requires professional review.",
+    "en": "Enter a valid statistical sub area code.",
+    "cy": {
+      "value": "Rhowch god is-ardal ystadegol dilys.",
+      "state": "needs_review"
+    }
+  },
+  "statisticalAreaOther.error.select": {
+    "comment": "User-facing heading, hint or validation message. Welsh draft requires professional review.",
+    "en": "Select a statistical subrectangle",
+    "cy": {
+      "value": "Dewiswch is-betryal ystadegol",
+      "state": "needs_review"
+    }
+  },
+  "web.about.controller.js.copy.10.1": {
+    "comment": "User-facing text from src/server/routes/about/controller.js at line 10. Welsh translation requires professional review.",
+    "en": "About",
+    "cy": {
+      "value": "Ynghylch",
+      "state": "needs_review"
+    }
+  },
+  "web.about.controller.js.copy.11.1": {
+    "comment": "User-facing text from src/server/routes/about/controller.js at line 11. Welsh translation requires professional review.",
+    "en": "About",
+    "cy": {
+      "value": "Ynghylch",
+      "state": "needs_review"
+    }
+  },
+  "web.add-gear.controller.js.copy.29.1": {
+    "comment": "User-facing text from src/server/routes/add-gear/controller.js at line 29. Welsh translation requires professional review.",
+    "en": "What gear did you use?",
+    "cy": {
+      "value": "Pa offer wnaethoch chi eu defnyddio?",
+      "state": "needs_review"
+    }
+  },
+  "web.add-species.controller.js.copy.22.1": {
+    "comment": "User-facing text from src/server/routes/add-species/controller.js at line 22. Welsh translation requires professional review.",
+    "en": "Add species to your vessel",
+    "cy": {
+      "value": "Ychwanegu rhywogaethau at eich llong",
+      "state": "needs_review"
+    }
+  },
+  "web.catch-not-landed.controller.js.copy.14.1": {
+    "comment": "User-facing text from src/server/routes/catch-not-landed/controller.js at line 14. Welsh translation requires professional review.",
+    "en": "Is there any catch you won’t be landing straight away?",
+    "cy": {
+      "value": "Oes unrhyw ddalfa na fyddwch yn ei glanio’n syth?",
+      "state": "needs_review"
+    }
+  },
+  "web.catch-not-landed.controller.js.copy.44.1": {
+    "comment": "User-facing text from src/server/routes/catch-not-landed/controller.js at line 44. Welsh translation requires professional review.",
+    "en": "Select yes if any catch will not be landed straight away",
+    "cy": {
+      "value": "Dewiswch Oes os na fydd unrhyw ddalfa’n cael ei glanio’n syth",
+      "state": "needs_review"
+    }
+  },
+  "web.departure-port.controller.js.copy.27.1": {
+    "comment": "User-facing text from src/server/routes/departure-port/controller.js at line 27. Welsh translation requires professional review.",
+    "en": "Select the port you set off from",
+    "cy": {
+      "value": "Dewiswch y porthladd y gwnaethoch adael ohono",
+      "state": "needs_review"
+    }
+  },
+  "web.edit-catch-record-reason.controller.js.copy.110.1": {
+    "comment": "User-facing text from src/server/routes/edit-catch-record-reason/controller.js at line 110. Welsh translation requires professional review.",
+    "en": "Enter the reason for editing this catch record",
+    "cy": {
+      "value": "Rhowch y rheswm dros olygu’r cofnod dalfa hwn",
+      "state": "needs_review"
+    }
+  },
+  "web.edit-catch-record-reason.controller.js.copy.18.1": {
+    "comment": "User-facing text from src/server/routes/edit-catch-record-reason/controller.js at line 18. Welsh translation requires professional review.",
+    "en": "Why are you editing this catch record?",
+    "cy": {
+      "value": "Pam ydych chi’n golygu’r cofnod dalfa hwn?",
+      "state": "needs_review"
+    }
+  },
+  "web.edit-catch-record-reason.controller.js.copy.19.1": {
+    "comment": "User-facing text from src/server/routes/edit-catch-record-reason/controller.js at line 19. Welsh translation requires professional review.",
+    "en": "Why are you editing this record?",
+    "cy": {
+      "value": "Pam ydych chi’n golygu’r cofnod hwn?",
+      "state": "needs_review"
+    }
+  },
+  "web.edit-catch-record-review.live-amendment.js.copy.49.1": {
+    "comment": "User-facing text from src/server/routes/edit-catch-record-review/live-amendment.js at line 49. Welsh translation requires professional review.",
+    "en": "Why are you editing this catch record?",
+    "cy": {
+      "value": "Pam ydych chi’n golygu’r cofnod dalfa hwn?",
+      "state": "needs_review"
+    }
+  },
+  "web.edit-catch-record-review.live-amendment.js.copy.50.1": {
+    "comment": "User-facing text from src/server/routes/edit-catch-record-review/live-amendment.js at line 50. Welsh translation requires professional review.",
+    "en": "Why are you editing this catch record?",
+    "cy": {
+      "value": "Pam ydych chi’n golygu’r cofnod dalfa hwn?",
+      "state": "needs_review"
+    }
+  },
+  "web.gear-selection.controller.js.copy.27.1": {
+    "comment": "User-facing text from src/server/routes/gear-selection/controller.js at line 27. Welsh translation requires professional review.",
+    "en": "What gear did you use?",
+    "cy": {
+      "value": "Pa offer wnaethoch chi eu defnyddio?",
+      "state": "needs_review"
+    }
+  },
+  "web.gear-selection.controller.js.copy.348.1": {
+    "comment": "User-facing text from src/server/routes/gear-selection/controller.js at line 348. Welsh translation requires professional review.",
+    "en": "Select the gear you used",
+    "cy": {
+      "value": "Dewiswch yr offer a ddefnyddiwyd gennych",
+      "state": "needs_review"
+    }
+  },
+  "web.guidance.controller.js.copy.11.1": {
+    "comment": "User-facing text from src/server/routes/guidance/controller.js at line 11. Welsh translation requires professional review.",
+    "en": "How to record your catch",
+    "cy": {
+      "value": "Sut i gofnodi eich dalfa",
+      "state": "needs_review"
+    }
+  },
+  "web.guidance.controller.js.copy.12.1": {
+    "comment": "User-facing text from src/server/routes/guidance/controller.js at line 12. Welsh translation requires professional review.",
+    "en": "How to record your catch",
+    "cy": {
+      "value": "Sut i gofnodi eich dalfa",
+      "state": "needs_review"
+    }
+  },
+  "web.not-implemented.controller.js.copy.17.1": {
+    "comment": "User-facing text from src/server/routes/not-implemented/controller.js at line 17. Welsh translation requires professional review.",
+    "en": "Feature not available",
+    "cy": {
+      "value": "Nid yw’r nodwedd ar gael",
+      "state": "needs_review"
+    }
+  },
+  "web.not-implemented.controller.js.copy.18.1": {
+    "comment": "User-facing text from src/server/routes/not-implemented/controller.js at line 18. Welsh translation requires professional review.",
+    "en": "Feature not available",
+    "cy": {
+      "value": "Nid yw’r nodwedd ar gael",
+      "state": "needs_review"
+    }
+  },
+  "web.remove-gear.controller.js.copy.55.1": {
+    "comment": "User-facing text from src/server/routes/remove-gear/controller.js at line 55. Welsh translation requires professional review.",
+    "en": "Select the gear you want to remove",
+    "cy": {
+      "value": "Dewiswch yr offer rydych am eu dileu",
+      "state": "needs_review"
+    }
+  },
+  "web.remove-port.controller.js.copy.60.1": {
+    "comment": "User-facing text from src/server/routes/remove-port/controller.js at line 60. Welsh translation requires professional review.",
+    "en": "Select the port you want to remove",
+    "cy": {
+      "value": "Dewiswch y porthladd rydych am ei ddileu",
+      "state": "needs_review"
+    }
+  },
+  "web.remove-species.controller.js.copy.120.1": {
+    "comment": "User-facing text from src/server/routes/remove-species/controller.js at line 120. Welsh translation requires professional review.",
+    "en": "Select the species you want to remove",
+    "cy": {
+      "value": "Dewiswch y rhywogaeth rydych am ei dileu",
+      "state": "needs_review"
+    }
+  },
+  "web.remove-species.controller.js.copy.27.1": {
+    "comment": "User-facing text from src/server/routes/remove-species/controller.js at line 27. Welsh translation requires professional review.",
+    "en": "Remove species from vessel",
+    "cy": {
+      "value": "Dileu rhywogaethau o’r llong",
+      "state": "needs_review"
+    }
+  },
+  "web.statistical-area.controller.js.copy.90.1": {
+    "comment": "User-facing text from src/server/routes/statistical-area/controller.js at line 90. Welsh translation requires professional review.",
+    "en": "Select the area where most of your catch was caught",
+    "cy": {
+      "value": "Dewiswch yr ardal lle cafodd y rhan fwyaf o’ch dalfa ei dal",
+      "state": "needs_review"
+    }
+  }
+}

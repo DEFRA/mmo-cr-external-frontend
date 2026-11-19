@@ -1,3 +1,5 @@
+import { t } from '#/server/common/helpers/i18n/translator.js'
+
 import Joi from 'joi'
 
 import {
@@ -23,8 +25,8 @@ import {
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 import { loadFavouriteGears } from '#/server/common/helpers/journey/session-favourites.js'
 
-const pageTitle = 'What gear did you use?'
-const titleText = 'There is a problem'
+const pageTitle = () => t('web.gear-selection.controller.js.copy.27.1')
+const titleText = () => t('common.errorSummary.title')
 
 // Pots keeps its own dedicated potsHauled/potsInWater fields (wired into
 // check-answers/records elsewhere) - every other gear type with a catalogue
@@ -63,12 +65,14 @@ function gearCheckboxItems(
       option,
       favouriteGearMeasurements[option.id]
     )
+    const optionHint =
+      option.hint === 'Hint text' ? t('gear.hint.handlines') : option.hint
     return {
       value: option.id,
       text: option.label,
       hint: savedMeasurements.length
         ? savedMeasurements.join(', ')
-        : option.hint,
+        : optionHint,
       checked: selectedGearIds.includes(option.id),
       measurements: gearMeasurementItems(
         option.id,
@@ -105,12 +109,12 @@ function viewContext(request, catalogue, overrides = {}) {
   )
 
   return {
-    pageTitle,
-    heading: pageTitle,
+    pageTitle: pageTitle(),
+    heading: pageTitle(),
     caption: catchRecordCaption(request),
     backLink: {
       href: '/return-port',
-      text: 'Back'
+      text: t('header.back')
     },
     gearCheckboxItems: gearCheckboxItems(
       selectedGearIds,
@@ -318,11 +322,11 @@ export const gearSelectionSubmitController = {
           vesselLengthMetres:
             getJourneyState(request).selectedVesselLengthOverallMetres
         })
-        const errorText = 'Select the gear used on this trip'
+        const errorText = t('catchRecord.selectGear.validation.none')
 
         return renderWithErrors(request, h, catalogue, {
           errorSummary: {
-            titleText,
+            titleText: titleText(),
             errorList: [{ text: errorText, href: '#gearIds' }]
           },
           fieldErrors: { gearIds: errorText },
@@ -343,10 +347,10 @@ export const gearSelectionSubmitController = {
     ]
     const validGearIds = new Set(catalogue.map((gear) => gear.id))
     if (!gearIds.length || gearIds.some((id) => !validGearIds.has(id))) {
-      const errorText = 'Select the gear you used'
+      const errorText = t('web.gear-selection.controller.js.copy.348.1')
       return renderWithErrors(request, h, catalogue, {
         errorSummary: {
-          titleText,
+          titleText: titleText(),
           errorList: [{ text: errorText, href: '#gearIds' }]
         },
         fieldErrors: { gearIds: errorText },
@@ -364,7 +368,7 @@ export const gearSelectionSubmitController = {
 
     if (errorList.length) {
       return renderWithErrors(request, h, catalogue, {
-        errorSummary: { titleText, errorList },
+        errorSummary: { titleText: titleText(), errorList },
         fieldErrors,
         selectedGearIds: gearIds,
         potsDetails: potsSelected ? { potsHauled, potsInWater } : undefined,

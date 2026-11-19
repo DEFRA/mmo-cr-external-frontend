@@ -14,6 +14,7 @@ import { getCacheEngine } from './common/helpers/session-cache/cache-engine.js'
 import { secureContext } from '@defra/hapi-secure-context'
 import { contentSecurityPolicy } from './plugins/content-security-policy.js'
 import { metrics } from '@defra/cdp-metrics'
+import { i18n } from './plugins/i18n.js'
 
 export async function createServer() {
   const server = hapi.server({
@@ -55,6 +56,7 @@ export async function createServer() {
   await server.register([
     requestLogger,
     requestTracing,
+    i18n,
     metrics,
     secureContext,
     pulse,

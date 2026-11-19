@@ -15,11 +15,11 @@
               </h1>
             </legend>
             <p class="govuk-body">
-              For example, keeping white fish onboard for bait or storing shellfish in keep pots.
+              {{ t('catchRecord.landingStorageSpecies.hint') }}
             </p>
             {% if fieldErrors.speciesIds %}
               <p id="speciesIds-error" class="govuk-error-message">
-                <span class="govuk-visually-hidden">Error:</span> {{ fieldErrors.speciesIds }}
+                <span class="govuk-visually-hidden">{{ t('a11y.errorPrefix') }}</span> {{ fieldErrors.speciesIds }}
               </p>
             {% endif %}
             <div class="govuk-checkboxes app-species-checkboxes" data-module="govuk-checkboxes">
@@ -40,7 +40,7 @@
                   {{ govukInput({
                     id: "weightAboveMinimum-" + item.value,
                     name: "weightAboveMinimum-" + item.value,
-                    label: { text: "Weight above minimum size kept onboard or in keep pots (kg)" },
+                    label: { text: t('catchRecord.landingStorageSpecies.weight') },
                     classes: "govuk-!-width-one-half",
                     inputmode: "decimal",
                     value: item.weights.weightAboveMinimum,
@@ -53,7 +53,7 @@
         </div>
 
         {{ govukButton({
-          text: "Save and continue",
+          text: t('common.button.saveAndContinue'),
           classes: "govuk-!-margin-top-6"
         }) }}
       </form>

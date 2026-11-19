@@ -1,14 +1,55 @@
 // Status display mapping only (label + govukTag colour) — routing lives in journey/records.js.
+import { t } from '#/server/common/helpers/i18n/translator.js'
+
+const STATUS_KEYS = {
+  submitted: 'records.status.submitted',
+  amended: 'records.status.amended',
+  draft: 'records.status.draft',
+  unsent: 'records.status.unsent',
+  late: 'records.status.late',
+  complete: 'records.status.complete',
+  unknown: 'records.status.unknown'
+}
+
+const DISPLAY_STATUS_KEYS = {
+  Amended: STATUS_KEYS.amended,
+  Complete: STATUS_KEYS.complete,
+  Draft: STATUS_KEYS.draft,
+  Late: STATUS_KEYS.late,
+  Submitted: STATUS_KEYS.submitted,
+  Unsent: STATUS_KEYS.unsent,
+  Unknown: STATUS_KEYS.unknown
+}
+
 const STATUS_DISPLAY = {
-  submitted: { text: 'Submitted', tagClasses: 'govuk-tag--green' },
-  amended: { text: 'Amended', tagClasses: 'govuk-tag--blue' },
-  draft: { text: 'Draft', tagClasses: 'govuk-tag--yellow' },
-  unsent: { text: 'Unsent', tagClasses: 'govuk-tag--yellow' },
-  late: { text: 'Late', tagClasses: 'govuk-tag--pink' }
+  submitted: {
+    text: () => t(STATUS_KEYS.submitted),
+    tagClasses: 'govuk-tag--green'
+  },
+  amended: {
+    text: () => t(STATUS_KEYS.amended),
+    tagClasses: 'govuk-tag--blue'
+  },
+  draft: {
+    text: () => t(STATUS_KEYS.draft),
+    tagClasses: 'govuk-tag--yellow'
+  },
+  unsent: {
+    text: () => t(STATUS_KEYS.unsent),
+    tagClasses: 'govuk-tag--yellow'
+  },
+  late: {
+    text: () => t(STATUS_KEYS.late),
+    tagClasses: 'govuk-tag--pink'
+  },
+  complete: {
+    text: () => t(STATUS_KEYS.complete),
+    tagClasses: 'govuk-tag--grey'
+  }
 }
 
 const UNKNOWN_STATUS_DISPLAY = {
-  text: 'Unknown',
+  text: () => t(STATUS_KEYS.unknown),
   tagClasses: 'govuk-tag--grey'
 }
 
@@ -17,15 +58,20 @@ const UNKNOWN_STATUS_DISPLAY = {
  * neutral, safe display for any unrecognised status.
  */
 export function getStatusDisplay(status) {
-  return STATUS_DISPLAY[status] ?? UNKNOWN_STATUS_DISPLAY
+  const display = STATUS_DISPLAY[status] ?? UNKNOWN_STATUS_DISPLAY
+  return { ...display, text: display.text() }
 }
 
 export function getRecordDisplayStatus(record) {
   if (record.status === 'DRAFT') {
-    return 'Draft'
+    return t(STATUS_KEYS.draft)
   }
   if (record.status === 'SUBMITTED' && record.displayStatus !== 'Late') {
-    return record.numberOfSubmissions > 1 ? 'Amended' : 'Submitted'
+    return record.numberOfSubmissions > 1
+      ? t(STATUS_KEYS.amended)
+      : t(STATUS_KEYS.submitted)
   }
-  return record.displayStatus
+  const statusKey = DISPLAY_STATUS_KEYS[record.displayStatus]
+
+  return statusKey ? t(statusKey) : record.displayStatus
 }

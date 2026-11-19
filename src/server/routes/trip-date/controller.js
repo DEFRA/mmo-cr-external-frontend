@@ -7,10 +7,11 @@ import {
   setJourneyState
 } from '#/server/common/helpers/journey/navigation.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
-
-const pageTitle = 'Did your trip start and finish today?'
+import { t } from '#/server/common/helpers/i18n/translator.js'
 
 function viewContext(request, overrides = {}) {
+  const pageTitle = t('tripDate.title')
+
   return {
     pageTitle,
     heading: pageTitle,
@@ -18,7 +19,7 @@ function viewContext(request, overrides = {}) {
     tripSameDate: getJourneyState(request).tripSameDate,
     backLink: {
       href: '/select-vessel',
-      text: 'Back'
+      text: t('header.back')
     },
     ...overrides
   }
@@ -37,14 +38,14 @@ export const tripDateSubmitController = {
         tripSameDate: Joi.string().valid('yes', 'no').required()
       }),
       failAction(request, h) {
-        const errorText = 'Select yes if your trip started and finished today'
+        const errorText = t('tripDate.error')
 
         return h
           .view(
             'trip-date/index',
             viewContext(request, {
               errorSummary: {
-                titleText: 'There is a problem',
+                titleText: t('common.errorSummary.title'),
                 errorList: [{ text: errorText, href: '#tripSameDate' }]
               },
               fieldErrors: { tripSameDate: errorText }

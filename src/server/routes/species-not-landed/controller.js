@@ -1,3 +1,5 @@
+import { t } from '#/server/common/helpers/i18n/translator.js'
+
 import Joi from 'joi'
 
 import {
@@ -20,8 +22,7 @@ import {
 } from '#/server/common/helpers/species/species-form.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 
-const pageTitle =
-  'Which species from this trip are you not landing straight away?'
+const pageTitle = () => t('catchRecord.landingStorageSpecies.heading')
 
 function speciesCheckboxItems(
   selectedSpeciesIds,
@@ -44,8 +45,8 @@ function viewContext(request, speciesData, overrides = {}) {
   const selectedSpeciesIds = Object.keys(speciesNotLanded)
 
   return {
-    pageTitle,
-    heading: pageTitle,
+    pageTitle: pageTitle(),
+    heading: pageTitle(),
     caption: catchRecordCaption(request),
     backLink: {
       href:
@@ -53,7 +54,7 @@ function viewContext(request, speciesData, overrides = {}) {
         (request.query?.return === '/check-answers'
           ? '?return=/check-answers'
           : ''),
-      text: 'Back'
+      text: t('header.back')
     },
     speciesCheckboxItems: speciesCheckboxItems(
       selectedSpeciesIds,
@@ -108,7 +109,9 @@ function validateSpeciesNotLandedWeights(
     const weights = speciesWeights[speciesId] || {}
 
     if (!isValidWeight(weights.weightAboveMinimum)) {
-      const errorText = `Enter a weight for ${nameAndId}`
+      const errorText = t('speciesNotLanded.error.enterWeight', {
+        species: nameAndId
+      })
       errorList.push({
         text: errorText,
         href: `#weightAboveMinimum-${speciesId}`
@@ -154,7 +157,7 @@ export const speciesNotLandedSubmitController = {
         )
         const speciesData = await notLandedPageData(request)
         const { journeyState, speciesOptions } = speciesData
-        const errorText = 'There was a problem with your submission'
+        const errorText = t('common.submissionError')
 
         return renderPage(
           request,

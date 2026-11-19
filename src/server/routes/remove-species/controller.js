@@ -1,3 +1,5 @@
+import { t } from '#/server/common/helpers/i18n/translator.js'
+
 import {
   catchRecordCaption,
   isCatchRecordJourney,
@@ -22,16 +24,18 @@ function speciesCheckboxItems(speciesOptions) {
 function viewContext(request, speciesData, overrides = {}) {
   const favourites = liveCatchRecords() && !isCatchRecordJourney(request)
   const vesselName = speciesData.journeyState.selectedVesselName || ''
-  const heading = 'Remove species from vessel'
+  const heading = t('removeSpecies.title')
   const pageTitle = vesselName ? `${heading} ${vesselName}` : heading
   return {
     pageTitle,
     heading,
     vesselName,
-    caption: favourites ? 'Your favourites' : catchRecordCaption(request),
+    caption: favourites
+      ? t('common.yourFavourites')
+      : catchRecordCaption(request),
     backLink: {
       href: speciesSelectionReturnPath(request),
-      text: 'Back'
+      text: t('header.back')
     },
     speciesCheckboxItems: speciesCheckboxItems(speciesData.speciesOptions),
     ...overrides
@@ -115,14 +119,14 @@ export const removeSpeciesSubmitController = {
     ).filter((id) => availableSpeciesIds.includes(id))
 
     if (idsToRemove.length === 0) {
-      const errorText = 'Select the species you want to remove'
+      const errorText = t('removeSpecies.error.select')
 
       return h
         .view(
           'remove-species/index',
           viewContext(request, speciesData, {
             errorSummary: {
-              titleText: 'There is a problem',
+              titleText: t('common.errorSummary.title'),
               errorList: [{ text: errorText, href: '#speciesIds' }]
             },
             fieldErrors: { speciesIds: errorText }

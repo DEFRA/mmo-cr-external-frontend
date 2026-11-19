@@ -1,0 +1,234 @@
+{
+  "tripDate.error": {
+    "comment": "Error when no answer is selected for tripDate.title.",
+    "en": "Select yes if your trip started and finished today",
+    "cy": {
+      "value": "Dewiswch 'Do' os dechreuodd a gorffennodd eich taith heddiw",
+      "state": "needs_review"
+    }
+  },
+  "tripDate.no": {
+    "comment": "Answer 'no' to tripDate.title. Welsh answers repeat the verb of the question (past tense 'naddo').",
+    "en": "No",
+    "cy": {
+      "value": "Naddo",
+      "state": "needs_review"
+    }
+  },
+  "tripDate.title": {
+    "comment": "Question page title and heading: did the fishing trip start and finish on the same day (today).",
+    "en": "Did your trip start and finish today?",
+    "cy": {
+      "value": "Wnaeth eich taith ddechrau a gorffen heddiw?",
+      "state": "needs_review"
+    }
+  },
+  "tripDate.yes": {
+    "comment": "Answer 'yes' to tripDate.title. Welsh answers repeat the verb of the question (past tense 'do').",
+    "en": "Yes",
+    "cy": {
+      "value": "Do",
+      "state": "needs_review"
+    }
+  },
+  "tripDepartureDate.error.format": {
+    "comment": "Complete validation message for the corresponding trip date field. Welsh draft requires professional review.",
+    "en": "Enter a date in the correct format, for example 31 3 2019",
+    "cy": {
+      "value": "Rhowch ddyddiad yn y fformat cywir, er enghraifft 31 3 2019",
+      "state": "needs_review"
+    }
+  },
+  "tripDepartureDate.error.max": {
+    "comment": "Complete validation message for the corresponding trip date field. Welsh draft requires professional review.",
+    "en": "Date you left for your trip must be today or in the past",
+    "cy": {
+      "value": "Rhaid i’r dyddiad y gwnaethoch adael ar gyfer eich taith fod heddiw neu yn y gorffennol",
+      "state": "needs_review"
+    }
+  },
+  "tripDepartureDate.error.minAge": {
+    "comment": "Complete validation message for the corresponding trip date field. Welsh draft requires professional review.",
+    "en": "Date you left for your trip cannot be more than {{days}} days in the past",
+    "cy": {
+      "value": "Rhaid i’r dyddiad y gwnaethoch adael ar gyfer eich taith fod o fewn {{days}} diwrnod diwethaf",
+      "state": "needs_review"
+    }
+  },
+  "tripDepartureDate.error.minLaunch": {
+    "comment": "Complete validation message for the corresponding trip date field. Welsh draft requires professional review.",
+    "en": "Date you left for your trip must be on or after {{date}}",
+    "cy": {
+      "value": "Rhaid i’r dyddiad y gwnaethoch adael ar gyfer eich taith fod ar {{date}} neu ar ôl hynny",
+      "state": "needs_review"
+    }
+  },
+  "tripDepartureDate.error.missing.all": {
+    "comment": "Complete validation message for the corresponding trip date field. Welsh draft requires professional review.",
+    "en": "Enter the date you left for your trip",
+    "cy": {
+      "value": "Rhowch y dyddiad y gwnaethoch adael ar gyfer eich taith",
+      "state": "needs_review"
+    }
+  },
+  "tripDepartureDate.error.missing.day": {
+    "comment": "Complete validation message for the corresponding trip date field. Welsh draft requires professional review.",
+    "en": "Enter the day you left for your trip",
+    "cy": {
+      "value": "Rhowch y diwrnod y gwnaethoch adael ar gyfer eich taith",
+      "state": "needs_review"
+    }
+  },
+  "tripDepartureDate.error.missing.dayMonth": {
+    "comment": "Complete validation message for the corresponding trip date field. Welsh draft requires professional review.",
+    "en": "Enter the day and month you left for your trip",
+    "cy": {
+      "value": "Rhowch y diwrnod a’r mis y gwnaethoch adael ar gyfer eich taith",
+      "state": "needs_review"
+    }
+  },
+  "tripDepartureDate.error.missing.dayYear": {
+    "comment": "Complete validation message for the corresponding trip date field. Welsh draft requires professional review.",
+    "en": "Enter the day and year you left for your trip",
+    "cy": {
+      "value": "Rhowch y diwrnod a’r flwyddyn y gwnaethoch adael ar gyfer eich taith",
+      "state": "needs_review"
+    }
+  },
+  "tripDepartureDate.error.missing.month": {
+    "comment": "Complete validation message for the corresponding trip date field. Welsh draft requires professional review.",
+    "en": "Enter the month you left for your trip",
+    "cy": {
+      "value": "Rhowch y mis y gwnaethoch adael ar gyfer eich taith",
+      "state": "needs_review"
+    }
+  },
+  "tripDepartureDate.error.missing.monthYear": {
+    "comment": "Complete validation message for the corresponding trip date field. Welsh draft requires professional review.",
+    "en": "Enter the month and year you left for your trip",
+    "cy": {
+      "value": "Rhowch y mis a’r flwyddyn y gwnaethoch adael ar gyfer eich taith",
+      "state": "needs_review"
+    }
+  },
+  "tripDepartureDate.error.missing.year": {
+    "comment": "Complete validation message for the corresponding trip date field. Welsh draft requires professional review.",
+    "en": "Enter the year you left for your trip",
+    "cy": {
+      "value": "Rhowch y flwyddyn y gwnaethoch adael ar gyfer eich taith",
+      "state": "needs_review"
+    }
+  },
+  "tripDepartureDate.error.notAfter": {
+    "comment": "Complete validation message for the corresponding trip date field. Welsh draft requires professional review.",
+    "en": "Date you left for your trip must be the same as or before the date you returned",
+    "cy": {
+      "value": "Rhaid i’r dyddiad y gwnaethoch adael ar gyfer eich taith fod yr un fath â’r dyddiad y gwnaethoch ddychwelyd neu cyn hynny",
+      "state": "needs_review"
+    }
+  },
+  "tripDepartureDate.error.tripTooLong": {
+    "comment": "Complete validation message for the corresponding trip date field. Welsh draft requires professional review.",
+    "en": "Your trip cannot be longer than {{days}} days",
+    "cy": {
+      "value": "Ni all eich taith fod yn hwy na {{days}} diwrnod",
+      "state": "needs_review"
+    }
+  },
+  "tripReturnDate.error.format": {
+    "comment": "Complete validation message for the corresponding trip date field. Welsh draft requires professional review.",
+    "en": "Date you returned from your trip must be in the format 31 3 2019",
+    "cy": {
+      "value": "Rhaid i’r dyddiad y gwnaethoch ddychwelyd o’ch taith fod yn y fformat 31 3 2019",
+      "state": "needs_review"
+    }
+  },
+  "tripReturnDate.error.max": {
+    "comment": "Complete validation message for the corresponding trip date field. Welsh draft requires professional review.",
+    "en": "Date you returned from your trip must be today or in the past",
+    "cy": {
+      "value": "Rhaid i’r dyddiad y gwnaethoch ddychwelyd o’ch taith fod heddiw neu yn y gorffennol",
+      "state": "needs_review"
+    }
+  },
+  "tripReturnDate.error.missing.all": {
+    "comment": "Complete validation message for the corresponding trip date field. Welsh draft requires professional review.",
+    "en": "Enter the date you returned from your trip",
+    "cy": {
+      "value": "Rhowch y dyddiad y gwnaethoch ddychwelyd o’ch taith",
+      "state": "needs_review"
+    }
+  },
+  "tripReturnDate.error.missing.day": {
+    "comment": "Complete validation message for the corresponding trip date field. Welsh draft requires professional review.",
+    "en": "Enter the day you returned from your trip",
+    "cy": {
+      "value": "Rhowch y diwrnod y gwnaethoch ddychwelyd o’ch taith",
+      "state": "needs_review"
+    }
+  },
+  "tripReturnDate.error.missing.dayMonth": {
+    "comment": "Complete validation message for the corresponding trip date field. Welsh draft requires professional review.",
+    "en": "Enter the day and month you returned from your trip",
+    "cy": {
+      "value": "Rhowch y diwrnod a’r mis y gwnaethoch ddychwelyd o’ch taith",
+      "state": "needs_review"
+    }
+  },
+  "tripReturnDate.error.missing.dayYear": {
+    "comment": "Complete validation message for the corresponding trip date field. Welsh draft requires professional review.",
+    "en": "Enter the day and year you returned from your trip",
+    "cy": {
+      "value": "Rhowch y diwrnod a’r flwyddyn y gwnaethoch ddychwelyd o’ch taith",
+      "state": "needs_review"
+    }
+  },
+  "tripReturnDate.error.missing.month": {
+    "comment": "Complete validation message for the corresponding trip date field. Welsh draft requires professional review.",
+    "en": "Enter the month you returned from your trip",
+    "cy": {
+      "value": "Rhowch y mis y gwnaethoch ddychwelyd o’ch taith",
+      "state": "needs_review"
+    }
+  },
+  "tripReturnDate.error.missing.monthYear": {
+    "comment": "Complete validation message for the corresponding trip date field. Welsh draft requires professional review.",
+    "en": "Enter the month and year you returned from your trip",
+    "cy": {
+      "value": "Rhowch y mis a’r flwyddyn y gwnaethoch ddychwelyd o’ch taith",
+      "state": "needs_review"
+    }
+  },
+  "tripReturnDate.error.missing.year": {
+    "comment": "Complete validation message for the corresponding trip date field. Welsh draft requires professional review.",
+    "en": "Enter the year you returned from your trip",
+    "cy": {
+      "value": "Rhowch y flwyddyn y gwnaethoch ddychwelyd o’ch taith",
+      "state": "needs_review"
+    }
+  },
+  "tripReturnDate.error.notBefore": {
+    "comment": "Complete validation message for the corresponding trip date field. Welsh draft requires professional review.",
+    "en": "Date you returned from your trip must be the same as or after the date you left",
+    "cy": {
+      "value": "Rhaid i’r dyddiad y gwnaethoch ddychwelyd o’ch taith fod yr un fath â’r dyddiad y gwnaethoch adael neu ar ei ôl",
+      "state": "needs_review"
+    }
+  },
+  "tripReturnDate.error.tripTooLong": {
+    "comment": "Complete validation message for the corresponding trip date field. Welsh draft requires professional review.",
+    "en": "Your trip cannot be longer than {{days}} days",
+    "cy": {
+      "value": "Ni all eich taith fod yn hwy na {{days}} diwrnod",
+      "state": "needs_review"
+    }
+  },
+  "validation.date.realDate": {
+    "comment": "Complete validation message for the corresponding trip date field. Welsh draft requires professional review.",
+    "en": "Date must be a real date",
+    "cy": {
+      "value": "Rhaid i’r dyddiad fod yn ddyddiad dilys",
+      "state": "needs_review"
+    }
+  }
+}

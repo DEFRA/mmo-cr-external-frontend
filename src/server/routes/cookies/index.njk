@@ -6,28 +6,33 @@
     <div class="govuk-grid-column-two-thirds">
       {{ appHeading({ text: heading, columnClasses: 'govuk-grid-column-full' }) }}
 
-      <p class="govuk-body">Cookies are small files saved on your phone, tablet or computer when you visit a website.</p>
-      <h2 class="govuk-heading-m">Essential cookies</h2>
-      <p class="govuk-body">This service uses an essential session cookie to keep you signed in and remember your progress while you record your catch. This cookie is necessary for the service to work and does not require your consent.</p>
+      <p class="govuk-body">{{ t('cookies.intro') }}</p>
+      <h2 class="govuk-heading-m">{{ t("cookies.essential.heading") }}</h2>
+      <p class="govuk-body">{{ t('cookies.essential.body') }}</p>
 
       {{ govukTable({
-        caption: 'Essential session cookie',
+        caption: t('cookies.table.caption'),
         captionClasses: 'govuk-visually-hidden',
         head: [
-          { text: 'Name' },
-          { text: 'Purpose' },
-          { text: 'Expires' }
+          { text: t('cookies.table.name') },
+          { text: t('cookies.table.purpose') },
+          { text: t('cookies.table.expires') }
         ],
         rows: [[
           { text: cookieName },
-          { text: 'Keeps you signed in and remembers your progress.' },
+          { text: t('cookies.table.sessionPurpose') },
           { text: cookieExpiry }
+        ], [
+          { text: 'lang' },
+          { text: t('cookies.lang.purpose') },
+          { text: t('cookies.lang.expiry') }
         ]]
       }) }}
 
-      <h2 class="govuk-heading-m">Managing cookies</h2>
-      <p class="govuk-body">You can delete or block cookies in your browser settings. If you block the essential session cookie, you will not be able to sign in or save your progress in this service.</p>
-      <p class="govuk-body">Read our <a class="govuk-link" href="/privacy-notice">privacy notice</a> for information about how we use your personal data.</p>
+      <h2 class="govuk-heading-m">{{ t("cookies.managing.heading") }}</h2>
+      <p class="govuk-body">{{ t('cookies.managing.body') }}</p>
+      {% set privacyLink %}<a class="govuk-link" href="/privacy-notice">{{ t('privacyNotice.title') }}</a>{% endset %}
+      <p class="govuk-body">{{ tHtml('cookies.managing.privacy', { link: privacyLink | safe }) }}</p>
     </div>
   </div>
 {% endblock %}

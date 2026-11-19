@@ -1,18 +1,19 @@
 import { statusCodes } from '../constants/status-codes.js'
 import { config } from '#/config/config.js'
+import { t } from '#/server/common/helpers/i18n/translator.js'
 
 function statusCodeMessage(statusCode) {
   switch (statusCode) {
     case statusCodes.notFound:
-      return 'Page not found'
+      return t('errors.notFound')
     case statusCodes.forbidden:
-      return 'Forbidden'
+      return t('errors.forbidden')
     case statusCodes.unauthorized:
-      return 'Unauthorized'
+      return t('errors.unauthorised')
     case statusCodes.badRequest:
-      return 'Bad Request'
+      return t('errors.badRequest')
     default:
-      return 'Something went wrong'
+      return t('errors.generic')
   }
 }
 

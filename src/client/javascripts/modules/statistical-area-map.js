@@ -39,7 +39,10 @@ function focusCoordinate(selectedCell, departurePort) {
 function showInitialSelection(input, status, selectedSubCode) {
   input.value = selectedSubCode || ''
   input.disabled = !selectedSubCode
-  status.textContent = selectedSubCode ? `${selectedSubCode} selected` : ''
+  status.textContent = selectedSubCode
+    ? (status.dataset.statusSelected?.replace('{{code}}', selectedSubCode) ??
+      `${selectedSubCode} selected`)
+    : ''
 }
 
 async function setUpMap(

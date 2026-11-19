@@ -38,6 +38,19 @@ describe('#initialiseSpeciesSearch', () => {
     expect(document.querySelector('datalist')).toBeNull()
   })
 
+  test('Should use server-provided translated autocomplete messages', () => {
+    renderSelect()
+    const select = document.querySelector('[data-species-search]')
+    select.dataset.autocompletePlaceholder = 'Chwilio am rywogaeth'
+    select.dataset.autocompleteNoResults = 'Heb ganfod canlyniadau'
+
+    initialiseSpeciesSearch()
+
+    expect(document.querySelector('input#species').placeholder).toBe(
+      'Chwilio am rywogaeth'
+    )
+  })
+
   test('Should preserve the inline error association on the generated input', () => {
     renderSelect(true)
 

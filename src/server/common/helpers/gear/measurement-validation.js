@@ -1,15 +1,17 @@
+import { t } from '#/server/common/helpers/i18n/translator.js'
+
 function genericInvalidMessage(numericValue) {
   const isNumber = Number.isFinite(numericValue)
   const isWhole = isNumber && Number.isInteger(numericValue)
   const isPositive = isNumber && numericValue > 0
 
   if (isWhole) {
-    return 'Enter a number greater than 0'
+    return t('catchRecord.gear.measurement.validation.greaterThanZero')
   }
 
   return isPositive
-    ? 'Enter a whole number'
-    : 'Enter a whole number greater than 0'
+    ? t('catchRecord.gear.measurement.validation.wholeNumber')
+    : t('gear.measurement.validation.wholeNumberGreaterThanZero')
 }
 
 export function isBlankMeasurement(rawValue) {

@@ -1,3 +1,5 @@
+import { t } from '#/server/common/helpers/i18n/translator.js'
+
 import Boom from '@hapi/boom'
 
 import { config } from '#/config/config.js'
@@ -74,10 +76,9 @@ function assertSavedSpeciesAvailable(journeyState, catalogue) {
       (id) => !catalogue.some((species) => species.id === id)
     )
   ) {
-    throw Boom.conflict(
-      'A saved species is no longer available. This record cannot be edited without changing its saved selections.',
-      { catchRecordError: true }
-    )
+    throw Boom.conflict(t('catchRecord.error.savedSpeciesUnavailable'), {
+      catchRecordError: true
+    })
   }
 }
 
@@ -174,10 +175,9 @@ export async function getSpeciesPageData(
       (id) => !catalogue.some((species) => species.id === id)
     )
   ) {
-    throw Boom.conflict(
-      'A favourite species is no longer available in Reference Data. Reload the page before trying again.',
-      { catchRecordError: true }
-    )
+    throw Boom.conflict(t('catchRecord.error.favouriteSpeciesUnavailable'), {
+      catchRecordError: true
+    })
   }
   const optionIds =
     includeSelected && liveCatchRecording()

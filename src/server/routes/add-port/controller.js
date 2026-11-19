@@ -1,3 +1,5 @@
+import { t } from '#/server/common/helpers/i18n/translator.js'
+
 import Joi from 'joi'
 
 import {
@@ -32,16 +34,11 @@ import {
 } from '#/server/common/helpers/journey/session-favourites.js'
 import { liveCatchRecords } from '#/server/common/helpers/journey/catch-record-service.js'
 
-const selectionErrorText = 'Select a port from the list'
+const selectionErrorText = () => t('catchRecord.addPort.validation.none')
 const returnPhase = 'return'
 const departurePortPath = '/departure-port'
 const returnPortPath = '/return-port'
 const accountPath = '/account'
-
-const headingByPhase = {
-  departure: 'Enter the port or closest port you set off from',
-  return: 'Enter the port or closest port you returned to'
-}
 
 function resolvePhase(request) {
   return request.query.for === returnPhase ? returnPhase : 'departure'
@@ -109,8 +106,8 @@ function viewContext(request, ports, overrides = {}) {
     liveCatchRecords() &&
     (isAccountReturn(request) || (!request.query.for && !isEntry(request)))
   const heading = favouritesPage
-    ? 'Add a port to your favourites'
-    : headingByPhase[resolvePhase(request)]
+    ? t('addPort.favourites.title')
+    : t(`addPort.${resolvePhase(request)}.title`)
   const state = getJourneyState(request)
   const selectedCode =
     resolvePhase(request) === returnPhase
@@ -124,10 +121,12 @@ function viewContext(request, ports, overrides = {}) {
   return {
     pageTitle: heading,
     heading,
-    caption: favouritesPage ? 'Your favourites' : catchRecordCaption(request),
+    caption: favouritesPage
+      ? t('common.yourFavourites')
+      : catchRecordCaption(request),
     backLink: {
       href: backLink(request),
-      text: 'Back'
+      text: t('header.back')
     },
     formAction: formAction(request),
     portNames: ports.map((port) => portSearchLabel(port, ports)),
@@ -166,7 +165,7 @@ async function renderError(
   h,
   submittedValue,
   catalogue,
-  errorText = selectionErrorText
+  errorText = selectionErrorText()
 ) {
   const ports = catalogue || (await getPortCatalogue())
   return h
@@ -174,7 +173,7 @@ async function renderError(
       'add-port/index',
       viewContext(request, ports, {
         errorSummary: {
-          titleText: 'There is a problem',
+          titleText: t('common.errorSummary.title'),
           errorList: [{ text: errorText, href: '#port' }]
         },
         fieldErrors: { port: errorText },
@@ -274,7 +273,7 @@ export const addPortSubmitController = {
         h,
         port,
         ports,
-        `${matchedPort.name} is already saved in your favourites`
+        t('addPort.error.alreadySaved', { port: matchedPort.name })
       )
     }
 

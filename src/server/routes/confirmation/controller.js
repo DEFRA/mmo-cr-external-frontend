@@ -1,9 +1,11 @@
+import { t } from '#/server/common/helpers/i18n/translator.js'
+
 import { getData } from '#/server/common/data/get-data.js'
 import Boom from '@hapi/boom'
 import { liveCatchRecords } from '#/server/common/helpers/journey/catch-record-service.js'
 import { getJourneyState } from '#/server/common/helpers/journey/navigation.js'
 
-const pageTitle = 'Your catch record has been submitted'
+const pageTitle = () => t('catchRecord.submissionSuccess.heading')
 
 export const confirmationController = {
   handler(request, h) {
@@ -14,11 +16,11 @@ export const confirmationController = {
     const { reference } = liveCatchRecords() ? state : getData('confirmation')
 
     return h.view('confirmation/index', {
-      pageTitle,
-      heading: pageTitle,
+      pageTitle: pageTitle(),
+      heading: pageTitle(),
       backLink: {
         href: '/records',
-        text: 'Back'
+        text: t('header.back')
       },
       reference
     })

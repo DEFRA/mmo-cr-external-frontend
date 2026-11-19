@@ -8,7 +8,10 @@ vi.mock('node:fs', async () => {
 
   return {
     ...nodeFs,
-    readFileSync: () => mockReadFileSync()
+    readFileSync: (file, ...args) =>
+      String(file).endsWith('manifest.json')
+        ? mockReadFileSync()
+        : nodeFs.readFileSync(file, ...args)
   }
 })
 vi.mock('../../../server/common/helpers/logging/logger.js', () => ({
@@ -62,9 +65,11 @@ describe('context and cache', () => {
           serviceName: 'Record your catch',
           serviceUrl: '/',
           feedbackUrl: '#',
+          lang: 'en',
           htmlLang: 'en',
           languageToggle: {
             current: 'en',
+            other: 'cy',
             href: '/?lang=cy'
           }
         })
@@ -80,6 +85,21 @@ describe('context and cache', () => {
         expect(url.searchParams.get('gearId')).toBe('gear-2')
         expect(url.searchParams.get('return')).toBe('/check-answers')
         expect(url.searchParams.get('lang')).toBe('cy')
+      })
+
+      test('Should offer English when the request is in Welsh', () => {
+        const result = contextImport.context({
+          ...mockRequest,
+          app: { lang: 'cy' }
+        })
+
+        expect(result.htmlLang).toBe('cy')
+        expect(result.serviceName).toBe('Cofnodi eich dalfa')
+        expect(result.languageToggle).toEqual({
+          current: 'cy',
+          other: 'en',
+          href: '/?lang=en'
+        })
       })
 
       describe('With valid asset path', () => {
@@ -157,9 +177,11 @@ describe('context and cache', () => {
           serviceName: 'Record your catch',
           serviceUrl: '/',
           feedbackUrl: '#',
+          lang: 'en',
           htmlLang: 'en',
           languageToggle: {
             current: 'en',
+            other: 'cy',
             href: '/?lang=cy'
           }
         })

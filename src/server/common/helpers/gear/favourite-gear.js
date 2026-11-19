@@ -7,6 +7,8 @@ import {
   getJourneyState,
   setJourneyState
 } from '#/server/common/helpers/journey/navigation.js'
+import { t } from '#/server/common/helpers/i18n/translator.js'
+import { localizeMeasurementText } from './measurement-text.js'
 
 const client = createGearsReferenceDataClient({
   serviceUrl: config.get('referenceData.serviceUrl'),
@@ -24,13 +26,19 @@ function withMeasurementMessages(gear) {
       const legacyMeasurement = legacy?.measurements?.find(
         (option) => option.id === measurement.id
       )
+      const label = localizeMeasurementText(measurement.label)
       return {
         ...measurement,
-        emptyMessage:
-          legacyMeasurement?.emptyMessage ||
-          `Enter the ${measurement.label.toLowerCase()}`,
+        label,
+        emptyMessage: legacyMeasurement?.emptyMessage
+          ? localizeMeasurementText(legacyMeasurement.emptyMessage)
+          : t('gear.measurement.validation.empty', {
+              measurement: label.toLowerCase()
+            }),
         ...(legacyMeasurement?.invalidMessage && {
-          invalidMessage: legacyMeasurement.invalidMessage
+          invalidMessage: localizeMeasurementText(
+            legacyMeasurement.invalidMessage
+          )
         })
       }
     })
@@ -126,7 +134,9 @@ export function formatGearMeasurements(option, values) {
       ({ id }) =>
         values?.[id] !== undefined && values[id] !== null && values[id] !== ''
     )
-    .map(({ id, label }) => `${label}: ${values[id]}`)
+    .map(({ id, label }) =>
+      t('catchRecord.gear.measurement.summary', { label, value: values[id] })
+    )
 }
 
 function assertSelectedGearsAvailable(state, catalogue) {
@@ -136,10 +146,9 @@ function assertSelectedGearsAvailable(state, catalogue) {
       (id) => !catalogue.some((gear) => gear.id === id)
     )
   ) {
-    throw Boom.conflict(
-      'A saved gear is no longer available. This record cannot be edited without changing its saved selections.',
-      { catchRecordError: true }
-    )
+    throw Boom.conflict(t('gear.error.savedGearUnavailable'), {
+      catchRecordError: true
+    })
   }
 }
 
