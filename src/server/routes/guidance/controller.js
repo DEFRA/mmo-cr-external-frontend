@@ -8,7 +8,7 @@ export const guidanceController = {
     return h.view('guidance/index', {
       pageTitle: 'How to record your catch',
       heading: 'How to record your catch',
-      navigation: buildNavigation(request, { showWhenSignedOut: true }),
+      navigation: buildNavigation(request),
       backLink: {
         href: '/records',
         text: 'Back'

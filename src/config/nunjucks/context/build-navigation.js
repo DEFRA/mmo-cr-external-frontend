@@ -7,8 +7,8 @@ const SIGN_OUT_HTML =
   '<button type="submit" class="govuk-service-navigation__link app-sign-out-form__button">Sign out</button>' +
   '</form>'
 
-export function buildNavigation(request, { showWhenSignedOut = false } = {}) {
-  if (!request || (!showWhenSignedOut && !isSignedIn(request))) {
+export function buildNavigation(request) {
+  if (!request || !isSignedIn(request)) {
     return []
   }
 

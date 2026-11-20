@@ -12,7 +12,6 @@ export const SESSION_EXPIRED_MESSAGE =
 
 const PUBLIC_PATHS = new Set([
   '/',
-  '/about',
   '/cookies',
   '/privacy-notice',
   '/health',

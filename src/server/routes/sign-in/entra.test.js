@@ -431,24 +431,32 @@ describe('Entra native sign-in', () => {
     })
   })
 
-  test.each(['/not-implemented', '/records', '/account', '/trip-date'])(
-    'Redirects unauthenticated requests for %s to sign in',
-    async (url) => {
-      const response = await server.inject({ method: 'GET', url })
+  test.each([
+    '/not-implemented',
+    '/records',
+    '/account',
+    '/trip-date',
+    '/about',
+    '/select-vessel'
+  ])('Redirects unauthenticated requests for %s to sign in', async (url) => {
+    const response = await server.inject({ method: 'GET', url })
 
-      expect(response.statusCode).toBe(302)
-      expect(response.headers.location).toBe('/sign-in')
-    }
-  )
+    expect(response.statusCode).toBe(302)
+    expect(response.headers.location).toBe('/sign-in')
+  })
 
-  test.each(['/', '/sign-in', '/signed-out', '/cookies', '/health'])(
-    'Allows unauthenticated access to public page %s',
-    async (url) => {
-      const response = await server.inject({ method: 'GET', url })
+  test.each([
+    '/',
+    '/sign-in',
+    '/privacy-notice',
+    '/signed-out',
+    '/cookies',
+    '/health'
+  ])('Allows unauthenticated access to public page %s', async (url) => {
+    const response = await server.inject({ method: 'GET', url })
 
-      expect(response.statusCode).toBe(200)
-    }
-  )
+    expect(response.statusCode).toBe(200)
+  })
 
   test('Expired sessions are signed out and asked to sign in again', async () => {
     const cookie = cookieFrom(await submitSignIn())

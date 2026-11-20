@@ -177,11 +177,11 @@ describe('#guidanceController', () => {
       expect($('.govuk-phase-banner').text()).toContain('Beta')
     })
 
-    test('Should render Home, Your account and Sign out in the header', () => {
-      const $navigation = $('.govuk-service-navigation__list')
-      expect($navigation.text()).toContain('Home')
-      expect($navigation.text()).toContain('Your account')
-      expect($navigation.text()).toContain('Sign out')
+    test('Should NOT render Home, Your account or Sign out in the header when signed out', () => {
+      const navigation = $('.govuk-service-navigation').text()
+      expect(navigation).not.toContain('Home')
+      expect(navigation).not.toContain('Your account')
+      expect(navigation).not.toContain('Sign out')
     })
   })
 
