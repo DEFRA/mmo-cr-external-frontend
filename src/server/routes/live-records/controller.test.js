@@ -1644,9 +1644,9 @@ describe('Live catch records and section persistence', () => {
       expect(confirmation.result).toContain(record.catchRecordReference)
       expect(getJourneyState(confirmation.request)).toMatchObject({
         favouritePortIds: ['port-1'],
-        favouriteGearIds: [],
-        favouriteGearMeasurements: {},
-        favouriteSpeciesIds: []
+        favouriteGearIds: ['gear-1'],
+        favouriteGearMeasurements: { 'gear-1': { 'measurement-1': 12 } },
+        favouriteSpeciesIds: ['species-1']
       })
       expect(record.gears[0]).toMatchObject({
         statisticalArea: { id: 'area-1' },
@@ -2290,7 +2290,7 @@ describe('Live catch records and section persistence', () => {
     ).toBe(true)
   })
 
-  test('Should keep journey gear, measurements and species out of favourites but save journey ports', async () => {
+  test('Should save journey gear, measurements, species and ports to favourites so the account page shows them', async () => {
     await seed({
       ...recordJourney(record),
       selectedGearIds: [],
@@ -2375,7 +2375,9 @@ describe('Live catch records and section persistence', () => {
     })
     expect(port.statusCode).toBe(303)
     const savedPreferences = {
-      ...preferences,
+      favouriteGearIds: ['gear-1'],
+      favouriteGearMeasurements: { 'gear-1': { 'measurement-1': 12 } },
+      favouriteSpeciesIds: ['species-2', 'species-1'],
       favouritePortIds: ['port-2', 'port-1']
     }
     expect(getJourneyState(port.request)).toMatchObject({
