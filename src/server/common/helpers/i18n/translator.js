@@ -10,6 +10,8 @@ const dirname = path.dirname(fileURLToPath(import.meta.url))
 export const LOCALES_DIR = path.resolve(dirname, '../../locales')
 
 const PLACEHOLDER = /\{\{\s*(\w+)\s*\}\}/g
+const COLON_AFTER_STRING = /\s*:/y
+const DEPTH_CHANGE = { '{': 1, '[': 1, '}': -1, ']': -1 }
 
 function stringEnd(text, start) {
   let index = start + 1
@@ -26,29 +28,41 @@ function stringEnd(text, start) {
 export function findDuplicateTopLevelKeys(text) {
   const seen = new Set()
   const duplicates = new Set()
-  let depth = 0
 
-  for (let index = 0; index < text.length; index++) {
-    const char = text[index]
-    if (char === '{' || char === '[') {
-      depth++
-    } else if (char === '}' || char === ']') {
-      depth--
-    } else if (char === '"') {
-      const end = stringEnd(text, index)
-      const isKey = depth === 1 && /^\s*:/.test(text.slice(end + 1))
-      if (isKey) {
-        const key = JSON.parse(text.slice(index, end + 1))
-        if (seen.has(key)) {
-          duplicates.add(key)
-        }
-        seen.add(key)
-      }
-      index = end
+  for (const key of topLevelKeys(text)) {
+    if (seen.has(key)) {
+      duplicates.add(key)
     }
+    seen.add(key)
   }
 
   return [...duplicates]
+}
+
+function topLevelKeys(text) {
+  const keys = []
+  let depth = 0
+  let index = 0
+
+  while (index < text.length) {
+    if (text[index] === '"') {
+      const end = stringEnd(text, index)
+      if (depth === 1 && isFollowedByColon(text, end + 1)) {
+        keys.push(JSON.parse(text.slice(index, end + 1)))
+      }
+      index = end + 1
+    } else {
+      depth += DEPTH_CHANGE[text[index]] ?? 0
+      index++
+    }
+  }
+
+  return keys
+}
+
+function isFollowedByColon(text, position) {
+  COLON_AFTER_STRING.lastIndex = position
+  return COLON_AFTER_STRING.test(text)
 }
 
 /**
