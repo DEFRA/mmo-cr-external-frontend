@@ -2325,6 +2325,8 @@ describe('Live catch records and section persistence', () => {
     expect(added.statusCode).toBe(303)
     expect(getJourneyState(added.request)).toMatchObject({
       ...preferences,
+      favouriteGearIds: ['gear-1'],
+      favouriteGearMeasurements: { 'gear-1': { 'measurement-1': 12 } },
       journeyGearIds: ['gear-1'],
       gearMeasurementDetails: { 'gear-1': { 'measurement-1': 12 } }
     })
@@ -2355,7 +2357,7 @@ describe('Live catch records and section persistence', () => {
     const species = await call('POST', speciesPath, { species: 'Cod' })
     expect(species.statusCode).toBe(303)
     expect(getJourneyState(species.request)).toMatchObject({
-      ...preferences,
+      favouriteSpeciesIds: ['species-2', 'species-1'],
       journeySpeciesIds: ['species-1']
     })
     const speciesChoices = await call('GET', '/species-selection?gearId=gear-1')
@@ -2389,9 +2391,10 @@ describe('Live catch records and section persistence', () => {
         .filter((_, item) => $account(item).find('dt').text().trim() === label)
         .find('.govuk-summary-list__value')
         .text()
-    expect(accountValue('Gear onboard')).not.toContain('Test gear')
+    expect(accountValue('Gear onboard')).toContain('Test gear')
+    expect(accountValue('Gear onboard')).toContain('Length: 12')
     expect(accountValue('Species caught')).toContain('Haddock')
-    expect(accountValue('Species caught')).not.toContain('Cod')
+    expect(accountValue('Species caught')).toContain('Cod')
     expect(accountValue('Ports used')).toContain('Second port')
     expect(accountValue('Ports used')).toContain('Test port')
     const fresh = await call('POST', '/records/new')
@@ -2402,13 +2405,13 @@ describe('Live catch records and section persistence', () => {
     expect(getJourneyState(fresh.request).journeySpeciesIds).toBeUndefined()
   })
 
-  test('Should add unmeasured journey gear without adding a favourite and retain choices across validation', async () => {
+  test('Should add unmeasured journey gear as a favourite and retain choices across validation', async () => {
     await seed({ ...recordJourney(record), selectedGearIds: [] })
     const added = await call('POST', '/add-gear', { gear: 'Recreational gear' })
     expect(added.statusCode).toBe(303)
     expect(getJourneyState(added.request)).toMatchObject({
       journeyGearIds: ['gear-2'],
-      favouriteGearIds: []
+      favouriteGearIds: ['gear-2']
     })
     expect((await call('GET', '/gear-selection')).result).toContain(
       'Recreational gear'
@@ -2418,8 +2421,10 @@ describe('Live catch records and section persistence', () => {
         .statusCode
     ).toBe(400)
     expect(
-      fetchMock.mock.calls.every(([, options]) => options.method === 'GET')
-    ).toBe(true)
+      fetchMock.mock.calls
+        .filter(([, options]) => options.method !== 'GET')
+        .map(([url, options]) => [options.method, new URL(url).pathname])
+    ).toEqual([['POST', '/v1/vessels/vessel-1/favourite-gears']])
   })
 
   test('Should keep explicit account favourites actions working while a catch record is open', async () => {
@@ -2509,7 +2514,7 @@ describe('Live catch records and section persistence', () => {
     })
     expect(trip.statusCode).toBe(303)
     expect(getJourneyState(trip.request).journeyGearIds).toEqual(['gear-1'])
-    expect(getJourneyState(trip.request).favouriteGearIds).toEqual([])
+    expect(getJourneyState(trip.request).favouriteGearIds).toEqual(['gear-1'])
   })
 
   test('Should prefill account favourite measurements when selecting gear on a new journey', async () => {
@@ -2593,7 +2598,7 @@ describe('Live catch records and section persistence', () => {
     ).toHaveLength(1)
   })
 
-  test('Should remove favourites without changing selected trip answers or catch records', async () => {
+  test('Should remove account favourites without changing selected trip answers or catch records', async () => {
     await seed()
     await seedFavourites({
       favouriteGearIds: ['gear-1'],
@@ -2603,9 +2608,12 @@ describe('Live catch records and section persistence', () => {
     })
     const before = structuredClone(record)
     for (const [path, payload] of [
-      ['/remove-gear', { gearIds: 'gear-1' }],
-      ['/remove-species', { speciesIds: 'species-1' }],
-      ['/remove-port', { ports: 'port-1' }]
+      ['/remove-gear?return=/account&vesselId=vessel-1', { gearIds: 'gear-1' }],
+      [
+        '/remove-species?return=/account&vesselId=vessel-1',
+        { speciesIds: 'species-1' }
+      ],
+      ['/remove-port?vesselId=vessel-1', { ports: 'port-1' }]
     ]) {
       expect((await call('POST', path, payload)).statusCode).toBe(303)
     }
@@ -2635,6 +2643,48 @@ describe('Live catch records and section persistence', () => {
           url.includes('/catch-records') && options.method !== 'GET'
       )
     ).toBe(false)
+  })
+
+  test('Should list and remove trip and favourite gear and species from the journey remove screens', async () => {
+    await seed({ ...recordJourney(record), journeyGearIds: ['gear-2'] })
+    await seedFavourites({
+      favouriteGearIds: [],
+      favouriteGearMeasurements: {},
+      favouriteSpeciesIds: ['species-1'],
+      favouritePortIds: []
+    })
+    const before = structuredClone(record)
+    const gearScreen = await call('GET', '/remove-gear')
+    expect(gearScreen.statusCode).toBe(200)
+    expect(load(gearScreen.result)('input[name="gearIds"]')).toHaveLength(2)
+    const speciesPath =
+      '/remove-species?gearId=gear-1&return=/species-selection'
+    const speciesScreen = await call('GET', speciesPath)
+    expect(
+      load(speciesScreen.result)('input[name="speciesIds"][value="species-1"]')
+    ).toHaveLength(1)
+    expect(
+      (await call('POST', speciesPath, { speciesIds: 'species-1' })).statusCode
+    ).toBe(303)
+    expect(
+      getJourneyState((await call('GET', '/remove-gear')).request)
+        .catchDetailsByGearId['gear-1'].selectedSpeciesIds
+    ).toEqual([])
+    const removed = await call('POST', '/remove-gear', {
+      gearIds: ['gear-1', 'gear-2']
+    })
+    expect(removed.statusCode).toBe(303)
+    expect(getJourneyState(removed.request)).toMatchObject({
+      selectedGearIds: [],
+      journeyGearIds: [],
+      catchDetailsByGearId: {},
+      favouriteGearIds: [],
+      favouriteSpeciesIds: []
+    })
+    expect(
+      fetchMock.mock.calls.filter(([, options]) => options.method === 'DELETE')
+    ).toHaveLength(1)
+    expect(record).toEqual(before)
   })
 
   test('Should retain backend favourites across sign-out and fresh browser sessions', async () => {

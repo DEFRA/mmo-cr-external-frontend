@@ -76,6 +76,11 @@ function existingSpeciesIds(request, speciesData) {
 
 async function saveAddedSpecies(request, speciesData, speciesId) {
   if (isCatchRecordJourney(request)) {
+    // Also save to the vessel favourites so the species appears on the account
+    // page and can be removed, matching walkthrough mode.
+    if (!speciesData.availableSpeciesIds.includes(speciesId)) {
+      await addFavouriteSpecies(request, speciesId)
+    }
     const { journeySpeciesIds = [] } = getJourneyState(request)
     setJourneyState(request, {
       journeySpeciesIds: [...new Set([...journeySpeciesIds, speciesId])]
