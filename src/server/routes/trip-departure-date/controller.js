@@ -71,7 +71,7 @@ export const tripDepartureDateSubmitController = {
       'tripDepartureDate',
       {
         subject: 'the date you left for your trip',
-        subjectSuffix: 'you left for your trip',
+        partSubject: 'Date you left for your trip',
         formatMessage:
           'Enter a date in the correct format, for example 31 3 2019',
         ...earliestDepartureDate(today),

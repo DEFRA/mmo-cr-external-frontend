@@ -52,7 +52,7 @@ export const tripReturnDateSubmitController = {
       'tripReturnDate',
       {
         subject: 'the date you returned from your trip',
-        subjectSuffix: 'you returned from your trip',
+        partSubject: 'Date you left for your trip',
         formatMessage:
           'Date you returned from your trip must be in the format 31 3 2019',
         maxDate: businessDate(),
