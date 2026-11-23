@@ -95,7 +95,7 @@ function checkMissingFields(values, options) {
   if (missingParts.length > 0) {
     return {
       isValid: false,
-      errorMessage: `Enter the ${missingParts.join(' and ')} ${options.subjectSuffix}`,
+      errorMessage: `${options.partSubject} must include a ${missingParts.join(' and ')}`,
       fieldErrors: {
         day: missingParts.includes('day'),
         month: missingParts.includes('month'),
@@ -197,8 +197,8 @@ function checkBounds(isoDate, values, options) {
  * @param {string} _fieldPrefix the govukDateInput namePrefix/id used for this field (unused, kept for call-site clarity)
  * @param {object} options
  * @param {string} options.subject phrase used in the "Enter <subject>" all-missing message
- * @param {string} options.subjectSuffix phrase appended to per-field missing messages
- *   (e.g. "Enter the day <subjectSuffix>")
+ * @param {string} options.partSubject phrase starting per-field missing messages
+ *   (e.g. "<partSubject> must include a day")
  * @param {string} [options.formatMessage] message shown when the date isn't a real date
  * @param {string} [options.minDate] earliest allowed ISO date (inclusive)
  * @param {string} [options.minDateMessage] message shown when the date is before minDate

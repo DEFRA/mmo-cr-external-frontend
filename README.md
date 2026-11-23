@@ -516,8 +516,10 @@ layout; only account or standalone favourites pages use the favourites heading.
 With live integration enabled, new records and drafts without selected ports
 use AllPorts search for departure and return when there are no favourites.
 With favourites, both steps use the existing favourites radio-list design.
-AllPorts saves the trip answer directly and continues to return selection or
-gears; it never adds the selected port to favourites.
+AllPorts saves the trip answer and continues to return selection or gears. It
+also adds the selected port to the vessel's favourites (if not already saved), so
+a previously used port is offered as a radio option on later records. If the
+record save then fails, the answers roll back but the favourite stays saved.
 
 A draft with the same saved departure and return port offers the Yes/No shortcut,
 even if that port is not a favourite. Yes continues to gears; No opens normal
@@ -526,8 +528,9 @@ favourite never triggers the shortcut for a new record. Drafts with different
 ports, or only a departure port, use normal selection with each step's own saved
 answer preselected. AllPorts prefills the search input; favourites lists include
 the saved answer even if it is no longer a favourite, without saving it as one.
-The departure-port and return-port favourites screens show only Save and continue,
-without an Add port button. Account favourites are managed separately.
+The departure-port and return-port favourites screens show an **Add port** link
+(to AllPorts for that phase) above Save and continue. The departure error reads
+"Select the port you left from". Account favourites are managed separately.
 Review Change links preserve their return destination through AllPorts.
 
 ### Vessel favourites

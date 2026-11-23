@@ -143,7 +143,7 @@ describe('#tripReturnDateSubmitController', () => {
 
     expect(statusCode).toBe(statusCodes.ok)
     expect($('.govuk-error-summary').text()).toContain(
-      'Enter the day you returned from your trip'
+      'Date you left for your trip must include a day'
     )
     expect($('#tripReturnDate-month').val()).toBe('3')
     expect($('#tripReturnDate-year').val()).toBe('2020')
@@ -163,7 +163,7 @@ describe('#tripReturnDateSubmitController', () => {
 
     expect(statusCode).toBe(statusCodes.ok)
     expect($('.govuk-error-summary').text()).toContain(
-      'Enter the month you returned from your trip'
+      'Date you left for your trip must include a month'
     )
   })
 
@@ -181,7 +181,7 @@ describe('#tripReturnDateSubmitController', () => {
 
     expect(statusCode).toBe(statusCodes.ok)
     expect($('.govuk-error-summary').text()).toContain(
-      'Enter the year you returned from your trip'
+      'Date you left for your trip must include a year'
     )
   })
 
@@ -199,7 +199,7 @@ describe('#tripReturnDateSubmitController', () => {
 
     expect(statusCode).toBe(statusCodes.ok)
     expect($('.govuk-error-summary').text()).toContain(
-      'Enter the day and month you returned from your trip'
+      'Date you left for your trip must include a day and month'
     )
   })
 

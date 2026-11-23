@@ -6,7 +6,7 @@ import {
 
 const departureOptions = {
   subject: 'the date you left for your trip',
-  subjectSuffix: 'you left for your trip',
+  partSubject: 'Date you left for your trip',
   formatMessage: 'Enter a date in the correct format, for example 31 3 2019',
   minDate: '2025-07-24',
   minDateMessage:
@@ -36,7 +36,9 @@ describe('#validateDateInput', () => {
     )
 
     expect(result.isValid).toBe(false)
-    expect(result.errorMessage).toBe('Enter the day you left for your trip')
+    expect(result.errorMessage).toBe(
+      'Date you left for your trip must include a day'
+    )
     expect(result.fieldErrors).toEqual({ day: true, month: false, year: false })
   })
 
@@ -48,7 +50,9 @@ describe('#validateDateInput', () => {
     )
 
     expect(result.isValid).toBe(false)
-    expect(result.errorMessage).toBe('Enter the month you left for your trip')
+    expect(result.errorMessage).toBe(
+      'Date you left for your trip must include a month'
+    )
     expect(result.fieldErrors).toEqual({ day: false, month: true, year: false })
   })
 
@@ -60,7 +64,9 @@ describe('#validateDateInput', () => {
     )
 
     expect(result.isValid).toBe(false)
-    expect(result.errorMessage).toBe('Enter the year you left for your trip')
+    expect(result.errorMessage).toBe(
+      'Date you left for your trip must include a year'
+    )
     expect(result.fieldErrors).toEqual({ day: false, month: false, year: true })
   })
 
@@ -73,7 +79,7 @@ describe('#validateDateInput', () => {
 
     expect(result.isValid).toBe(false)
     expect(result.errorMessage).toBe(
-      'Enter the day and month you left for your trip'
+      'Date you left for your trip must include a day and month'
     )
     expect(result.fieldErrors).toEqual({ day: true, month: true, year: false })
   })
@@ -348,7 +354,7 @@ describe('#validateDateInput', () => {
       'tripReturnDate',
       {
         subject: 'the date you returned from your trip',
-        subjectSuffix: 'you returned from your trip',
+        partSubject: 'Date you left for your trip',
         formatMessage:
           'Date you returned from your trip must be in the format 31 3 2019',
         maxDate: '2026-01-01',
@@ -373,7 +379,7 @@ describe('#validateDateInput', () => {
       'tripReturnDate',
       {
         subject: 'the date you returned from your trip',
-        subjectSuffix: 'you returned from your trip',
+        partSubject: 'Date you left for your trip',
         maxDate: '2026-01-01',
         notBeforeDate: '2025-08-10'
       }
@@ -386,7 +392,7 @@ describe('#validateDateInput', () => {
   test('Should reject a date later than notAfterDate and accept one on it', () => {
     const options = {
       subject: 'the date you returned from your trip',
-      subjectSuffix: 'you returned from your trip',
+      partSubject: 'Date you left for your trip',
       maxDate: '2026-01-01',
       notAfterDate: '2025-08-31',
       notAfterMessage: 'Your trip cannot be longer than 30 days'

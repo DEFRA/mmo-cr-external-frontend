@@ -105,20 +105,31 @@ describe('#departurePortController', () => {
     expect(radios.eq(1).attr('value')).toBe('newhaven')
   })
 
-  test('Should render only Save and continue without an Add port button', async () => {
-    const cookie = await withFavourite(server, 'hastings')
+  test.each([
+    ['/departure-port', '/add-port?for=departure'],
+    [
+      '/departure-port?return=/check-answers',
+      '/add-port?for=departure&return=/check-answers'
+    ]
+  ])(
+    'Should render an Add port link and Save and continue on %s',
+    async (url, addPortHref) => {
+      const cookie = await withFavourite(server, 'hastings')
 
-    const { result } = await server.inject({
-      method: 'GET',
-      url: '/departure-port',
-      headers: { cookie }
-    })
-    const $ = load(result)
+      const { result } = await server.inject({
+        method: 'GET',
+        url,
+        headers: { cookie }
+      })
+      const $ = load(result)
 
-    expect($('.govuk-button').eq(0).text().trim()).toBe('Save and continue')
-    expect($('.govuk-button')).toHaveLength(1)
-    expect($('a.govuk-button--secondary')).toHaveLength(0)
-  })
+      expect($('a.govuk-link:contains("Add port")').attr('href')).toBe(
+        addPortHref
+      )
+      expect($('.govuk-button').eq(0).text().trim()).toBe('Save and continue')
+      expect($('.govuk-button')).toHaveLength(1)
+    }
+  )
 
   test('Should default the Back link to trip date when no journey state exists', async () => {
     const cookie = await withFavourite(server, 'hastings')
@@ -227,7 +238,10 @@ describe('#departurePortSubmitController', () => {
     expect(statusCode).toBe(statusCodes.badRequest)
     expect($('.govuk-error-summary')).toHaveLength(1)
     expect($('.govuk-error-summary').text()).toContain(
-      'Select the port you set off from'
+      'Select the port you left from'
+    )
+    expect($('.govuk-error-message').text()).toContain(
+      'Select the port you left from'
     )
     expect($('.govuk-error-message')).toHaveLength(1)
   })
