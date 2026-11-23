@@ -1,4 +1,5 @@
 import {
+  isCatchRecordJourney,
   resolveNextPath,
   setJourneyState
 } from '#/server/common/helpers/journey/navigation.js'
@@ -27,9 +28,47 @@ function gearCheckboxItems(favouriteOptions) {
   }))
 }
 
+// During a live trip the gear selection page also lists trip-only and saved
+// record gear, so the remove page must offer the same set.
+function removableGearIds(request, journeyState, catalogue) {
+  const favouriteGearIds = getFavouriteGearIds(journeyState, catalogue)
+  if (!isCatchRecordJourney(request)) {
+    return favouriteGearIds
+  }
+  return [
+    ...new Set([
+      ...favouriteGearIds,
+      ...(journeyState.journeyGearIds || []),
+      ...(journeyState.selectedGearIds || [])
+    ])
+  ]
+}
+
+function remainingTripGearState(journeyState, idsToRemove) {
+  const keep = (id) => !idsToRemove.includes(id)
+  const remainingSelectedGearIds = (journeyState.selectedGearIds || []).filter(
+    keep
+  )
+  const keepSelected = ([id]) => remainingSelectedGearIds.includes(id)
+  return {
+    selectedGearIds: remainingSelectedGearIds,
+    catchDetailsByGearId: Object.fromEntries(
+      Object.entries(journeyState.catchDetailsByGearId || {}).filter(
+        keepSelected
+      )
+    ),
+    gearMeasurementDetails: Object.fromEntries(
+      Object.entries(journeyState.gearMeasurementDetails || {}).filter(
+        keepSelected
+      )
+    ),
+    ...(idsToRemove.includes('pots') && { potsDetails: null })
+  }
+}
+
 function viewContext(request, catalogue, overrides = {}) {
   const journeyState = migrateGearJourneyState(request, catalogue)
-  const favouriteGearIds = getFavouriteGearIds(journeyState, catalogue)
+  const gearIds = removableGearIds(request, journeyState, catalogue)
   const vesselName =
     journeyState.selectedVesselName ||
     (liveCatchRecords() ? '' : getData('selectVessel').name)
@@ -43,7 +82,7 @@ function viewContext(request, catalogue, overrides = {}) {
       text: 'Back'
     },
     gearCheckboxItems: gearCheckboxItems(
-      getFavouriteGearOptions(favouriteGearIds, catalogue)
+      getFavouriteGearOptions(gearIds, catalogue)
     ),
     ...overrides
   }
@@ -81,8 +120,9 @@ export const removeGearSubmitController = {
     const catalogue = await getGearCatalogue()
     const journeyState = migrateGearJourneyState(request, catalogue)
     const favouriteGearIds = getFavouriteGearIds(journeyState, catalogue)
+    const gearIds = removableGearIds(request, journeyState, catalogue)
 
-    if (getFavouriteGearOptions(favouriteGearIds, catalogue).length === 0) {
+    if (getFavouriteGearOptions(gearIds, catalogue).length === 0) {
       return h
         .redirect(resolveNextPath(request, GEAR_SELECTION_PATH))
         .code(statusCodes.seeOther)
@@ -95,16 +135,29 @@ export const removeGearSubmitController = {
     }
 
     const requestedIds = Array.isArray(rawGearIds) ? rawGearIds : [rawGearIds]
-    const idsToRemove = requestedIds.filter((id) =>
-      favouriteGearIds.includes(id)
-    )
+    const idsToRemove = [
+      ...new Set(requestedIds.filter((id) => gearIds.includes(id)))
+    ]
 
     if (idsToRemove.length === 0) {
       return renderWithError(request, h, catalogue)
     }
 
     if (liveCatchRecords()) {
-      await removeFavouriteGears(request, [...new Set(idsToRemove)])
+      const favouriteIdsToRemove = idsToRemove.filter((id) =>
+        favouriteGearIds.includes(id)
+      )
+      if (favouriteIdsToRemove.length) {
+        await removeFavouriteGears(request, favouriteIdsToRemove)
+      }
+      if (isCatchRecordJourney(request)) {
+        setJourneyState(request, {
+          ...remainingTripGearState(journeyState, idsToRemove),
+          journeyGearIds: (journeyState.journeyGearIds || []).filter(
+            (id) => !idsToRemove.includes(id)
+          )
+        })
+      }
       return h
         .redirect(resolveNextPath(request, GEAR_SELECTION_PATH))
         .code(statusCodes.seeOther)
@@ -113,24 +166,10 @@ export const removeGearSubmitController = {
     const remainingFavouriteGearIds = favouriteGearIds.filter(
       (id) => !idsToRemove.includes(id)
     )
-    const remainingSelectedGearIds = (
-      journeyState.selectedGearIds || []
-    ).filter((id) => !idsToRemove.includes(id))
 
     setJourneyState(request, {
       favouriteGearIds: remainingFavouriteGearIds,
-      selectedGearIds: remainingSelectedGearIds,
-      catchDetailsByGearId: Object.fromEntries(
-        Object.entries(journeyState.catchDetailsByGearId || {}).filter(([id]) =>
-          remainingSelectedGearIds.includes(id)
-        )
-      ),
-      gearMeasurementDetails: Object.fromEntries(
-        Object.entries(journeyState.gearMeasurementDetails || {}).filter(
-          ([id]) => remainingSelectedGearIds.includes(id)
-        )
-      ),
-      ...(idsToRemove.includes('pots') && { potsDetails: null })
+      ...remainingTripGearState(journeyState, idsToRemove)
     })
 
     return h
