@@ -143,6 +143,14 @@
       "state": "needs_review"
     }
   },
+  "departurePort.error.select": {
+    "comment": "Validation message when no departure port is selected. Welsh draft requires professional review.",
+    "en": "Select the port you left from",
+    "cy": {
+      "value": "Dewiswch y porthladd y gwnaethoch adael ohono",
+      "state": "needs_review"
+    }
+  },
   "editReview.error.confirmDeclaration": {
     "comment": "User-facing heading, hint or validation message. Welsh draft requires professional review.",
     "en": "Select I confirm the information is complete and accurate",
@@ -156,6 +164,14 @@
     "en": "Your catch records",
     "cy": {
       "value": "Eich cofnodion dalfa",
+      "state": "needs_review"
+    }
+  },
+  "portSelection.addPort.link": {
+    "comment": "Link on the departure and return port pages to add a port not in the favourites list. Welsh draft requires professional review.",
+    "en": "Add port",
+    "cy": {
+      "value": "Ychwanegu porthladd",
       "state": "needs_review"
     }
   },

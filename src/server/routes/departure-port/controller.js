@@ -28,6 +28,7 @@ import { liveCatchRecords } from '#/server/common/helpers/journey/catch-record-s
 const pageTitle = () => t('web.departure-port.controller.js.copy.27.1')
 const templatePath = 'departure-port/index'
 const errorSummaryTitle = () => t('common.errorSummary.title')
+const errorText = () => t('departurePort.error.select')
 function favouritePorts(request, ports) {
   const codes = [...getFavouritePortCodes(request)]
   if (liveCatchRecords() && getJourneyState(request).departurePort) {
@@ -49,6 +50,7 @@ function viewContext(request, ports, overrides = {}) {
     pageTitle: pageTitle(),
     heading: pageTitle(),
     caption: catchRecordCaption(request),
+    addPortHref: portSelectionPath(request, '/add-port?for=departure'),
     backLink: {
       href: backForDeparturePort(request),
       text: t('header.back')
@@ -97,17 +99,15 @@ export const departurePortSubmitController = {
       async failAction(request, h) {
         const ports = await getPortCatalogue()
         await loadFavouritePorts(request, ports)
-        const errorText = pageTitle()
-
         return h
           .view(
             templatePath,
             viewContext(request, ports, {
               errorSummary: {
                 titleText: errorSummaryTitle(),
-                errorList: [{ text: errorText, href: '#departurePort' }]
+                errorList: [{ text: errorText(), href: '#departurePort' }]
               },
-              fieldErrors: { departurePort: errorText }
+              fieldErrors: { departurePort: errorText() }
             })
           )
           .code(statusCodes.badRequest)
@@ -121,16 +121,15 @@ export const departurePortSubmitController = {
     const { departurePort } = request.payload
     const port = findPortByCode(departurePort, ports)
     if (!port) {
-      const errorText = pageTitle()
       return h
         .view(
           templatePath,
           viewContext(request, ports, {
             errorSummary: {
               titleText: errorSummaryTitle(),
-              errorList: [{ text: errorText, href: '#departurePort' }]
+              errorList: [{ text: errorText(), href: '#departurePort' }]
             },
-            fieldErrors: { departurePort: errorText }
+            fieldErrors: { departurePort: errorText() }
           })
         )
         .code(statusCodes.badRequest)

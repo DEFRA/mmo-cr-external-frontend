@@ -31,7 +31,9 @@
             {% if species.showGear %}
               <p class="govuk-body">{{ t('summary.caughtWith', { gear: species.gearHeading }) }}</p>
             {% endif %}
-            {{ govukSummaryList({ rows: species.rows }) }}
+            {% if species.rows.length %}
+              {{ govukSummaryList({ rows: species.rows }) }}
+            {% endif %}
           </section>
         {% endfor %}
       {% endif %}
