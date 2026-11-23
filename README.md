@@ -634,8 +634,9 @@ All user-facing text is looked up by translation key; there are no hard-coded st
 templates, controllers or helpers. English is the default language and users switch with the
 English | Cymraeg links under the phase banner.
 
-- **Catalog:** `src/server/common/locales/*.json`, one file per area. Each key follows the same
-  shape as the iOS String Catalog:
+- **Catalog:** `src/server/common/locales/messages.json`, a single file holding every key, sorted
+  alphabetically. Keys are grouped by dotted prefix (e.g. `account.*`, `tripReturnDate.*`). Each
+  key follows the same shape as the iOS String Catalog:
 
   ```json
   "common.button.saveAndContinue": {
@@ -659,7 +660,7 @@ English | Cymraeg links under the phase banner.
 - **Missing text:** missing Welsh falls back to English. An unknown key renders as the key itself
   and is logged once as `Missing translation key`. `src/server/common/helpers/i18n/catalog.test.js`
   fails the build if a key used in `src/` is missing, an entry is malformed, or English and Welsh
-  placeholders differ.
+  placeholders differ. The app refuses to start if a key is defined twice in the catalog.
 - **Not translated:** reference data (vessel, species, gear and port names), API values, the PDF,
   logs and internal errors.
 

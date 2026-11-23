@@ -4,6 +4,7 @@ import path from 'node:path'
 
 import {
   buildMessages,
+  findDuplicateTopLevelKeys,
   hasTranslation,
   loadCatalog,
   translate
@@ -84,6 +85,38 @@ describe('#translator', () => {
       expect(() => loadCatalog(localesDir)).toThrow(
         'Duplicate translation key "x.key" in b.json'
       )
+    })
+
+    test('Should reject a key defined twice in the same catalog file', () => {
+      const entry =
+        '{ "en": "Text", "cy": { "value": "Testun", "state": "new" } }'
+      writeFileSync(
+        path.join(localesDir, 'messages.json'),
+        `{ "x.key": ${entry}, "x.other": ${entry}, "x.key": ${entry} }`
+      )
+
+      expect(() => loadCatalog(localesDir)).toThrow(
+        'Duplicate translation key "x.key" in messages.json'
+      )
+    })
+  })
+
+  describe('#findDuplicateTopLevelKeys', () => {
+    test('Should ignore nested keys and key-like text inside values', () => {
+      const text = JSON.stringify({
+        'x.a': { en: 'a "x.b": b', cy: { value: 'a', state: 'new' } },
+        'x.b': { en: 'b', cy: { value: 'b', state: 'new' } }
+      })
+
+      expect(findDuplicateTopLevelKeys(text)).toEqual([])
+    })
+
+    test('Should report escaped duplicate keys', () => {
+      expect(
+        findDuplicateTopLevelKeys(
+          '{"x.\\"q": 1, "y": {"x.\\"q": 2}, "x.\\"q": 3}'
+        )
+      ).toEqual(['x."q'])
     })
   })
 })

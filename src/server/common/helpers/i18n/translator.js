@@ -11,10 +11,50 @@ export const LOCALES_DIR = path.resolve(dirname, '../../locales')
 
 const PLACEHOLDER = /\{\{\s*(\w+)\s*\}\}/g
 
+function stringEnd(text, start) {
+  let index = start + 1
+  while (text[index] !== '"') {
+    index += text[index] === '\\' ? 2 : 1
+  }
+  return index
+}
+
 /**
- * Reads every `*.json` catalog file in `localesDir` and merges them into one map of
- * key -> entry. Each entry follows the shared iOS String Catalog shape:
- * `{ comment, en, cy: { value, state } }`. A key may only be defined once across all files.
+ * JSON.parse silently keeps the last of two identical object keys, so scan the raw text for
+ * top-level keys that repeat. Assumes `text` is valid JSON (it has already been parsed).
+ */
+export function findDuplicateTopLevelKeys(text) {
+  const seen = new Set()
+  const duplicates = new Set()
+  let depth = 0
+
+  for (let index = 0; index < text.length; index++) {
+    const char = text[index]
+    if (char === '{' || char === '[') {
+      depth++
+    } else if (char === '}' || char === ']') {
+      depth--
+    } else if (char === '"') {
+      const end = stringEnd(text, index)
+      const isKey = depth === 1 && /^\s*:/.test(text.slice(end + 1))
+      if (isKey) {
+        const key = JSON.parse(text.slice(index, end + 1))
+        if (seen.has(key)) {
+          duplicates.add(key)
+        }
+        seen.add(key)
+      }
+      index = end
+    }
+  }
+
+  return [...duplicates]
+}
+
+/**
+ * Reads the catalog (`messages.json`, plus any other `*.json` file in `localesDir`) into one
+ * map of key -> entry. Each entry follows the shared iOS String Catalog shape:
+ * `{ comment, en, cy: { value, state } }`. A key may only be defined once.
  */
 export function loadCatalog(localesDir = LOCALES_DIR) {
   const entries = new Map()
@@ -24,9 +64,13 @@ export function loadCatalog(localesDir = LOCALES_DIR) {
     .sort()
 
   for (const file of files) {
-    const content = JSON.parse(
-      readFileSync(path.join(localesDir, file), 'utf-8')
-    )
+    const text = readFileSync(path.join(localesDir, file), 'utf-8')
+    const content = JSON.parse(text)
+
+    const [duplicate] = findDuplicateTopLevelKeys(text)
+    if (duplicate) {
+      throw new Error(`Duplicate translation key "${duplicate}" in ${file}`)
+    }
 
     for (const [key, entry] of Object.entries(content)) {
       if (entries.has(key)) {
