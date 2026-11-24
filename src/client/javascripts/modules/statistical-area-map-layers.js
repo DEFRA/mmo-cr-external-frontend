@@ -19,6 +19,8 @@ const labelCoverageRows = 3
 const labelSampleOffset = 0.5
 const whiteTextLandCoverageThreshold = 0.5
 const labelPadding = 4
+// Distance an area label shifts so it clears a port marker at its anchor point.
+const markerClearanceOffset = 12
 const selectedLabelHorizontalPadding = 5
 const selectedLabelVerticalPadding = 3
 const selectedLabelTopOffset = 2
@@ -129,12 +131,14 @@ function areaLabelBounds(textX, textY, textWidth, fontSize) {
 }
 
 function areaLabelPosition(x, y, textWidth, fontSize, cellBounds, avoidBounds) {
-  const clearOffset = labelPadding * 3
   const candidates = [
     [x + labelPadding, y - labelPadding],
-    [x + labelPadding, y + fontSize + clearOffset],
-    [x - textWidth - clearOffset, y - labelPadding],
-    [x - textWidth - clearOffset, y + fontSize + clearOffset]
+    [x + labelPadding, y + fontSize + markerClearanceOffset],
+    [x - textWidth - markerClearanceOffset, y - labelPadding],
+    [
+      x - textWidth - markerClearanceOffset,
+      y + fontSize + markerClearanceOffset
+    ]
   ].map(([textX, textY]) => ({
     textX,
     textY,
@@ -156,12 +160,7 @@ function areaLabelPosition(x, y, textWidth, fontSize, cellBounds, avoidBounds) {
 function drawSubrectangleLabel(
   context,
   area,
-  land,
-  viewport,
-  canvas,
-  selectedCode,
-  fontSize,
-  avoidBounds
+  { land, viewport, canvas, selectedCode, fontSize, avoidBounds }
 ) {
   const visible = intersectBounds(area.bounds, viewport)
   const [leftX, topY] = toScreen(
@@ -242,16 +241,14 @@ function drawSubrectangleLabels(
   return subrectangles
     .filter((area) => boundsIntersect(area.bounds, viewport))
     .map((area) =>
-      drawSubrectangleLabel(
-        context,
-        area,
+      drawSubrectangleLabel(context, area, {
         land,
         viewport,
         canvas,
         selectedCode,
         fontSize,
         avoidBounds
-      )
+      })
     )
     .filter(Boolean)
 }
