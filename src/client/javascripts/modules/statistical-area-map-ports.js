@@ -5,6 +5,7 @@ import {
 } from './statistical-area-map-constants.js'
 import {
   containsPoint,
+  screenRectanglesOverlap,
   toCoordinate,
   toScreen
 } from './statistical-area-map-geometry.js'
@@ -76,76 +77,66 @@ function portMarkerBounds([portX, portY]) {
   }
 }
 
-function drawDeparturePortMarker(context, port, viewport, canvas) {
-  const [portX, portY] = toScreen(port.coordinate, viewport, canvas)
-  context.fillStyle = markerFill
-  context.strokeStyle = markerStroke
-  context.lineWidth = 1
-  context.beginPath()
-  context.arc(portX, portY, portMarkerRadius, 0, Math.PI * 2)
-  context.fill()
-  context.stroke()
-  return portMarkerBounds([portX, portY])
-}
-
-function drawPortMarkers(context, ports, departurePort, viewport, canvas) {
+function markerPositions(ports, departurePort, viewport, canvas) {
   const seenCoordinates = new Set()
-  const markerBounds = []
+  const positions = []
   let departureVisible = false
 
   for (const port of ports) {
     const key = coordinateKey(port.coordinate)
     if (!seenCoordinates.has(key)) {
       seenCoordinates.add(key)
-      const departure = isDeparturePort(port, departurePort)
-      const [x, y] = toScreen(port.coordinate, viewport, canvas)
-      context.fillStyle = markerFill
-      context.strokeStyle = markerStroke
-      context.lineWidth = 1
-      context.beginPath()
-      context.arc(x, y, portMarkerRadius, 0, Math.PI * 2)
-      context.fill()
-      context.stroke()
-      markerBounds.push(portMarkerBounds([x, y]))
-      departureVisible ||= departure
+      positions.push(toScreen(port.coordinate, viewport, canvas))
+      departureVisible ||= isDeparturePort(port, departurePort)
     }
   }
 
   if (!departureVisible) {
-    markerBounds.push(
-      drawDeparturePortMarker(context, departurePort, viewport, canvas)
-    )
+    positions.push(toScreen(departurePort.coordinate, viewport, canvas))
   }
-  return markerBounds
+  return positions
 }
 
-function rectanglesOverlap(first, second) {
-  return (
-    first.left < second.right + labelGap &&
-    first.right + labelGap > second.left &&
-    first.top < second.bottom + labelGap &&
-    first.bottom + labelGap > second.top
-  )
+export function portMarkerScreenBounds(ports, departurePort, viewport, canvas) {
+  return markerPositions(
+    visiblePorts(ports, viewport),
+    departurePort,
+    viewport,
+    canvas
+  ).map(portMarkerBounds)
+}
+
+function drawPortMarkers(context, ports, departurePort, viewport, canvas) {
+  const positions = markerPositions(ports, departurePort, viewport, canvas)
+  for (const [x, y] of positions) {
+    context.fillStyle = markerFill
+    context.strokeStyle = markerStroke
+    context.lineWidth = 1
+    context.beginPath()
+    context.arc(x, y, portMarkerRadius, 0, Math.PI * 2)
+    context.fill()
+    context.stroke()
+  }
+  return positions.map(portMarkerBounds)
 }
 
 function labelCandidates(portX, portY, labelWidth, labelHeight) {
+  const markerOffset = portMarkerRadius + labelGap + labelEdgePadding
+  const rightLeft = portX + markerOffset
+  const leftLeft = portX - markerOffset - labelWidth
+  const centredLeft = portX - labelWidth / 2
+  const middleTop = portY - labelHeight / 2
+  const aboveTop = portY - markerOffset - labelHeight
+  const belowTop = portY + markerOffset
   return [
-    {
-      left: portX + portMarkerRadius + labelGap + labelEdgePadding,
-      top: portY - labelHeight / 2
-    },
-    {
-      left: portX - portMarkerRadius - labelWidth - labelGap - labelEdgePadding,
-      top: portY - labelHeight / 2
-    },
-    {
-      left: portX - labelWidth / 2,
-      top: portY - portMarkerRadius - labelHeight - labelGap - labelEdgePadding
-    },
-    {
-      left: portX - labelWidth / 2,
-      top: portY + portMarkerRadius + labelGap + labelEdgePadding
-    }
+    { left: rightLeft, top: middleTop },
+    { left: leftLeft, top: middleTop },
+    { left: centredLeft, top: aboveTop },
+    { left: centredLeft, top: belowTop },
+    { left: rightLeft, top: aboveTop },
+    { left: rightLeft, top: belowTop },
+    { left: leftLeft, top: aboveTop },
+    { left: leftLeft, top: belowTop }
   ]
 }
 
@@ -155,7 +146,9 @@ function labelFits(bounds, occupiedBounds, canvas) {
     bounds.top >= labelEdgePadding &&
     bounds.right <= canvas.width - labelEdgePadding &&
     bounds.bottom <= canvas.height - labelEdgePadding &&
-    !occupiedBounds.some((existing) => rectanglesOverlap(bounds, existing))
+    !occupiedBounds.some((existing) =>
+      screenRectanglesOverlap(bounds, existing, labelGap)
+    )
   )
 }
 
@@ -241,19 +234,24 @@ function drawPortLabel(
   return true
 }
 
-function drawPortLabels(context, ports, land, departurePort, viewport, canvas) {
+function drawPortLabels(
+  context,
+  ports,
+  land,
+  departurePort,
+  viewport,
+  canvas,
+  reservedBounds
+) {
   const fontSize = Math.max(
     minimumLabelFontSize,
     canvas.width / (fontSizeCanvasWidthDivisor + portLabelFontSizeOffset)
   )
   context.font = `${fontSize}px sans-serif`
-  const occupiedBounds = drawPortMarkers(
-    context,
-    ports,
-    departurePort,
-    viewport,
-    canvas
-  )
+  const occupiedBounds = [
+    ...drawPortMarkers(context, ports, departurePort, viewport, canvas),
+    ...reservedBounds
+  ]
   const labelledNames = new Set()
   const sortedPorts = sortPortsByPriority(ports, departurePort)
 
@@ -284,8 +282,17 @@ export function drawPorts(
   land,
   departurePort,
   viewport,
-  canvas
+  canvas,
+  reservedBounds = []
 ) {
   const inViewport = visiblePorts(ports, viewport)
-  drawPortLabels(context, inViewport, land, departurePort, viewport, canvas)
+  drawPortLabels(
+    context,
+    inViewport,
+    land,
+    departurePort,
+    viewport,
+    canvas,
+    reservedBounds
+  )
 }
