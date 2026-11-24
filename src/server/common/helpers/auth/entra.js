@@ -51,15 +51,27 @@ function idTokenProblem(claims, { nonce }) {
   const nowSeconds = Math.floor(Date.now() / 1000)
   // Checked in order; the first failing check is reported.
   const checks = [
-    ['audience_mismatch', ![claims.aud].flat().includes(clientId)],
-    ['missing_expiry', typeof claims.exp !== 'number'],
-    ['expired', claims.exp + CLOCK_SKEW_SECONDS < nowSeconds],
-    ['tenant_mismatch', Boolean(tenantId) && claims.tid !== tenantId],
-    ['nonce_mismatch', nonce !== undefined && claims.nonce !== nonce],
-    ['missing_user_id', !(claims.oid ?? claims.sub)]
+    {
+      problem: 'audience_mismatch',
+      failed: ![claims.aud].flat().includes(clientId)
+    },
+    { problem: 'missing_expiry', failed: typeof claims.exp !== 'number' },
+    {
+      problem: 'expired',
+      failed: claims.exp + CLOCK_SKEW_SECONDS < nowSeconds
+    },
+    {
+      problem: 'tenant_mismatch',
+      failed: Boolean(tenantId) && claims.tid !== tenantId
+    },
+    {
+      problem: 'nonce_mismatch',
+      failed: nonce !== undefined && claims.nonce !== nonce
+    },
+    { problem: 'missing_user_id', failed: !(claims.oid ?? claims.sub) }
   ]
 
-  return checks.find(([, failed]) => failed)?.[0] ?? null
+  return checks.find((check) => check.failed)?.problem ?? null
 }
 
 // ID tokens come straight from Entra's token endpoint over TLS, so their claims are checked rather than their signature.
