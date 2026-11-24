@@ -56,9 +56,8 @@ describe('#selectVesselController', () => {
     const $ = load(result)
 
     expect($('h1').text()).toContain('Which vessel did you use?')
-    expect($('[data-testid="app-catch-reference"]').text().trim()).toBe(
-      'New catch record'
-    )
+    expect($('[data-testid="app-catch-reference"]')).toHaveLength(0)
+    expect($('main').text()).not.toContain('New catch record')
     expect($('h1 .govuk-caption-l')).toHaveLength(0)
   })
 

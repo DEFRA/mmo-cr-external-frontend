@@ -317,6 +317,15 @@ export function toCoordinate([x, y], viewport, canvas) {
   ]
 }
 
+export function screenRectanglesOverlap(first, second, gap = 0) {
+  return (
+    first.left < second.right + gap &&
+    first.right + gap > second.left &&
+    first.top < second.bottom + gap &&
+    first.bottom + gap > second.top
+  )
+}
+
 function distanceSquared(first, second) {
   return (first[0] - second[0]) ** 2 + (first[1] - second[1]) ** 2
 }

@@ -1,8 +1,8 @@
 import {
   KEPT_WEIGHT,
   STATISTICAL_AREA_LABEL,
-  stripKilogramSuffix,
-  toSummaryListRow
+  STATISTICAL_SUB_AREA,
+  stripKilogramSuffix
 } from './summary-sections.js'
 
 function weightFieldForLabel(label) {
@@ -30,10 +30,11 @@ function reviewWeightRow(row, speciesGroup) {
     .replace('Weight legally discard', 'Weight legally discarded')
   const weightField = weightFieldForLabel(row.key.text)
   const { speciesId } = speciesGroup
+  const weight = stripKilogramSuffix(row.value.text).trim()
   return {
     ...row,
-    key: { text: `${label} (kg)` },
-    value: { text: stripKilogramSuffix(row.value.text) },
+    key: { text: label },
+    value: { text: weight ? `${weight} kg` : '' },
     actions: {
       items: row.actions.items.map((item) => ({
         ...item,
@@ -47,11 +48,12 @@ function reviewSpeciesGroups(group, speciesCatalogue) {
   const speciesGroups = []
   for (const row of group.rows) {
     if (row.key.text.startsWith('Species')) {
+      const species = speciesCatalogue.find(
+        (item) => item.text === row.value.text
+      )
       speciesGroups.push({
         heading: row.value.text,
-        speciesId: speciesCatalogue.find(
-          (species) => species.text === row.value.text
-        )?.id,
+        speciesId: species?.id,
         gearId: group.gearId,
         gearHeading: group.heading,
         rows: []
@@ -74,32 +76,13 @@ function reviewTripRows(base) {
     'Departure port',
     'Return port'
   ]
-  const rows = labels.map((label) => {
+  return labels.map((label) => {
     const row = base.sections[0].rows.find((item) => item.key.text === label)
     if (label === 'Vessel') {
       return { key: row.key, value: row.value }
     }
     return row
   })
-  const areas = base.gearGroups.flatMap((group) => {
-    const area = group.rows.find(
-      (row) => row.key.text === STATISTICAL_AREA_LABEL
-    )
-    return area
-      ? [
-          {
-            ...area,
-            key: {
-              text:
-                base.gearGroups.length > 1
-                  ? `Statistical sub area (${group.heading})`
-                  : 'Statistical sub area'
-            }
-          }
-        ]
-      : []
-  })
-  return [...rows, ...areas]
 }
 
 function reviewMeasurementRow(row, gearId, context) {
@@ -128,20 +111,19 @@ function reviewMeasurementRow(row, gearId, context) {
   }
 }
 
-function reviewGearRows(group, context, speciesGroups) {
+function reviewGearRows(group, context, speciesGroups, multipleGears) {
   const area = group.rows.find((row) => row.key.text === STATISTICAL_AREA_LABEL)
   const selectedSpecies = group.rows.find((row) =>
     row.key.text.startsWith('Species')
   )
-  const rows = [
-    toSummaryListRow({
-      key: 'Gear type',
-      value: group.heading,
-      changeHref: context.buildChangeHref('/gear-selection')
-    })
-  ]
+  const rows = []
   if (area) {
-    rows.push({ ...area, key: { text: 'Area majority catch caught' } })
+    rows.push({
+      ...area,
+      key: {
+        text: multipleGears ? 'Area majority caught' : STATISTICAL_SUB_AREA
+      }
+    })
   }
   if (selectedSpecies) {
     const speciesNames = speciesGroups
@@ -199,13 +181,19 @@ export function buildReviewLayout(base, context) {
   const speciesGroups = base.gearGroups.flatMap((group) =>
     reviewSpeciesGroups(group, context.speciesCatalogue)
   )
+  const headingCounts = Map.groupBy(speciesGroups, (group) => group.heading)
+  const multipleGears = base.gearGroups.length > 1
   return {
     sections: [{ heading: 'Trips details', rows: reviewTripRows(base) }],
     gearGroups: base.gearGroups.map((group) => ({
       ...group,
-      rows: reviewGearRows(group, context, speciesGroups)
+      rows: reviewGearRows(group, context, speciesGroups, multipleGears)
     })),
-    speciesGroups,
+    speciesGroups: speciesGroups.map((group) => ({
+      ...group,
+      // Only name the gear when the same species was caught with more than one gear
+      showGear: headingCounts.get(group.heading).length > 1
+    })),
     trailingSections: reviewTrailingSections(base.trailingSections)
   }
 }

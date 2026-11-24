@@ -5,7 +5,7 @@
 
 ## Confirmed Content And Layout
 
-- Species selection retains the New catch record caption, the question "What species did you catch using pots?" when pots is selected, the live-weight guidance and conversion-factor link, species checkboxes, Add/Remove species links and Save and continue.
+- Species selection retains the New catch record caption, the question "Which species did you catch with pots?" when pots is selected, the live-weight guidance and conversion-factor link, species checkboxes, Add/Remove species links and Save and continue.
 - Keep conditional weight entry and existing validation. Derive the question's gear description from the same selected-gear data as the statistical-area pages; no gear selected produces a generic question rather than inventing pots.
 - Add species shows "Add species to your vessel" followed by the actual selected vessel name on a separate line. Do not default to the fictional vessel OLGA when there is no selection.
 - The existing shared layout owns the header, phase banner, Back/language navigation and footer. These are unchanged.

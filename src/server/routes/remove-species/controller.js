@@ -1,5 +1,6 @@
 import {
   catchRecordCaption,
+  isCatchRecordJourney,
   resolveNextPath,
   getJourneyState,
   speciesSelectionReturnPath,
@@ -19,20 +20,15 @@ function speciesCheckboxItems(speciesOptions) {
 }
 
 function viewContext(request, speciesData, overrides = {}) {
-  const vesselName = liveCatchRecords()
-    ? ''
-    : speciesData.journeyState.selectedVesselName || ''
-  const heading = liveCatchRecords()
-    ? 'Remove species from your favourites'
-    : 'Remove species from vessel'
+  const favourites = liveCatchRecords() && !isCatchRecordJourney(request)
+  const vesselName = speciesData.journeyState.selectedVesselName || ''
+  const heading = 'Remove species from vessel'
   const pageTitle = vesselName ? `${heading} ${vesselName}` : heading
   return {
     pageTitle,
     heading,
     vesselName,
-    caption: liveCatchRecords()
-      ? 'Your favourites'
-      : catchRecordCaption(request),
+    caption: favourites ? 'Your favourites' : catchRecordCaption(request),
     backLink: {
       href: speciesSelectionReturnPath(request),
       text: 'Back'
@@ -50,11 +46,18 @@ function normalizeSpeciesIds(rawValue) {
   return Array.isArray(rawValue) ? rawValue : [rawValue]
 }
 
+// During a live trip the species selection page also lists trip-only and
+// saved record species, so the remove page must offer the same set.
+function loadRemovableSpecies(request) {
+  return getSpeciesPageData(request, {
+    loadFavourites: true,
+    includeSelected: isCatchRecordJourney(request)
+  })
+}
+
 export const removeSpeciesController = {
   async handler(request, h) {
-    const speciesData = await getSpeciesPageData(request, {
-      loadFavourites: true
-    })
+    const speciesData = await loadRemovableSpecies(request)
     return h.view('remove-species/index', viewContext(request, speciesData))
   }
 }
@@ -79,14 +82,8 @@ function remainingCatchAnswers(answers, idsToRemove) {
   }
 }
 
-function removeSpeciesFromJourney(request, availableSpeciesIds, idsToRemove) {
-  const state = getJourneyState(request)
-  const patch = {
-    ...remainingCatchAnswers(state, idsToRemove),
-    availableSpeciesIds: availableSpeciesIds.filter(
-      (id) => !idsToRemove.includes(id)
-    )
-  }
+function remainingTripSpecies(state, idsToRemove) {
+  const patch = remainingCatchAnswers(state, idsToRemove)
   if (state.catchDetailsByGearId) {
     patch.catchDetailsByGearId = Object.fromEntries(
       Object.entries(state.catchDetailsByGearId).map(([gearId, answers]) => [
@@ -95,18 +92,37 @@ function removeSpeciesFromJourney(request, availableSpeciesIds, idsToRemove) {
       ])
     )
   }
+  return patch
+}
+
+function removeSpeciesFromTrip(request, idsToRemove) {
+  const state = getJourneyState(request)
+  setJourneyState(request, {
+    ...remainingTripSpecies(state, idsToRemove),
+    journeySpeciesIds: (state.journeySpeciesIds || []).filter(
+      (id) => !idsToRemove.includes(id)
+    )
+  })
+}
+
+function removeSpeciesFromJourney(request, availableSpeciesIds, idsToRemove) {
+  const patch = {
+    ...remainingTripSpecies(getJourneyState(request), idsToRemove),
+    availableSpeciesIds: availableSpeciesIds.filter(
+      (id) => !idsToRemove.includes(id)
+    )
+  }
   setJourneyState(request, patch)
   return patch.availableSpeciesIds
 }
 
 export const removeSpeciesSubmitController = {
   async handler(request, h) {
-    const speciesData = await getSpeciesPageData(request, {
-      loadFavourites: true
-    })
+    const speciesData = await loadRemovableSpecies(request)
     const { availableSpeciesIds } = speciesData
+    const removableSpeciesIds = speciesData.speciesOptions.map(({ id }) => id)
 
-    if (availableSpeciesIds.length === 0) {
+    if (removableSpeciesIds.length === 0) {
       return h
         .redirect(resolveNextPath(request, '/add-species'))
         .code(statusCodes.seeOther)
@@ -116,7 +132,7 @@ export const removeSpeciesSubmitController = {
     const idsToRemove = filterKnownSpeciesIds(
       requestedIds,
       speciesData.speciesOptions
-    ).filter((id) => availableSpeciesIds.includes(id))
+    ).filter((id) => removableSpeciesIds.includes(id))
 
     if (idsToRemove.length === 0) {
       const errorText = 'Select the species you want to remove'
@@ -138,8 +154,18 @@ export const removeSpeciesSubmitController = {
 
     let remainingSpeciesIds
     if (liveCatchRecords()) {
-      await removeFavouriteSpecies(request, idsToRemove)
-      remainingSpeciesIds = getJourneyState(request).availableSpeciesIds
+      const favouriteIdsToRemove = idsToRemove.filter((id) =>
+        availableSpeciesIds.includes(id)
+      )
+      if (favouriteIdsToRemove.length) {
+        await removeFavouriteSpecies(request, favouriteIdsToRemove)
+      }
+      if (isCatchRecordJourney(request)) {
+        removeSpeciesFromTrip(request, idsToRemove)
+      }
+      remainingSpeciesIds = removableSpeciesIds.filter(
+        (id) => !idsToRemove.includes(id)
+      )
     } else {
       remainingSpeciesIds = removeSpeciesFromJourney(
         request,

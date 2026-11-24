@@ -9,6 +9,11 @@ import {
   setJourneyState
 } from '#/server/common/helpers/journey/navigation.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
+import { businessDate } from '#/server/common/helpers/journey/catch-record-payload.js'
+import {
+  latestReturnDate,
+  TRIP_TOO_LONG_MESSAGE
+} from '#/server/common/helpers/journey/trip-date-rules.js'
 
 const pageTitle = 'Which date did you return from your trip?'
 const hintText = 'For example, 31/03/2020'
@@ -37,6 +42,7 @@ export const tripReturnDateController = {
 export const tripReturnDateSubmitController = {
   handler(request, h) {
     const payload = request.payload || {}
+    const { departureDate } = getJourneyState(request)
     const result = validateDateInput(
       {
         day: payload['tripReturnDate-day'],
@@ -46,14 +52,17 @@ export const tripReturnDateSubmitController = {
       'tripReturnDate',
       {
         subject: 'the date you returned from your trip',
-        subjectSuffix: 'you returned from your trip',
+        partSubject: 'Date you left for your trip',
         formatMessage:
           'Date you returned from your trip must be in the format 31 3 2019',
+        maxDate: businessDate(),
         maxDateMessage:
           'Date you returned from your trip must be today or in the past',
-        notBeforeDate: getJourneyState(request).departureDate,
+        notBeforeDate: departureDate,
         notBeforeMessage:
-          'Date you returned from your trip must be the same as or after the date you left'
+          'Date you returned from your trip must be the same as or after the date you left',
+        notAfterDate: departureDate && latestReturnDate(departureDate),
+        notAfterMessage: TRIP_TOO_LONG_MESSAGE
       }
     )
 

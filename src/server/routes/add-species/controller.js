@@ -15,20 +15,9 @@ import { statusCodes } from '#/server/common/constants/status-codes.js'
 import { addFavouriteSpecies } from '#/server/common/helpers/journey/session-favourites.js'
 import { liveCatchRecords } from '#/server/common/helpers/journey/catch-record-service.js'
 
-function addSpeciesHeading(request) {
-  if (isCatchRecordJourney(request)) {
-    return 'Add species to your catch record'
-  }
-  return liveCatchRecords()
-    ? 'Add species to your favourites'
-    : 'Add species to your vessel'
-}
-
 function viewContext(request, speciesData, overrides = {}) {
-  const vesselName = liveCatchRecords()
-    ? ''
-    : getJourneyState(request).selectedVesselName || ''
-  const heading = addSpeciesHeading(request)
+  const vesselName = getJourneyState(request).selectedVesselName || ''
+  const heading = 'Add species to your vessel'
   const pageTitle = vesselName ? `${heading} ${vesselName}` : heading
   return {
     pageTitle,
@@ -87,6 +76,11 @@ function existingSpeciesIds(request, speciesData) {
 
 async function saveAddedSpecies(request, speciesData, speciesId) {
   if (isCatchRecordJourney(request)) {
+    // Also save to the vessel favourites so the species appears on the account
+    // page and can be removed, matching walkthrough mode.
+    if (!speciesData.availableSpeciesIds.includes(speciesId)) {
+      await addFavouriteSpecies(request, speciesId)
+    }
     const { journeySpeciesIds = [] } = getJourneyState(request)
     setJourneyState(request, {
       journeySpeciesIds: [...new Set([...journeySpeciesIds, speciesId])]

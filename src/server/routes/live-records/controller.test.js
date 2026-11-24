@@ -594,9 +594,7 @@ describe('Live catch records and section persistence', () => {
   test('Should replace the new-record caption as soon as vessel submission creates a draft', async () => {
     await call('POST', '/records/new')
     const vessel = await call('GET', '/select-vessel')
-    expect(load(vessel.result)('.govuk-caption-l').text().trim()).toBe(
-      'New catch record'
-    )
+    expect(load(vessel.result)('.govuk-caption-l')).toHaveLength(0)
     expect(fetchMock).not.toHaveBeenCalled()
     const created = await call('POST', '/select-vessel', {
       vesselId: 'vessel-1'
@@ -612,9 +610,7 @@ describe('Live catch records and section persistence', () => {
     )
     await call('POST', '/records/new')
     const fresh = await call('GET', '/select-vessel')
-    expect(load(fresh.result)('.govuk-caption-l').text().trim()).toBe(
-      'New catch record'
-    )
+    expect(load(fresh.result)('.govuk-caption-l')).toHaveLength(0)
   })
 
   test.each([
@@ -1647,10 +1643,10 @@ describe('Live catch records and section persistence', () => {
       expect(confirmation.statusCode).toBe(200)
       expect(confirmation.result).toContain(record.catchRecordReference)
       expect(getJourneyState(confirmation.request)).toMatchObject({
-        favouritePortIds: [],
-        favouriteGearIds: [],
-        favouriteGearMeasurements: {},
-        favouriteSpeciesIds: []
+        favouritePortIds: ['port-1'],
+        favouriteGearIds: ['gear-1'],
+        favouriteGearMeasurements: { 'gear-1': { 'measurement-1': 12 } },
+        favouriteSpeciesIds: ['species-1']
       })
       expect(record.gears[0]).toMatchObject({
         statisticalArea: { id: 'area-1' },
@@ -1688,7 +1684,6 @@ describe('Live catch records and section persistence', () => {
     '/add-gear',
     '/add-species',
     '/remove-port',
-    '/remove-gear',
     '/remove-species'
   ])(
     'Should manage session favourites without a vessel on %s',
@@ -1700,6 +1695,63 @@ describe('Live catch records and section persistence', () => {
       expect(fetchMock).not.toHaveBeenCalled()
     }
   )
+
+  test('Should name the selected vessel in the Remove gear heading', async () => {
+    await seed({ ...recordJourney(record), selectedVesselName: 'TEST VESSEL' })
+    const response = await call('GET', '/remove-gear')
+    const $ = load(response.result)
+    expect(response.statusCode).toBe(200)
+    expect($('h1').html()).toContain('Remove gear from vessel <br>TEST VESSEL')
+    expect($('title').text()).toContain('Remove gear from vessel TEST VESSEL')
+  })
+
+  test.each([
+    ['/add-species', 'Add species to your vessel TEST VESSEL'],
+    ['/remove-species', 'Remove species from vessel TEST VESSEL']
+  ])(
+    'Should name the selected vessel at the end of the %s heading',
+    async (path, heading) => {
+      await seed({
+        ...recordJourney(record),
+        selectedVesselName: 'TEST VESSEL'
+      })
+      const response = await call('GET', path)
+      const $ = load(response.result)
+      $('h1 .govuk-caption-l').remove()
+      expect(response.statusCode).toBe(200)
+      expect($('h1').text().replace(/\s+/g, ' ').trim()).toBe(heading)
+      expect($('title').text()).toContain(heading)
+    }
+  )
+
+  test('Should name the account vessel in the species headings opened from the account page', async () => {
+    await call('POST', '/sign-in')
+    const account = load((await call('GET', '/account')).result)
+    const headingFor = async (href) => {
+      const $ = load((await call('GET', href)).result)
+      $('h1 .govuk-caption-l').remove()
+      return $('h1').text().replace(/\s+/g, ' ').trim()
+    }
+
+    for (const [vesselId, vesselName] of [
+      ['vessel-1', 'TEST VESSEL'],
+      ['vessel-2', 'SECOND VESSEL']
+    ]) {
+      const link = (path) =>
+        account(
+          `a[href^="${path}?return=/account"][href$="vesselId=${vesselId}"]`
+        )
+          .first()
+          .attr('href')
+
+      expect(await headingFor(link('/add-species'))).toBe(
+        `Add species to your vessel ${vesselName}`
+      )
+      expect(await headingFor(link('/remove-species'))).toBe(
+        `Remove species from vessel ${vesselName}`
+      )
+    }
+  })
 
   test.each([
     [
@@ -1807,14 +1859,17 @@ describe('Live catch records and section persistence', () => {
           2
         )
       } else {
-        expect(returning.headers.location).toBe('/add-port?for=return')
-        expect((await call('GET', returning.headers.location)).statusCode).toBe(
-          200
-        )
+        expect(returning.statusCode).toBe(200)
+        const $returning = load(returning.result)
+        expect($returning('input[name="returnPort"]')).toHaveLength(1)
+        expect($returning('input[value="GBABC"]').prop('checked')).toBe(false)
+        expect(
+          $returning('a.govuk-link:contains("Add port")').attr('href')
+        ).toBe('/add-port?for=return')
       }
       const saved = favourites
         ? await call('POST', '/return-port', { returnPort: 'GBDEF' })
-        : await call('POST', returning.headers.location, {
+        : await call('POST', '/add-port?for=return', {
             port: 'Second port'
           })
       expect(saved.statusCode).toBe(303)
@@ -1822,7 +1877,7 @@ describe('Live catch records and section persistence', () => {
       expect(getJourneyState(saved.request)).toMatchObject({
         departurePort: 'GBABC',
         returnPort: 'GBDEF',
-        favouritePortIds: favourites ? ['port-1', 'port-2'] : []
+        favouritePortIds: ['port-1', 'port-2']
       })
       expect(record.trip.departurePort.id).toBe('port-1')
       expect(record.trip.returnPort.id).toBe('port-2')
@@ -1831,7 +1886,7 @@ describe('Live catch records and section persistence', () => {
           ([url, options]) =>
             url.includes('/favourite-ports') && options.method !== 'GET'
         )
-      ).toBe(false)
+      ).toBe(!favourites)
     }
   )
 
@@ -1978,13 +2033,15 @@ describe('Live catch records and section persistence', () => {
   })
 
   test.each(['departure', 'return'])(
-    'Should select another %s port without changing favourites and preserve review return',
+    'Should select another %s port, save it to favourites and preserve review return',
     async (phase) => {
       await seed({ ...recordJourney(record), returnPort: 'GBDEF' })
       await seedFavourites({ favouritePortIds: ['port-1'] })
       const screen = await call('GET', `/${phase}-port?return=/check-answers`)
       const href = `/add-port?for=${phase}&return=/check-answers`
-      expect(load(screen.result)('a.govuk-button--secondary')).toHaveLength(0)
+      expect(
+        load(screen.result)('a.govuk-link:contains("Add port")').attr('href')
+      ).toBe(href)
       const search = await call('GET', href)
       expect(load(search.result)('form').attr('action')).toBe(href)
       const saved = await call('POST', href, { port: 'Second port' })
@@ -1992,16 +2049,20 @@ describe('Live catch records and section persistence', () => {
       expect(saved.headers.location).toBe('/check-answers')
       expect(getJourneyState(saved.request)).toMatchObject({
         [phase === 'departure' ? 'departurePort' : 'returnPort']: 'GBDEF',
-        favouritePortIds: ['port-1'],
-        favouritePorts: ['GBABC']
+        favouritePortIds: ['port-1', 'port-2'],
+        favouritePorts: ['GBABC', 'GBDEF']
       })
       expect(
-        fetchMock.mock.calls.filter(([, options]) => options.method !== 'GET')
-      ).toHaveLength(1)
-      expect(
-        fetchMock.mock.calls.find(([, options]) => options.method !== 'GET')[1]
-          .method
-      ).toBe('PATCH')
+        fetchMock.mock.calls
+          .filter(([, options]) => options.method !== 'GET')
+          .map(([url, options]) => [
+            options.method,
+            url.includes('/favourite-ports')
+          ])
+      ).toEqual([
+        ['POST', true],
+        ['PATCH', false]
+      ])
     }
   )
 
@@ -2055,6 +2116,13 @@ describe('Live catch records and section persistence', () => {
         status: 200,
         json: async () => ({ vesselId: 'vessel-1', favouritePortIds: [] })
       })
+      fetchMock.mockResolvedValueOnce({
+        status: 200,
+        json: async () => ({
+          vesselId: 'vessel-1',
+          favouritePortIds: ['port-2']
+        })
+      })
       fetchMock.mockResolvedValueOnce({ status })
       fetchMock.mockClear()
       const failed = await call('POST', '/add-port?for=departure', {
@@ -2065,7 +2133,7 @@ describe('Live catch records and section persistence', () => {
         departurePort: 'GBABC',
         returnPort: 'GBDEF',
         catchRecordReloadRequired: true,
-        favouritePortIds: []
+        favouritePortIds: ['port-2']
       })
       expect(
         fetchMock.mock.calls.filter(([, options]) => options.method === 'PATCH')
@@ -2222,7 +2290,7 @@ describe('Live catch records and section persistence', () => {
     ).toBe(true)
   })
 
-  test('Should keep journey gear, measurements, species and ports out of favourites', async () => {
+  test('Should save journey gear, measurements, species and ports to favourites so the account page shows them', async () => {
     await seed({
       ...recordJourney(record),
       selectedGearIds: [],
@@ -2257,6 +2325,8 @@ describe('Live catch records and section persistence', () => {
     expect(added.statusCode).toBe(303)
     expect(getJourneyState(added.request)).toMatchObject({
       ...preferences,
+      favouriteGearIds: ['gear-1'],
+      favouriteGearMeasurements: { 'gear-1': { 'measurement-1': 12 } },
       journeyGearIds: ['gear-1'],
       gearMeasurementDetails: { 'gear-1': { 'measurement-1': 12 } }
     })
@@ -2282,12 +2352,12 @@ describe('Live catch records and section persistence', () => {
     const speciesPath = '/add-species?gearId=gear-1'
     const speciesSearch = await call('GET', speciesPath)
     expect(load(speciesSearch.result)('h1').text()).toContain(
-      'Add species to your catch record'
+      'Add species to your vessel'
     )
     const species = await call('POST', speciesPath, { species: 'Cod' })
     expect(species.statusCode).toBe(303)
     expect(getJourneyState(species.request)).toMatchObject({
-      ...preferences,
+      favouriteSpeciesIds: ['species-2', 'species-1'],
       journeySpeciesIds: ['species-1']
     })
     const speciesChoices = await call('GET', '/species-selection?gearId=gear-1')
@@ -2304,8 +2374,14 @@ describe('Live catch records and section persistence', () => {
       port: 'Test port'
     })
     expect(port.statusCode).toBe(303)
+    const savedPreferences = {
+      favouriteGearIds: ['gear-1'],
+      favouriteGearMeasurements: { 'gear-1': { 'measurement-1': 12 } },
+      favouriteSpeciesIds: ['species-2', 'species-1'],
+      favouritePortIds: ['port-2', 'port-1']
+    }
     expect(getJourneyState(port.request)).toMatchObject({
-      ...preferences,
+      ...savedPreferences,
       departurePort: 'GBABC'
     })
     await call('POST', '/sign-in')
@@ -2317,26 +2393,27 @@ describe('Live catch records and section persistence', () => {
         .filter((_, item) => $account(item).find('dt').text().trim() === label)
         .find('.govuk-summary-list__value')
         .text()
-    expect(accountValue('Gear onboard')).not.toContain('Test gear')
+    expect(accountValue('Gear onboard')).toContain('Test gear')
+    expect(accountValue('Gear onboard')).toContain('Length: 12')
     expect(accountValue('Species caught')).toContain('Haddock')
-    expect(accountValue('Species caught')).not.toContain('Cod')
+    expect(accountValue('Species caught')).toContain('Cod')
     expect(accountValue('Ports used')).toContain('Second port')
-    expect(accountValue('Ports used')).not.toContain('Test port')
+    expect(accountValue('Ports used')).toContain('Test port')
     const fresh = await call('POST', '/records/new')
     expect(fresh.request.yar.get('vesselFavourites')['vessel-1']).toMatchObject(
-      preferences
+      savedPreferences
     )
     expect(getJourneyState(fresh.request).journeyGearIds).toBeUndefined()
     expect(getJourneyState(fresh.request).journeySpeciesIds).toBeUndefined()
   })
 
-  test('Should add unmeasured journey gear without adding a favourite and retain choices across validation', async () => {
+  test('Should add unmeasured journey gear as a favourite and retain choices across validation', async () => {
     await seed({ ...recordJourney(record), selectedGearIds: [] })
     const added = await call('POST', '/add-gear', { gear: 'Recreational gear' })
     expect(added.statusCode).toBe(303)
     expect(getJourneyState(added.request)).toMatchObject({
       journeyGearIds: ['gear-2'],
-      favouriteGearIds: []
+      favouriteGearIds: ['gear-2']
     })
     expect((await call('GET', '/gear-selection')).result).toContain(
       'Recreational gear'
@@ -2346,8 +2423,10 @@ describe('Live catch records and section persistence', () => {
         .statusCode
     ).toBe(400)
     expect(
-      fetchMock.mock.calls.every(([, options]) => options.method === 'GET')
-    ).toBe(true)
+      fetchMock.mock.calls
+        .filter(([, options]) => options.method !== 'GET')
+        .map(([url, options]) => [options.method, new URL(url).pathname])
+    ).toEqual([['POST', '/v1/vessels/vessel-1/favourite-gears']])
   })
 
   test('Should keep explicit account favourites actions working while a catch record is open', async () => {
@@ -2437,7 +2516,7 @@ describe('Live catch records and section persistence', () => {
     })
     expect(trip.statusCode).toBe(303)
     expect(getJourneyState(trip.request).journeyGearIds).toEqual(['gear-1'])
-    expect(getJourneyState(trip.request).favouriteGearIds).toEqual([])
+    expect(getJourneyState(trip.request).favouriteGearIds).toEqual(['gear-1'])
   })
 
   test('Should prefill account favourite measurements when selecting gear on a new journey', async () => {
@@ -2521,7 +2600,7 @@ describe('Live catch records and section persistence', () => {
     ).toHaveLength(1)
   })
 
-  test('Should remove favourites without changing selected trip answers or catch records', async () => {
+  test('Should remove account favourites without changing selected trip answers or catch records', async () => {
     await seed()
     await seedFavourites({
       favouriteGearIds: ['gear-1'],
@@ -2531,9 +2610,12 @@ describe('Live catch records and section persistence', () => {
     })
     const before = structuredClone(record)
     for (const [path, payload] of [
-      ['/remove-gear', { gearIds: 'gear-1' }],
-      ['/remove-species', { speciesIds: 'species-1' }],
-      ['/remove-port', { ports: 'port-1' }]
+      ['/remove-gear?return=/account&vesselId=vessel-1', { gearIds: 'gear-1' }],
+      [
+        '/remove-species?return=/account&vesselId=vessel-1',
+        { speciesIds: 'species-1' }
+      ],
+      ['/remove-port?vesselId=vessel-1', { ports: 'port-1' }]
     ]) {
       expect((await call('POST', path, payload)).statusCode).toBe(303)
     }
@@ -2563,6 +2645,48 @@ describe('Live catch records and section persistence', () => {
           url.includes('/catch-records') && options.method !== 'GET'
       )
     ).toBe(false)
+  })
+
+  test('Should list and remove trip and favourite gear and species from the journey remove screens', async () => {
+    await seed({ ...recordJourney(record), journeyGearIds: ['gear-2'] })
+    await seedFavourites({
+      favouriteGearIds: [],
+      favouriteGearMeasurements: {},
+      favouriteSpeciesIds: ['species-1'],
+      favouritePortIds: []
+    })
+    const before = structuredClone(record)
+    const gearScreen = await call('GET', '/remove-gear')
+    expect(gearScreen.statusCode).toBe(200)
+    expect(load(gearScreen.result)('input[name="gearIds"]')).toHaveLength(2)
+    const speciesPath =
+      '/remove-species?gearId=gear-1&return=/species-selection'
+    const speciesScreen = await call('GET', speciesPath)
+    expect(
+      load(speciesScreen.result)('input[name="speciesIds"][value="species-1"]')
+    ).toHaveLength(1)
+    expect(
+      (await call('POST', speciesPath, { speciesIds: 'species-1' })).statusCode
+    ).toBe(303)
+    expect(
+      getJourneyState((await call('GET', '/remove-gear')).request)
+        .catchDetailsByGearId['gear-1'].selectedSpeciesIds
+    ).toEqual([])
+    const removed = await call('POST', '/remove-gear', {
+      gearIds: ['gear-1', 'gear-2']
+    })
+    expect(removed.statusCode).toBe(303)
+    expect(getJourneyState(removed.request)).toMatchObject({
+      selectedGearIds: [],
+      journeyGearIds: [],
+      catchDetailsByGearId: {},
+      favouriteGearIds: [],
+      favouriteSpeciesIds: []
+    })
+    expect(
+      fetchMock.mock.calls.filter(([, options]) => options.method === 'DELETE')
+    ).toHaveLength(1)
+    expect(record).toEqual(before)
   })
 
   test('Should retain backend favourites across sign-out and fresh browser sessions', async () => {

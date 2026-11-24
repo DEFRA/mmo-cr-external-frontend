@@ -58,7 +58,7 @@ describe('#addSpeciesController', () => {
     [VESSEL_IDS.achilles, 'ACHILLES'],
     [VESSEL_IDS.seaSpray, 'SEA SPRAY']
   ])(
-    'Should show the selected vessel %s on its own heading line',
+    'Should show the selected vessel %s at the end of the heading',
     async (vesselId, vesselName) => {
       const selection = await server.inject({
         method: 'POST',
@@ -73,7 +73,10 @@ describe('#addSpeciesController', () => {
       })
       const $ = load(result)
 
-      expect($('h1 [class~="govuk-!-display-block"]').text()).toBe(vesselName)
+      expect($('h1 label').text().replace(/\s+/g, ' ').trim()).toBe(
+        `Add species to your vessel ${vesselName}`
+      )
+      expect($('h1 [class~="govuk-!-display-block"]')).toHaveLength(0)
       expect($('title').text()).toContain(
         `Add species to your vessel ${vesselName}`
       )

@@ -28,8 +28,9 @@ Specific consequences of how GitHub implements reusable workflows shaped the des
 
 - **Configuration stays with the consumer.** A reusable workflow resolves `vars` and `secrets`
   against the *caller*, never against the repository hosting it. `COPILOT_ANALYTICS_INGEST_URL` and
-  `COPILOT_INGEST_TOKEN` therefore remain repository settings here and are passed in as an input and
-  a named secret. They can later move to DEFRA organisation-level settings with no code change.
+  `COPILOT_ANALYTICS_SURVIVAL_URL` therefore remain repository variables here and are passed in as
+  inputs. They can later move to DEFRA organisation-level settings with no code change. Ingest is
+  authenticated with the job's GitHub OIDC token (`id-token: write`); there is no repository secret.
 - **The shared repository is checked out explicitly.** `actions/checkout` inside a called workflow
   checks out the caller, so the reusable workflow checks itself out a second time using the
   `job.workflow_repository` and `job.workflow_sha` contexts. This pins the scripts to the exact

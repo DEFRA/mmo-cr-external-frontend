@@ -4,7 +4,10 @@ import {
   defaultRectangleCount,
   maximumRectangleCount
 } from './statistical-area-map-constants.js'
-import { drawPorts } from './statistical-area-map-ports.js'
+import {
+  drawPorts,
+  portMarkerScreenBounds
+} from './statistical-area-map-ports.js'
 import { drawMapLayers } from './statistical-area-map-layers.js'
 import {
   boundsIntersect,
@@ -387,13 +390,27 @@ export function createRender({
     context.fillStyle = '#ffffff'
     context.fillRect(0, 0, canvas.width, canvas.height)
 
-    drawMapLayers(context, {
+    const areaLabelBounds = drawMapLayers(context, {
       subrectangles,
       land,
       viewport: state.viewport,
       canvas,
-      selectedCode: state.selectedSubCode
+      selectedCode: state.selectedSubCode,
+      avoidBounds: portMarkerScreenBounds(
+        ports,
+        departurePort,
+        state.viewport,
+        canvas
+      )
     })
-    drawPorts(context, ports, land, departurePort, state.viewport, canvas)
+    drawPorts(
+      context,
+      ports,
+      land,
+      departurePort,
+      state.viewport,
+      canvas,
+      areaLabelBounds
+    )
   }
 }

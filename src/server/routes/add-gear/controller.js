@@ -108,6 +108,29 @@ function viewContext(request, catalogue, overrides = {}) {
   }
 }
 
+// Gear added during a live trip is also saved to the vessel favourites so it
+// appears on the account page and can be removed, matching walkthrough mode.
+async function addJourneyGearToFavourites(
+  request,
+  journeyState,
+  catalogue,
+  gearId,
+  measurements
+) {
+  if (getFavouriteGearIds(journeyState, catalogue).includes(gearId)) {
+    return
+  }
+  await addFavouriteGear(request, gearId)
+  if (measurements) {
+    setJourneyState(request, {
+      favouriteGearMeasurements: {
+        ...getFavouriteGearMeasurements(getJourneyState(request)),
+        [gearId]: measurements
+      }
+    })
+  }
+}
+
 function renderSearchError(request, h, catalogue, errorText) {
   return h
     .view(
@@ -193,6 +216,13 @@ async function handlePendingMeasurementSubmission(
   }
 
   if (isCatchRecordJourney(request)) {
+    await addJourneyGearToFavourites(
+      request,
+      journeyState,
+      catalogue,
+      pendingOption.id,
+      values
+    )
     setJourneyState(request, {
       journeyGearIds: [
         ...new Set([...(journeyState.journeyGearIds || []), pendingOption.id])
@@ -275,6 +305,12 @@ async function handleGearSearchSubmission(request, h, journeyState, catalogue) {
   }
 
   if (isCatchRecordJourney(request)) {
+    await addJourneyGearToFavourites(
+      request,
+      journeyState,
+      catalogue,
+      matchedOption.id
+    )
     setJourneyState(request, {
       journeyGearIds: [
         ...new Set([...(journeyState.journeyGearIds || []), matchedOption.id])

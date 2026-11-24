@@ -59,6 +59,18 @@ export function formatIsoDate(isoDate) {
   return `${day} ${monthName} ${year}`
 }
 
+const MS_PER_DAY = 24 * 60 * 60 * 1000
+
+export function addDaysToIsoDate(isoDate, days) {
+  const [year, month, day] = isoDate.split('-').map(Number)
+  const date = new Date(Date.UTC(year, month - 1, day) + days * MS_PER_DAY)
+  return toIsoDate(
+    date.getUTCDate(),
+    date.getUTCMonth() + 1,
+    date.getUTCFullYear()
+  )
+}
+
 export function todayIsoDate() {
   const now = new Date()
   return toIsoDate(
@@ -83,7 +95,7 @@ function checkMissingFields(values, options) {
   if (missingParts.length > 0) {
     return {
       isValid: false,
-      errorMessage: `Enter the ${missingParts.join(' and ')} ${options.subjectSuffix}`,
+      errorMessage: `${options.partSubject} must include a ${missingParts.join(' and ')}`,
       fieldErrors: {
         day: missingParts.includes('day'),
         month: missingParts.includes('month'),
@@ -143,7 +155,9 @@ function checkBounds(isoDate, values, options) {
     maxDate = todayIsoDate(),
     maxDateMessage,
     notBeforeDate,
-    notBeforeMessage
+    notBeforeMessage,
+    notAfterDate,
+    notAfterMessage
   } = options
   const isoValue = isoDateValue(isoDate)
   const fieldErrors = { day: true, month: true, year: true }
@@ -165,6 +179,15 @@ function checkBounds(isoDate, values, options) {
     }
   }
 
+  if (notAfterDate && isoValue > isoDateValue(notAfterDate)) {
+    return {
+      isValid: false,
+      errorMessage: notAfterMessage,
+      fieldErrors,
+      values
+    }
+  }
+
   return null
 }
 
@@ -174,8 +197,8 @@ function checkBounds(isoDate, values, options) {
  * @param {string} _fieldPrefix the govukDateInput namePrefix/id used for this field (unused, kept for call-site clarity)
  * @param {object} options
  * @param {string} options.subject phrase used in the "Enter <subject>" all-missing message
- * @param {string} options.subjectSuffix phrase appended to per-field missing messages
- *   (e.g. "Enter the day <subjectSuffix>")
+ * @param {string} options.partSubject phrase starting per-field missing messages
+ *   (e.g. "<partSubject> must include a day")
  * @param {string} [options.formatMessage] message shown when the date isn't a real date
  * @param {string} [options.minDate] earliest allowed ISO date (inclusive)
  * @param {string} [options.minDateMessage] message shown when the date is before minDate
@@ -183,6 +206,8 @@ function checkBounds(isoDate, values, options) {
  * @param {string} [options.maxDateMessage] message shown when the date is after maxDate
  * @param {string} [options.notBeforeDate] another ISO date this one must not be earlier than
  * @param {string} [options.notBeforeMessage] message shown when earlier than notBeforeDate
+ * @param {string} [options.notAfterDate] another ISO date this one must not be later than
+ * @param {string} [options.notAfterMessage] message shown when later than notAfterDate
  */
 export function validateDateInput({ day, month, year }, _fieldPrefix, options) {
   const values = { day, month, year }
