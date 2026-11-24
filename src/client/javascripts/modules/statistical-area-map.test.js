@@ -9,6 +9,7 @@ import {
   mapSubrectanglesGeoJsonToCanvasData
 } from './statistical-area-map-render.js'
 import { drawPorts } from './statistical-area-map-ports.js'
+import { drawMapLayers } from './statistical-area-map-layers.js'
 
 const subrectangle = {
   subCode: 'R0C0',
@@ -85,7 +86,12 @@ function fakeContext() {
   return context
 }
 
-function renderPorts({ ports, departurePort, canvasSize = 100 }) {
+function renderPorts({
+  ports,
+  departurePort,
+  canvasSize = 100,
+  reservedBounds
+}) {
   const context = fakeContext()
   const canvas = { width: canvasSize, height: canvasSize }
   const viewport = {
@@ -94,7 +100,7 @@ function renderPorts({ ports, departurePort, canvasSize = 100 }) {
     minLatitude: 0,
     maxLatitude: 1
   }
-  drawPorts(context, ports, [], departurePort, viewport, canvas)
+  drawPorts(context, ports, [], departurePort, viewport, canvas, reservedBounds)
   return context
 }
 
@@ -245,6 +251,34 @@ describe('#initialiseStatisticalAreaMap', () => {
     })
 
     expect(context.arc).toHaveBeenCalledTimes(2)
+  })
+
+  test('Should place a port label away from a statistical area label', () => {
+    const context = renderPorts({
+      ports: [{ name: 'Lymington', coordinate: [0.5, 0.5] }],
+      departurePort: { name: 'Lymington', coordinate: [0.5, 0.5] },
+      canvasSize: 200,
+      reservedBounds: [{ left: 105, right: 160, top: 80, bottom: 120 }]
+    })
+
+    const [, labelX] = context.fillText.mock.calls[0]
+    expect(labelX).toBeLessThan(100)
+  })
+
+  test('Should move a statistical area label off a port marker', () => {
+    const context = fakeContext()
+    const canvas = { width: 200, height: 200 }
+    drawMapLayers(context, {
+      subrectangles: [subrectangle],
+      land: [],
+      viewport: subrectangle.bounds,
+      canvas,
+      avoidBounds: [{ left: 93, right: 107, top: 93, bottom: 107 }]
+    })
+
+    const [text, , labelY] = context.fillText.mock.calls[0]
+    expect(text).toBe('R0C0')
+    expect(labelY).toBeGreaterThan(100)
   })
 
   test('Should skip a port label when no collision-free position fits', () => {

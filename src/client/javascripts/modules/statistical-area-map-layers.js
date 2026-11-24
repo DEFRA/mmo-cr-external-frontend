@@ -10,7 +10,8 @@ import {
   clampPointToBounds,
   toScreen,
   toCoordinate,
-  containsPoint
+  containsPoint,
+  screenRectanglesOverlap
 } from './statistical-area-map-geometry.js'
 
 const labelCoverageColumns = 6
@@ -116,6 +117,42 @@ function isLandCoordinate(land, coordinate) {
   )
 }
 
+function areaLabelBounds(textX, textY, textWidth, fontSize) {
+  const top =
+    textY - fontSize + selectedLabelTopOffset - selectedLabelVerticalPadding
+  return {
+    left: textX - selectedLabelHorizontalPadding,
+    right: textX + textWidth + selectedLabelHorizontalPadding,
+    top,
+    bottom: top + fontSize + selectedLabelVerticalPadding * 2
+  }
+}
+
+function areaLabelPosition(x, y, textWidth, fontSize, cellBounds, avoidBounds) {
+  const clearOffset = labelPadding * 3
+  const candidates = [
+    [x + labelPadding, y - labelPadding],
+    [x + labelPadding, y + fontSize + clearOffset],
+    [x - textWidth - clearOffset, y - labelPadding],
+    [x - textWidth - clearOffset, y + fontSize + clearOffset]
+  ].map(([textX, textY]) => ({
+    textX,
+    textY,
+    bounds: areaLabelBounds(textX, textY, textWidth, fontSize)
+  }))
+  const fitsCell = ({ bounds }) =>
+    bounds.left >= cellBounds.left &&
+    bounds.right <= cellBounds.right &&
+    bounds.top >= cellBounds.top &&
+    bounds.bottom <= cellBounds.bottom
+  const isClear = ({ bounds }) =>
+    !avoidBounds.some((other) => screenRectanglesOverlap(bounds, other))
+  return (
+    candidates.find((candidate) => fitsCell(candidate) && isClear(candidate)) ||
+    candidates[0]
+  )
+}
+
 function drawSubrectangleLabel(
   context,
   area,
@@ -123,7 +160,8 @@ function drawSubrectangleLabel(
   viewport,
   canvas,
   selectedCode,
-  fontSize
+  fontSize,
+  avoidBounds
 ) {
   const visible = intersectBounds(area.bounds, viewport)
   const [leftX, topY] = toScreen(
@@ -137,18 +175,24 @@ function drawSubrectangleLabel(
     canvas
   )
   if (rightX - leftX < minimumLabelSpan || bottomY - topY < minimumLabelSpan) {
-    return
+    return undefined
   }
 
   const labelCoordinate = clampPointToBounds(area.labelCoordinate, visible)
   const [x, y] = toScreen(labelCoordinate, viewport, canvas)
   const isSelected = area.subCode === selectedCode?.toUpperCase()
-  const textX = x + labelPadding
-  const textY = y - labelPadding
+  const textWidth = context.measureText(area.subCode).width
+  const { textX, textY, bounds } = areaLabelPosition(
+    x,
+    y,
+    textWidth,
+    fontSize,
+    { left: leftX, right: rightX, top: topY, bottom: bottomY },
+    avoidBounds
+  )
   if (isSelected) {
     drawSelectedLabel(context, area.subCode, textX, textY, fontSize)
   } else {
-    const textWidth = context.measureText(area.subCode).width
     const landCoverage = landCoverageForLabel(
       land,
       {
@@ -166,6 +210,7 @@ function drawSubrectangleLabel(
         : waterLabelText
   }
   context.fillText(area.subCode, textX, textY)
+  return bounds
 }
 
 function drawSelectedLabel(context, code, textX, textY, fontSize) {
@@ -186,16 +231,17 @@ function drawSubrectangleLabels(
   land,
   viewport,
   canvas,
-  selectedCode
+  selectedCode,
+  avoidBounds
 ) {
   const fontSize = Math.max(
     minimumLabelFontSize,
     canvas.width / fontSizeCanvasWidthDivisor
   )
   context.font = `${fontSize}px sans-serif`
-  subrectangles
+  return subrectangles
     .filter((area) => boundsIntersect(area.bounds, viewport))
-    .forEach((area) =>
+    .map((area) =>
       drawSubrectangleLabel(
         context,
         area,
@@ -203,23 +249,27 @@ function drawSubrectangleLabels(
         viewport,
         canvas,
         selectedCode,
-        fontSize
+        fontSize,
+        avoidBounds
       )
     )
+    .filter(Boolean)
 }
 
+// Returns the screen bounds of the drawn area labels so port labels can avoid them.
 export function drawMapLayers(
   context,
-  { subrectangles, land, viewport, canvas, selectedCode }
+  { subrectangles, land, viewport, canvas, selectedCode, avoidBounds = [] }
 ) {
   drawSubrectangles(context, subrectangles, viewport, canvas, selectedCode)
   drawLand(context, land, viewport, canvas)
-  drawSubrectangleLabels(
+  return drawSubrectangleLabels(
     context,
     subrectangles,
     land,
     viewport,
     canvas,
-    selectedCode
+    selectedCode,
+    avoidBounds
   )
 }
