@@ -100,7 +100,7 @@ describe('Entra native sign-in', () => {
     originalFetch = globalThis.fetch
     globalThis.fetch = vi.fn(async (url, init) => {
       const target = String(url)
-      if (target.startsWith(CATCH_RECORDING_URL)) {
+      if (new URL(target).origin === new URL(CATCH_RECORDING_URL).origin) {
         return backend(target, init)
       }
       if (!target.startsWith(ENTRA_BASE)) {
