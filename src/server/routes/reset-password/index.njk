@@ -7,9 +7,9 @@
 
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-      <p class="govuk-body">To reset or change your password we need to send you an email containing a link.</p>
+      <p class="govuk-body">{{ t('resetPassword.body') }}</p>
       <form method="post" novalidate>
-        {{ govukButton({ text: "Send reset password email" }) }}
+        {{ govukButton({ text: t('resetPassword.button') }) }}
       </form>
     </div>
   </div>

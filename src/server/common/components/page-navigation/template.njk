@@ -1,25 +1,34 @@
 {% from "govuk/components/back-link/macro.njk" import govukBackLink %}
 
+{% set currentLang = params.language.current | default('en', true) %}
+{% set languages = [
+  { code: 'en', text: t('header.language.toEnglish') },
+  { code: 'cy', text: t('header.language.toWelsh') }
+] %}
+
 <div class="app-page-navigation" data-testid="app-page-navigation">
   {% if params.backLink and params.backLink.href %}
     {{ govukBackLink({
       href: params.backLink.href,
-      text: params.backLink.text | default("Back", true),
+      text: params.backLink.text | default(t('header.back'), true),
       attributes: { "data-testid": "app-page-navigation-back-link" }
     }) }}
   {% endif %}
 
-  {# Non-functional integration point for a future localisation step: the Cymraeg link only
-     preserves the current path via ?lang=cy and does not perform real translation/switching. #}
-  <nav class="app-page-navigation__language" aria-label="Language switcher" data-testid="app-page-navigation-language">
+  <nav class="app-page-navigation__language" aria-label="{{ t('layout.language.navLabel') }}" data-testid="app-page-navigation-language">
     <ul class="app-page-navigation__language-list">
-      <li class="app-page-navigation__language-item">
-        <span lang="en" aria-current="true" data-testid="app-page-navigation-language-current">English</span>
-      </li>
-      <li class="app-page-navigation__language-item" aria-hidden="true">|</li>
-      <li class="app-page-navigation__language-item">
-        <a lang="cy" hreflang="cy" href="{{ params.language.href }}" class="govuk-link govuk-link--no-visited-state" data-testid="app-page-navigation-language-link">Cymraeg</a>
-      </li>
+      {% for language in languages %}
+        {% if not loop.first %}
+          <li class="app-page-navigation__language-item" aria-hidden="true">|</li>
+        {% endif %}
+        <li class="app-page-navigation__language-item">
+          {% if language.code == currentLang %}
+            <span lang="{{ language.code }}" aria-current="true" data-testid="app-page-navigation-language-current">{{ language.text }}</span>
+          {% else %}
+            <a lang="{{ language.code }}" hreflang="{{ language.code }}" href="{{ params.language.href }}" class="govuk-link govuk-link--no-visited-state" data-testid="app-page-navigation-language-link">{{ language.text }}</a>
+          {% endif %}
+        </li>
+      {% endfor %}
     </ul>
   </nav>
 </div>

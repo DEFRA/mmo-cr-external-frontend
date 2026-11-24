@@ -1,3 +1,5 @@
+import { t } from '#/server/common/helpers/i18n/translator.js'
+
 import Joi from 'joi'
 
 import {
@@ -81,7 +83,9 @@ function checkAboveMinimumHigherThanDiscarded(
     return null
   }
 
-  return `Weight above minimum size retained must be higher than weight legally discarded for ${nameAndId}`
+  return t('speciesSelection.error.discardedExceedsRetained', {
+    species: nameAndId
+  })
 }
 
 function speciesWeightsFromPayload(payload, speciesOptions) {
@@ -261,13 +265,16 @@ function speciesCheckboxItems(
 async function viewContext(request, speciesData, overrides = {}) {
   const { journeyState, speciesOptions } = speciesData
   const gears = await selectedGearDescription(journeyState)
-  const gearSuffix = gears ? ` with ${gears.toLowerCase()}` : ''
-  const pageTitle = `Which species did you catch${gearSuffix}?`
   const selectedSpeciesIds = journeyState.selectedSpeciesIds || []
   const speciesWeights = journeyState.speciesWeights || {}
   const gearContext = gearPageContext(request)
+  const pageTitle = gears
+    ? t('speciesSelection.titleWithGears', { gear: gears.toLowerCase() })
+    : t('speciesSelection.title')
   const heading = gearContext.gearLabel
-    ? `Which species did you catch with ${gearContext.gearLabel.toLowerCase()}?`
+    ? t('speciesSelection.titleWithGear', {
+        gear: gearContext.gearLabel.toLowerCase()
+      })
     : pageTitle
 
   return {
@@ -289,7 +296,7 @@ async function viewContext(request, speciesData, overrides = {}) {
     caption: catchRecordCaption(request),
     backLink: {
       href: backForSpeciesSelection(request),
-      text: 'Back'
+      text: t('header.back')
     },
     speciesCheckboxItems: speciesCheckboxItems(
       selectedSpeciesIds,
@@ -350,7 +357,7 @@ export const speciesSelectionSubmitController = {
           includeSelected: true
         })
         const { journeyState, speciesOptions } = speciesData
-        const errorText = 'There was a problem with your submission'
+        const errorText = t('common.submissionError')
 
         return renderPage(
           request,

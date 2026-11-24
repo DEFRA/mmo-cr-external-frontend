@@ -17,26 +17,26 @@
         <div class="govuk-form-group{{ ' govuk-form-group--error' if fieldErrors.statisticalArea }}">
           {% if fieldErrors.statisticalArea %}
             <p id="statisticalArea-error" class="govuk-error-message">
-              <span class="govuk-visually-hidden">Error:</span> {{ fieldErrors.statisticalArea }}
+              <span class="govuk-visually-hidden">{{ t('a11y.errorPrefix') }}</span> {{ fieldErrors.statisticalArea }}
             </p>
           {% endif %}
 
           <div id="statisticalArea" class="app-statistical-area-map" aria-describedby="statisticalArea-hint{% if fieldErrors.statisticalArea %} statisticalArea-error{% endif %}">
-            <p id="statisticalArea-hint" class="govuk-visually-hidden">Select one of the displayed area codes or choose Other.</p>
+            <p id="statisticalArea-hint" class="govuk-visually-hidden">{{ t('web.statistical-area.index.copy.25.1') }}</p>
 
               <div class="app-offline-map" data-statistical-area-map data-selected-area="{{ selectedStatisticalArea or '' }}" data-departure-port="{{ departurePortName }}" data-departure-port-coordinate="{{ departurePortCoordinate | dump | safe }}">
-              <canvas class="app-offline-map__canvas" aria-label="Statistical area map. Select an area on the map."></canvas>
+              <canvas class="app-offline-map__canvas" aria-label="{{ t('web.statistical-area.index.copy.28.1') }}"></canvas>
               <div class="app-offline-map__error" data-statistical-area-map-error hidden>
-                <span class="govuk-visually-hidden">Error:</span> The map could not be loaded. Check your connection and try again.
-                <button class="govuk-button govuk-button--secondary app-offline-map__retry" type="button" data-statistical-area-map-retry>Retry</button>
+                <span class="govuk-visually-hidden">{{ t('a11y.errorPrefix') }}</span> {{ t('web.statistical-area.index.copy.30.1') }}
+                <button class="govuk-button govuk-button--secondary app-offline-map__retry" type="button" data-statistical-area-map-retry>{{ t('web.statistical-area.index.copy.31.1') }}</button>
               </div>
               <div class="app-offline-map__zoom">
-                <button class="app-offline-map__zoom-button" type="button" data-statistical-area-map-zoom-in aria-label="Zoom in">+</button>
-                <button class="app-offline-map__zoom-button" type="button" data-statistical-area-map-zoom-out aria-label="Zoom out">&minus;</button>
+                <button class="app-offline-map__zoom-button" type="button" data-statistical-area-map-zoom-in aria-label="{{ t('web.statistical-area.index.copy.34.1') }}">+</button>
+                <button class="app-offline-map__zoom-button" type="button" data-statistical-area-map-zoom-out aria-label="{{ t('web.statistical-area.index.copy.35.1') }}">&minus;</button>
               </div>
-              <button class="app-offline-map__other" type="submit" name="statisticalArea" value="other">Other</button>
+              <button class="app-offline-map__other" type="submit" name="statisticalArea" value="other">{{ t('common.other') }}</button>
               <input type="hidden" name="statisticalArea" value="" disabled data-statistical-area-map-input>
-              <p class="govuk-visually-hidden" aria-live="polite" data-statistical-area-map-status></p>
+              <p class="govuk-visually-hidden" aria-live="polite" data-statistical-area-map-status data-status-selected="{{ t('map.status.selected') }}" data-status-none="{{ t('map.status.none') }}"></p>
             </div>
           </div>
         </div>

@@ -1,3 +1,5 @@
+import { t } from '#/server/common/helpers/i18n/translator.js'
+
 import Joi from 'joi'
 
 import { safeReturnPath } from '#/server/common/helpers/journey/navigation.js'
@@ -12,11 +14,11 @@ export const notImplementedController = {
   },
   handler(request, h) {
     return h.view('not-implemented/index', {
-      pageTitle: 'Feature not available',
-      heading: 'Feature not available',
+      pageTitle: t('web.not-implemented.controller.js.copy.17.1'),
+      heading: t('web.not-implemented.controller.js.copy.18.1'),
       backLink: {
         href: safeReturnPath(request.query.return),
-        text: 'Back'
+        text: t('header.back')
       }
     })
   }

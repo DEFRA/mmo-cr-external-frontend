@@ -1,3 +1,5 @@
+import { t } from '#/server/common/helpers/i18n/translator.js'
+
 // FR2-4 ("whole numbers only") conflicts with AC8/BR7 ("up to one decimal place, e.g.
 // 10.5, but not 10.55") - resolved in favour of AC8/BR7, which is followed below.
 // Format-only check for "could plausibly be a number" (optional '-', digits, optional
@@ -45,16 +47,19 @@ export function isValidWeight(rawValue) {
 export function weightErrorMessage(reason, nameAndId, missingFieldLabel) {
   switch (reason) {
     case 'missing':
-      return `Enter the ${missingFieldLabel} for ${nameAndId}`
+      return t('species.weight.error.missing', {
+        field: missingFieldLabel,
+        species: nameAndId
+      })
     case 'notANumber':
-      return `The weight for ${nameAndId} must be a number`
+      return t('species.weight.error.notNumber', { species: nameAndId })
     case 'negative':
     case 'zero':
-      return `The weight for ${nameAndId} must be more than 0kg`
+      return t('species.weight.error.positive', { species: nameAndId })
     case 'tooManyDecimals':
-      return `The weight for ${nameAndId} must be a number with up to one decimal place`
+      return t('species.weight.error.decimals', { species: nameAndId })
     case 'tooLarge':
-      return `The weight for ${nameAndId} must be 10,000kg or less`
+      return t('species.weight.error.max', { species: nameAndId })
     default:
       return null
   }

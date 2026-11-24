@@ -11,7 +11,7 @@
         <form method="post" novalidate>
           <h1 class="govuk-heading-xl">{{ heading }}</h1>
           {% if pendingOption.measurements.length %}
-            <p class="govuk-body">All gear measurements must be whole numbers.</p>
+            <p class="govuk-body">{{ t('web.add-gear.index.copy.14.1') }}</p>
             {% for measurement in pendingOption.measurements %}
               {{ govukInput({
                 id: measurement.id,
@@ -23,10 +23,10 @@
               }) }}
             {% endfor %}
           {% else %}
-            <p class="govuk-body" data-testid="app-no-measurements-needed">No details required for this type of gear.</p>
+            <p class="govuk-body" data-testid="app-no-measurements-needed">{{ t('web.add-gear.index.copy.26.1') }}</p>
           {% endif %}
 
-          {{ govukButton({ text: "Save and continue" }) }}
+          {{ govukButton({ text: t('common.button.saveAndContinue') }) }}
         </form>
       {% else %}
         <form method="post" novalidate>
@@ -36,7 +36,7 @@
             </h1>
             {% if fieldErrors.gear %}
               <p id="gear-error" class="govuk-error-message">
-                <span class="govuk-visually-hidden">Error:</span> {{ fieldErrors.gear }}
+                <span class="govuk-visually-hidden">{{ t('a11y.errorPrefix') }}</span> {{ fieldErrors.gear }}
               </p>
             {% endif %}
             <div class="app-statistical-area-search__control app-statistical-area-search__control--dropdown govuk-input--width-30">
@@ -46,7 +46,7 @@
                 name="gear"
                 type="text"
                 autocomplete="off"
-                placeholder="Start typing to display the list"
+                placeholder="{{ t('common.autocomplete.placeholder') }}"
                 data-min-length="1"
                 aria-autocomplete="list"
                 aria-controls="gear-results"
@@ -59,7 +59,7 @@
             <script type="application/json" data-port-search-data>{{ gearOptionLabels | dump | safe }}</script>
           </div>
 
-          {{ govukButton({ text: "Save and continue" }) }}
+          {{ govukButton({ text: t('common.button.saveAndContinue') }) }}
         </form>
       {% endif %}
     </div>

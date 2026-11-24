@@ -1,16 +1,18 @@
+import { t } from '#/server/common/helpers/i18n/translator.js'
+
 import Joi from 'joi'
 
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 
-const heading = 'Forgotten your password?'
+const heading = () => t('forgottenPassword.title')
 const templatePath = 'forgotten-password/index'
 const confirmationEmailKey = 'forgottenPasswordEmail'
 
 function viewContext(overrides = {}) {
   return {
-    pageTitle: heading,
-    heading,
-    backLink: { href: '/sign-in', text: 'Back' },
+    pageTitle: heading(),
+    heading: heading(),
+    backLink: { href: '/sign-in', text: t('header.back') },
     ...overrides
   }
 }
@@ -36,8 +38,8 @@ export const forgottenPasswordSubmitController = {
             ? request.payload.email
             : ''
         const errorText = email.trim()
-          ? 'Enter an email address in the correct format, like name@example.com'
-          : 'Enter your email address'
+          ? t('forgottenPassword.error.email.format')
+          : t('signIn.error.email.empty')
 
         return h
           .view(
@@ -46,7 +48,7 @@ export const forgottenPasswordSubmitController = {
               email,
               fieldErrors: { email: errorText },
               errorSummary: {
-                titleText: 'There is a problem',
+                titleText: t('common.errorSummary.title'),
                 errorList: [{ text: errorText, href: '#email' }]
               }
             })
@@ -73,8 +75,8 @@ export const forgottenPasswordConfirmationController = {
     return h.view(
       templatePath,
       viewContext({
-        pageTitle: 'A reset password email has been sent',
-        heading: 'A reset password email has been sent to',
+        pageTitle: t('passwordReset.sent.title'),
+        heading: t('passwordReset.sent.heading'),
         backLink: null,
         email,
         sent: true

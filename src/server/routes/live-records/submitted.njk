@@ -6,13 +6,13 @@
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
       <span class="govuk-caption-l">{{ record.catchRecordReference }}</span>
-      <h1 class="govuk-heading-xl">Catch record for {{ record.vessel.nameSnapshot }}</h1>
+      <h1 class="govuk-heading-xl">{{ t('liveRecords.recordFor', { vesselName: record.vessel.nameSnapshot }) }}</h1>
       {% for section in sections %}
         {% if section.startsGearSection %}
-          <h2 class="govuk-heading-l">2. Gear used</h2>
+          <h2 class="govuk-heading-l">{{ t('web.live-records.submitted.copy.12.1') }}</h2>
         {% endif %}
         {% if section.startsSpeciesSection %}
-          <h2 class="govuk-heading-l">3. Species caught</h2>
+          <h2 class="govuk-heading-l">{{ t('web.live-records.submitted.copy.15.1') }}</h2>
         {% endif %}
         <section aria-labelledby="submitted-summary-{{ loop.index }}"{% if section.gearId %} data-gear-id="{{ section.gearId }}" data-summary-section="{{ section.kind }}"{% endif %}>
           {% if section.kind == "gear" %}
@@ -23,27 +23,27 @@
             <h2 id="submitted-summary-{{ loop.index }}" class="govuk-heading-l">{{ section.heading }}</h2>
           {% endif %}
           {% if section.kind == "species" and section.gearName %}
-            <p class="govuk-body">Caught with {{ section.gearName }}</p>
+            <p class="govuk-body">{{ t('summary.caughtWith', { gear: section.gearName }) }}</p>
           {% endif %}
           {{ govukSummaryList({ rows: section.rows }) }}
         </section>
       {% endfor %}
       <div class="govuk-button-group">
-        {{ govukButton({ text: "Edit catch record", href: recordPath + "/edit-reason" }) }}
+        {{ govukButton({ text: t('web.live-records.submitted.copy.32.1'), href: recordPath + "/edit-reason" }) }}
         {% if latestPdf %}
           {{ govukButton({
-            text: "Download PDF",
+            text: t('web.live-records.submitted.copy.35.1'),
             href: recordPath + "/submissions/" + latestPdf.submissionNumber + "/pdf",
             classes: "govuk-button--secondary"
           }) }}
         {% endif %}
       </div>
       {% if completionEnabled %}
-        <h2 class="govuk-heading-l">Staff action</h2>
-        <p class="govuk-body">Mark this submitted record as complete. This action requires staff completion permission.</p>
+        <h2 class="govuk-heading-l">{{ t('web.live-records.submitted.copy.42.1') }}</h2>
+        <p class="govuk-body">{{ t('web.live-records.submitted.copy.43.1') }}</p>
         <form method="post" action="{{ recordPath }}/complete">
           <input type="hidden" name="actionKey" value="{{ actionKey }}">
-          {{ govukButton({ text: "Mark submitted record as complete", classes: "govuk-button--secondary" }) }}
+          {{ govukButton({ text: t('web.live-records.submitted.copy.46.1'), classes: "govuk-button--secondary" }) }}
         </form>
       {% endif %}
     </div>

@@ -1,11 +1,11 @@
 {% extends 'layouts/page.njk' %}
 {% block pageContent %}
-  <h1 class="govuk-heading-xl">Catch record history</h1>
+  <h1 class="govuk-heading-xl">{{ t('web.live-records.history.copy.3.1') }}</h1>
   <p class="govuk-body">Status: {{ history.displayStatus }}</p>
-  <p class="govuk-body">Showing at most 100 events.</p>
+  <p class="govuk-body">{{ t('web.live-records.history.copy.5.1') }}</p>
   <ol class="govuk-list govuk-list--number">
     {% for event in history.events %}
       <li>{{ event.eventType }} — {{ event.timestamp }}{% if event.section %} ({{ event.section }}){% endif %}{% if event.submissionNumber %}, submission {{ event.submissionNumber }}{% endif %}</li>
-    {% else %}<li>No events recorded.</li>{% endfor %}
+    {% else %}<li>{{ t('web.live-records.history.copy.9.1') }}</li>{% endfor %}
   </ol>
 {% endblock %}

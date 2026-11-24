@@ -1,3 +1,6 @@
+import { t } from '#/server/common/helpers/i18n/translator.js'
+import { localizeSummarySections } from '#/server/common/helpers/records/localize-summary.js'
+
 import { randomUUID } from 'node:crypto'
 import Boom from '@hapi/boom'
 import { catchRecordService } from '#/server/common/helpers/journey/catch-record-service.js'
@@ -44,14 +47,14 @@ export async function reasonContext(request, overrides = {}) {
   }
   setAmendmentState(request, action)
   return {
-    pageTitle: 'Why are you editing this catch record?',
-    heading: 'Why are you editing this catch record?',
+    pageTitle: t('web.edit-catch-record-review.live-amendment.js.copy.49.1'),
+    heading: t('web.edit-catch-record-review.live-amendment.js.copy.50.1'),
     reference: record.catchRecordReference,
     tripEndDate: record.trip.dateEnded,
     reasonKey: action.key,
     backLink: {
       href: `/records/${encodeURIComponent(record.id)}`,
-      text: 'Back'
+      text: t('header.back')
     },
     ...overrides
   }
@@ -140,10 +143,15 @@ export async function liveReview(request, h, overrides = {}, status = 200) {
     })
   }
   const amendment = getAmendmentState(request)
-  const heading = `Edit catch record for ${record.vessel.nameSnapshot}`
+  const heading = t('editReview.titleForAmendment', {
+    vessel: record.vessel.nameSnapshot
+  })
   return h
     .view('edit-catch-record-review/index', {
       ...summary,
+      sections: localizeSummarySections(summary.sections),
+      gearGroups: localizeSummarySections(summary.gearGroups),
+      trailingSections: localizeSummarySections(summary.trailingSections),
       pageTitle: heading,
       heading,
       reference: record.catchRecordReference,
@@ -153,7 +161,7 @@ export async function liveReview(request, h, overrides = {}, status = 200) {
       submissionKey: getJourneyState(request).submissionKey,
       backLink: {
         href: `/records/${encodeURIComponent(record.id)}`,
-        text: 'Back'
+        text: t('header.back')
       },
       ...overrides
     })

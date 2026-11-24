@@ -1,3 +1,5 @@
+import { t } from '#/server/common/helpers/i18n/translator.js'
+
 import { getData } from '#/server/common/data/get-data.js'
 import { getSpeciesPageData } from '#/server/common/helpers/species/species-list.js'
 import { getGearCatalogue } from '#/server/common/helpers/gear/favourite-gear.js'
@@ -15,6 +17,7 @@ import Boom from '@hapi/boom'
 import { liveCatchRecords } from '#/server/common/helpers/journey/catch-record-service.js'
 import { submitLiveRecord } from '../live-records/controller.js'
 import { getAmendmentState } from '#/server/common/helpers/journey/amendment.js'
+import { localizeSummarySections } from '#/server/common/helpers/records/localize-summary.js'
 
 async function viewContext(request) {
   const { catalogue, journeyState } = await getSpeciesPageData(request)
@@ -26,17 +29,20 @@ async function viewContext(request) {
     reviewLayout: true
   })
   const fallback = getData('catchRecordDetails')
-  const heading = 'Check your catch record'
+  const heading = t('checkAnswers.title')
 
   return {
     pageTitle: heading,
     heading,
     backLink: {
       href: backForCheckAnswers(request),
-      text: 'Back'
+      text: t('header.back')
     },
     reference: journeyState.reference || fallback.reference,
-    ...summary
+    ...summary,
+    sections: localizeSummarySections(summary.sections),
+    gearGroups: localizeSummarySections(summary.gearGroups),
+    trailingSections: localizeSummarySections(summary.trailingSections)
   }
 }
 
@@ -55,13 +61,12 @@ function amendmentReviewPath(request) {
 function prepareLiveSubmission(request) {
   const state = getJourneyState(request)
   if (!state.catchRecordId) {
-    throw Boom.badRequest('Start or resume a catch record first')
+    throw Boom.badRequest(t('catchRecord.error.openRecordBeforeAction'))
   }
   if (state.catchRecordReloadRequired) {
-    throw Boom.conflict(
-      'Reopen this record from Your catch records before continuing',
-      { catchRecordError: true }
-    )
+    throw Boom.conflict(t('catchRecord.error.reopenBeforeContinuing'), {
+      catchRecordError: true
+    })
   }
   if (!state.submissionKey) {
     setJourneyState(request, {

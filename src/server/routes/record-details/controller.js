@@ -1,3 +1,6 @@
+import { t } from '#/server/common/helpers/i18n/translator.js'
+import { localizeSummarySections } from '#/server/common/helpers/records/localize-summary.js'
+
 import Joi from 'joi'
 import Boom from '@hapi/boom'
 
@@ -66,14 +69,21 @@ export const recordDetailsController = {
     }
 
     return h.view('record-details/index', {
-      pageTitle: `Catch record for ${details.vesselName}`,
-      heading: `Catch record for ${details.vesselName}`,
+      pageTitle: t('common.catchRecordFor', {
+        vesselName: details.vesselName
+      }),
+      heading: t('common.catchRecordFor', {
+        vesselName: details.vesselName
+      }),
       backLink: {
         href: '/records',
-        text: 'Back'
+        text: t('header.back')
       },
       details,
       ...summary,
+      sections: localizeSummarySections(summary.sections),
+      gearGroups: localizeSummarySections(summary.gearGroups),
+      trailingSections: localizeSummarySections(summary.trailingSections),
       status: record.status,
       recordId
     })

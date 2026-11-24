@@ -15,7 +15,7 @@
 
       <form method="post" novalidate>
         {{ govukInput({
-          label: { text: "Email address" },
+          label: { text: t('common.emailAddress') },
           id: "email",
           name: "email",
           type: "email",
@@ -25,7 +25,7 @@
         }) }}
 
         {{ govukInput({
-          label: { text: "Password" },
+          label: { text: t('signIn.password.label') },
           id: "password",
           name: "password",
           type: "password",
@@ -33,21 +33,21 @@
           errorMessage: { text: fieldErrors.password } if fieldErrors.password
         }) }}
 
-        {{ govukButton({ text: "Sign in" }) }}
+        {{ govukButton({ text: t('signIn.button') }) }}
       </form>
 
-      <h2 class="govuk-heading-m">Having trouble signing in?</h2>
+      <h2 class="govuk-heading-m">{{ t('signIn.trouble.heading') }}</h2>
       <p class="govuk-body">
-        <a class="govuk-link" href="/forgotten-password">Forgotten your password?</a>
+        <a class="govuk-link" href="/forgotten-password">{{ t('forgottenPassword.title') }}</a>
       </p>
       {% call govukDetails({
-        summaryText: "Create an account",
+        summaryText: t('signIn.link.createAccount'),
         open: true
       }) %}
-        <p class="govuk-body">Vessel owner:</p>
-        <p class="govuk-body">You will receive an email invitation to register when your vessel is added to the system.</p>
-        <p class="govuk-body">Skipper or agent:</p>
-        <p class="govuk-body">Ask your vessel owner to add you. They can do this from their account.</p>
+        <p class="govuk-body">{{ t('signIn.createAccount.vesselOwner.heading') }}</p>
+        <p class="govuk-body">{{ t('signIn.createAccount.vesselOwner.body') }}</p>
+        <p class="govuk-body">{{ t('signIn.createAccount.skipper.heading') }}</p>
+        <p class="govuk-body">{{ t('signIn.createAccount.skipper.body') }}</p>
       {% endcall %}
     </div>
   </div>

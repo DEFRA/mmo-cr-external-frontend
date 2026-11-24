@@ -23,7 +23,7 @@
     <div class="govuk-grid-column-two-thirds">
       <form method="post" action="/records/new">
         {{ govukButton({
-          text: "Create a new catch record",
+          text: t('home.createRecord.button'),
           type: "submit"
         }) }}
       </form>
@@ -31,10 +31,10 @@
       <table class="govuk-table" data-testid="app-records-table">
         <thead class="govuk-table__head">
           <tr class="govuk-table__row">
-            <th scope="col" class="govuk-table__header">Trip end date</th>
-            <th scope="col" class="govuk-table__header">Vessel</th>
-            <th scope="col" class="govuk-table__header">Status</th>
-            <th scope="col" class="govuk-table__header">Created by</th>
+            <th scope="col" class="govuk-table__header">{{ t('home.table.header.endDate') }}</th>
+            <th scope="col" class="govuk-table__header">{{ t('web.records.index.copy.35.1') }}</th>
+            <th scope="col" class="govuk-table__header">{{ t('home.table.header.status') }}</th>
+            <th scope="col" class="govuk-table__header">{{ t('home.table.header.createdBy') }}</th>
           </tr>
         </thead>
         <tbody class="govuk-table__body">
@@ -66,18 +66,18 @@
                href="/records?page={{ pagination.currentPage - 1 }}"
                rel="prev">
               {{ arrowPrevious | safe }}
-              <span class="govuk-visually-hidden">Previous page</span>
+              <span class="govuk-visually-hidden">{{ t('govuk.pagination.previousPage') }}</span>
             </a>
           {% else %}
             <span class="govuk-link app-records-pagination__control app-records-pagination__control--disabled"
                   aria-disabled="true">
               {{ arrowPrevious | safe }}
-              <span class="govuk-visually-hidden">Previous page</span>
+              <span class="govuk-visually-hidden">{{ t('govuk.pagination.previousPage') }}</span>
             </span>
           {% endif %}
 
           <p class="govuk-body govuk-!-font-weight-bold" data-testid="app-records-results">
-            Showing {{ pagination.firstItem }} to {{ pagination.lastItem }} of {{ pagination.total }}
+            {{ t('records.pagination.showing', { first: pagination.firstItem, last: pagination.lastItem, total: pagination.total }) }}
           </p>
         </div>
 
@@ -88,10 +88,10 @@
         {% if pagination.hasNext %}
           <a class="govuk-link app-records-pagination__control app-records-pagination__next"
              href="/records?page={{ pagination.currentPage + 1 }}"
-             rel="next"><span class="app-records-pagination__label">Next</span>{{ arrowNext | safe }}</a>
+             rel="next"><span class="app-records-pagination__label">{{ t('govuk.pagination.next') }}</span>{{ arrowNext | safe }}</a>
         {% else %}
           <span class="govuk-link app-records-pagination__control app-records-pagination__control--disabled app-records-pagination__next"
-                aria-disabled="true"><span class="app-records-pagination__label">Next</span>{{ arrowNext | safe }}</span>
+                aria-disabled="true"><span class="app-records-pagination__label">{{ t('govuk.pagination.next') }}</span>{{ arrowNext | safe }}</span>
         {% endif %}
       </div>
 

@@ -1,3 +1,5 @@
+import { t } from '#/server/common/helpers/i18n/translator.js'
+
 import {
   getSignedInAccount,
   signOut
@@ -25,8 +27,8 @@ export const signOutController = {
 export const signedOutController = {
   handler(_request, h) {
     return h.view('sign-out/index', {
-      pageTitle: 'You have been signed out',
-      heading: 'You have been signed out'
+      pageTitle: t('signOut.title'),
+      heading: t('signOut.title')
     })
   }
 }

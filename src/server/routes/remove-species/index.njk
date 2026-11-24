@@ -12,10 +12,10 @@
         {% if speciesCheckboxItems.length %}
           <div class="govuk-form-group{{ ' govuk-form-group--error' if fieldErrors.speciesIds }}">
             <fieldset class="govuk-fieldset" aria-describedby="speciesIds-hint{{ ' speciesIds-error' if fieldErrors.speciesIds }}">
-              <div id="speciesIds-hint" class="govuk-hint">Select all that apply</div>
+              <div id="speciesIds-hint" class="govuk-hint">{{ t('common.hint.selectAllThatApply') }}</div>
               {% if fieldErrors.speciesIds %}
                 <p id="speciesIds-error" class="govuk-error-message">
-                  <span class="govuk-visually-hidden">Error:</span> {{ fieldErrors.speciesIds }}
+                  <span class="govuk-visually-hidden">{{ t('a11y.errorPrefix') }}</span> {{ fieldErrors.speciesIds }}
                 </p>
               {% endif %}
               <div class="govuk-checkboxes" data-module="govuk-checkboxes">
@@ -34,10 +34,10 @@
               </div>
             </fieldset>
           </div>
-          {{ govukButton({ text: "Save and continue", classes: "govuk-!-margin-top-6" }) }}
+          {{ govukButton({ text: t('common.button.saveAndContinue'), classes: "govuk-!-margin-top-6" }) }}
         {% else %}
-          <p class="govuk-body">No species to remove</p>
-          {{ govukButton({ text: "Continue", classes: "govuk-!-margin-top-6" }) }}
+          <p class="govuk-body">{{ t('web.remove-species.index.copy.39.1') }}</p>
+          {{ govukButton({ text: t('common.button.continue'), classes: "govuk-!-margin-top-6" }) }}
         {% endif %}
       </form>
     </div>

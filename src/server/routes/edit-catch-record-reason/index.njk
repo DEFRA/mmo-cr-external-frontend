@@ -13,14 +13,15 @@
         {{ govukNotificationBanner(notification) }}
       {% elif tripEndDate %}
         {{ govukNotificationBanner({
-          titleText: "Important",
-          text: "This catch record was submitted for a trip that ended on " + (tripEndDate | formatDate("d MMMM yyyy")) + "."
+          titleText: t('common.important'),
+          text: t('web.edit-catch-record-reason.index.copy.17.1') + (tripEndDate | formatDate("d MMMM yyyy")) + "."
         }) }}
       {% endif %}
 
       <span class="govuk-caption-l" data-testid="app-edit-reason-caption">{{ reference }}</span>
 
       <form method="post" novalidate>
+        {% set hintHtml %}<p class="govuk-body govuk-!-margin-bottom-2">{{ t('web.edit-catch-record-reason.index.copy.37.1') }}</p><ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-0"><li>{{ t('web.edit-catch-record-reason.index.copy.37.2') }}</li><li>{{ t('web.edit-catch-record-reason.index.copy.37.3') }}</li><li>{{ t('web.edit-catch-record-reason.index.copy.37.4') }}</li><li>{{ t('web.edit-catch-record-reason.index.copy.37.5') }}</li></ul>{% endset %}
         {% if reasonKey %}<input type="hidden" name="reasonKey" value="{{ reasonKey }}">{% endif %}
         {{ govukTextarea({
           name: "editReason",
@@ -34,19 +35,19 @@
           },
           hint: {
             classes: "govuk-!-margin-bottom-8",
-            html: '<p class="govuk-body govuk-!-margin-bottom-2">Include:</p><ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-0"><li>what you are changing</li><li>why are you changing it</li><li>which office requested it, if applicable</li><li>the date change was made</li></ul>'
+            html: hintHtml
           },
           value: values.editReason if values else "",
           errorMessage: { text: fieldErrors.editReason } if fieldErrors.editReason else false
         }) }}
 
         {{ govukWarningText({
-          text: "You must have a valid reason for editing this catch record. Editing a catch record without a valid reason may be an offence and could result in enforcement action.",
-          iconFallbackText: "Warning",
+          text: t('web.edit-catch-record-reason.index.copy.44.1'),
+          iconFallbackText: t('govuk.warningText.iconFallback'),
           classes: "govuk-!-margin-bottom-9"
         }) }}
 
-        {{ govukButton({ text: "Save and continue", classes: "govuk-!-margin-top-4" }) }}
+        {{ govukButton({ text: t('common.button.saveAndContinue'), classes: "govuk-!-margin-top-4" }) }}
       </form>
     </div>
   </div>

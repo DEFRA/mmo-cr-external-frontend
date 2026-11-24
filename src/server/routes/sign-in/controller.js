@@ -1,3 +1,5 @@
+import { t } from '#/server/common/helpers/i18n/translator.js'
+
 import { signIn } from '#/server/common/helpers/auth/session.js'
 import {
   completeBrowserSignIn,
@@ -79,11 +81,11 @@ function signInView(request, h, { fieldErrors = {}, error, email } = {}) {
     error ?? request.yar.flash(SIGN_IN_ERROR_FLASH_KEY).at(-1)
 
   return h.view('sign-in/index', {
-    pageTitle: 'Sign in',
-    heading: 'Sign in',
+    pageTitle: t('signIn.button'),
+    heading: t('signIn.button'),
     backLink: {
       href: '/guidance',
-      text: 'Back'
+      text: t('header.back')
     },
     email,
     ...errorViewModel(fieldErrors, summaryError)
