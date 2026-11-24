@@ -25,13 +25,8 @@ function viewContext(request, vessels, overrides = {}) {
   return {
     pageTitle: errorText,
     heading: errorText,
-<<<<<<< HEAD
-    reference: catchRecordCaption(request),
-    navigation: buildNavigation(request),
-=======
     reference: getJourneyState(request).reference,
-    navigation: buildNavigation(request, { showWhenSignedOut: true }),
->>>>>>> origin/main
+    navigation: buildNavigation(request),
     backLink: {
       href: '/records',
       text: 'Back'
