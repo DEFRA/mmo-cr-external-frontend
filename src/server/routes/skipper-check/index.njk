@@ -7,19 +7,19 @@
   <div class="govuk-grid-row"><div class="govuk-grid-column-two-thirds">
     <h1 class="govuk-heading-xl">{{ heading }}</h1>
     {{ govukSummaryList({ rows: [
-      { key: { text: "First name" }, value: { text: skipper.firstName }, actions: { items: [{ href: changeSkipperHref + "#firstName", text: "Change", visuallyHiddenText: "first name" }] } },
-      { key: { text: "Last name" }, value: { text: skipper.lastName }, actions: { items: [{ href: changeSkipperHref + "#lastName", text: "Change", visuallyHiddenText: "last name" }] } },
-      { key: { text: "Email address" }, value: { text: skipper.email or "Not provided" }, actions: { items: [{ href: changeSkipperHref + "#email", text: "Change", visuallyHiddenText: "email address" }] } }
+      { key: { text: t('skipper.firstName.label') }, value: { text: skipper.firstName }, actions: { items: [{ href: changeSkipperHref + "#firstName", text: t('common.change'), visuallyHiddenText: t('skipperCheck.firstName.hidden') }] } },
+      { key: { text: t('skipper.lastName.label') }, value: { text: skipper.lastName }, actions: { items: [{ href: changeSkipperHref + "#lastName", text: t('common.change'), visuallyHiddenText: t('skipperCheck.lastName.hidden') }] } },
+      { key: { text: t('common.emailAddress') }, value: { text: skipper.email or t('common.notProvided') }, actions: { items: [{ href: changeSkipperHref + "#email", text: t('common.change'), visuallyHiddenText: t('account.row.email.hidden') }] } }
     ] }) }}
     {% if liveSkippers %}
       {{ govukSummaryList({ rows: [
-        { key: { text: "Phone number" }, value: { text: skipper.phoneNumber or "Not provided" }, actions: { items: [{ href: changeSkipperHref + "#phoneNumber", text: "Change", visuallyHiddenText: "phone number" }] } }
+        { key: { text: t('skipper.phoneNumber.label') }, value: { text: skipper.phoneNumber or t('common.notProvided') }, actions: { items: [{ href: changeSkipperHref + "#phoneNumber", text: t('common.change'), visuallyHiddenText: t('skipperCheck.phoneNumber.hidden') }] } }
       ] }) }}
     {% endif %}
-    <p class="govuk-body">By submitting this information, you confirm that it is complete and correct.</p>
+    <p class="govuk-body">{{ t('skipperCheck.declaration') }}</p>
     <form method="post" novalidate>
-      {{ govukRadios({ name: "confirmSkipper", fieldset: { legend: { text: "Confirm skipper details", classes: "govuk-visually-hidden" } }, errorMessage: { text: fieldErrors.confirmSkipper } if fieldErrors.confirmSkipper, items: [{ value: "true", text: "I confirm the information is complete and correct" }] }) }}
-      {{ govukButton({ text: "Submit" }) }}
+      {{ govukRadios({ name: "confirmSkipper", fieldset: { legend: { text: t('skipperCheck.confirm.legend'), classes: "govuk-visually-hidden" } }, errorMessage: { text: fieldErrors.confirmSkipper } if fieldErrors.confirmSkipper, items: [{ value: "true", text: t('skipperCheck.confirm.label') }] }) }}
+      {{ govukButton({ text: t('common.button.submit') }) }}
     </form>
   </div></div>
 {% endblock %}

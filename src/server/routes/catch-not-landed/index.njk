@@ -19,12 +19,12 @@
           },
           errorMessage: radioErrorMessage,
           items: [
-            { value: "yes", text: "Yes", checked: catchNotLanded === true },
-            { value: "no", text: "No", checked: catchNotLanded === false }
+            { value: "yes", text: t('web.catch-not-landed.index.copy.22.1'), checked: catchNotLanded === true },
+            { value: "no", text: t('web.catch-not-landed.index.copy.23.1'), checked: catchNotLanded === false }
           ]
         }) }}
 
-        {{ govukButton({ text: "Save and continue" }) }}
+        {{ govukButton({ text: t('common.button.saveAndContinue') }) }}
       </form>
     </div>
   </div>

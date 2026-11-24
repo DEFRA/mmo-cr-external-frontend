@@ -1,3 +1,5 @@
+import { t } from '#/server/common/helpers/i18n/translator.js'
+
 import Joi from 'joi'
 
 import {
@@ -44,7 +46,7 @@ async function viewContext(request, overrides = {}) {
     caption: catchRecordCaption(request),
     backLink: {
       href: backForStatisticalArea(request),
-      text: 'Back'
+      text: t('header.back')
     },
     departurePortName:
       journeyState.portNamesByCode?.[journeyState.departurePort] ||
@@ -85,14 +87,14 @@ export const statisticalAreaSubmitController = {
           .required()
       }),
       async failAction(request, h) {
-        const errorText = 'Select the area where most of your catch was caught'
+        const errorText = t('web.statistical-area.controller.js.copy.90.1')
 
         return h
           .view(
             'statistical-area/index',
             await viewContext(request, {
               errorSummary: {
-                titleText: 'There is a problem',
+                titleText: t('common.errorSummary.title'),
                 errorList: [{ text: errorText, href: '#statisticalArea' }]
               },
               fieldErrors: { statisticalArea: errorText },

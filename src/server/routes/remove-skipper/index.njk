@@ -12,12 +12,12 @@
           errorMessage: { text: fieldErrors.skipperIds } if fieldErrors.skipperIds,
           items: skipperItems
         }) }}
-        {{ govukButton({ text: "Remove selected skippers" }) }}
+        {{ govukButton({ text: t('removeSkipper.button') }) }}
       </form>
     {% else %}
       <h1 class="govuk-heading-xl">{{ heading }}</h1>
-      <p class="govuk-body">There are no saved skippers for this vessel.</p>
-      <p class="govuk-body"><a class="govuk-link" href="/account">Return to account</a></p>
+      <p class="govuk-body">{{ t('removeSkipper.none') }}</p>
+      <p class="govuk-body"><a class="govuk-link" href="/account">{{ t('removeSkipper.returnToAccount') }}</a></p>
     {% endif %}
   </div></div>
 {% endblock %}

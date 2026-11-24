@@ -1,3 +1,5 @@
+import { t } from '#/server/common/helpers/i18n/translator.js'
+
 import {
   isCatchRecordJourney,
   resolveNextPath,
@@ -17,7 +19,6 @@ import {
   removeFavouriteGears
 } from '#/server/common/helpers/journey/session-favourites.js'
 
-const headingLine1 = 'Remove gear from vessel'
 const GEAR_SELECTION_PATH = '/gear-selection'
 
 function gearCheckboxItems(favouriteOptions) {
@@ -67,6 +68,7 @@ function remainingTripGearState(journeyState, idsToRemove) {
 }
 
 function viewContext(request, catalogue, overrides = {}) {
+  const headingLine1 = t('removeGear.title')
   const journeyState = migrateGearJourneyState(request, catalogue)
   const gearIds = removableGearIds(request, journeyState, catalogue)
   const vesselName =
@@ -79,7 +81,7 @@ function viewContext(request, catalogue, overrides = {}) {
     vesselName,
     backLink: {
       href: resolveNextPath(request, GEAR_SELECTION_PATH),
-      text: 'Back'
+      text: t('header.back')
     },
     gearCheckboxItems: gearCheckboxItems(
       getFavouriteGearOptions(gearIds, catalogue)
@@ -89,14 +91,14 @@ function viewContext(request, catalogue, overrides = {}) {
 }
 
 function renderWithError(request, h, catalogue) {
-  const errorText = 'Select the gear you want to remove'
+  const errorText = t('removeGear.error.select')
 
   return h
     .view(
       'remove-gear/index',
       viewContext(request, catalogue, {
         errorSummary: {
-          titleText: 'There is a problem',
+          titleText: t('common.errorSummary.title'),
           errorList: [{ text: errorText, href: '#gearIds' }]
         },
         fieldErrors: { gearIds: errorText }

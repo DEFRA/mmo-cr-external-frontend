@@ -25,7 +25,7 @@
             errorMessage: { text: fieldErrors.port } if fieldErrors.port else false,
             attributes: {
               autocomplete: "off",
-              placeholder: "Start typing to display the list",
+              placeholder: t('common.autocomplete.placeholder'),
               "aria-autocomplete": "list",
               "aria-controls": "port-results",
               "aria-expanded": "false",
@@ -39,7 +39,7 @@
 
         <script type="application/json" data-port-search-data>{{ portNames | dump | safe }}</script>
 
-        {{ govukButton({ text: "Save and continue" }) }}
+        {{ govukButton({ text: t('common.button.saveAndContinue') }) }}
       </form>
     </div>
   </div>

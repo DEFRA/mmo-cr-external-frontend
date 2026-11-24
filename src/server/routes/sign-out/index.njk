@@ -6,9 +6,10 @@
     <div class="govuk-grid-column-full">
       <h1 class="govuk-heading-xl govuk-!-margin-bottom-8">{{ heading }}</h1>
 
-      <p class="govuk-body">This is a new service &ndash; your <a class="govuk-link" href="{{ feedbackUrl }}">feedback</a> will help us to improve it.</p>
+      {% set feedbackLink %}<a class="govuk-link" href="{{ feedbackUrl }}">{{ t('layout.phaseBanner.feedbackLink') }}</a>{% endset %}
+      <p class="govuk-body">{{ tHtml('layout.phaseBanner.text', { feedbackLink: feedbackLink | safe }) }}</p>
 
-      {{ govukButton({ text: "Sign in", href: "/sign-in" }) }}
+      {{ govukButton({ text: t('signIn.button'), href: "/sign-in" }) }}
     </div>
   </div>
 {% endblock %}

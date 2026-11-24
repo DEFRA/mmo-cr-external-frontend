@@ -1,3 +1,5 @@
+import { t } from '#/server/common/helpers/i18n/translator.js'
+
 import Joi from 'joi'
 
 import {
@@ -25,12 +27,11 @@ import {
 } from '#/server/common/helpers/journey/session-favourites.js'
 import { liveCatchRecords } from '#/server/common/helpers/journey/catch-record-service.js'
 
-const pageTitle = 'What gear did you use?'
+const pageTitle = () => t('web.add-gear.controller.js.copy.29.1')
 const { reference } = getData('confirmation')
 const addGearViewName = 'add-gear/index'
 const gearSelectionPath = '/gear-selection'
 const measurementStep = 'measurements'
-const emptyGearMessage = 'Select the gear you want to add'
 
 function pendingContext(request) {
   return isCatchRecordJourney(request)
@@ -70,15 +71,15 @@ function existingGearIds(request, journeyState, catalogue) {
 
 function addGearTitle(tripSelection) {
   return liveCatchRecords() && !tripSelection
-    ? 'Add gear to your favourites'
-    : pageTitle
+    ? t('addGear.favourites.title')
+    : pageTitle()
 }
 
 function addGearCaption(request, tripSelection) {
   if (tripSelection) {
     return catchRecordCaption(request)
   }
-  return liveCatchRecords() ? 'Your favourites' : reference
+  return liveCatchRecords() ? t('common.yourFavourites') : reference
 }
 
 function viewContext(request, catalogue, overrides = {}) {
@@ -92,12 +93,14 @@ function viewContext(request, catalogue, overrides = {}) {
   return {
     pageTitle: title,
     heading: pendingOption
-      ? `Enter the measurements for ${pendingOption.label.toLowerCase()}`
+      ? t('addGear.measurements.heading', {
+          gear: pendingOption.label.toLowerCase()
+        })
       : title,
     caption: addGearCaption(request, tripSelection),
     backLink: {
       href: resolveNextPath(request, gearSelectionPath),
-      text: 'Back'
+      text: t('header.back')
     },
     pendingOption,
     gearOptionLabels: catalogue
@@ -137,7 +140,7 @@ function renderSearchError(request, h, catalogue, errorText) {
       addGearViewName,
       viewContext(request, catalogue, {
         errorSummary: {
-          titleText: 'There is a problem',
+          titleText: t('common.errorSummary.title'),
           errorList: [{ text: errorText, href: '#gear' }]
         },
         fieldErrors: { gear: errorText }
@@ -158,7 +161,7 @@ function renderMeasurementErrors(
     .view(
       addGearViewName,
       viewContext(request, catalogue, {
-        errorSummary: { titleText: 'There is a problem', errorList },
+        errorSummary: { titleText: t('common.errorSummary.title'), errorList },
         fieldErrors
       })
     )
@@ -265,7 +268,12 @@ async function handleGearSearchSubmission(request, h, journeyState, catalogue) {
   const gearLabel = (request.payload.gear || '').trim()
 
   if (!gearLabel) {
-    return renderSearchError(request, h, catalogue, emptyGearMessage)
+    return renderSearchError(
+      request,
+      h,
+      catalogue,
+      t('addGear.error.selectToAdd')
+    )
   }
 
   const matchedOption = findGearOptionByLabel(
@@ -278,7 +286,7 @@ async function handleGearSearchSubmission(request, h, journeyState, catalogue) {
       request,
       h,
       catalogue,
-      'Select a gear type from the list'
+      t('addGear.error.selectFromList')
     )
   }
 
@@ -345,7 +353,12 @@ export const addGearSubmitController = {
       async failAction(request, h) {
         await loadFavouriteGears(request)
         const catalogue = await getGearCatalogue()
-        return renderSearchError(request, h, catalogue, emptyGearMessage)
+        return renderSearchError(
+          request,
+          h,
+          catalogue,
+          t('addGear.error.selectToAdd')
+        )
       }
     }
   },

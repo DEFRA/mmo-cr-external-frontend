@@ -1,9 +1,11 @@
+import { t } from '#/server/common/helpers/i18n/translator.js'
+
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 
 const viewContext = () => ({
-  pageTitle: 'Reset password',
-  heading: 'Reset password',
-  backLink: { href: '/account', text: 'Back' }
+  pageTitle: t('resetPassword.title'),
+  heading: t('resetPassword.title'),
+  backLink: { href: '/account', text: t('header.back') }
 })
 
 export const resetPasswordController = {

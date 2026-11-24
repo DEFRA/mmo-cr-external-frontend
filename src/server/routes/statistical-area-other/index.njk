@@ -16,7 +16,7 @@
           name: "statisticalArea",
           fieldset: {
             legend: {
-              text: "Select a statistical sub area",
+              text: t('web.statistical-area-other.index.copy.19.1'),
               classes: "govuk-visually-hidden"
             }
           },
@@ -26,7 +26,7 @@
         }) }}
 
         <p class="app-statistical-area-search__coordinates govuk-body"{% if not selectedAreaCoordinatesText %} hidden{% endif %} aria-live="polite" data-statistical-area-coordinates>
-          Coordinates: <span data-statistical-area-coordinates-value>{{ selectedAreaCoordinatesText }}</span>
+          {{ t('web.statistical-area-other.index.copy.28.1') }} <span data-statistical-area-coordinates-value>{{ selectedAreaCoordinatesText }}</span>
         </p>
 
         <div class="govuk-!-margin-bottom-9"{% if selectedArea != 'other' %} hidden{% endif %} data-statistical-area-search-panel>
@@ -35,7 +35,7 @@
               id: "alternativeStatisticalArea",
               name: "alternativeStatisticalArea",
               label: {
-                text: "Statistical sub area - For example, 46E45",
+                text: t('web.statistical-area-other.index.copy.38.1'),
                 classes: "govuk-!-margin-bottom-4"
               },
               classes: "app-statistical-area-search__input app-autocomplete__input",
@@ -49,7 +49,7 @@
               errorMessage: { text: fieldErrors.alternativeStatisticalArea } if fieldErrors.alternativeStatisticalArea else false,
               attributes: {
                 autocomplete: "off",
-                placeholder: "Start typing to display the list",
+                placeholder: t('common.autocomplete.placeholder'),
                 "aria-autocomplete": "list",
                 "aria-controls": "statistical-area-results",
                 "aria-expanded": "false",
@@ -61,7 +61,7 @@
           <ul id="statistical-area-results" class="govuk-list app-statistical-area-search__results govuk-input--width-30" role="listbox" hidden data-statistical-area-results></ul>
         </div>
 
-        {{ govukButton({ text: "Save and continue" }) }}
+        {{ govukButton({ text: t('common.button.saveAndContinue') }) }}
       </form>
     </div>
   </div>

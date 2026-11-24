@@ -1,3 +1,5 @@
+import { t } from '#/server/common/helpers/i18n/translator.js'
+
 import {
   getJourneyState,
   resolveNextPath,
@@ -16,8 +18,6 @@ import {
 } from '#/server/common/helpers/ports/ports-list.js'
 import { liveCatchRecords } from '#/server/common/helpers/journey/catch-record-service.js'
 
-const headingLine1 = 'Remove ports from vessel'
-
 function portCheckboxItems(portsUsed) {
   return portsUsed.map((port) => ({ value: port, text: port }))
 }
@@ -28,9 +28,9 @@ function viewContext(request, overrides = {}, catalogue = []) {
     ? ''
     : getJourneyState(request).selectedVesselName ||
       getData('selectVessel').name
-  const heading = liveCatchRecords()
-    ? 'Remove ports from your favourites'
-    : headingLine1
+  const heading = t(
+    liveCatchRecords() ? 'removePort.favourites.title' : 'removePort.title'
+  )
 
   return {
     pageTitle: `${heading} ${vesselName}`.trim(),
@@ -38,7 +38,7 @@ function viewContext(request, overrides = {}, catalogue = []) {
     vesselName,
     backLink: {
       href: '/account',
-      text: 'Back'
+      text: t('header.back')
     },
     portCheckboxItems: liveCatchRecords()
       ? catalogue
@@ -55,7 +55,7 @@ function viewContext(request, overrides = {}, catalogue = []) {
 }
 
 function renderWithError(request, h, catalogue) {
-  const errorText = 'Select the port you want to remove'
+  const errorText = t('removePort.error.select')
 
   return h
     .view(
@@ -64,7 +64,7 @@ function renderWithError(request, h, catalogue) {
         request,
         {
           errorSummary: {
-            titleText: 'There is a problem',
+            titleText: t('common.errorSummary.title'),
             errorList: [{ text: errorText, href: '#ports' }]
           },
           fieldErrors: { ports: errorText }

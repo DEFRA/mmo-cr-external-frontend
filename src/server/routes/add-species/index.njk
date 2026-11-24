@@ -15,7 +15,7 @@
         <div class="govuk-form-group app-species-search{{ ' govuk-form-group--error' if fieldErrors.species }}">
           {% if fieldErrors.species %}
             <p id="species-error" class="govuk-error-message">
-              <span class="govuk-visually-hidden">Error:</span> {{ fieldErrors.species }}
+              <span class="govuk-visually-hidden">{{ t('a11y.errorPrefix') }}</span> {{ fieldErrors.species }}
             </p>
           {% endif %}
           <select
@@ -24,8 +24,15 @@
             name="species"
             {% if fieldErrors.species %}aria-describedby="species-error"{% endif %}
             data-species-search
+            data-autocomplete-placeholder="{{ t('common.autocomplete.placeholder') }}"
+            data-autocomplete-no-results="{{ t('autocomplete.noResults') }}"
+            data-autocomplete-status-query-too-short="{{ t('autocomplete.status.queryTooShort') }}"
+            data-autocomplete-status-no-results="{{ t('autocomplete.status.noResults') }}"
+            data-autocomplete-status-selected-option="{{ t('autocomplete.status.selectedOption') }}"
+            data-autocomplete-status-results="{{ t('autocomplete.status.results') }}"
+            data-autocomplete-assistive-hint="{{ t('autocomplete.assistiveHint') }}"
           >
-            <option value="">Start typing to display the list</option>
+            <option value="">{{ t('common.autocomplete.placeholder') }}</option>
             {% for label in speciesOptionLabels %}
               <option value="{{ label }}">{{ label }}</option>
             {% endfor %}
@@ -33,7 +40,7 @@
         </div>
 
         {{ govukButton({
-          text: "Save and continue",
+          text: t('common.button.saveAndContinue'),
           classes: "govuk-!-margin-top-6"
         }) }}
       </form>

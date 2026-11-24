@@ -14,7 +14,7 @@
       {% endfor %}
 
       {% if gearGroups.length %}
-        <h2 class="govuk-heading-l">Gear used</h2>
+        <h2 class="govuk-heading-l">{{ t('web.check-answers.index.copy.17.1') }}</h2>
         {% for gear in gearGroups %}
           <section aria-labelledby="gear-summary-{{ loop.index }}" data-gear-id="{{ gear.gearId }}">
             <h3 id="gear-summary-{{ loop.index }}" class="govuk-heading-m">{{ gear.heading }}</h3>
@@ -24,12 +24,12 @@
       {% endif %}
 
       {% if speciesGroups.length %}
-        <h2 class="govuk-heading-l">Species caught</h2>
+        <h2 class="govuk-heading-l">{{ t('account.row.speciesCaught.key') }}</h2>
         {% for species in speciesGroups %}
           <section aria-labelledby="species-summary-{{ loop.index }}" data-gear-id="{{ species.gearId }}">
             <h3 id="species-summary-{{ loop.index }}" class="govuk-heading-m">{{ species.heading }}</h3>
             {% if species.showGear %}
-              <p class="govuk-body">Caught with {{ species.gearHeading }}</p>
+              <p class="govuk-body">{{ t('summary.caughtWith', { gear: species.gearHeading }) }}</p>
             {% endif %}
             {% if species.rows.length %}
               {{ govukSummaryList({ rows: species.rows }) }}
@@ -44,7 +44,8 @@
       {% endfor %}
 
       {% if pendingTrip %}
-        <p class="govuk-body">Trip answers have not been saved yet. <a class="govuk-link" href="/trip-date">Complete the trip dates and both ports</a> before submitting.</p>
+        {% set tripDatesLink %}<a class="govuk-link" href="/trip-date">{{ t('checkAnswers.pendingTripLink') }}</a>{% endset %}
+        <p class="govuk-body">{{ tHtml('checkAnswers.pendingTrip', { link: tripDatesLink | safe }) }}</p>
       {% else %}
         {{ appCatchRecordDeclaration(fieldErrors, false, true, submissionKey) }}
       {% endif %}

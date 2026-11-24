@@ -1,3 +1,5 @@
+import { t } from '#/server/common/helpers/i18n/translator.js'
+
 import Joi from 'joi'
 import Boom from '@hapi/boom'
 import { randomUUID } from 'node:crypto'
@@ -9,7 +11,7 @@ import {
 import { getJourneyState } from '#/server/common/helpers/journey/navigation.js'
 import { recordJourney } from '#/server/common/helpers/journey/catch-record-mapping.js'
 
-const errorText = 'Select what you want to do with this draft record'
+const errorText = () => t('catchRecord.draftAction.validation.none')
 const MAX_RECORD_ID_LENGTH = 200
 const query = Joi.object({
   recordId: Joi.string().trim().min(1).max(MAX_RECORD_ID_LENGTH).optional()
@@ -22,7 +24,7 @@ function selectedDraft(request) {
     request.query.recordId !== action.id ||
     request.payload?.actionKey !== action.key
   ) {
-    throw Boom.badRequest('Open the draft record before choosing an action', {
+    throw Boom.badRequest(t('catchRecord.error.openDraftBeforeAction'), {
       catchRecordError: true
     })
   }
@@ -31,12 +33,12 @@ function selectedDraft(request) {
 
 function viewContext(overrides = {}) {
   return {
-    pageTitle: 'What do you want to do with your draft record?',
-    heading: 'What do you want to do with your draft record?',
-    caption: overrides.reference || 'New catch record',
+    pageTitle: t('catchRecord.draftAction.heading'),
+    heading: t('catchRecord.draftAction.heading'),
+    caption: overrides.reference || t('common.newCatchRecord'),
     backLink: {
       href: '/records',
-      text: 'Back'
+      text: t('header.back')
     },
     ...overrides
   }
@@ -61,10 +63,9 @@ export const draftController = {
       correlationId
     })
     if (record.status !== 'DRAFT') {
-      throw Boom.conflict(
-        'This record is no longer a draft. Return to Your catch records.',
-        { catchRecordError: true }
-      )
+      throw Boom.conflict(t('catchRecord.error.noLongerDraft'), {
+        catchRecordError: true
+      })
     }
     const action = {
       id: record.id,
@@ -98,10 +99,10 @@ export const draftSubmitController = {
               actionKey: action.key,
               reference: action.reference,
               errorSummary: {
-                titleText: 'There is a problem',
-                errorList: [{ text: errorText, href: '#draftAction' }]
+                titleText: t('common.errorSummary.title'),
+                errorList: [{ text: errorText(), href: '#draftAction' }]
               },
-              fieldErrors: { draftAction: errorText }
+              fieldErrors: { draftAction: errorText() }
             })
           )
           .code(statusCodes.badRequest)
@@ -115,10 +116,9 @@ export const draftSubmitController = {
     const { client, correlationId } = catchRecordService()
     if (draftAction === 'delete') {
       if (action.numberOfSubmissions !== 0) {
-        throw Boom.conflict(
-          'A draft with previous submissions cannot be deleted.',
-          { catchRecordError: true }
-        )
+        throw Boom.conflict(t('catchRecord.error.draftHasSubmissions'), {
+          catchRecordError: true
+        })
       }
       await client.deleteRecord({
         catchRecordId: action.id,
@@ -132,20 +132,18 @@ export const draftSubmitController = {
       return h.redirect('/records').code(statusCodes.seeOther)
     }
     if (!liveCatchRecords()) {
-      throw Boom.conflict(
-        'Live journey saving must be enabled before completing a saved draft.',
-        { catchRecordError: true }
-      )
+      throw Boom.conflict(t('catchRecord.error.liveSavingRequired'), {
+        catchRecordError: true
+      })
     }
     const record = await client.getRecord({
       catchRecordId: action.id,
       correlationId
     })
     if (record.status !== 'DRAFT' || record.version !== action.version) {
-      throw Boom.conflict(
-        'This draft has changed. Reopen it from Your catch records.',
-        { catchRecordError: true }
-      )
+      throw Boom.conflict(t('catchRecord.error.draftChanged'), {
+        catchRecordError: true
+      })
     }
     request.yar.set('journey', recordJourney(record))
     request.yar.clear('draftAction')

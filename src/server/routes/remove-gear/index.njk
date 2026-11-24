@@ -11,10 +11,10 @@
         {% if gearCheckboxItems.length %}
           <div class="govuk-form-group{{ ' govuk-form-group--error' if fieldErrors.gearIds }}">
             <fieldset class="govuk-fieldset" aria-describedby="gearIds-hint{{ ' gearIds-error' if fieldErrors.gearIds }}">
-              <div id="gearIds-hint" class="govuk-hint">Select all that apply</div>
+              <div id="gearIds-hint" class="govuk-hint">{{ t('common.hint.selectAllThatApply') }}</div>
               {% if fieldErrors.gearIds %}
                 <p id="gearIds-error" class="govuk-error-message">
-                  <span class="govuk-visually-hidden">Error:</span> {{ fieldErrors.gearIds }}
+                  <span class="govuk-visually-hidden">{{ t('a11y.errorPrefix') }}</span> {{ fieldErrors.gearIds }}
                 </p>
               {% endif %}
               <div class="govuk-checkboxes" data-module="govuk-checkboxes">
@@ -36,10 +36,10 @@
               </div>
             </fieldset>
           </div>
-          {{ govukButton({ text: "Continue", classes: "govuk-!-margin-top-6" }) }}
+          {{ govukButton({ text: t('common.button.continue'), classes: "govuk-!-margin-top-6" }) }}
         {% else %}
-          <p class="govuk-body">You have nothing to remove</p>
-          {{ govukButton({ text: "Continue", classes: "govuk-!-margin-top-6" }) }}
+          <p class="govuk-body">{{ t('web.remove-gear.index.copy.41.1') }}</p>
+          {{ govukButton({ text: t('common.button.continue'), classes: "govuk-!-margin-top-6" }) }}
         {% endif %}
       </form>
     </div>

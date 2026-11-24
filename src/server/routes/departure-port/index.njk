@@ -21,9 +21,9 @@
           items: portOptions
         }) }}
 
-        <p class="govuk-body"><a class="govuk-link" href="{{ addPortHref }}">Add port</a></p>
+        <p class="govuk-body"><a class="govuk-link" href="{{ addPortHref }}">{{ t('portSelection.addPort.link') }}</a></p>
 
-        {{ govukButton({ text: "Save and continue" }) }}
+        {{ govukButton({ text: t('common.button.saveAndContinue') }) }}
       </form>
     </div>
   </div>

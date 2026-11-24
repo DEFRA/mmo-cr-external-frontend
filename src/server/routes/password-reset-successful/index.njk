@@ -10,11 +10,11 @@
         html: email
       }) }}
 
-      <h2 class="govuk-heading-m">What happens next</h2>
-      <p class="govuk-body">Click the link in the email to reset your password.</p>
-      <p class="govuk-body">If you do not receive the email check your spam folder.</p>
+      <h2 class="govuk-heading-m">{{ t('common.whatHappensNext') }}</h2>
+      <p class="govuk-body">{{ t('common.passwordReset.clickLink') }}</p>
+      <p class="govuk-body">{{ t('common.passwordReset.checkSpam') }}</p>
 
-      {{ govukButton({ text: "Back to your account", href: "/account" }) }}
+      {{ govukButton({ text: t('common.button.backToAccount'), href: "/account" }) }}
     </div>
   </div>
 {% endblock %}

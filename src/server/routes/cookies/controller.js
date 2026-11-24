@@ -1,3 +1,5 @@
+import { t } from '#/server/common/helpers/i18n/translator.js'
+
 import { config } from '#/config/config.js'
 
 export const cookiesController = {
@@ -5,13 +7,15 @@ export const cookiesController = {
     const cookieTtl = config.get('session.cookie.ttl')
 
     return h.view('cookies/index', {
-      pageTitle: 'Cookies',
-      heading: 'Cookies',
+      pageTitle: t('cookies.title'),
+      heading: t('cookies.title'),
       cookieName: config.get('session.cache.name'),
       cookieExpiry: cookieTtl
-        ? `${cookieTtl / 1000 / 60 / 60} hours`
-        : 'When you close your browser',
-      backLink: { href: '/', text: 'Back' }
+        ? t('cookies.expiry.hours', {
+            count: cookieTtl / 1000 / 60 / 60
+          })
+        : t('cookies.expiry.browserClose'),
+      backLink: { href: '/', text: t('header.back') }
     })
   }
 }

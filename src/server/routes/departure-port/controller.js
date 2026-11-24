@@ -1,3 +1,5 @@
+import { t } from '#/server/common/helpers/i18n/translator.js'
+
 import Joi from 'joi'
 
 import {
@@ -23,10 +25,10 @@ import { statusCodes } from '#/server/common/constants/status-codes.js'
 import { loadFavouritePorts } from '#/server/common/helpers/journey/session-favourites.js'
 import { liveCatchRecords } from '#/server/common/helpers/journey/catch-record-service.js'
 
-const pageTitle = 'Select the port you set off from'
+const pageTitle = () => t('web.departure-port.controller.js.copy.27.1')
 const templatePath = 'departure-port/index'
-const errorSummaryTitle = 'There is a problem'
-const errorText = 'Select the port you left from'
+const errorSummaryTitle = () => t('common.errorSummary.title')
+const errorText = () => t('departurePort.error.select')
 function favouritePorts(request, ports) {
   const codes = [...getFavouritePortCodes(request)]
   if (liveCatchRecords() && getJourneyState(request).departurePort) {
@@ -45,13 +47,13 @@ function portOptions(request, selectedCode, ports) {
 
 function viewContext(request, ports, overrides = {}) {
   return {
-    pageTitle,
-    heading: pageTitle,
+    pageTitle: pageTitle(),
+    heading: pageTitle(),
     caption: catchRecordCaption(request),
     addPortHref: portSelectionPath(request, '/add-port?for=departure'),
     backLink: {
       href: backForDeparturePort(request),
-      text: 'Back'
+      text: t('header.back')
     },
     portOptions: portOptions(
       request,
@@ -102,10 +104,10 @@ export const departurePortSubmitController = {
             templatePath,
             viewContext(request, ports, {
               errorSummary: {
-                titleText: errorSummaryTitle,
-                errorList: [{ text: errorText, href: '#departurePort' }]
+                titleText: errorSummaryTitle(),
+                errorList: [{ text: errorText(), href: '#departurePort' }]
               },
-              fieldErrors: { departurePort: errorText }
+              fieldErrors: { departurePort: errorText() }
             })
           )
           .code(statusCodes.badRequest)
@@ -124,10 +126,10 @@ export const departurePortSubmitController = {
           templatePath,
           viewContext(request, ports, {
             errorSummary: {
-              titleText: errorSummaryTitle,
-              errorList: [{ text: errorText, href: '#departurePort' }]
+              titleText: errorSummaryTitle(),
+              errorList: [{ text: errorText(), href: '#departurePort' }]
             },
-            fieldErrors: { departurePort: errorText }
+            fieldErrors: { departurePort: errorText() }
           })
         )
         .code(statusCodes.badRequest)

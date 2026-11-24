@@ -1,3 +1,5 @@
+import { t } from '#/server/common/helpers/i18n/translator.js'
+
 import {
   getJourneyState,
   accountVesselPath
@@ -20,11 +22,15 @@ export const skipperConfirmationController = {
           .code(statusCodes.seeOther)
       }
     }
-    const heading = `Skipper added for vessel ${liveSkippers ? state.selectedVesselName || 'selected vessel' : 'OLGA'}`
+    const heading = t('skipperConfirmation.titleForVessel', {
+      vesselName: liveSkippers
+        ? state.selectedVesselName || 'selected vessel'
+        : 'OLGA'
+    })
     return h.view('skipper-confirmation/index', {
       pageTitle: heading,
       heading,
-      backLink: { href: '/account', text: 'Back' },
+      backLink: { href: '/account', text: t('header.back') },
       skipper: liveSkippers ? state.pendingSkipper : state.skipper || {},
       liveSkippers
     })

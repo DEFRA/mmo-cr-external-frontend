@@ -81,8 +81,9 @@ export function createSelect({
     input.value = state.selectedSubCode || ''
     input.disabled = !selected
     status.textContent = selected
-      ? `${selected.subCode} selected`
-      : 'No statistical area selected'
+      ? (status.dataset.statusSelected?.replace('{{code}}', selected.subCode) ??
+        `${selected.subCode} selected`)
+      : (status.dataset.statusNone ?? 'No statistical area selected')
     render()
     if (selected) {
       form.requestSubmit()

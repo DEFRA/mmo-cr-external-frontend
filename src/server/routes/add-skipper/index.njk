@@ -10,11 +10,11 @@
         fieldset: { legend: { text: heading, isPageHeading: true, classes: "govuk-fieldset__legend--xl" } },
         errorMessage: { text: fieldErrors.wantsToAddSkipper } if fieldErrors.wantsToAddSkipper,
         items: [
-          { value: "yes", text: "Yes", checked: checked == "yes" },
-          { value: "no", text: "No", checked: checked == "no" }
+          { value: "yes", text: t('addSkipper.yes'), checked: checked == "yes" },
+          { value: "no", text: t('addSkipper.no'), checked: checked == "no" }
         ]
       }) }}
-      {{ govukButton({ text: "Save and continue" }) }}
+      {{ govukButton({ text: t('common.button.saveAndContinue') }) }}
     </form>
   </div></div>
 {% endblock %}

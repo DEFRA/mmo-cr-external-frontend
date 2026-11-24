@@ -2,6 +2,7 @@ import Boom from '@hapi/boom'
 import Joi from 'joi'
 
 import { statusCodes } from '#/server/common/constants/status-codes.js'
+import { t } from '#/server/common/helpers/i18n/translator.js'
 
 const SKIPPER_NAME_MAX_LENGTH = 100
 const SKIPPER_PHONE_MAX_LENGTH = 30
@@ -35,20 +36,20 @@ const MAX_LIST_LIMIT = 100
 const MAX_SUBMISSION_NUMBER = 1000
 
 const DEFAULT_ERROR_MESSAGES = {
-  400: 'The catch record could not be saved. Check your answers.',
-  401: 'Catch Recording authentication failed.',
-  403: 'You do not have permission to access this catch record.',
-  404: 'The catch record could not be found.',
-  409: 'The record has changed or a request is still in progress. Reload it before trying again.',
-  412: 'The record has changed. Reload it before trying again.',
-  422: 'The catch record is not ready. Check your answers.'
+  400: 'catchRecord.error.save.400',
+  401: 'catchRecord.error.save.401',
+  403: 'catchRecord.error.save.403',
+  404: 'catchRecord.error.save.404',
+  409: 'catchRecord.error.save.409',
+  412: 'catchRecord.error.save.412',
+  422: 'catchRecord.error.save.422'
 }
 
 const SKIPPER_ERROR_MESSAGES = {
-  400: 'The skipper could not be saved. Check the skipper details.',
-  404: 'The vessel or skipper could not be found.',
-  409: 'The skipper request conflicts with an existing entry or is still in progress. Reload the page before trying again.',
-  422: 'The skipper could not be added. Check the skipper details.'
+  400: 'catchRecord.error.skipper.400',
+  404: 'catchRecord.error.skipper.404',
+  409: 'catchRecord.error.skipper.409',
+  422: 'catchRecord.error.skipper.422'
 }
 
 function isString(value) {
@@ -222,26 +223,35 @@ export function isValidHistoryEvent(event) {
   return isString(event?.eventType) && isString(event.timestamp)
 }
 
+const VESSEL_FAVOURITE_ERROR_STATUSES = [
+  statusCodes.badRequest,
+  statusCodes.forbidden,
+  statusCodes.notFound,
+  statusCodes.conflict,
+  statusCodes.unprocessableEntity
+]
+
 function vesselFavouriteErrorMessages(label) {
-  const plural = label === 'species' ? label : `${label}s`
-  return {
-    400: `The vessel favourite ${plural} could not be updated. Check your selection.`,
-    403: 'You do not have permission to access this vessel.',
-    404: `The vessel or favourite ${label} could not be found.`,
-    409: `The favourite ${label} request is still in progress. Reload the page before trying again.`,
-    422: `The selected ${label} cannot be added to the vessel favourites.`
-  }
+  return Object.fromEntries(
+    VESSEL_FAVOURITE_ERROR_STATUSES.map((status) => [
+      status,
+      `catchRecord.error.favourite.${label}.${status}`
+    ])
+  )
 }
 
 function errorMessagesFor(vesselProfile) {
   if (!vesselProfile) {
     return DEFAULT_ERROR_MESSAGES
   }
+  const favouriteMessages = ['gear', 'port', 'species'].includes(vesselProfile)
+    ? vesselFavouriteErrorMessages(vesselProfile)
+    : {}
   const skipperMessages =
     vesselProfile === 'skipper' ? SKIPPER_ERROR_MESSAGES : {}
   return {
     ...DEFAULT_ERROR_MESSAGES,
-    ...vesselFavouriteErrorMessages(vesselProfile),
+    ...favouriteMessages,
     ...skipperMessages
   }
 }
@@ -251,10 +261,13 @@ export function errorFromStatus(responseStatus, vesselProfile) {
   const status = Object.hasOwn(messages, responseStatus)
     ? responseStatus
     : statusCodes.serviceUnavailable
-  return Boom.boomify(new Error(messages[status] || UNAVAILABLE_MESSAGE), {
-    statusCode: status,
-    data: { catchRecordError: true }
-  })
+  return Boom.boomify(
+    new Error(t(messages[status] || 'catchRecord.error.unavailable')),
+    {
+      statusCode: status,
+      data: { catchRecordError: true }
+    }
+  )
 }
 
 export function isSuccessStatus(status) {

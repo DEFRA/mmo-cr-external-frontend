@@ -1,3 +1,5 @@
+import { t } from '#/server/common/helpers/i18n/translator.js'
+
 import Joi from 'joi'
 
 import {
@@ -21,9 +23,9 @@ import { statusCodes } from '#/server/common/constants/status-codes.js'
 import { loadFavouritePorts } from '#/server/common/helpers/journey/session-favourites.js'
 import { liveCatchRecords } from '#/server/common/helpers/journey/catch-record-service.js'
 
-const pageTitle = 'Select the port you returned to'
+const pageTitle = () => t('catchRecord.selectPort.return.validation.none')
 const templatePath = 'return-port/index'
-const errorSummaryTitle = 'There is a problem'
+const errorSummaryTitle = () => t('common.errorSummary.title')
 const errorText = pageTitle
 function favouritePorts(request, ports) {
   const codes = [...getFavouritePortCodes(request)]
@@ -43,13 +45,13 @@ function portOptions(request, selectedCode, ports) {
 
 function viewContext(request, ports, overrides = {}) {
   return {
-    pageTitle,
-    heading: pageTitle,
+    pageTitle: pageTitle(),
+    heading: pageTitle(),
     caption: catchRecordCaption(request),
     addPortHref: portSelectionPath(request, '/add-port?for=return'),
     backLink: {
       href: '/departure-port',
-      text: 'Back'
+      text: t('header.back')
     },
     portOptions: portOptions(
       request,
@@ -89,10 +91,10 @@ export const returnPortSubmitController = {
             templatePath,
             viewContext(request, ports, {
               errorSummary: {
-                titleText: errorSummaryTitle,
-                errorList: [{ text: errorText, href: '#returnPort' }]
+                titleText: errorSummaryTitle(),
+                errorList: [{ text: errorText(), href: '#returnPort' }]
               },
-              fieldErrors: { returnPort: errorText }
+              fieldErrors: { returnPort: errorText() }
             })
           )
           .code(statusCodes.badRequest)
@@ -111,10 +113,10 @@ export const returnPortSubmitController = {
           templatePath,
           viewContext(request, ports, {
             errorSummary: {
-              titleText: errorSummaryTitle,
-              errorList: [{ text: errorText, href: '#returnPort' }]
+              titleText: errorSummaryTitle(),
+              errorList: [{ text: errorText(), href: '#returnPort' }]
             },
-            fieldErrors: { returnPort: errorText }
+            fieldErrors: { returnPort: errorText() }
           })
         )
         .code(statusCodes.badRequest)

@@ -1,3 +1,5 @@
+import { t } from '#/server/common/helpers/i18n/translator.js'
+
 import Boom from '@hapi/boom'
 import { getJourneyState, setJourneyState } from './navigation.js'
 import { catchRecordService, liveCatchRecords } from './catch-record-service.js'
@@ -7,7 +9,7 @@ import { forEachSequentially } from '../sequential.js'
 function vesselInput(request) {
   const vesselId = getJourneyState(request).selectedVesselId
   if (!vesselId) {
-    throw Boom.badRequest('Select a vessel before managing its favourites', {
+    throw Boom.badRequest(t('catchRecord.error.selectVesselForFavourites'), {
       catchRecordError: true
     })
   }
@@ -105,10 +107,9 @@ export async function removeFavouriteSpecies(request, ids) {
 function storePorts(request, ids, catalogue) {
   const ports = ids.map((id) => catalogue.find((port) => port.id === id))
   if (ports.some((port) => !port)) {
-    throw Boom.conflict(
-      'A favourite port is no longer available in Reference Data. Reload the page before trying again.',
-      { catchRecordError: true }
-    )
+    throw Boom.conflict(t('catchRecord.error.favouritePortUnavailable'), {
+      catchRecordError: true
+    })
   }
   return setJourneyState(request, {
     favouritePortIds: ids,

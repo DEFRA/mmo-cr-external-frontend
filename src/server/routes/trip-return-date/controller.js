@@ -1,3 +1,5 @@
+import { t } from '#/server/common/helpers/i18n/translator.js'
+
 import {
   validateDateInput,
   dateInputValues
@@ -12,22 +14,22 @@ import { statusCodes } from '#/server/common/constants/status-codes.js'
 import { businessDate } from '#/server/common/helpers/journey/catch-record-payload.js'
 import {
   latestReturnDate,
-  TRIP_TOO_LONG_MESSAGE
+  MAX_TRIP_LENGTH_DAYS
 } from '#/server/common/helpers/journey/trip-date-rules.js'
 
-const pageTitle = 'Which date did you return from your trip?'
-const hintText = 'For example, 31/03/2020'
+const pageTitle = () => t('catchRecord.tripDate.return.title')
+const hintText = () => t('common.dateHint')
 
 function viewContext(request, overrides = {}) {
   return {
-    pageTitle,
-    heading: pageTitle,
+    pageTitle: pageTitle(),
+    heading: pageTitle(),
     caption: catchRecordCaption(request),
-    hintText,
+    hintText: hintText(),
     values: dateInputValues(getJourneyState(request).returnDate),
     backLink: {
       href: '/trip-departure-date',
-      text: 'Back'
+      text: t('header.back')
     },
     ...overrides
   }
@@ -51,18 +53,24 @@ export const tripReturnDateSubmitController = {
       },
       'tripReturnDate',
       {
-        subject: 'the date you returned from your trip',
-        partSubject: 'Date you left for your trip',
-        formatMessage:
-          'Date you returned from your trip must be in the format 31 3 2019',
+        missingMessages: {
+          all: t('tripReturnDate.error.missing.all'),
+          day: t('tripReturnDate.error.missing.day'),
+          month: t('tripReturnDate.error.missing.month'),
+          year: t('tripReturnDate.error.missing.year'),
+          dayMonth: t('tripReturnDate.error.missing.dayMonth'),
+          dayYear: t('tripReturnDate.error.missing.dayYear'),
+          monthYear: t('tripReturnDate.error.missing.monthYear')
+        },
+        formatMessage: t('tripReturnDate.error.format'),
         maxDate: businessDate(),
-        maxDateMessage:
-          'Date you returned from your trip must be today or in the past',
+        maxDateMessage: t('tripReturnDate.error.max'),
         notBeforeDate: departureDate,
-        notBeforeMessage:
-          'Date you returned from your trip must be the same as or after the date you left',
+        notBeforeMessage: t('tripReturnDate.error.notBefore'),
         notAfterDate: departureDate && latestReturnDate(departureDate),
-        notAfterMessage: TRIP_TOO_LONG_MESSAGE
+        notAfterMessage: t('tripReturnDate.error.tripTooLong', {
+          days: MAX_TRIP_LENGTH_DAYS
+        })
       }
     )
 
@@ -72,7 +80,7 @@ export const tripReturnDateSubmitController = {
           'trip-return-date/index',
           viewContext(request, {
             errorSummary: {
-              titleText: 'There is a problem',
+              titleText: t('common.errorSummary.title'),
               errorList: [
                 { text: result.errorMessage, href: '#tripReturnDate-day' }
               ]
