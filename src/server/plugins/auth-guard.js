@@ -5,6 +5,7 @@ import {
   signOut
 } from '#/server/common/helpers/auth/session.js'
 import { isEntraMode } from '#/server/common/helpers/auth/entra.js'
+import { statusCodes } from '#/server/common/constants/status-codes.js'
 
 export const SIGN_IN_ERROR_FLASH_KEY = 'signInError'
 export const SESSION_EXPIRED_MESSAGE =
@@ -53,7 +54,7 @@ export const authGuard = {
           request.yar.flash(SIGN_IN_ERROR_FLASH_KEY, SESSION_EXPIRED_MESSAGE)
         }
 
-        return h.redirect('/sign-in').code(302).takeover()
+        return h.redirect('/sign-in').code(statusCodes.found).takeover()
       })
 
       // Backend rejected (or we lack) the user's token; runs before yar so the sign-out is saved.
@@ -64,7 +65,7 @@ export const authGuard = {
           if (
             !isEntraMode() ||
             !response.isBoom ||
-            response.output.statusCode !== 401
+            response.output.statusCode !== statusCodes.unauthorized
           ) {
             return h.continue
           }
@@ -76,7 +77,7 @@ export const authGuard = {
           signOut(request)
           request.yar.flash(SIGN_IN_ERROR_FLASH_KEY, SESSION_EXPIRED_MESSAGE)
           // No takeover: yar's onPreResponse must still run to save the sign-out.
-          return h.redirect('/sign-in').code(302)
+          return h.redirect('/sign-in').code(statusCodes.found)
         },
         { before: ['@hapi/yar'] }
       )

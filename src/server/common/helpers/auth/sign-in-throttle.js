@@ -3,7 +3,8 @@ import { createHash } from 'node:crypto'
 import { config } from '#/config/config.js'
 
 const MAX_FAILED_ATTEMPTS = 10
-const LOCKOUT_WINDOW_MS = 15 * 60 * 1000
+const LOCKOUT_WINDOW_MINUTES = 15
+const LOCKOUT_WINDOW_MS = LOCKOUT_WINDOW_MINUTES * 60 * 1000
 
 function keyFor(email) {
   return createHash('sha256').update(email.trim().toLowerCase()).digest('hex')

@@ -156,6 +156,47 @@ export const signInController = {
   }
 }
 
+function signInInputProblem(email, password) {
+  const fieldErrors = {
+    ...(!email && { email: messages.emailEmpty }),
+    ...(!password && { password: messages.passwordEmpty })
+  }
+
+  if (Object.keys(fieldErrors).length) {
+    return { fieldErrors }
+  }
+
+  if (
+    email.length > MAX_EMAIL_LENGTH ||
+    password.length > MAX_PASSWORD_LENGTH
+  ) {
+    return { error: messages.invalidCredentials }
+  }
+
+  return null
+}
+
+async function signInFailureResponse(request, h, error, email) {
+  logFailure(request, error, 'Entra sign-in was rejected')
+
+  if (error?.reason === signInFailure.browserRequired) {
+    const fallback = toBrowserFallback(request, h, email)
+    if (fallback) {
+      return fallback
+    }
+  }
+
+  if (error?.reason === signInFailure.invalidCredentials) {
+    await recordFailedSignIn(request, email)
+  }
+
+  const unavailable = error?.reason === signInFailure.unavailable
+  return signInView(request, h, {
+    error: failureMessage(error?.reason),
+    email
+  }).code(unavailable ? statusCodes.serviceUnavailable : statusCodes.badRequest)
+}
+
 export const signInSubmitController = {
   async handler(request, h) {
     if (!isEntraMode()) {
@@ -165,25 +206,12 @@ export const signInSubmitController = {
 
     const email = String(request.payload?.email ?? '').trim()
     const password = String(request.payload?.password ?? '')
-    const fieldErrors = {
-      ...(!email && { email: messages.emailEmpty }),
-      ...(!password && { password: messages.passwordEmpty })
-    }
+    const inputProblem = signInInputProblem(email, password)
 
-    if (Object.keys(fieldErrors).length) {
-      return signInView(request, h, { fieldErrors, email }).code(
+    if (inputProblem) {
+      return signInView(request, h, { ...inputProblem, email }).code(
         statusCodes.badRequest
       )
-    }
-
-    if (
-      email.length > MAX_EMAIL_LENGTH ||
-      password.length > MAX_PASSWORD_LENGTH
-    ) {
-      return signInView(request, h, {
-        error: messages.invalidCredentials,
-        email
-      }).code(statusCodes.badRequest)
     }
 
     if (await isSignInLocked(request, email)) {
@@ -203,26 +231,7 @@ export const signInSubmitController = {
 
       return completeSignIn(request, h, result, 'native')
     } catch (error) {
-      logFailure(request, error, 'Entra sign-in was rejected')
-
-      if (error?.reason === signInFailure.browserRequired) {
-        const fallback = toBrowserFallback(request, h, email)
-        if (fallback) {
-          return fallback
-        }
-      }
-
-      if (error?.reason === signInFailure.invalidCredentials) {
-        await recordFailedSignIn(request, email)
-      }
-
-      const unavailable = error?.reason === signInFailure.unavailable
-      return signInView(request, h, {
-        error: failureMessage(error?.reason),
-        email
-      }).code(
-        unavailable ? statusCodes.serviceUnavailable : statusCodes.badRequest
-      )
+      return signInFailureResponse(request, h, error, email)
     }
   }
 }

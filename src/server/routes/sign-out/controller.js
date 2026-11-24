@@ -1,5 +1,6 @@
 import { t } from '#/server/common/helpers/i18n/translator.js'
 
+import { statusCodes } from '#/server/common/constants/status-codes.js'
 import {
   getSignedInAccount,
   signOut
@@ -20,7 +21,7 @@ export const signOutController = {
         ? createBrowserLogoutUrl()
         : null
 
-    return h.redirect(logoutUrl ?? '/signed-out').code(303)
+    return h.redirect(logoutUrl ?? '/signed-out').code(statusCodes.seeOther)
   }
 }
 

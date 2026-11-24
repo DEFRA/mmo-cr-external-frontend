@@ -1,269 +1,38 @@
 import { createHash, randomBytes } from 'node:crypto'
 
-import { config } from '#/config/config.js'
-import { createLogger } from '#/server/common/helpers/logging/logger.js'
+import {
+  apiScopes,
+  authorityBase,
+  entraSettings,
+  isBrowserFallbackEnabled,
+  tokenScope
+} from './entra-config.js'
+import {
+  EntraSignInError,
+  entraLogger as logger,
+  post,
+  signInFailure
+} from './entra-client.js'
 
-const logger = createLogger().child({ component: 'entra-auth' })
+export {
+  CALLBACK_PATH,
+  SIGNED_OUT_PATH,
+  assertAuthenticationConfiguration,
+  isBrowserFallbackEnabled,
+  isEntraMode
+} from './entra-config.js'
+export { EntraSignInError, signInFailure } from './entra-client.js'
 
-const MOCK_ALLOWED_ENVIRONMENTS = ['local', 'dev', 'test']
 const CHALLENGE_TYPES = 'oob password redirect'
-const OIDC_SCOPES = 'openid'
 const PENDING_SIGN_IN_SESSION_KEY = 'entraPendingSignIn'
 const PENDING_BROWSER_SIGN_IN_SESSION_KEY = 'entraPendingBrowserSignIn'
 const API_TOKENS_SESSION_KEY = 'entraApiTokens'
 const MAX_CODE_ATTEMPTS = 5
 const BROWSER_SIGN_IN_MAX_AGE_MS = 10 * 60 * 1000
 const ACCESS_TOKEN_REFRESH_MARGIN_MS = 60 * 1000
-const REQUEST_TIMEOUT_MS = 10000
 const CLOCK_SKEW_SECONDS = 300
-const GUID_PATTERN =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-const SUBDOMAIN_PATTERN = /^[a-z0-9][a-z0-9-]*$/i
-
-export const CALLBACK_PATH = '/auth/callback'
-export const SIGNED_OUT_PATH = '/signed-out'
-
-/** Outcomes the sign-in screens react to; every other failure is `unavailable`. */
-export const signInFailure = {
-  invalidCredentials: 'invalid_credentials',
-  invalidCode: 'invalid_code',
-  tooManyCodeAttempts: 'too_many_code_attempts',
-  expired: 'expired',
-  browserRequired: 'browser_required',
-  unsupported: 'unsupported',
-  cancelled: 'cancelled',
-  unavailable: 'unavailable'
-}
-
-export class EntraSignInError extends Error {
-  constructor(reason, detail) {
-    super(`Entra sign-in failed: ${reason}`)
-    this.name = 'EntraSignInError'
-    this.reason = reason
-    this.errorCode = detail?.error
-    this.subError = detail?.suberror
-  }
-}
-
-export function isEntraMode() {
-  return config.get('authentication.mode') === 'entra'
-}
-
-function entraSettings() {
-  return config.get('authentication.entra')
-}
-
-export function isBrowserFallbackEnabled() {
-  return Boolean(entraSettings().redirectUri)
-}
-
-function apiScopes() {
-  return entraSettings().apiScopes?.trim() || null
-}
-
-function tokenScope() {
-  const scopes = apiScopes()
-  // offline_access asks for a refresh token, which is only needed to renew API access tokens.
-  return scopes ? `${OIDC_SCOPES} offline_access ${scopes}` : OIDC_SCOPES
-}
-
-function assertRegisteredUrl(value, name, expectedPath) {
-  let url
-  try {
-    url = new URL(value)
-  } catch {
-    throw new Error(`${name} must be an absolute URL`)
-  }
-
-  const allowedProtocols = config.get('isProduction')
-    ? ['https:']
-    : ['https:', 'http:']
-
-  if (
-    !allowedProtocols.includes(url.protocol) ||
-    url.username ||
-    url.password ||
-    url.search ||
-    url.hash ||
-    url.pathname !== expectedPath
-  ) {
-    throw new Error(`${name} must be an https URL ending in ${expectedPath}`)
-  }
-
-  return url
-}
-
-/**
- * Fails server start-up on unsafe or incomplete authentication configuration,
- * so a misconfigured deployment never runs with broken or simulated sign-in.
- */
-export function assertAuthenticationConfiguration() {
-  if (!isEntraMode()) {
-    const environment = config.get('catchRecording.environment')
-    if (!MOCK_ALLOWED_ENVIRONMENTS.includes(environment)) {
-      throw new Error(
-        `Mock authentication is not permitted in the ${environment} environment`
-      )
-    }
-    return
-  }
-
-  const {
-    tenantSubdomain,
-    clientId,
-    tenantId,
-    redirectUri,
-    postLogoutRedirectUri
-  } = entraSettings()
-  const missing = Object.entries({
-    ENTRA_TENANT_SUBDOMAIN: tenantSubdomain,
-    ENTRA_CLIENT_ID: clientId,
-    ENTRA_API_SCOPES: apiScopes()
-  })
-    .filter(([, value]) => !value)
-    .map(([name]) => name)
-
-  if (missing.length) {
-    throw new Error(`Entra authentication is missing: ${missing.join(', ')}`)
-  }
-
-  if (!SUBDOMAIN_PATTERN.test(tenantSubdomain)) {
-    throw new Error('ENTRA_TENANT_SUBDOMAIN is invalid')
-  }
-
-  if (!GUID_PATTERN.test(clientId)) {
-    throw new Error('ENTRA_CLIENT_ID must be a GUID')
-  }
-
-  if (tenantId && !GUID_PATTERN.test(tenantId)) {
-    throw new Error('ENTRA_TENANT_ID must be a GUID')
-  }
-
-  const callback = redirectUri
-    ? assertRegisteredUrl(redirectUri, 'ENTRA_REDIRECT_URI', CALLBACK_PATH)
-    : null
-  const postLogout = postLogoutRedirectUri
-    ? assertRegisteredUrl(
-        postLogoutRedirectUri,
-        'ENTRA_POST_LOGOUT_REDIRECT_URI',
-        SIGNED_OUT_PATH
-      )
-    : null
-
-  if (postLogout && !callback) {
-    throw new Error(
-      'ENTRA_POST_LOGOUT_REDIRECT_URI requires ENTRA_REDIRECT_URI to be set'
-    )
-  }
-
-  if (callback && postLogout && callback.origin !== postLogout.origin) {
-    throw new Error('Entra redirect URIs must share the same origin')
-  }
-}
-
-function authorityBase() {
-  const { tenantSubdomain } = entraSettings()
-  return `https://${tenantSubdomain}.ciamlogin.com/${tenantSubdomain}.onmicrosoft.com/oauth2/v2.0/`
-}
-
-async function post(path, fields) {
-  const step = fields.grant_type ? `${path}:${fields.grant_type}` : path
-  const startedAt = Date.now()
-  let response
-  try {
-    response = await fetch(`${authorityBase()}${path}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        Accept: 'application/json'
-      },
-      body: new URLSearchParams({
-        client_id: entraSettings().clientId,
-        ...fields
-      }),
-      redirect: 'error',
-      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS)
-    })
-  } catch (error) {
-    logger.error(
-      {
-        entra: {
-          step,
-          durationMs: Date.now() - startedAt,
-          errorName: error?.name,
-          causeCode: error?.cause?.code,
-          causeMessage: error?.cause?.message ?? error?.message
-        }
-      },
-      `Entra ${step} request failed to reach Entra`
-    )
-    throw new EntraSignInError(signInFailure.unavailable)
-  }
-
-  const body = await response.json().catch(() => null)
-  logEntraResponse(step, response, body, Date.now() - startedAt)
-
-  if (body?.challenge_type === 'redirect') {
-    throw new EntraSignInError(signInFailure.browserRequired, body)
-  }
-
-  if (response.ok && body) {
-    return body
-  }
-
-  throw new EntraSignInError(classifyError(body), body)
-}
-
-// Logs only metadata Entra returns for diagnosis; request bodies, tokens and codes are never logged.
-function logEntraResponse(step, response, body, durationMs) {
-  const entra = {
-    step,
-    status: response.status,
-    durationMs,
-    challengeType: body?.challenge_type,
-    redirectReason: body?.redirect_reason,
-    codeLength: body?.code_length,
-    hasContinuationToken: Boolean(body?.continuation_token),
-    hasIdToken: Boolean(body?.id_token),
-    hasAccessToken: Boolean(body?.access_token),
-    hasRefreshToken: Boolean(body?.refresh_token),
-    error: body?.error,
-    subError: body?.suberror,
-    errorCodes: body?.error_codes,
-    errorDescription: body?.error_description?.slice(0, 300),
-    traceId: body?.trace_id,
-    correlationId: body?.correlation_id,
-    contentType: body ? undefined : response.headers.get('content-type')
-  }
-
-  if (response.ok && body && body.challenge_type !== 'redirect') {
-    logger.info({ entra }, `Entra ${step} succeeded`)
-  } else if (body?.error || body?.challenge_type === 'redirect') {
-    logger.warn({ entra }, `Entra ${step} returned ${body.error ?? 'redirect'}`)
-  } else {
-    logger.error({ entra }, `Entra ${step} returned an unexpected response`)
-  }
-}
-
-function classifyError(body) {
-  if (body?.error === 'expired_token') {
-    return signInFailure.expired
-  }
-  // Both mean "wrong email or password"; kept identical to avoid revealing which accounts exist.
-  if (
-    body?.error === 'user_not_found' ||
-    (body?.error === 'invalid_grant' && !body.suberror)
-  ) {
-    return signInFailure.invalidCredentials
-  }
-  if (body?.suberror === 'invalid_oob_value') {
-    return signInFailure.invalidCode
-  }
-  if (['mfa_required', 'registration_required'].includes(body?.suberror)) {
-    return signInFailure.browserRequired
-  }
-  return signInFailure.unavailable
-}
+const MAX_LOGGED_ERROR_LENGTH = 64
+const RANDOM_BYTES = 32
 
 function decodeJwtPayload(token) {
   try {
@@ -274,18 +43,23 @@ function decodeJwtPayload(token) {
 }
 
 function idTokenProblem(claims, { nonce }) {
-  const { clientId, tenantId } = entraSettings()
-  const audience = Array.isArray(claims?.aud) ? claims.aud : [claims?.aud]
-  const nowSeconds = Math.floor(Date.now() / 1000)
+  if (!claims) {
+    return 'missing_or_unreadable_id_token'
+  }
 
-  if (!claims) return 'missing_or_unreadable_id_token'
-  if (!audience.includes(clientId)) return 'audience_mismatch'
-  if (typeof claims.exp !== 'number') return 'missing_expiry'
-  if (claims.exp + CLOCK_SKEW_SECONDS < nowSeconds) return 'expired'
-  if (tenantId && claims.tid !== tenantId) return 'tenant_mismatch'
-  if (nonce !== undefined && claims.nonce !== nonce) return 'nonce_mismatch'
-  if (!(claims.oid ?? claims.sub)) return 'missing_user_id'
-  return null
+  const { clientId, tenantId } = entraSettings()
+  const nowSeconds = Math.floor(Date.now() / 1000)
+  // Checked in order; the first failing check is reported.
+  const checks = [
+    ['audience_mismatch', ![claims.aud].flat().includes(clientId)],
+    ['missing_expiry', typeof claims.exp !== 'number'],
+    ['expired', claims.exp + CLOCK_SKEW_SECONDS < nowSeconds],
+    ['tenant_mismatch', Boolean(tenantId) && claims.tid !== tenantId],
+    ['nonce_mismatch', nonce !== undefined && claims.nonce !== nonce],
+    ['missing_user_id', !(claims.oid ?? claims.sub)]
+  ]
+
+  return checks.find(([, failed]) => failed)?.[0] ?? null
 }
 
 // ID tokens come straight from Entra's token endpoint over TLS, so their claims are checked rather than their signature.
@@ -469,7 +243,7 @@ export async function resendSignInCode(request) {
 }
 
 function pkcePair() {
-  const verifier = randomBytes(32).toString('base64url')
+  const verifier = randomBytes(RANDOM_BYTES).toString('base64url')
   const challenge = createHash('sha256').update(verifier).digest('base64url')
   return { verifier, challenge }
 }
@@ -487,8 +261,8 @@ export function createBrowserSignInUrl(request, loginHint) {
 
   const { clientId, redirectUri } = entraSettings()
   const { verifier, challenge } = pkcePair()
-  const state = randomBytes(32).toString('base64url')
-  const nonce = randomBytes(32).toString('base64url')
+  const state = randomBytes(RANDOM_BYTES).toString('base64url')
+  const nonce = randomBytes(RANDOM_BYTES).toString('base64url')
 
   request.yar.set(PENDING_BROWSER_SIGN_IN_SESSION_KEY, {
     state,
@@ -542,7 +316,7 @@ export async function completeBrowserSignIn(request, query) {
       query.error === 'access_denied'
         ? signInFailure.cancelled
         : signInFailure.unavailable,
-      { error: String(query.error).slice(0, 64) }
+      { error: String(query.error).slice(0, MAX_LOGGED_ERROR_LENGTH) }
     )
   }
 
