@@ -10,6 +10,9 @@ const EMAIL = 'skipper@example.com'
 const PASSWORD = 'correct horse battery staple'
 const TENANT_ID = '00000000-0000-4000-8000-0000000000aa'
 const OTHER_TENANT_ID = '00000000-0000-4000-8000-0000000000bb'
+const API_SCOPE = 'api://catch-recording/access_as_user'
+const TOKEN_SCOPE = `openid offline_access ${API_SCOPE}`
+const CATCH_RECORDING_URL = 'https://catch-recording.test'
 
 function idToken(claimOverrides = {}) {
   const encode = (value) =>
@@ -42,14 +45,27 @@ const cookieFrom = (response, fallback) =>
 describe('Entra native sign-in', () => {
   let server
   let originalAuthentication
+  let originalCatchRecording
   let originalFetch
   let entra
+  let backend
 
   beforeAll(async () => {
     originalAuthentication = config.get('authentication')
+    originalCatchRecording = config.get('catchRecording')
     config.set('authentication', {
       mode: 'entra',
-      entra: { tenantSubdomain: 'external-tenant', clientId: CLIENT_ID }
+      entra: {
+        tenantSubdomain: 'external-tenant',
+        clientId: CLIENT_ID,
+        apiScopes: API_SCOPE
+      }
+    })
+    config.set('catchRecording', {
+      ...originalCatchRecording,
+      serviceUrl: CATCH_RECORDING_URL,
+      token: 'static-service-token',
+      environment: 'test'
     })
     server = await createServer()
     await server.initialize()
@@ -58,6 +74,7 @@ describe('Entra native sign-in', () => {
   afterAll(async () => {
     await server.stop({ timeout: 0 })
     config.set('authentication', originalAuthentication)
+    config.set('catchRecording', originalCatchRecording)
   })
 
   beforeEach(() => {
@@ -70,12 +87,22 @@ describe('Entra native sign-in', () => {
         })
       ),
       token: vi.fn(() =>
-        json(200, { token_type: 'Bearer', id_token: idToken() })
+        json(200, {
+          token_type: 'Bearer',
+          id_token: idToken(),
+          access_token: 'user-access-token',
+          refresh_token: 'user-refresh-token',
+          expires_in: 3600
+        })
       )
     }
+    backend = vi.fn(() => json(200, { items: [], count: 0, limit: 100 }))
     originalFetch = globalThis.fetch
     globalThis.fetch = vi.fn(async (url, init) => {
       const target = String(url)
+      if (target.startsWith(CATCH_RECORDING_URL)) {
+        return backend(target, init)
+      }
       if (!target.startsWith(ENTRA_BASE)) {
         return originalFetch(url, init)
       }
@@ -151,7 +178,7 @@ describe('Entra native sign-in', () => {
           continuation_token: 'ct-challenge',
           grant_type: 'password',
           password: PASSWORD,
-          scope: 'openid'
+          scope: TOKEN_SCOPE
         }
       }
     ])
@@ -330,7 +357,7 @@ describe('Entra native sign-in', () => {
           continuation_token: 'ct-oob',
           grant_type: 'oob',
           oob: '12345678',
-          scope: 'openid'
+          scope: TOKEN_SCOPE
         }
       })
       expect(
@@ -500,5 +527,108 @@ describe('Entra native sign-in', () => {
     expect(
       (await protectedPage(cookieFrom(signOut, cookie))).headers.location
     ).toBe('/sign-in')
+  })
+
+  describe('Backend access token', () => {
+    const records = (cookie) =>
+      server.inject({ method: 'GET', url: '/records', headers: { cookie } })
+
+    test("Sends the signed-in user's Entra access token, not the static token", async () => {
+      const response = await records(cookieFrom(await submitSignIn()))
+
+      expect(response.statusCode).toBe(200)
+      expect(backend).toHaveBeenCalled()
+      for (const [, init] of backend.mock.calls) {
+        expect(init.headers.Authorization).toBe('Bearer user-access-token')
+      }
+    })
+
+    test('Refreshes an expiring access token before calling the backend', async () => {
+      const cookie = cookieFrom(await submitSignIn())
+      entra.token.mockImplementationOnce(() =>
+        json(200, {
+          access_token: 'refreshed-access-token',
+          refresh_token: 'rotated-refresh-token',
+          expires_in: 3600
+        })
+      )
+      const clock = vi
+        .spyOn(Date, 'now')
+        .mockReturnValue(Date.now() + 3600 * 1000)
+
+      try {
+        expect((await records(cookie)).statusCode).toBe(200)
+      } finally {
+        clock.mockRestore()
+      }
+
+      expect(entraCalls().at(-1)).toEqual({
+        endpoint: 'token',
+        body: {
+          client_id: CLIENT_ID,
+          grant_type: 'refresh_token',
+          refresh_token: 'user-refresh-token',
+          scope: TOKEN_SCOPE
+        }
+      })
+      expect(backend.mock.calls.at(-1)[1].headers.Authorization).toBe(
+        'Bearer refreshed-access-token'
+      )
+    })
+
+    test('Signs the user out when the access token cannot be refreshed', async () => {
+      const cookie = cookieFrom(await submitSignIn())
+      entra.token.mockImplementationOnce(() =>
+        json(400, { error: 'invalid_grant' })
+      )
+      const clock = vi
+        .spyOn(Date, 'now')
+        .mockReturnValue(Date.now() + 3600 * 1000)
+
+      let response
+      try {
+        response = await records(cookie)
+      } finally {
+        clock.mockRestore()
+      }
+      const afterCookie = cookieFrom(response, cookie)
+      const signInPage = await server.inject({
+        method: 'GET',
+        url: '/sign-in',
+        headers: { cookie: afterCookie }
+      })
+
+      expect(response.statusCode).toBe(302)
+      expect(response.headers.location).toBe('/sign-in')
+      expect(backend).not.toHaveBeenCalled()
+      expect(signInPage.result).toContain('Your session has expired')
+      expect((await protectedPage(afterCookie)).headers.location).toBe(
+        '/sign-in'
+      )
+    })
+
+    test('Signs the user out when the backend rejects the token with 401', async () => {
+      const cookie = cookieFrom(await submitSignIn())
+      backend.mockImplementation(() => json(401, {}))
+
+      const response = await records(cookie)
+      const afterCookie = cookieFrom(response, cookie)
+
+      expect(response.statusCode).toBe(302)
+      expect(response.headers.location).toBe('/sign-in')
+      expect((await protectedPage(afterCookie)).headers.location).toBe(
+        '/sign-in'
+      )
+    })
+
+    test('Keeps the user signed in and shows the error page for a backend 403', async () => {
+      const cookie = cookieFrom(await submitSignIn())
+      backend.mockImplementation(() => json(403, {}))
+
+      const response = await records(cookie)
+
+      expect(response.statusCode).toBe(403)
+      expect((await protectedPage(cookie)).statusCode).toBe(200)
+    })
   })
 })

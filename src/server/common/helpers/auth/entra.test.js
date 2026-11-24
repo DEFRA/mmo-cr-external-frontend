@@ -21,6 +21,7 @@ describe('#assertAuthenticationConfiguration', () => {
       entra: {
         tenantSubdomain: 'external-tenant',
         clientId: '00000000-0000-4000-8000-000000000001',
+        apiScopes: 'api://catch-recording/access_as_user',
         ...overrides
       }
     })
@@ -57,6 +58,14 @@ describe('#assertAuthenticationConfiguration', () => {
 
     expect(() => assertAuthenticationConfiguration()).toThrow(
       'ENTRA_TENANT_SUBDOMAIN, ENTRA_CLIENT_ID'
+    )
+  })
+
+  test('Should require backend API scopes so backend calls can be authorised', () => {
+    useEntra({ apiScopes: ' ' })
+
+    expect(() => assertAuthenticationConfiguration()).toThrow(
+      'Entra authentication is missing: ENTRA_API_SCOPES'
     )
   })
 

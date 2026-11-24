@@ -55,7 +55,7 @@ export const draftController = {
         .redirect(`/draft?recordId=${encodeURIComponent(recordId)}`)
         .code(statusCodes.seeOther)
     }
-    const { client, correlationId } = catchRecordService()
+    const { client, correlationId } = catchRecordService(request)
     const record = await client.getRecord({
       catchRecordId: recordId,
       correlationId
@@ -112,7 +112,7 @@ export const draftSubmitController = {
   async handler(request, h) {
     const { draftAction } = request.payload
     const action = selectedDraft(request)
-    const { client, correlationId } = catchRecordService()
+    const { client, correlationId } = catchRecordService(request)
     if (draftAction === 'delete') {
       if (action.numberOfSubmissions !== 0) {
         throw Boom.conflict(

@@ -11,7 +11,7 @@ function vesselInput(request) {
       catchRecordError: true
     })
   }
-  return { ...catchRecordService(), vesselId }
+  return { ...catchRecordService(request), vesselId }
 }
 
 export async function loadFavouriteGears(request) {

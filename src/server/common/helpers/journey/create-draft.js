@@ -22,7 +22,7 @@ export async function ensureCatchRecordDraft(request, vessel) {
     return true
   }
 
-  const { client, correlationId } = catchRecordService()
+  const { client, correlationId } = catchRecordService(request)
   prepareDraftCreation(request)
   setJourneyState(request, { draftVesselId: vessel.id })
 
@@ -45,7 +45,7 @@ export async function retrieveCatchRecord(request) {
   if (!catchRecordId) {
     return null
   }
-  const { client, correlationId } = catchRecordService()
+  const { client, correlationId } = catchRecordService(request)
   const input = {
     catchRecordId,
     correlationId

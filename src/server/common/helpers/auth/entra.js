@@ -117,7 +117,8 @@ export function assertAuthenticationConfiguration() {
   } = entraSettings()
   const missing = Object.entries({
     ENTRA_TENANT_SUBDOMAIN: tenantSubdomain,
-    ENTRA_CLIENT_ID: clientId
+    ENTRA_CLIENT_ID: clientId,
+    ENTRA_API_SCOPES: apiScopes()
   })
     .filter(([, value]) => !value)
     .map(([name]) => name)

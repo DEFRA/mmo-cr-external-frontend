@@ -122,7 +122,7 @@ async function saveSection(request, section, before, service, progress) {
 
 async function saveChangedSections(request, before, progress) {
   const sections = [SECTION_ROUTES[request.route.path]].flat()
-  const service = catchRecordService()
+  const service = catchRecordService(request)
   if (
     request.route.path === '/trip-date' &&
     getJourneyState(request).tripSameDate

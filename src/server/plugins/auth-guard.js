@@ -55,6 +55,31 @@ export const authGuard = {
 
         return h.redirect('/sign-in').code(302).takeover()
       })
+
+      // Backend rejected (or we lack) the user's token; runs before yar so the sign-out is saved.
+      server.ext(
+        'onPreResponse',
+        (request, h) => {
+          const { response } = request
+          if (
+            !isEntraMode() ||
+            !response.isBoom ||
+            response.output.statusCode !== 401
+          ) {
+            return h.continue
+          }
+
+          request.logger.warn(
+            { path: request.path, reason: response.message },
+            'Backend access was not authorised; signing the user out'
+          )
+          signOut(request)
+          request.yar.flash(SIGN_IN_ERROR_FLASH_KEY, SESSION_EXPIRED_MESSAGE)
+          // No takeover: yar's onPreResponse must still run to save the sign-out.
+          return h.redirect('/sign-in').code(302)
+        },
+        { before: ['@hapi/yar'] }
+      )
     }
   }
 }
