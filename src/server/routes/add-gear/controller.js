@@ -264,16 +264,17 @@ async function handlePendingMeasurementSubmission(
     .code(statusCodes.seeOther)
 }
 
+function gearSearchError(request) {
+  return isCatchRecordJourney(request)
+    ? t('catchRecord.selectGear.validation.none')
+    : t('addGear.error.selectToAdd')
+}
+
 async function handleGearSearchSubmission(request, h, journeyState, catalogue) {
   const gearLabel = (request.payload.gear || '').trim()
 
   if (!gearLabel) {
-    return renderSearchError(
-      request,
-      h,
-      catalogue,
-      t('addGear.error.selectToAdd')
-    )
+    return renderSearchError(request, h, catalogue, gearSearchError(request))
   }
 
   const matchedOption = findGearOptionByLabel(
@@ -282,12 +283,7 @@ async function handleGearSearchSubmission(request, h, journeyState, catalogue) {
   )
 
   if (!matchedOption) {
-    return renderSearchError(
-      request,
-      h,
-      catalogue,
-      t('addGear.error.selectFromList')
-    )
+    return renderSearchError(request, h, catalogue, gearSearchError(request))
   }
 
   if (
@@ -357,7 +353,7 @@ export const addGearSubmitController = {
           request,
           h,
           catalogue,
-          t('addGear.error.selectToAdd')
+          gearSearchError(request)
         )
       }
     }

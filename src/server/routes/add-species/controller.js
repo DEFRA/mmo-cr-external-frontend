@@ -17,6 +17,19 @@ import { statusCodes } from '#/server/common/constants/status-codes.js'
 import { addFavouriteSpecies } from '#/server/common/helpers/journey/session-favourites.js'
 import { liveCatchRecords } from '#/server/common/helpers/journey/catch-record-service.js'
 
+function speciesSearchError(request, reason) {
+  const keys = isCatchRecordJourney(request)
+    ? {
+        empty: 'speciesSelection.error.enterCaughtOnTrip',
+        noMatch: 'speciesSelection.error.selectCaughtOnTrip'
+      }
+    : {
+        empty: 'speciesSelection.error.enterToAdd',
+        noMatch: 'speciesSelection.error.selectToAdd'
+      }
+  return t(keys[reason])
+}
+
 function viewContext(request, speciesData, overrides = {}) {
   const vesselName = getJourneyState(request).selectedVesselName || ''
   const heading = t('speciesSelection.addSpeciesToVessel')
@@ -111,7 +124,7 @@ export const addSpeciesSubmitController = {
         return renderError(
           request,
           h,
-          t('speciesSelection.error.enterToAdd'),
+          speciesSearchError(request, 'empty'),
           speciesData
         )
       }
@@ -127,7 +140,7 @@ export const addSpeciesSubmitController = {
       return renderError(
         request,
         h,
-        t('speciesSelection.error.enterToAdd'),
+        speciesSearchError(request, 'empty'),
         speciesData
       )
     }
@@ -141,7 +154,7 @@ export const addSpeciesSubmitController = {
       return renderError(
         request,
         h,
-        t('speciesSelection.error.selectToAdd'),
+        speciesSearchError(request, 'noMatch'),
         speciesData
       )
     }

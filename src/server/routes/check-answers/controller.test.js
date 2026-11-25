@@ -52,7 +52,7 @@ describe('#checkAnswersController', () => {
       url: '/check-answers'
     })
 
-    expect(result).toEqual(expect.stringContaining('Check your catch record'))
+    expect(result).toEqual(expect.stringContaining('Check your details'))
     expect(statusCode).toBe(statusCodes.ok)
   })
 
@@ -63,7 +63,7 @@ describe('#checkAnswersController', () => {
     })
     const $ = load(result)
 
-    expect($('h1').text().trim()).toBe('Check your catch record')
+    expect($('h1').text().trim()).toBe('Check your details')
     expect($('[data-testid="app-check-answers-reference"]').text().trim()).toBe(
       'A1234520260727150815'
     )
@@ -72,10 +72,10 @@ describe('#checkAnswersController', () => {
         .map((_, el) => $(el).text().trim())
         .get()
     ).toEqual([
-      'Trips details',
-      'Gear used',
-      'Species caught',
-      'Species not landed'
+      '1. Trips details',
+      '2. Gear',
+      '3. Species caught',
+      '4. Species not landed'
     ])
   })
 
@@ -90,23 +90,15 @@ describe('#checkAnswersController', () => {
       $('main a').filter((_, el) => $(el).text().trim().startsWith('Change'))
         .length
     ).toBeGreaterThan(0)
+    expect($('main p.govuk-body').text()).toContain(
+      'By submitting this record you agree that the information you have given is complete and correct'
+    )
     expect($('.govuk-warning-text').text()).toContain(
-      "By submitting this record, you agree that the information you've given is complete and correct."
+      'By submitting your catch record you are confirming the weight of fish you have landed. Please be aware that fishing authorities may take action in respect of inaccurate catch recording.'
     )
-    expect($('.govuk-body').text()).toContain(
-      "By submitting your catch record, you're confirming:"
-    )
-    expect(
-      $('.govuk-list--bullet li')
-        .map((_, li) => $(li).text())
-        .get()
-    ).toEqual([
-      'The weight of fish you have landed is accurate',
-      'This is within permitted tolerance levels',
-      'Fishing authorities may take action in respect of inaccurate catch recording'
-    ])
-    expect($('.govuk-warning-text').index()).toBeLessThan(
-      $('.govuk-body').index()
+    expect($('main .govuk-list--bullet')).toHaveLength(0)
+    expect($('main p.govuk-body').index()).toBeLessThan(
+      $('.govuk-warning-text').index()
     )
     expect($('main input[name="confirmAccurate"]')).toHaveLength(0)
     expect($('main button').text().trim()).toBe(
@@ -123,14 +115,15 @@ describe('#checkAnswersController', () => {
         .get()
     ).toEqual([
       'Vessel',
-      'Departure date',
-      'Return date',
-      'Departure port',
-      'Return port'
+      'Date left',
+      'Port left from',
+      'Date returned',
+      'Port returned to',
+      'Gear used'
     ])
     expect(tripRows.first().find('a')).toHaveLength(0)
-    expect(tripRows.slice(1).find('a')).toHaveLength(4)
-    expect($('dt').text()).toContain('Not landed')
+    expect(tripRows.slice(1).find('a')).toHaveLength(5)
+    expect($('dt').text()).toContain('Catch kept onboard or in keep pots')
   })
 
   test('Should render Change links supplied by the review view model', async () => {
@@ -181,7 +174,7 @@ describe('#checkAnswersController', () => {
     const $review = load(review.result)
 
     expect($source('main').text()).toContain('OLGA')
-    expect($review('h1').text()).toContain('Check your catch record')
+    expect($review('h1').text()).toContain('Check your details')
     expect($review('main').text()).toContain('Atlantic cod')
     expect($review('main').text()).toContain('15')
     expect($review('main a').length).toBeGreaterThan(0)
@@ -219,7 +212,7 @@ describe('#checkAnswersController', () => {
     )
     expect($('main').text()).not.toContain('Record status and progress')
     expect($('main').text()).not.toContain('This is a preliminary check.')
-    expect($('h1').text()).toContain('Check your catch record')
+    expect($('h1').text()).toContain('Check your details')
     expect($('form[method="post"]')).toHaveLength(1)
     expect(
       globalThis.fetch.mock.calls.some(([url]) =>
@@ -274,8 +267,13 @@ describe('#checkAnswersController', () => {
     expect(text).toContain('Newhaven')
     expect(text).toContain('Rye')
     expect(text).toContain('Dredge')
-    expect($('h2').text()).toContain('Species not landed')
-    expect($('dt:contains("Not landed")').next().text().trim()).toBe('No')
+    expect($('h2').text()).toContain('4. Species not landed')
+    expect(
+      $('dt:contains("Catch kept onboard or in keep pots")')
+        .next()
+        .text()
+        .trim()
+    ).toBe('No')
   })
 })
 

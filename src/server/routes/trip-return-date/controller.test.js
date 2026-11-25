@@ -125,7 +125,7 @@ describe('#tripReturnDateSubmitController', () => {
 
     expect(statusCode).toBe(statusCodes.ok)
     expect($('.govuk-error-summary').text()).toContain(
-      'Enter the date you returned from your trip'
+      'Enter the date you left for your trip'
     )
   })
 

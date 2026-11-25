@@ -207,10 +207,10 @@ describe('#selectVesselSubmitController', () => {
     expect(statusCode).toBe(statusCodes.badRequest)
     const $ = load(result)
     expect($('.govuk-error-summary').text()).toContain(
-      'Which vessel did you use?'
+      'Select the vessel you used on this trip'
     )
     expect($('.govuk-error-message').text()).toContain(
-      'Which vessel did you use?'
+      'Select the vessel you used on this trip'
     )
     expect(
       $('label.govuk-radios__label')

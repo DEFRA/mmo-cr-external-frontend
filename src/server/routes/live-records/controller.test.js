@@ -660,10 +660,44 @@ describe('Live catch records and section persistence', () => {
     expect(load(invalid.result)('.govuk-caption-l').text().trim()).toBe(
       record.catchRecordReference
     )
+    expect(load(invalid.result)('.govuk-error-summary').text()).toContain(
+      'Select the species caught on this trip'
+    )
+    const empty = await call(
+      'POST',
+      '/add-species?return=/species-selection&gearId=gear-1',
+      { species: '' }
+    )
+    expect(load(empty.result)('.govuk-error-summary').text()).toContain(
+      'Enter the species caught on this trip'
+    )
     const account = await call('GET', '/add-species?return=/account')
     expect(account.statusCode).toBe(200)
     expect(load(account.result)('.govuk-caption-l').text().trim()).toBe(
       'Your favourites'
+    )
+    const favourite = await call('POST', '/add-species?return=/account', {
+      species: ''
+    })
+    expect(load(favourite.result)('.govuk-error-summary').text()).toContain(
+      'Enter the species you want to add'
+    )
+  })
+
+  test('Should use trip wording for Add gear search errors in the catch record journey', async () => {
+    await seed()
+    const trip = await call('POST', '/add-gear?return=/gear-selection', {
+      gear: 'Not a real gear'
+    })
+    expect(trip.statusCode).toBe(400)
+    expect(load(trip.result)('.govuk-error-summary').text()).toContain(
+      'Select the gear used on this trip'
+    )
+    const favourite = await call('POST', '/add-gear?return=/account', {
+      gear: ''
+    })
+    expect(load(favourite.result)('.govuk-error-summary').text()).toContain(
+      'Select the gear you want to add'
     )
   })
 

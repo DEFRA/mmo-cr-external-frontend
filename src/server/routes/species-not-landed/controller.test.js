@@ -130,7 +130,7 @@ describe('#speciesNotLandedSubmitController', () => {
 
     expect(statusCode).toBe(statusCodes.badRequest)
     expect($('.govuk-error-summary').text()).toContain(
-      'Enter a weight for atlantic cod (COD)'
+      'Enter the weight above minimum size kept onboard or in keep pots in kilograms'
     )
   })
 
@@ -144,7 +144,7 @@ describe('#speciesNotLandedSubmitController', () => {
 
     expect(statusCode).toBe(statusCodes.badRequest)
     expect($('.govuk-error-summary').text()).toContain(
-      'Enter a weight for atlantic cod (COD)'
+      'Weight for atlantic cod (COD) must be a number with up to 1 decimal place'
     )
   })
 

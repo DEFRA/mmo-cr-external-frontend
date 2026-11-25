@@ -145,7 +145,7 @@ describe('#tripDateSubmitController', () => {
     expect(statusCode).toBe(statusCodes.ok)
     expect($('.govuk-error-summary')).toHaveLength(1)
     expect($('.govuk-error-summary').text()).toContain(
-      'Select yes if your trip started and finished today'
+      'Select whether your trip started and finished today'
     )
     expect($('.govuk-error-message')).toHaveLength(1)
   })

@@ -1,5 +1,16 @@
 # Check Answers: Gear Used
 
+## Figma Parity Update (2026-11-25)
+
+- Source: Figma `MMO Catch Records`, node `3778:65676` ("Check your details"), read in the browser. This supersedes the headings, labels and declaration copy below for `/check-answers` only.
+- Title: Check your details. Numbered `h2` sections: 1. Trips details, 2. Gear, 3. Species caught, 4. Species not landed.
+- Trips details rows: Vessel (no Change), Date left, Port left from, Date returned, Port returned to, Gear used (one gear per line, Change goes to gear selection).
+- Gear rows: Area majority catch caught, Species caught, then measurements. Labels are "Total number of pots or traps hauled during the trip", "Total number of pots or traps left in the water at the end of the trip", "Number of times gear was shot on the trip" and "Mesh size (mm)". Values carry no unit suffix.
+- Species caught: the weight labels end in "(kg)" and the values have no unit. When the same species was caught with more than one gear, the gear name is in visually hidden text in the `h3`, because Figma does not show it.
+- Species not landed: the yes/no row is "Catch kept onboard or in keep pots".
+- Declaration (review design only): body text "By submitting this record you agree…", then a warning "By submitting your catch record you are confirming…", then Accept and submit trip details. The edit-review declaration is unchanged.
+- New Welsh strings are drafts marked `needs_review`.
+
 ## Read-Only Submitted-Record Layout (2026-10-22)
 
 - This update supersedes the earlier editable review requirements below. The user explicitly approved making `/check-answers` fully read-only, including removing submission.

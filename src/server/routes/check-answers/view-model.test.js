@@ -70,10 +70,10 @@ describe('#buildCheckAnswersViewModel', () => {
         reviewLayout: true
       })
       const section = model.trailingSections[0]
-      expect(section.heading).toBe('Species not landed')
+      expect(section.heading).toBe('4. Species not landed')
       expect(section.rows.map((row) => [row.key.text, row.value.text])).toEqual(
         [
-          ['Not landed', 'Yes'],
+          ['Catch kept onboard or in keep pots', 'Yes'],
           ['Species', 'Atlantic cod (COD)'],
           [
             'Weight above minimum size kept onboard or in keep pots (kg)',
@@ -125,11 +125,9 @@ describe('#buildCheckAnswersViewModel', () => {
         reviewLayout ? model.speciesGroups[0].rows : model.gearGroups[0].rows
       ).filter((row) => row.key.text.startsWith('Weight'))
 
-      expect(rows.map((row) => row.value.text)).toEqual([
-        '12 kg',
-        '0 kg',
-        '11 kg'
-      ])
+      expect(rows.map((row) => row.value.text)).toEqual(
+        reviewLayout ? ['12', '0', '11'] : ['12 kg', '0 kg', '11 kg']
+      )
     }
   )
 
@@ -243,21 +241,21 @@ describe('#buildCheckAnswersViewModel', () => {
       ]
     })
 
-    expect(model.sections[0].heading).toBe('Trips details')
+    expect(model.sections[0].heading).toBe('1. Trips details')
     expect(
       model.sections[0].rows.some((row) =>
         row.key.text.startsWith('Statistical sub area')
       )
     ).toBe(false)
     expect(model.gearGroups).toHaveLength(2)
-    expect(rowValue(model.gearGroups[0].rows, 'Area majority caught')).toBe(
-      '38E95'
-    )
-    expect(rowValue(model.gearGroups[1].rows, 'Area majority caught')).toBe(
-      '38E96'
-    )
     expect(
-      rowChangeHref(model.gearGroups[1].rows, 'Area majority caught')
+      rowValue(model.gearGroups[0].rows, 'Area majority catch caught')
+    ).toBe('38E95')
+    expect(
+      rowValue(model.gearGroups[1].rows, 'Area majority catch caught')
+    ).toBe('38E96')
+    expect(
+      rowChangeHref(model.gearGroups[1].rows, 'Area majority catch caught')
     ).toContain('gearId=dredge')
     expect(model.speciesGroups.map((group) => group.heading)).toEqual([
       'Atlantic cod (COD)',
@@ -273,8 +271,8 @@ describe('#buildCheckAnswersViewModel', () => {
         group.rows[0].value.text
       ])
     ).toEqual([
-      [false, '12 kg'],
-      [false, '25 kg']
+      [false, '12'],
+      [false, '25']
     ])
     expect(rowValue(model.gearGroups[0].rows, 'Species caught')).toBe(
       'Atlantic cod (COD)'
@@ -291,7 +289,7 @@ describe('#buildCheckAnswersViewModel', () => {
     expect(model.speciesGroups[1].rows[0].actions.items[0].href).toContain(
       'gearId=dredge'
     )
-    expect(model.trailingSections[0].heading).toBe('Species not landed')
+    expect(model.trailingSections[0].heading).toBe('4. Species not landed')
     expect(model.trailingSections[0].rows[0].value.text).toBe('No')
     expect(model.trailingSections[0].rows[0].actions.items[0].href).toBe(
       '/catch-not-landed?return=/check-answers'
@@ -345,12 +343,38 @@ describe('#buildCheckAnswersViewModel', () => {
 
     expect(model.sections[0].rows.map((row) => row.key.text)).toEqual([
       'Vessel',
-      'Departure date',
-      'Return date',
-      'Departure port',
-      'Return port'
+      'Date left',
+      'Port left from',
+      'Date returned',
+      'Port returned to',
+      'Gear used'
     ])
     expect(model.sections[0].rows[0].actions).toBeUndefined()
+    expect(model.sections[0].rows[5].actions.items[0].href).toBe(
+      '/gear-selection?return=/check-answers'
+    )
+  })
+
+  test('Should list each gear on its own line and show mesh size without a unit suffix', () => {
+    const model = buildCheckAnswersViewModel(
+      fakeRequest({ selectedGearIds: ['pots', 'beam'], catchNotLanded: false }),
+      {
+        reviewLayout: true,
+        gearCatalogue: [
+          { id: 'pots', label: 'Pots', hint: '50 mm mesh', measurements: [] },
+          { id: 'beam', label: 'Beam trawl', measurements: [] }
+        ]
+      }
+    )
+
+    expect(rowValue(model.sections[0].rows, 'Gear used')).toBe(
+      'Pots, Beam trawl'
+    )
+    expect(
+      model.sections[0].rows.find((row) => row.key.text === 'Gear used').value
+        .html
+    ).toBe('Pots<br>Beam trawl')
+    expect(rowValue(model.gearGroups[0].rows, 'Mesh size (mm)')).toBe('50')
   })
 
   test('Should show gear shot count before dimensions and link to each measurement field', () => {
@@ -379,7 +403,7 @@ describe('#buildCheckAnswersViewModel', () => {
     )
     const rows = model.gearGroups[0].rows
     expect(rows.map((row) => row.key.text)).toEqual([
-      'Statistical sub area',
+      'Area majority catch caught',
       'Number of times gear was shot on the trip',
       'Gear dimension by number'
     ])

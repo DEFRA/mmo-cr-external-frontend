@@ -14,7 +14,7 @@
       {% endfor %}
 
       {% if gearGroups.length %}
-        <h2 class="govuk-heading-l">{{ t('web.check-answers.index.copy.17.1') }}</h2>
+        <h2 class="govuk-heading-l">{{ t('summary.gear.numbered') }}</h2>
         {% for gear in gearGroups %}
           <section aria-labelledby="gear-summary-{{ loop.index }}" data-gear-id="{{ gear.gearId }}">
             <h3 id="gear-summary-{{ loop.index }}" class="govuk-heading-m">{{ gear.heading }}</h3>
@@ -24,13 +24,13 @@
       {% endif %}
 
       {% if speciesGroups.length %}
-        <h2 class="govuk-heading-l">{{ t('account.row.speciesCaught.key') }}</h2>
+        <h2 class="govuk-heading-l">{{ t('summary.speciesCaught.numbered') }}</h2>
         {% for species in speciesGroups %}
           <section aria-labelledby="species-summary-{{ loop.index }}" data-gear-id="{{ species.gearId }}">
-            <h3 id="species-summary-{{ loop.index }}" class="govuk-heading-m">{{ species.heading }}</h3>
-            {% if species.showGear %}
-              <p class="govuk-body">{{ t('summary.caughtWith', { gear: species.gearHeading }) }}</p>
-            {% endif %}
+            <h3 id="species-summary-{{ loop.index }}" class="govuk-heading-m">
+              {{- species.heading -}}
+              {%- if species.showGear %}<span class="govuk-visually-hidden">{{ t('summary.caughtWithHidden', { gear: species.gearHeading }) }}</span>{% endif -%}
+            </h3>
             {% if species.rows.length %}
               {{ govukSummaryList({ rows: species.rows }) }}
             {% endif %}

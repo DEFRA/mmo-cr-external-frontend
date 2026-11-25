@@ -3,6 +3,13 @@
 {% from "govuk/components/button/macro.njk" import govukButton %}
 
 {% macro appCatchRecordDeclaration(fieldErrors, showLegacyHeadingBeforeButton = false, reviewDesign = false, submissionKey = null) %}
+  {% if reviewDesign %}
+    <p class="govuk-body">{{ t('declaration.review.agreement') }}</p>
+    {{ govukWarningText({
+      text: t('declaration.review.warning'),
+      iconFallbackText: t('govuk.warningText.iconFallback')
+    }) }}
+  {% else %}
   {{ govukWarningText({
     text: t("declaration.warning"),
     iconFallbackText: t('govuk.warningText.iconFallback')
@@ -14,6 +21,7 @@
     <li>{{ t('catchRecord.checkYourAnswers.declaration.bullet.tolerance') }}</li>
     <li>{{ t('catchRecord.checkYourAnswers.declaration.bullet.action') }}</li>
   </ul>
+  {% endif %}
 
   <form method="post" novalidate>
     {% if submissionKey %}<input type="hidden" name="submissionKey" value="{{ submissionKey }}">{% endif %}
