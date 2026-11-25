@@ -1,82 +1,18 @@
+import { readFileSync } from 'node:fs'
+import path from 'node:path'
+
 import { t } from '#/server/common/helpers/i18n/translator.js'
 
-const SUMMARY_KEYS = new Map([
-  ['Trips details', 'summary.tripDetails'],
-  ['1. Trips details', 'summary.tripDetails.numbered'],
-  ['Vessel', 'summary.vessel'],
-  ['Departure date', 'summary.departureDate'],
-  ['Return date', 'summary.returnDate'],
-  ['Departure port', 'summary.departurePort'],
-  ['Return port', 'summary.returnPort'],
-  ['Date left', 'summary.dateLeft'],
-  ['Port left from', 'summary.portLeftFrom'],
-  ['Date returned', 'summary.dateReturned'],
-  ['Port returned to', 'summary.portReturnedTo'],
-  ['Statistical sub area', 'summary.statisticalSubArea'],
-  ['Statistical area / sub area', 'summary.statisticalAreaLabel'],
-  ['Pair fishing', 'summary.pairFishing'],
-  ['Paired vessel', 'summary.pairedVessel'],
-  ['Paired skipper', 'summary.pairedSkipper'],
-  ['Gear used', 'summary.gearUsed'],
-  ['2. Gear used', 'summary.gearUsed.numbered'],
-  ['Gear', 'summary.gear'],
-  ['Gear type', 'summary.gearType'],
-  ['Area majority catch caught', 'summary.areaMajorityCatch'],
-  ['Species caught', 'summary.speciesCaught'],
-  ['3. Species caught', 'summary.speciesCaught.numbered'],
-  ['Species', 'summary.species'],
-  ['Weight above minimum size retained (kg)', 'summary.weightAbove'],
-  ['Weight below minimum size retained (kg)', 'summary.weightBelow'],
-  ['Weight legally discarded (kg)', 'summary.weightDiscarded'],
-  ['Species not landed', 'summary.speciesNotLanded'],
-  ['4. Species not landed', 'summary.speciesNotLanded.numbered'],
-  ['Not landed', 'summary.notLanded'],
-  ['Catch kept onboard or in keep pots', 'summary.catchKeptOnboard'],
-  ['Weight kept onboard or in keep pots', 'summary.keptWeight'],
-  [
-    'Weight above minimum size kept onboard or in keep pots (kg)',
-    'summary.keptAbove'
-  ],
-  [
-    'Weight below minimum size kept onboard or in keep pots (kg)',
-    'summary.keptBelow'
-  ],
-  ['Mesh size', 'summary.meshSize'],
-  ['Mesh size (mm)', 'summary.meshSizeMm'],
-  ['Total pots or traps hauled', 'summary.totalPotsHauled'],
-  ['Total pots or traps left in water', 'summary.totalPotsInWater'],
-  [
-    'Total number of pots or traps hauled during the trip',
-    'summary.totalPotsHauledDuringTrip'
-  ],
-  [
-    'Total number of pots or traps left in the water at the end of the trip',
-    'summary.totalPotsInWaterAtEnd'
-  ],
-  ['Number of times gear was shot on the trip', 'summary.timesGearShot'],
-  ['Not entered', 'summary.notEntered'],
-  ['Not provided', 'summary.notProvided']
-])
+const { labels, changeFieldLabels } = JSON.parse(
+  readFileSync(path.join(import.meta.dirname, 'summary-labels.json'), 'utf-8')
+)
 
-const CHANGE_FIELD_KEYS = new Map([
-  ['vessel', 'summary.vessel'],
-  ['departure date', 'summary.departureDate'],
-  ['return date', 'summary.returnDate'],
-  ['departure port', 'summary.departurePort'],
-  ['return port', 'summary.returnPort'],
-  ['date left', 'summary.dateLeft'],
-  ['port left from', 'summary.portLeftFrom'],
-  ['date returned', 'summary.dateReturned'],
-  ['port returned to', 'summary.portReturnedTo'],
-  ['gear used', 'summary.gearUsed'],
-  ['catch kept onboard or in keep pots', 'summary.catchKeptOnboard'],
-  ['statistical sub area', 'summary.statisticalSubArea'],
-  ['gear', 'summary.gear'],
-  ['gear type', 'summary.gearType'],
-  ['species', 'summary.species'],
-  ['not landed', 'summary.notLanded'],
-  ['mesh size', 'summary.meshSize']
-])
+const SUMMARY_KEYS = new Map(Object.entries(labels))
+
+// Change links use the lower-cased row label as their hidden text.
+const CHANGE_FIELD_KEYS = new Map(
+  changeFieldLabels.map((label) => [label.toLowerCase(), labels[label]])
+)
 
 const CODED_WEIGHT_KEYS = [
   ['Weight above minimum size retained', 'summary.weightAboveCode'],

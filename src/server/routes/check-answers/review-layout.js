@@ -127,6 +127,13 @@ const MEASUREMENT_LABELS = {
   'Mesh size': 'Mesh size (mm)'
 }
 
+function stripMillimetreSuffixes(value) {
+  return value
+    .split(', ')
+    .map((part) => (part.endsWith('mm') ? part.slice(0, -2).trimEnd() : part))
+    .join(', ')
+}
+
 function reviewMeasurementLabel(row) {
   const label = MEASUREMENT_LABELS[row.key.text]
   if (!label) {
@@ -134,7 +141,7 @@ function reviewMeasurementLabel(row) {
   }
   const value =
     label === 'Mesh size (mm)'
-      ? { text: row.value.text.replaceAll(/\s*mm\b/g, '') }
+      ? { text: stripMillimetreSuffixes(row.value.text) }
       : row.value
   return { ...row, key: { text: label }, value }
 }
