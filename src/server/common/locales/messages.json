@@ -281,9 +281,9 @@
   },
   "addGear.error.selectFromList": {
     "comment": "User-facing heading, hint or validation message. Welsh draft requires professional review.",
-    "en": "Select a gear type from the list",
+    "en": "Select the gear you want to add",
     "cy": {
-      "value": "Dewiswch fath o offer o’r rhestr",
+      "value": "Dewiswch yr offer rydych am ei ychwanegu",
       "state": "needs_review"
     }
   },
@@ -1351,9 +1351,9 @@
   },
   "checkAnswers.title": {
     "comment": "User-facing heading, hint or validation message. Welsh draft requires professional review.",
-    "en": "Check your catch record",
+    "en": "Check your details",
     "cy": {
-      "value": "Gwiriwch eich cofnod dalfa",
+      "value": "Gwiriwch eich manylion",
       "state": "needs_review"
     }
   },
@@ -1708,6 +1708,22 @@
     "en": "Cookies",
     "cy": {
       "value": "Cwcis",
+      "state": "needs_review"
+    }
+  },
+  "declaration.review.agreement": {
+    "comment": "Declaration paragraph shown on the check your details page.",
+    "en": "By submitting this record you agree that the information you have given is complete and correct",
+    "cy": {
+      "value": "Drwy gyflwyno’r cofnod hwn, rydych yn cytuno bod yr wybodaeth a roddwyd gennych yn gyflawn ac yn gywir",
+      "state": "needs_review"
+    }
+  },
+  "declaration.review.warning": {
+    "comment": "Warning text shown above the submit button on the check your details page.",
+    "en": "By submitting your catch record you are confirming the weight of fish you have landed. Please be aware that fishing authorities may take action in respect of inaccurate catch recording.",
+    "cy": {
+      "value": "Drwy gyflwyno eich cofnod dalfa rydych yn cadarnhau pwysau’r pysgod rydych wedi’u glanio. Byddwch yn ymwybodol y gall awdurdodau pysgota gymryd camau mewn perthynas â chofnodi dalfa anghywir.",
       "state": "needs_review"
     }
   },
@@ -3783,6 +3799,14 @@
       "state": "needs_review"
     }
   },
+  "selectVessel.error.select": {
+    "comment": "Error when no vessel is selected on the which vessel page.",
+    "en": "Select the vessel you used on this trip",
+    "cy": {
+      "value": "Dewiswch y llong a ddefnyddiwyd gennych ar y daith hon",
+      "state": "needs_review"
+    }
+  },
   "signIn.button": {
     "comment": "Sign in button (also used on sign-out and password reset sent pages). Shared key with the iOS app.",
     "en": "Sign in",
@@ -4193,15 +4217,15 @@
   },
   "species.weight.error.decimals": {
     "comment": "Weight validation error for too many decimal places.",
-    "en": "The weight for {{species}} must be a number with up to one decimal place",
+    "en": "Weight for {{species}} must be a number with up to 1 decimal place",
     "cy": {
-      "value": "Rhaid i bwysau {{species}} fod yn rhif gydag un lle degol ar y mwyaf",
+      "value": "Rhaid i bwysau {{species}} fod yn rhif gydag 1 lle degol ar y mwyaf",
       "state": "needs_review"
     }
   },
   "species.weight.error.max": {
     "comment": "Weight validation error when the value exceeds the maximum.",
-    "en": "The weight for {{species}} must be 10,000kg or less",
+    "en": "Weight for {{species}} must be 10,000kg or less",
     "cy": {
       "value": "Rhaid i bwysau {{species}} fod yn 10,000kg neu lai",
       "state": "needs_review"
@@ -4209,23 +4233,23 @@
   },
   "species.weight.error.missing": {
     "comment": "Weight validation error when a species weight is required.",
-    "en": "Enter the {{field}} for {{species}}",
+    "en": "Enter the {{field}}",
     "cy": {
-      "value": "Rhowch {{field}} ar gyfer {{species}}",
+      "value": "Rhowch {{field}}",
       "state": "needs_review"
     }
   },
   "species.weight.error.notNumber": {
     "comment": "Weight validation error when the value is not numeric.",
-    "en": "The weight for {{species}} must be a number",
+    "en": "Weight for {{species}} must be a whole number",
     "cy": {
-      "value": "Rhaid i bwysau {{species}} fod yn rhif",
+      "value": "Rhaid i bwysau {{species}} fod yn rhif cyfan",
       "state": "needs_review"
     }
   },
   "species.weight.error.positive": {
     "comment": "Weight validation error when the value must be positive.",
-    "en": "The weight for {{species}} must be more than 0kg",
+    "en": "Weight for {{species}} must be more than 0kg",
     "cy": {
       "value": "Rhaid i bwysau {{species}} fod yn fwy na 0kg",
       "state": "needs_review"
@@ -4233,9 +4257,9 @@
   },
   "speciesNotLanded.error.enterWeight": {
     "comment": "Error when a weight is required for a species not being landed.",
-    "en": "Enter a weight for {{species}}",
+    "en": "Enter the weight above minimum size kept onboard or in keep pots in kilograms",
     "cy": {
-      "value": "Rhowch bwysau ar gyfer {{species}}",
+      "value": "Rhowch y pwysau uwch na’r maint lleiaf a gedwir ar fwrdd neu mewn potiau cadw mewn cilogramau",
       "state": "needs_review"
     }
   },
@@ -4271,11 +4295,27 @@
       "state": "needs_review"
     }
   },
+  "speciesSelection.error.enterCaughtOnTrip": {
+    "comment": "Error when the add-species search is empty during a catch record journey.",
+    "en": "Enter the species caught on this trip",
+    "cy": {
+      "value": "Rhowch y rhywogaeth a ddaliwyd ar y daith hon",
+      "state": "needs_review"
+    }
+  },
   "speciesSelection.error.enterToAdd": {
     "comment": "User-facing add-species page text with reference-data placeholders; Welsh draft requires review.",
     "en": "Enter the species you want to add",
     "cy": {
       "value": "Rhowch y rhywogaeth rydych am ei hychwanegu",
+      "state": "needs_review"
+    }
+  },
+  "speciesSelection.error.selectCaughtOnTrip": {
+    "comment": "Error when the add-species search does not match during a catch record journey.",
+    "en": "Select the species caught on this trip",
+    "cy": {
+      "value": "Dewiswch y rhywogaeth a ddaliwyd ar y daith hon",
       "state": "needs_review"
     }
   },
@@ -4447,6 +4487,14 @@
       "state": "needs_review"
     }
   },
+  "summary.catchKeptOnboard": {
+    "comment": "Summary-row heading, value label or accessible action text.",
+    "en": "Catch kept onboard or in keep pots",
+    "cy": {
+      "value": "Dalfa a gadwyd ar fwrdd neu mewn potiau cadw",
+      "state": "needs_review"
+    }
+  },
   "summary.caughtWith": {
     "comment": "Summary-row heading, value label or accessible action text.",
     "en": "Caught with {{gear}}",
@@ -4455,11 +4503,35 @@
       "state": "needs_review"
     }
   },
+  "summary.caughtWithHidden": {
+    "comment": "Summary-row heading, value label or accessible action text.",
+    "en": ", caught with {{gear}}",
+    "cy": {
+      "value": ", wedi’i ddal gydag {{gear}}",
+      "state": "needs_review"
+    }
+  },
   "summary.changeHidden": {
     "comment": "Summary-row heading, value label or accessible action text.",
     "en": "Change {{field}}",
     "cy": {
       "value": "Newid {{field}}",
+      "state": "needs_review"
+    }
+  },
+  "summary.dateLeft": {
+    "comment": "Summary-row heading, value label or accessible action text.",
+    "en": "Date left",
+    "cy": {
+      "value": "Dyddiad gadael",
+      "state": "needs_review"
+    }
+  },
+  "summary.dateReturned": {
+    "comment": "Summary-row heading, value label or accessible action text.",
+    "en": "Date returned",
+    "cy": {
+      "value": "Dyddiad dychwelyd",
       "state": "needs_review"
     }
   },
@@ -4484,6 +4556,14 @@
     "en": "Gear",
     "cy": {
       "value": "Offer",
+      "state": "needs_review"
+    }
+  },
+  "summary.gear.numbered": {
+    "comment": "Summary-row heading, value label or accessible action text.",
+    "en": "2. Gear",
+    "cy": {
+      "value": "2. Offer",
       "state": "needs_review"
     }
   },
@@ -4543,6 +4623,14 @@
       "state": "needs_review"
     }
   },
+  "summary.meshSizeMm": {
+    "comment": "Summary-row heading, value label or accessible action text.",
+    "en": "Mesh size (mm)",
+    "cy": {
+      "value": "Maint y rhwyll (mm)",
+      "state": "needs_review"
+    }
+  },
   "summary.no": {
     "comment": "Summary-row heading, value label or accessible action text.",
     "en": "No",
@@ -4599,6 +4687,22 @@
       "state": "needs_review"
     }
   },
+  "summary.portLeftFrom": {
+    "comment": "Summary-row heading, value label or accessible action text.",
+    "en": "Port left from",
+    "cy": {
+      "value": "Porthladd gadael",
+      "state": "needs_review"
+    }
+  },
+  "summary.portReturnedTo": {
+    "comment": "Summary-row heading, value label or accessible action text.",
+    "en": "Port returned to",
+    "cy": {
+      "value": "Porthladd dychwelyd",
+      "state": "needs_review"
+    }
+  },
   "summary.returnDate": {
     "comment": "Summary-row heading, value label or accessible action text.",
     "en": "Return date",
@@ -4647,6 +4751,14 @@
       "state": "needs_review"
     }
   },
+  "summary.speciesNotLanded.numbered": {
+    "comment": "Summary-row heading, value label or accessible action text.",
+    "en": "4. Species not landed",
+    "cy": {
+      "value": "4. Rhywogaethau heb eu glanio",
+      "state": "needs_review"
+    }
+  },
   "summary.speciesWithCode": {
     "comment": "Summary-row heading, value label or accessible action text.",
     "en": "Species ({{code}})",
@@ -4679,6 +4791,14 @@
       "state": "needs_review"
     }
   },
+  "summary.timesGearShot": {
+    "comment": "Summary-row heading, value label or accessible action text.",
+    "en": "Number of times gear was shot on the trip",
+    "cy": {
+      "value": "Nifer y troeon y saethwyd yr offer ar y daith",
+      "state": "needs_review"
+    }
+  },
   "summary.totalPotsHauled": {
     "comment": "Summary-row heading, value label or accessible action text.",
     "en": "Total pots or traps hauled",
@@ -4687,11 +4807,27 @@
       "state": "needs_review"
     }
   },
+  "summary.totalPotsHauledDuringTrip": {
+    "comment": "Summary-row heading, value label or accessible action text.",
+    "en": "Total number of pots or traps hauled during the trip",
+    "cy": {
+      "value": "Cyfanswm nifer y potiau neu’r trapiau a dynnwyd yn ystod y daith",
+      "state": "needs_review"
+    }
+  },
   "summary.totalPotsInWater": {
     "comment": "Summary-row heading, value label or accessible action text.",
     "en": "Total pots or traps left in water",
     "cy": {
       "value": "Cyfanswm y potiau neu’r maglau a adawyd yn y dŵr",
+      "state": "needs_review"
+    }
+  },
+  "summary.totalPotsInWaterAtEnd": {
+    "comment": "Summary-row heading, value label or accessible action text.",
+    "en": "Total number of pots or traps left in the water at the end of the trip",
+    "cy": {
+      "value": "Cyfanswm nifer y potiau neu’r trapiau a adawyd yn y dŵr ar ddiwedd y daith",
       "state": "needs_review"
     }
   },
@@ -4777,9 +4913,9 @@
   },
   "tripDate.error": {
     "comment": "Error when no answer is selected for tripDate.title.",
-    "en": "Select yes if your trip started and finished today",
+    "en": "Select whether your trip started and finished today",
     "cy": {
-      "value": "Dewiswch 'Do' os dechreuodd a gorffennodd eich taith heddiw",
+      "value": "Dewiswch a ddechreuodd ac a orffennodd eich taith heddiw",
       "state": "needs_review"
     }
   },
@@ -4929,9 +5065,9 @@
   },
   "tripReturnDate.error.missing.all": {
     "comment": "Complete validation message for the corresponding trip date field. Welsh draft requires professional review.",
-    "en": "Enter the date you returned from your trip",
+    "en": "Enter the date you left for your trip",
     "cy": {
-      "value": "Rhowch y dyddiad y gwnaethoch ddychwelyd o’ch taith",
+      "value": "Rhowch y dyddiad y gwnaethoch adael am eich taith",
       "state": "needs_review"
     }
   },
@@ -5065,9 +5201,9 @@
   },
   "web.catch-not-landed.controller.js.copy.44.1": {
     "comment": "User-facing text from src/server/routes/catch-not-landed/controller.js at line 44. Welsh translation requires professional review.",
-    "en": "Select yes if any catch will not be landed straight away",
+    "en": "Select whether any catch from this trip will not be landed straight away",
     "cy": {
-      "value": "Dewiswch Oes os na fydd unrhyw ddalfa’n cael ei glanio’n syth",
+      "value": "Dewiswch a fydd unrhyw ddalfa o’r daith hon ddim yn cael ei glanio’n syth",
       "state": "needs_review"
     }
   },
@@ -5337,9 +5473,9 @@
   },
   "web.gear-selection.controller.js.copy.348.1": {
     "comment": "User-facing text from src/server/routes/gear-selection/controller.js at line 348. Welsh translation requires professional review.",
-    "en": "Select the gear you used",
+    "en": "Select the gear used on this trip",
     "cy": {
-      "value": "Dewiswch yr offer a ddefnyddiwyd gennych",
+      "value": "Dewiswch y gêr a ddefnyddiwyd ar y daith hon",
       "state": "needs_review"
     }
   },
@@ -5959,9 +6095,9 @@
   },
   "web.statistical-area.controller.js.copy.90.1": {
     "comment": "User-facing text from src/server/routes/statistical-area/controller.js at line 90. Welsh translation requires professional review.",
-    "en": "Select the area where most of your catch was caught",
+    "en": "Select a statistical subrectangle",
     "cy": {
-      "value": "Dewiswch yr ardal lle cafodd y rhan fwyaf o’ch dalfa ei dal",
+      "value": "Dewiswch is-betryal ystadegol",
       "state": "needs_review"
     }
   },

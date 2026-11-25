@@ -155,7 +155,7 @@ describe('#addGearSubmitController', () => {
 
     expect(statusCode).toBe(statusCodes.badRequest)
     expect($('.govuk-error-summary').text()).toContain(
-      'Select a gear type from the list'
+      'Select the gear you want to add'
     )
   })
 

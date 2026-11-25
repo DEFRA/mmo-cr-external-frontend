@@ -42,6 +42,7 @@ async function viewContext(request) {
     ...summary,
     sections: localizeSummarySections(summary.sections),
     gearGroups: localizeSummarySections(summary.gearGroups),
+    speciesGroups: localizeSummarySections(summary.speciesGroups),
     trailingSections: localizeSummarySections(summary.trailingSections)
   }
 }

@@ -11,7 +11,10 @@ import {
   setJourneyState
 } from '#/server/common/helpers/journey/navigation.js'
 import { getSpeciesPageData } from '#/server/common/helpers/species/species-list.js'
-import { isValidWeight } from '#/server/common/helpers/species/weight-validation.js'
+import {
+  validateWeight,
+  weightErrorMessage
+} from '#/server/common/helpers/species/weight-validation.js'
 import {
   ERROR_SUMMARY_TITLE,
   filterKnownSpeciesIds,
@@ -108,10 +111,12 @@ function validateSpeciesNotLandedWeights(
     const nameAndId = speciesNameAndId(speciesOption, speciesId)
     const weights = speciesWeights[speciesId] || {}
 
-    if (!isValidWeight(weights.weightAboveMinimum)) {
-      const errorText = t('speciesNotLanded.error.enterWeight', {
-        species: nameAndId
-      })
+    const { valid, reason } = validateWeight(weights.weightAboveMinimum)
+    if (!valid) {
+      const errorText =
+        reason === 'missing'
+          ? t('speciesNotLanded.error.enterWeight')
+          : weightErrorMessage(reason, nameAndId)
       errorList.push({
         text: errorText,
         href: `#weightAboveMinimum-${speciesId}`

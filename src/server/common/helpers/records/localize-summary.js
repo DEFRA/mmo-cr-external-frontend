@@ -8,6 +8,10 @@ const SUMMARY_KEYS = new Map([
   ['Return date', 'summary.returnDate'],
   ['Departure port', 'summary.departurePort'],
   ['Return port', 'summary.returnPort'],
+  ['Date left', 'summary.dateLeft'],
+  ['Port left from', 'summary.portLeftFrom'],
+  ['Date returned', 'summary.dateReturned'],
+  ['Port returned to', 'summary.portReturnedTo'],
   ['Statistical sub area', 'summary.statisticalSubArea'],
   ['Statistical area / sub area', 'summary.statisticalAreaLabel'],
   ['Pair fishing', 'summary.pairFishing'],
@@ -25,7 +29,9 @@ const SUMMARY_KEYS = new Map([
   ['Weight below minimum size retained (kg)', 'summary.weightBelow'],
   ['Weight legally discarded (kg)', 'summary.weightDiscarded'],
   ['Species not landed', 'summary.speciesNotLanded'],
+  ['4. Species not landed', 'summary.speciesNotLanded.numbered'],
   ['Not landed', 'summary.notLanded'],
+  ['Catch kept onboard or in keep pots', 'summary.catchKeptOnboard'],
   ['Weight kept onboard or in keep pots', 'summary.keptWeight'],
   [
     'Weight above minimum size kept onboard or in keep pots (kg)',
@@ -36,8 +42,18 @@ const SUMMARY_KEYS = new Map([
     'summary.keptBelow'
   ],
   ['Mesh size', 'summary.meshSize'],
+  ['Mesh size (mm)', 'summary.meshSizeMm'],
   ['Total pots or traps hauled', 'summary.totalPotsHauled'],
   ['Total pots or traps left in water', 'summary.totalPotsInWater'],
+  [
+    'Total number of pots or traps hauled during the trip',
+    'summary.totalPotsHauledDuringTrip'
+  ],
+  [
+    'Total number of pots or traps left in the water at the end of the trip',
+    'summary.totalPotsInWaterAtEnd'
+  ],
+  ['Number of times gear was shot on the trip', 'summary.timesGearShot'],
   ['Not entered', 'summary.notEntered'],
   ['Not provided', 'summary.notProvided']
 ])
@@ -48,6 +64,12 @@ const CHANGE_FIELD_KEYS = new Map([
   ['return date', 'summary.returnDate'],
   ['departure port', 'summary.departurePort'],
   ['return port', 'summary.returnPort'],
+  ['date left', 'summary.dateLeft'],
+  ['port left from', 'summary.portLeftFrom'],
+  ['date returned', 'summary.dateReturned'],
+  ['port returned to', 'summary.portReturnedTo'],
+  ['gear used', 'summary.gearUsed'],
+  ['catch kept onboard or in keep pots', 'summary.catchKeptOnboard'],
   ['statistical sub area', 'summary.statisticalSubArea'],
   ['gear', 'summary.gear'],
   ['gear type', 'summary.gearType'],

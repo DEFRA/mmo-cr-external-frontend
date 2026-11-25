@@ -143,7 +143,7 @@ describe('#catchNotLandedSubmitController', () => {
     expect(statusCode).toBe(statusCodes.badRequest)
     expect($('.govuk-error-summary')).toHaveLength(1)
     expect($('.govuk-error-summary').text()).toContain(
-      'Select yes if any catch will not be landed straight away'
+      'Select whether any catch from this trip will not be landed straight away'
     )
     expect($('.govuk-error-message')).toHaveLength(1)
   })

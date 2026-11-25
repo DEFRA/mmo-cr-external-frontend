@@ -1,7 +1,7 @@
 import {
   KEPT_WEIGHT,
+  NOT_LANDED,
   STATISTICAL_AREA_LABEL,
-  STATISTICAL_SUB_AREA,
   stripKilogramSuffix
 } from './summary-sections.js'
 
@@ -33,8 +33,8 @@ function reviewWeightRow(row, speciesGroup) {
   const weight = stripKilogramSuffix(row.value.text).trim()
   return {
     ...row,
-    key: { text: label },
-    value: { text: weight ? `${weight} kg` : '' },
+    key: { text: `${label} (kg)` },
+    value: { text: weight },
     actions: {
       items: row.actions.items.map((item) => ({
         ...item,
@@ -68,21 +68,75 @@ function reviewSpeciesGroups(group, speciesCatalogue) {
   return speciesGroups
 }
 
-function reviewTripRows(base) {
+function reviewTripRows(base, context) {
   const labels = [
-    'Vessel',
-    'Departure date',
-    'Return date',
-    'Departure port',
-    'Return port'
+    ['Vessel', 'Vessel'],
+    ['Departure date', 'Date left'],
+    ['Departure port', 'Port left from'],
+    ['Return date', 'Date returned'],
+    ['Return port', 'Port returned to']
   ]
-  return labels.map((label) => {
-    const row = base.sections[0].rows.find((item) => item.key.text === label)
-    if (label === 'Vessel') {
+  const rows = labels.map(([source, label]) => {
+    const row = base.sections[0].rows.find((item) => item.key.text === source)
+    if (source === 'Vessel') {
       return { key: row.key, value: row.value }
     }
-    return row
+    return relabelRow(row, label)
   })
+  const gearNames = base.gearGroups.map((group) => group.heading)
+  if (gearNames.length) {
+    rows.push({
+      key: { text: 'Gear used' },
+      value: {
+        text: gearNames.join(', '),
+        html: gearNames.map(escapeHtml).join('<br>')
+      },
+      actions: {
+        items: [
+          {
+            href: context.buildChangeHref('/gear-selection'),
+            text: 'Change',
+            visuallyHiddenText: 'gear used'
+          }
+        ]
+      }
+    })
+  }
+  return rows
+}
+
+function relabelRow(row, label) {
+  return {
+    ...row,
+    key: { text: label },
+    actions: {
+      items: row.actions.items.map((item) => ({
+        ...item,
+        visuallyHiddenText: label.toLowerCase()
+      }))
+    }
+  }
+}
+
+const MEASUREMENT_LABELS = {
+  'Total pots or traps hauled':
+    'Total number of pots or traps hauled during the trip',
+  'Total pots or traps left in water':
+    'Total number of pots or traps left in the water at the end of the trip',
+  'Number of times shot': 'Number of times gear was shot on the trip',
+  'Mesh size': 'Mesh size (mm)'
+}
+
+function reviewMeasurementLabel(row) {
+  const label = MEASUREMENT_LABELS[row.key.text]
+  if (!label) {
+    return row
+  }
+  const value =
+    label === 'Mesh size (mm)'
+      ? { text: row.value.text.replaceAll(/\s*mm\b/g, '') }
+      : row.value
+  return { ...row, key: { text: label }, value }
 }
 
 function reviewMeasurementRow(row, gearId, context) {
@@ -111,19 +165,14 @@ function reviewMeasurementRow(row, gearId, context) {
   }
 }
 
-function reviewGearRows(group, context, speciesGroups, multipleGears) {
+function reviewGearRows(group, context, speciesGroups) {
   const area = group.rows.find((row) => row.key.text === STATISTICAL_AREA_LABEL)
   const selectedSpecies = group.rows.find((row) =>
     row.key.text.startsWith('Species')
   )
   const rows = []
   if (area) {
-    rows.push({
-      ...area,
-      key: {
-        text: multipleGears ? 'Area majority caught' : STATISTICAL_SUB_AREA
-      }
-    })
+    rows.push({ ...area, key: { text: 'Area majority catch caught' } })
   }
   if (selectedSpecies) {
     const speciesNames = speciesGroups
@@ -148,32 +197,38 @@ function reviewGearRows(group, context, speciesGroups, multipleGears) {
     )
     .toSorted(
       (first, second) =>
-        Number(second.key.text.startsWith('Number of times gear')) -
-        Number(first.key.text.startsWith('Number of times gear'))
+        Number(second.key.text.startsWith('Number of times')) -
+        Number(first.key.text.startsWith('Number of times'))
     )
   return [
     ...rows,
     ...measurements.map((row) =>
-      reviewMeasurementRow(row, group.gearId, context)
+      reviewMeasurementLabel(reviewMeasurementRow(row, group.gearId, context))
     )
   ]
+}
+
+function reviewTrailingRow(row) {
+  if (row.key.text === NOT_LANDED) {
+    return relabelRow(row, 'Catch kept onboard or in keep pots')
+  }
+  if (row.key.text === KEPT_WEIGHT) {
+    return {
+      ...row,
+      key: {
+        text: 'Weight above minimum size kept onboard or in keep pots (kg)'
+      },
+      value: { text: stripKilogramSuffix(row.value.text) }
+    }
+  }
+  return row
 }
 
 function reviewTrailingSections(sections) {
   return sections.map((section) => ({
     ...section,
-    heading: 'Species not landed',
-    rows: section.rows.map((row) =>
-      row.key.text === KEPT_WEIGHT
-        ? {
-            ...row,
-            key: {
-              text: 'Weight above minimum size kept onboard or in keep pots (kg)'
-            },
-            value: { text: stripKilogramSuffix(row.value.text) }
-          }
-        : row
-    )
+    heading: '4. Species not landed',
+    rows: section.rows.map(reviewTrailingRow)
   }))
 }
 
@@ -182,12 +237,13 @@ export function buildReviewLayout(base, context) {
     reviewSpeciesGroups(group, context.speciesCatalogue)
   )
   const headingCounts = Map.groupBy(speciesGroups, (group) => group.heading)
-  const multipleGears = base.gearGroups.length > 1
   return {
-    sections: [{ heading: 'Trips details', rows: reviewTripRows(base) }],
+    sections: [
+      { heading: '1. Trips details', rows: reviewTripRows(base, context) }
+    ],
     gearGroups: base.gearGroups.map((group) => ({
       ...group,
-      rows: reviewGearRows(group, context, speciesGroups, multipleGears)
+      rows: reviewGearRows(group, context, speciesGroups)
     })),
     speciesGroups: speciesGroups.map((group) => ({
       ...group,

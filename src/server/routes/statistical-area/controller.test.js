@@ -342,7 +342,7 @@ describe('#statisticalAreaSubmitController', () => {
     expect(statusCode).toBe(statusCodes.badRequest)
     expect($('.govuk-error-summary')).toHaveLength(1)
     expect($('.govuk-error-summary').text()).toContain(
-      'Select the area where most of your catch was caught'
+      'Select a statistical subrectangle'
     )
     expect($('.govuk-error-message')).toHaveLength(1)
   })

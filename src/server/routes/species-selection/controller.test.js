@@ -403,7 +403,7 @@ describe('#speciesSelectionSubmitController', () => {
 
     expect(statusCode).toBe(statusCodes.badRequest)
     expect($('.govuk-error-summary').text()).toContain(
-      'Enter the weight above minimum size retained for atlantic cod (COD)'
+      'Enter the weight above minimum size retained'
     )
     expect($(`#weightAboveMinimum-${SPECIES_IDS.cod}-error`)).toHaveLength(1)
   })
@@ -423,7 +423,7 @@ describe('#speciesSelectionSubmitController', () => {
 
     expect(statusCode).toBe(statusCodes.badRequest)
     expect($('.govuk-error-summary').text()).toContain(
-      'The weight for atlantic cod (COD) must be a number with up to one decimal place'
+      'Weight for atlantic cod (COD) must be a number with up to 1 decimal place'
     )
     expect($(`#weightBelowMinimum-${SPECIES_IDS.cod}-error`)).toHaveLength(1)
   })
@@ -443,7 +443,7 @@ describe('#speciesSelectionSubmitController', () => {
 
     expect(statusCode).toBe(statusCodes.badRequest)
     expect($('.govuk-error-summary').text()).toContain(
-      'The weight for atlantic cod (COD) must be a number with up to one decimal place'
+      'Weight for atlantic cod (COD) must be a number with up to 1 decimal place'
     )
     expect($(`#weightDiscarded-${SPECIES_IDS.cod}-error`)).toHaveLength(1)
   })
@@ -462,7 +462,7 @@ describe('#speciesSelectionSubmitController', () => {
 
     expect(statusCode).toBe(statusCodes.badRequest)
     expect($('.govuk-error-summary').text()).toContain(
-      'The weight for atlantic cod (COD) must be more than 0kg'
+      'Weight for atlantic cod (COD) must be more than 0kg'
     )
   })
 
@@ -480,7 +480,7 @@ describe('#speciesSelectionSubmitController', () => {
 
     expect(statusCode).toBe(statusCodes.badRequest)
     expect($('.govuk-error-summary').text()).toContain(
-      'The weight for atlantic cod (COD) must be more than 0kg'
+      'Weight for atlantic cod (COD) must be more than 0kg'
     )
   })
 
@@ -498,7 +498,7 @@ describe('#speciesSelectionSubmitController', () => {
 
     expect(statusCode).toBe(statusCodes.badRequest)
     expect($('.govuk-error-summary').text()).toContain(
-      'The weight for atlantic cod (COD) must be a number'
+      'Weight for atlantic cod (COD) must be a whole number'
     )
   })
 
@@ -516,7 +516,7 @@ describe('#speciesSelectionSubmitController', () => {
 
     expect(statusCode).toBe(statusCodes.badRequest)
     expect($('.govuk-error-summary').text()).toContain(
-      'The weight for atlantic cod (COD) must be 10,000kg or less'
+      'Weight for atlantic cod (COD) must be 10,000kg or less'
     )
   })
 

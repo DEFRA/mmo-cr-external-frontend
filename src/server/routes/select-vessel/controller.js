@@ -18,15 +18,16 @@ import {
   prepareDraftCreation
 } from '#/server/common/helpers/journey/create-draft.js'
 
-const errorText = () => t('catchRecord.selectVessel.heading')
+const pageHeading = () => t('catchRecord.selectVessel.heading')
+const errorText = () => t('selectVessel.error.select')
 const errorSummaryTitle = () => t('common.errorSummary.title')
 const templatePath = 'select-vessel/index'
 
 function viewContext(request, vessels, overrides = {}) {
   const selectedId = getJourneyState(request).selectedVesselId
   return {
-    pageTitle: errorText(),
-    heading: errorText(),
+    pageTitle: pageHeading(),
+    heading: pageHeading(),
     reference: getJourneyState(request).reference,
     navigation: buildNavigation(request, { showWhenSignedOut: true }),
     backLink: {

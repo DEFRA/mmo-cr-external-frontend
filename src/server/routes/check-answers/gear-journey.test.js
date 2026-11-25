@@ -112,12 +112,12 @@ describe('per-gear catch journey', () => {
     expect(
       groups.eq(1).find('dt:contains("Species caught")').next().text().trim()
     ).toBe('Atlantic cod (COD)')
-    expect($('dt:contains("Gear used")')).toHaveLength(0)
+    expect($('dt:contains("Gear used")')).toHaveLength(1)
     expect($('dt:contains("Statistical sub area")')).toHaveLength(0)
     expect(
       groups
         .eq(0)
-        .find('dt:contains("Area majority caught")')
+        .find('dt:contains("Area majority catch caught")')
         .next()
         .text()
         .trim()
@@ -125,7 +125,7 @@ describe('per-gear catch journey', () => {
     expect(
       groups
         .eq(1)
-        .find('dt:contains("Area majority caught")')
+        .find('dt:contains("Area majority catch caught")')
         .next()
         .text()
         .trim()
@@ -136,19 +136,25 @@ describe('per-gear catch journey', () => {
     expect(speciesGroups.eq(0).find('dt:contains("Species")')).toHaveLength(0)
     expect(
       speciesGroups.eq(0).find('.govuk-summary-list__value').eq(0).text().trim()
-    ).toBe('15 kg')
+    ).toBe('15')
     expect(
       speciesGroups.eq(0).find('.govuk-summary-list__value').eq(1).text().trim()
-    ).toBe('2 kg')
+    ).toBe('2')
     expect(groups.eq(1).find('h3').text()).toBe('Dredge')
     expect(groups.eq(1).text()).toContain('38E96')
     expect(
       speciesGroups.eq(1).find('.govuk-summary-list__value').eq(0).text().trim()
-    ).toBe('30 kg')
-    expect(groups.find('dt:contains("Not landed")')).toHaveLength(0)
-    expect($('dt:contains("Not landed")')).toHaveLength(1)
+    ).toBe('30')
     expect(
-      $('h2').filter((_, element) => $(element).text() === 'Species not landed')
+      groups.find('dt:contains("Catch kept onboard or in keep pots")')
+    ).toHaveLength(0)
+    expect($('dt:contains("Catch kept onboard or in keep pots")')).toHaveLength(
+      1
+    )
+    expect(
+      $('h2').filter(
+        (_, element) => $(element).text() === '4. Species not landed'
+      )
     ).toHaveLength(1)
     expect($('h3')).toHaveLength(4)
     expect(
@@ -166,20 +172,24 @@ describe('per-gear catch journey', () => {
         .map((_, element) => $(element).text().trim())
         .get()
     ).toEqual([
-      'Area majority caught',
+      'Area majority catch caught',
       'Species caught',
-      'Total pots or traps hauled',
-      'Total pots or traps left in water'
+      'Total number of pots or traps hauled during the trip',
+      'Total number of pots or traps left in the water at the end of the trip'
     ])
     expect($('dt:contains("Gear type")')).toHaveLength(0)
     expect($('.govuk-summary-list').length).toBeGreaterThan(0)
     expect($('input[name="confirmAccurate"]')).toHaveLength(0)
     expect($('main button').text()).toContain('Accept and submit trip details')
     expect(
-      $('h2').filter((_, element) => $(element).text() === 'Trips details')
+      $('h2').filter((_, element) => $(element).text() === '1. Trips details')
     ).toHaveLength(1)
-    expect(speciesGroups.eq(1).find('h3').text()).toBe('Atlantic cod (COD)')
-    expect(speciesGroups.eq(1).text()).toContain('Caught with Dredge')
+    expect(speciesGroups.eq(1).find('h3').contents().first().text()).toBe(
+      'Atlantic cod (COD)'
+    )
+    expect(speciesGroups.eq(1).find('h3 .govuk-visually-hidden').text()).toBe(
+      ', caught with Dredge'
+    )
     const changeHrefs = $('a')
       .filter((_, element) => $(element).text().trim().startsWith('Change'))
       .map((_, element) => $(element).attr('href'))
@@ -242,7 +252,7 @@ describe('per-gear catch journey', () => {
         .eq(0)
         .text()
         .trim()
-    ).toBe('15 kg')
+    ).toBe('15')
     expect(
       summary('section[aria-labelledby^="species-summary-"]')
         .eq(1)
@@ -250,8 +260,13 @@ describe('per-gear catch journey', () => {
         .eq(0)
         .text()
         .trim()
-    ).toBe('40 kg')
-    expect(summary('dt:contains("Not landed")').next().text().trim()).toBe('No')
+    ).toBe('40')
+    expect(
+      summary('dt:contains("Catch kept onboard or in keep pots")')
+        .next()
+        .text()
+        .trim()
+    ).toBe('No')
     expect(
       (await inject('GET', '/species-selection?gearId=removed')).statusCode
     ).toBe(400)
@@ -456,7 +471,7 @@ describe('per-gear catch journey', () => {
     expect(speciesGroups).toHaveLength(1)
     expect(
       speciesGroups.find('.govuk-summary-list__value').eq(0).text().trim()
-    ).toBe('30 kg')
+    ).toBe('30')
   })
 
   test('offers the union of caught species once and retains shared unlanded answers when another gear still caught them', async () => {
