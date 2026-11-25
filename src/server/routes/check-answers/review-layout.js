@@ -127,10 +127,16 @@ const MEASUREMENT_LABELS = {
   'Mesh size': 'Mesh size (mm)'
 }
 
+const MILLIMETRE_UNIT = 'mm'
+
 function stripMillimetreSuffixes(value) {
   return value
     .split(', ')
-    .map((part) => (part.endsWith('mm') ? part.slice(0, -2).trimEnd() : part))
+    .map((part) =>
+      part.endsWith(MILLIMETRE_UNIT)
+        ? part.slice(0, part.length - MILLIMETRE_UNIT.length).trimEnd()
+        : part
+    )
     .join(', ')
 }
 
