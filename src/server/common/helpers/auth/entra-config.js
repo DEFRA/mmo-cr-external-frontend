@@ -32,8 +32,16 @@ export function tokenScope() {
 }
 
 export function authorityBase() {
+  return `${tenantBase()}oauth2/v2.0/`
+}
+
+export function passwordResetBase() {
+  return `${tenantBase()}resetpassword/v1.0/`
+}
+
+function tenantBase() {
   const { tenantSubdomain } = entraSettings()
-  return `https://${tenantSubdomain}.ciamlogin.com/${tenantSubdomain}.onmicrosoft.com/oauth2/v2.0/`
+  return `https://${tenantSubdomain}.ciamlogin.com/${tenantSubdomain}.onmicrosoft.com/`
 }
 
 function assertRegisteredUrl(value, name, expectedPath) {

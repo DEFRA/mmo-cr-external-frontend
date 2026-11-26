@@ -93,12 +93,17 @@ function classifyError(body) {
 }
 
 /** POSTs a form to an Entra native-auth or token endpoint and returns the JSON body. */
-export async function post(path, fields) {
-  const step = fields.grant_type ? `${path}:${fields.grant_type}` : path
+export async function post(
+  path,
+  fields,
+  { base = authorityBase(), stepPrefix = '' } = {}
+) {
+  const name = `${stepPrefix}${path}`
+  const step = fields.grant_type ? `${name}:${fields.grant_type}` : name
   const startedAt = Date.now()
   let response
   try {
-    response = await fetch(`${authorityBase()}${path}`, {
+    response = await fetch(`${base}${path}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',

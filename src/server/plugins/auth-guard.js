@@ -24,7 +24,10 @@ const PUBLIC_PATHS = new Set([
   '/sign-out',
   '/signed-out',
   '/forgotten-password',
-  '/forgotten-password-confirmation'
+  '/forgotten-password/code',
+  '/forgotten-password/code/resend',
+  '/forgotten-password/new-password',
+  '/forgotten-password/complete'
 ])
 
 function isPublicPath(path) {

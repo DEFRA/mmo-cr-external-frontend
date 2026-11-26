@@ -12,6 +12,7 @@ vi.mock('govuk-frontend', () => ({
   Button: 'Button',
   Checkboxes: 'Checkboxes',
   ErrorSummary: 'ErrorSummary',
+  PasswordInput: 'PasswordInput',
   Radios: 'Radios',
   SkipLink: 'SkipLink'
 }))
@@ -31,6 +32,7 @@ describe('application entry point', () => {
     expect(createAll).toHaveBeenCalledWith('Button')
     expect(createAll).toHaveBeenCalledWith('Checkboxes')
     expect(createAll).toHaveBeenCalledWith('ErrorSummary')
+    expect(createAll).toHaveBeenCalledWith('PasswordInput')
     expect(createAll).toHaveBeenCalledWith('Radios')
     expect(createAll).toHaveBeenCalledWith('SkipLink')
     expect(initialiseStatisticalAreaMap).toHaveBeenCalled()
