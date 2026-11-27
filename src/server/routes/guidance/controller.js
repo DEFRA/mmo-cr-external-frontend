@@ -10,7 +10,7 @@ export const guidanceController = {
     return h.view('guidance/index', {
       pageTitle: t('web.guidance.controller.js.copy.11.1'),
       heading: t('web.guidance.controller.js.copy.12.1'),
-      navigation: buildNavigation(request, { showWhenSignedOut: true }),
+      navigation: buildNavigation(request),
       backLink: {
         href: '/records',
         text: t('header.back')

@@ -1493,6 +1493,54 @@
       "state": "needs_review"
     }
   },
+  "common.passwordInput.hiddenAnnouncement": {
+    "comment": "Screen reader announcement when a password field is hidden again (GOV.UK password input).",
+    "en": "Your password is hidden",
+    "cy": {
+      "value": "Mae eich cyfrinair wedi'i guddio",
+      "state": "needs_review"
+    }
+  },
+  "common.passwordInput.hide": {
+    "comment": "Button that hides the typed password (GOV.UK password input).",
+    "en": "Hide",
+    "cy": {
+      "value": "Cuddio",
+      "state": "needs_review"
+    }
+  },
+  "common.passwordInput.hideAriaLabel": {
+    "comment": "Accessible label for the Hide password button.",
+    "en": "Hide password",
+    "cy": {
+      "value": "Cuddio cyfrinair",
+      "state": "needs_review"
+    }
+  },
+  "common.passwordInput.show": {
+    "comment": "Button that shows the typed password (GOV.UK password input).",
+    "en": "Show",
+    "cy": {
+      "value": "Dangos",
+      "state": "needs_review"
+    }
+  },
+  "common.passwordInput.showAriaLabel": {
+    "comment": "Accessible label for the Show password button.",
+    "en": "Show password",
+    "cy": {
+      "value": "Dangos cyfrinair",
+      "state": "needs_review"
+    }
+  },
+  "common.passwordInput.shownAnnouncement": {
+    "comment": "Screen reader announcement when a password field is shown (GOV.UK password input).",
+    "en": "Your password is visible",
+    "cy": {
+      "value": "Mae eich cyfrinair yn weladwy",
+      "state": "needs_review"
+    }
+  },
   "common.passwordReset.checkSpam": {
     "comment": "Instruction after a password reset email has been sent.",
     "en": "If you do not receive the email check your spam folder.",
@@ -1864,10 +1912,98 @@
     }
   },
   "forgottenPassword.button": {
-    "comment": "Button that sends the reset email.",
-    "en": "Send email",
+    "comment": "Button that starts the reset and emails a reset code.",
+    "en": "Send reset code",
     "cy": {
-      "value": "Anfon e-bost",
+      "value": "Anfon cod ailosod",
+      "state": "needs_review"
+    }
+  },
+  "forgottenPassword.code.button.resend": {
+    "comment": "Secondary button on the reset code page that emails a new code.",
+    "en": "Send a new code",
+    "cy": {
+      "value": "Anfon cod newydd",
+      "state": "needs_review"
+    }
+  },
+  "forgottenPassword.code.expiry": {
+    "comment": "How long the emailed reset code is valid for.",
+    "en": "This code will expire after 5 minutes.",
+    "cy": {
+      "value": "Bydd y cod hwn yn dod i ben ar ôl 5 munud.",
+      "state": "needs_review"
+    }
+  },
+  "forgottenPassword.code.intro": {
+    "comment": "Instruction on the reset code page.",
+    "en": "Enter the code we sent to your email address.",
+    "cy": {
+      "value": "Rhowch y cod a anfonwyd gennym i'ch cyfeiriad e-bost.",
+      "state": "needs_review"
+    }
+  },
+  "forgottenPassword.code.label": {
+    "comment": "Label of the reset code field.",
+    "en": "Reset code",
+    "cy": {
+      "value": "Cod ailosod",
+      "state": "needs_review"
+    }
+  },
+  "forgottenPassword.code.resent": {
+    "comment": "Success banner after a new reset code has been emailed.",
+    "en": "We have sent you a new code.",
+    "cy": {
+      "value": "Rydym wedi anfon cod newydd atoch.",
+      "state": "needs_review"
+    }
+  },
+  "forgottenPassword.code.title": {
+    "comment": "Page title and heading of the reset code page.",
+    "en": "Enter your reset code",
+    "cy": {
+      "value": "Rhowch eich cod ailosod",
+      "state": "needs_review"
+    }
+  },
+  "forgottenPassword.complete.title": {
+    "comment": "Page title and heading after the password has been changed.",
+    "en": "Your password has been reset",
+    "cy": {
+      "value": "Mae eich cyfrinair wedi'i ailosod",
+      "state": "needs_review"
+    }
+  },
+  "forgottenPassword.email.hint": {
+    "comment": "Hint under the email field. Deliberately does not confirm whether an account exists.",
+    "en": "If an account exists for this email address, we'll send a reset code.",
+    "cy": {
+      "value": "Os oes cyfrif yn bodoli ar gyfer y cyfeiriad e-bost hwn, byddwn yn anfon cod ailosod.",
+      "state": "needs_review"
+    }
+  },
+  "forgottenPassword.error.code.empty": {
+    "comment": "Validation error when the reset code is empty.",
+    "en": "Enter your reset code",
+    "cy": {
+      "value": "Rhowch eich cod ailosod",
+      "state": "needs_review"
+    }
+  },
+  "forgottenPassword.error.code.incorrect": {
+    "comment": "Error when the reset code does not match.",
+    "en": "The reset code you entered is incorrect",
+    "cy": {
+      "value": "Mae'r cod ailosod a roesoch yn anghywir",
+      "state": "needs_review"
+    }
+  },
+  "forgottenPassword.error.code.tooManyAttempts": {
+    "comment": "Error after too many wrong reset codes; the user must start again.",
+    "en": "You have entered the wrong code too many times. Request a new reset code.",
+    "cy": {
+      "value": "Rydych wedi rhoi'r cod anghywir ormod o weithiau. Gofynnwch am god ailosod newydd.",
       "state": "needs_review"
     }
   },
@@ -1879,16 +2015,144 @@
       "state": "needs_review"
     }
   },
-  "forgottenPassword.intro": {
-    "comment": "Intro text above the email field.",
-    "en": "Enter your email address and we will send you a link to reset your password.",
+  "forgottenPassword.error.expired": {
+    "comment": "Error when the reset code or reset session has expired.",
+    "en": "Your reset code has expired. Request a new one.",
     "cy": {
-      "value": "Rhowch eich cyfeiriad e-bost a byddwn yn anfon dolen atoch i ailosod eich cyfrinair.",
+      "value": "Mae eich cod ailosod wedi dod i ben. Gofynnwch am un newydd.",
+      "state": "needs_review"
+    }
+  },
+  "forgottenPassword.error.limited": {
+    "comment": "Error when too many reset codes have been requested for one address.",
+    "en": "You have requested too many reset codes. Wait 15 minutes, then try again.",
+    "cy": {
+      "value": "Rydych wedi gofyn am ormod o godau ailosod. Arhoswch 15 munud, yna rhowch gynnig arall arni.",
+      "state": "needs_review"
+    }
+  },
+  "forgottenPassword.error.password.banned": {
+    "comment": "Error when the new password is on Entra's banned list.",
+    "en": "This password is too common. Choose a different password",
+    "cy": {
+      "value": "Mae'r cyfrinair hwn yn rhy gyffredin. Dewiswch gyfrinair gwahanol",
+      "state": "needs_review"
+    }
+  },
+  "forgottenPassword.error.password.confirmEmpty": {
+    "comment": "Validation error when the confirm password field is empty.",
+    "en": "Confirm your new password",
+    "cy": {
+      "value": "Cadarnhewch eich cyfrinair newydd",
+      "state": "needs_review"
+    }
+  },
+  "forgottenPassword.error.password.empty": {
+    "comment": "Validation error when the new password field is empty.",
+    "en": "Enter a new password",
+    "cy": {
+      "value": "Rhowch gyfrinair newydd",
+      "state": "needs_review"
+    }
+  },
+  "forgottenPassword.error.password.mismatch": {
+    "comment": "Validation error when the two password fields differ.",
+    "en": "Passwords do not match",
+    "cy": {
+      "value": "Nid yw'r cyfrineiriau'n cyfateb",
+      "state": "needs_review"
+    }
+  },
+  "forgottenPassword.error.password.recentlyUsed": {
+    "comment": "Error when the new password was used recently.",
+    "en": "You have used this password recently. Choose a different password",
+    "cy": {
+      "value": "Rydych wedi defnyddio'r cyfrinair hwn yn ddiweddar. Dewiswch gyfrinair gwahanol",
+      "state": "needs_review"
+    }
+  },
+  "forgottenPassword.error.password.tooLong": {
+    "comment": "Error when the new password is over the maximum length.",
+    "en": "Your password must be 256 characters or fewer",
+    "cy": {
+      "value": "Rhaid i'ch cyfrinair fod yn 256 nod neu lai",
+      "state": "needs_review"
+    }
+  },
+  "forgottenPassword.error.password.tooShort": {
+    "comment": "Error when the new password is under the minimum length.",
+    "en": "Your password must be at least 8 characters",
+    "cy": {
+      "value": "Rhaid i'ch cyfrinair fod yn 8 nod o leiaf",
+      "state": "needs_review"
+    }
+  },
+  "forgottenPassword.error.password.tooWeak": {
+    "comment": "Error when Entra rejects the new password as not complex enough.",
+    "en": "Your password is not strong enough. Use a mix of upper and lower case letters, numbers and symbols",
+    "cy": {
+      "value": "Nid yw eich cyfrinair yn ddigon cryf. Defnyddiwch gymysgedd o lythrennau mawr a bach, rhifau a symbolau",
+      "state": "needs_review"
+    }
+  },
+  "forgottenPassword.error.unavailable": {
+    "comment": "Error when Entra cannot complete a password reset step.",
+    "en": "Password reset is not available at the moment. Try again later.",
+    "cy": {
+      "value": "Nid yw ailosod cyfrinair ar gael ar hyn o bryd. Rhowch gynnig arall arni yn nes ymlaen.",
+      "state": "needs_review"
+    }
+  },
+  "forgottenPassword.intro": {
+    "comment": "Intro text above the email field on the reset your password page.",
+    "en": "Enter the email address you use to sign in.",
+    "cy": {
+      "value": "Rhowch y cyfeiriad e-bost rydych yn ei ddefnyddio i fewngofnodi.",
+      "state": "needs_review"
+    }
+  },
+  "forgottenPassword.newPassword.confirmLabel": {
+    "comment": "Label of the confirm new password field.",
+    "en": "Confirm new password",
+    "cy": {
+      "value": "Cadarnhau cyfrinair newydd",
+      "state": "needs_review"
+    }
+  },
+  "forgottenPassword.newPassword.hint": {
+    "comment": "Password rule shown on the create new password page.",
+    "en": "Your password must be at least 8 characters.",
+    "cy": {
+      "value": "Rhaid i'ch cyfrinair fod yn 8 nod o leiaf.",
+      "state": "needs_review"
+    }
+  },
+  "forgottenPassword.newPassword.label": {
+    "comment": "Label of the new password field.",
+    "en": "New password",
+    "cy": {
+      "value": "Cyfrinair newydd",
+      "state": "needs_review"
+    }
+  },
+  "forgottenPassword.newPassword.title": {
+    "comment": "Page title and heading of the create new password page.",
+    "en": "Create your new password",
+    "cy": {
+      "value": "Creu eich cyfrinair newydd",
+      "state": "needs_review"
+    }
+  },
+  "forgottenPassword.reset.title": {
+    "comment": "Page title and heading of the first page of the forgotten password journey.",
+    "en": "Reset your password",
+    "cy": {
+      "value": "Ailosod eich cyfrinair",
       "state": "needs_review"
     }
   },
   "forgottenPassword.title": {
-    "comment": "Page title and heading of the forgotten password page.",
+    "comment": "Sign-in page link text that starts the reset your password journey.",
     "en": "Forgotten your password?",
     "cy": {
       "value": "Wedi anghofio'ch cyfrinair?",

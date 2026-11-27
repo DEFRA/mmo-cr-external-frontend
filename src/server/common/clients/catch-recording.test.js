@@ -81,7 +81,7 @@ describe('Catch Recording draft client', () => {
     expect(result).not.toHaveProperty('ownerUserId')
   })
 
-  test.each([404, 401, 503])(
+  test.each([404, 503])(
     'Should map GET HTTP %s to a safe service error',
     async (status) => {
       const client = setup(vi.fn().mockResolvedValue({ status }))
@@ -93,6 +93,42 @@ describe('Catch Recording draft client', () => {
       })
     }
   )
+
+  test('Should keep a rejected token as 401 so the user can sign in again', async () => {
+    const client = setup(vi.fn().mockResolvedValue({ status: 401 }))
+    await expect(
+      client.getCatchRecord({ catchRecordId: 'record-id' })
+    ).rejects.toMatchObject({ output: { statusCode: 401 } })
+  })
+
+  test('Should resolve a per-request token function before each call', async () => {
+    const fetchFn = vi.fn().mockResolvedValue({
+      status: 200,
+      json: async () => catchRecord
+    })
+    const token = vi.fn(async () => 'user-access-token')
+    await setup(fetchFn, { token }).getCatchRecord({
+      catchRecordId: catchRecord.id
+    })
+
+    expect(token).toHaveBeenCalledOnce()
+    expect(fetchFn.mock.calls[0][1].headers.Authorization).toBe(
+      'Bearer user-access-token'
+    )
+  })
+
+  test('Should not call the service when the token function fails', async () => {
+    const fetchFn = vi.fn()
+    const failure = Object.assign(new Error('no token'), { isBoom: true })
+    await expect(
+      setup(fetchFn, {
+        token: async () => {
+          throw failure
+        }
+      }).getCatchRecord({ catchRecordId: 'record-id' })
+    ).rejects.toBe(failure)
+    expect(fetchFn).not.toHaveBeenCalled()
+  })
 
   test.each([
     { ...catchRecord, id: 'another-id' },
@@ -176,7 +212,7 @@ describe('Catch Recording draft client', () => {
     }
   )
 
-  test.each([200, 400, 401, 403, 409, 500, 503])(
+  test.each([200, 400, 403, 409, 500, 503])(
     'Should reject HTTP %s without exposing backend details',
     async (status) => {
       const fetchFn = vi.fn().mockResolvedValue({ status })

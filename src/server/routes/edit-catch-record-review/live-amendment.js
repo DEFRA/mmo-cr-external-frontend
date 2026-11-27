@@ -21,7 +21,7 @@ import { submitLiveRecord } from '#/server/routes/live-records/controller.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 
 export async function amendmentRecord(request) {
-  const { client, correlationId } = catchRecordService()
+  const { client, correlationId } = catchRecordService(request)
   return client.getRecord({
     catchRecordId: request.params.recordId,
     correlationId
@@ -81,7 +81,7 @@ export async function startAmendment(request, h) {
     throw Boom.conflict('This record changed. Reopen it before editing')
   }
   const journey = recordJourney(record)
-  const { client, correlationId } = catchRecordService()
+  const { client, correlationId } = catchRecordService(request)
   const saved = await client.startEdit({
     catchRecordId: record.id,
     version: amendment.version,

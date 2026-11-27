@@ -13,8 +13,8 @@ function signOutHtml() {
   )
 }
 
-export function buildNavigation(request, { showWhenSignedOut = false } = {}) {
-  if (!request || (!showWhenSignedOut && !isSignedIn(request))) {
+export function buildNavigation(request) {
+  if (!request || !isSignedIn(request)) {
     return []
   }
 

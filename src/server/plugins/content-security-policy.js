@@ -1,5 +1,17 @@
 import Blankie from 'blankie'
 
+import { config } from '#/config/config.js'
+
+// Browsers apply form-action to redirects after a form POST, so the Entra fallback hand-off needs its origin.
+function entraFormActionOrigins() {
+  const { tenantSubdomain, redirectUri } = config.get('authentication.entra')
+  return config.get('authentication.mode') === 'entra' &&
+    redirectUri &&
+    tenantSubdomain
+    ? [`https://${tenantSubdomain}.ciamlogin.com`]
+    : []
+}
+
 /**
  * Manage content security policies.
  * @satisfies {import('@hapi/hapi').Plugin}
@@ -22,7 +34,7 @@ const contentSecurityPolicy = {
     frameSrc: ['self', 'data:'],
     objectSrc: ['none'],
     frameAncestors: ['none'],
-    formAction: ['self'],
+    formAction: ['self', ...entraFormActionOrigins()],
     manifestSrc: ['self'],
     generateNonces: false
   }

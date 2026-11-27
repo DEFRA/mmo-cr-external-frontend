@@ -1,7 +1,17 @@
 import {
+  CODE_PATH,
+  COMPLETE_PATH,
+  NEW_PASSWORD_PATH,
+  RESEND_PATH,
+  START_PATH,
+  forgottenPasswordCodeController,
+  forgottenPasswordCodeSubmitController,
+  forgottenPasswordCompleteController,
   forgottenPasswordController,
-  forgottenPasswordSubmitController,
-  forgottenPasswordConfirmationController
+  forgottenPasswordNewPasswordController,
+  forgottenPasswordNewPasswordSubmitController,
+  forgottenPasswordResendController,
+  forgottenPasswordSubmitController
 } from './controller.js'
 
 export const forgottenPassword = {
@@ -9,20 +19,37 @@ export const forgottenPassword = {
     name: 'forgotten-password',
     register(server) {
       server.route([
+        { method: 'GET', path: START_PATH, ...forgottenPasswordController },
         {
-          method: 'GET',
-          path: '/forgotten-password',
-          ...forgottenPasswordController
+          method: 'POST',
+          path: START_PATH,
+          ...forgottenPasswordSubmitController
+        },
+        { method: 'GET', path: CODE_PATH, ...forgottenPasswordCodeController },
+        {
+          method: 'POST',
+          path: CODE_PATH,
+          ...forgottenPasswordCodeSubmitController
         },
         {
           method: 'POST',
-          path: '/forgotten-password',
-          ...forgottenPasswordSubmitController
+          path: RESEND_PATH,
+          ...forgottenPasswordResendController
         },
         {
           method: 'GET',
-          path: '/forgotten-password-confirmation',
-          ...forgottenPasswordConfirmationController
+          path: NEW_PASSWORD_PATH,
+          ...forgottenPasswordNewPasswordController
+        },
+        {
+          method: 'POST',
+          path: NEW_PASSWORD_PATH,
+          ...forgottenPasswordNewPasswordSubmitController
+        },
+        {
+          method: 'GET',
+          path: COMPLETE_PATH,
+          ...forgottenPasswordCompleteController
         }
       ])
     }

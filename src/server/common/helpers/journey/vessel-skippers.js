@@ -17,7 +17,10 @@ export function requireSkipperVessel(request) {
 }
 
 function vesselInput(request) {
-  return { ...catchRecordService(), vesselId: requireSkipperVessel(request) }
+  return {
+    ...catchRecordService(request),
+    vesselId: requireSkipperVessel(request)
+  }
 }
 
 function storeSkippers(request, result) {

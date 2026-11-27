@@ -62,10 +62,10 @@ function buildHeaders(
   return headers
 }
 
-function send(config, path, options) {
+function send(config, token, path, options) {
   const init = {
     method: options.method,
-    headers: buildHeaders(config, options),
+    headers: buildHeaders({ ...config, token }, options),
     signal: AbortSignal.timeout(config.timeoutMs),
     redirect: 'error'
   }
@@ -99,10 +99,14 @@ async function readResponse(response, { method, binary, vesselProfile }) {
 }
 
 function createTransport(config) {
-  function assertConfigured() {
-    if (!config.serviceUrl || !config.token) {
+  // A function token is the signed-in user's access token, resolved (and refreshed) per call.
+  async function configuredToken() {
+    const token =
+      typeof config.token === 'function' ? await config.token() : config.token
+    if (!config.serviceUrl || !token) {
       throw Boom.serverUnavailable(NOT_CONFIGURED_MESSAGE)
     }
+    return token
   }
 
   async function request(path, options = {}) {
@@ -112,7 +116,6 @@ function createTransport(config) {
       binary: options.binary ?? false,
       vesselProfile: options.vesselProfile ?? ''
     }
-    assertConfigured()
     if (
       !requestOptions.vesselProfile &&
       requestOptions.method !== 'GET' &&
@@ -120,8 +123,9 @@ function createTransport(config) {
     ) {
       throw Boom.badRequest('A valid catch record version is required')
     }
+    const token = await configuredToken()
     try {
-      const response = await send(config, path, requestOptions)
+      const response = await send(config, token, path, requestOptions)
       return await readResponse(response, requestOptions)
     } catch (error) {
       throw toBoom(error, UNAVAILABLE_MESSAGE)
@@ -132,9 +136,12 @@ function createTransport(config) {
     path,
     { expectedStatus, failureMessage, ...options }
   ) {
-    assertConfigured()
+    const token = await configuredToken()
     try {
-      const response = await send(config, path, options)
+      const response = await send(config, token, path, options)
+      if (response.status === statusCodes.unauthorized) {
+        throw errorFromStatus(response.status)
+      }
       if (response.status !== expectedStatus) {
         throw Boom.serverUnavailable(failureMessage)
       }

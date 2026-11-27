@@ -14,15 +14,18 @@
           id: "email",
           name: "email",
           type: "email",
-          autocomplete: "username"
+          autocomplete: "username",
+          value: email,
+          errorMessage: { text: fieldErrors.email } if fieldErrors.email
         }) }}
 
         {{ govukInput({
           label: { text: t('signIn.password.label') },
-          id: t('account.row.password.hidden'),
-          name: t('account.row.password.hidden'),
-          type: t('account.row.password.hidden'),
-          autocomplete: "current-password"
+          id: "password",
+          name: "password",
+          type: "password",
+          autocomplete: "current-password",
+          errorMessage: { text: fieldErrors.password } if fieldErrors.password
         }) }}
 
         {{ govukButton({ text: t('signIn.button') }) }}

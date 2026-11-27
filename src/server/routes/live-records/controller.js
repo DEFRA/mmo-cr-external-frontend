@@ -27,7 +27,7 @@ const RECORD_LIST_LIMIT = 100
 const BACK_LINK_TEXT_KEY = 'header.back'
 
 export async function listLiveRecords(request, h) {
-  const { client, correlationId } = catchRecordService()
+  const { client, correlationId } = catchRecordService(request)
   const result = await client.listRecords({
     limit: RECORD_LIST_LIMIT,
     status: request.query.status,
@@ -75,7 +75,7 @@ export async function listLiveRecords(request, h) {
 }
 
 export async function showLiveRecord(request, h) {
-  const { client, correlationId } = catchRecordService()
+  const { client, correlationId } = catchRecordService(request)
   const record = await client.getRecord({
     catchRecordId: request.params.recordId,
     correlationId
@@ -173,7 +173,7 @@ async function openRecordJourney(request, h, client, input, record) {
 
 export async function recordAction(request, h) {
   const action = requireRecordAction(request)
-  const { client, correlationId } = catchRecordService()
+  const { client, correlationId } = catchRecordService(request)
   const input = {
     catchRecordId: action.id,
     version: action.version,
@@ -191,7 +191,7 @@ export async function recordAction(request, h) {
 }
 
 export async function showHistory(request, h) {
-  const { client, correlationId } = catchRecordService()
+  const { client, correlationId } = catchRecordService(request)
   const input = {
     catchRecordId: request.params.recordId,
     correlationId
@@ -211,7 +211,7 @@ export async function showHistory(request, h) {
 }
 
 export async function downloadArtifact(request, h) {
-  const { client, correlationId } = catchRecordService()
+  const { client, correlationId } = catchRecordService(request)
   const { artifactType, submissionNumber, recordId } = request.params
   const artifact = await client.downloadArtifact({
     catchRecordId: recordId,
@@ -247,7 +247,7 @@ export async function submitLiveRecord(request, h) {
   if (!state.catchRecordId || !state.submissionKey) {
     throw Boom.badRequest(t('catchRecord.error.reviewBeforeSubmitting'))
   }
-  const { client, correlationId } = catchRecordService()
+  const { client, correlationId } = catchRecordService(request)
   await saveReviewedRecord(request, client, correlationId)
   const reviewed = getJourneyState(request)
   const saved = await client.submitRecord({

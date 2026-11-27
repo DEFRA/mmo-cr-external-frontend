@@ -1,0 +1,89 @@
+import { config } from '#/config/config.js'
+import {
+  isSessionExpired,
+  isSignedIn,
+  signOut
+} from '#/server/common/helpers/auth/session.js'
+import { isEntraMode } from '#/server/common/helpers/auth/entra.js'
+import { statusCodes } from '#/server/common/constants/status-codes.js'
+
+export const SIGN_IN_ERROR_FLASH_KEY = 'signInError'
+export const SESSION_EXPIRED_MESSAGE =
+  'Your session has expired. Sign in again to continue.'
+
+const PUBLIC_PATHS = new Set([
+  '/',
+  '/cookies',
+  '/privacy-notice',
+  '/health',
+  '/favicon.ico',
+  '/sign-in',
+  '/sign-in/code',
+  '/sign-in/code/resend',
+  '/auth/callback',
+  '/sign-out',
+  '/signed-out',
+  '/forgotten-password',
+  '/forgotten-password/code',
+  '/forgotten-password/code/resend',
+  '/forgotten-password/new-password',
+  '/forgotten-password/complete'
+])
+
+function isPublicPath(path) {
+  return (
+    PUBLIC_PATHS.has(path) || path.startsWith(`${config.get('assetPath')}/`)
+  )
+}
+
+/**
+ * With Entra authentication, every route except the public allowlist requires
+ * a signed-in session no older than the session lifetime.
+ */
+export const authGuard = {
+  plugin: {
+    name: 'auth-guard',
+    register(server) {
+      server.ext('onPreHandler', (request, h) => {
+        if (!isEntraMode() || isPublicPath(request.path)) {
+          return h.continue
+        }
+
+        if (isSignedIn(request)) {
+          if (!isSessionExpired(request, config.get('session.cache.ttl'))) {
+            return h.continue
+          }
+          signOut(request)
+          request.yar.flash(SIGN_IN_ERROR_FLASH_KEY, SESSION_EXPIRED_MESSAGE)
+        }
+
+        return h.redirect('/sign-in').code(statusCodes.found).takeover()
+      })
+
+      // Backend rejected (or we lack) the user's token; runs before yar so the sign-out is saved.
+      server.ext(
+        'onPreResponse',
+        (request, h) => {
+          const { response } = request
+          if (
+            !isEntraMode() ||
+            !response.isBoom ||
+            response.output.statusCode !== statusCodes.unauthorized
+          ) {
+            return h.continue
+          }
+
+          request.logger.warn(
+            { path: request.path, reason: response.message },
+            'Backend access was not authorised; signing the user out'
+          )
+          signOut(request)
+          request.yar.flash(SIGN_IN_ERROR_FLASH_KEY, SESSION_EXPIRED_MESSAGE)
+          // No takeover: yar's onPreResponse must still run to save the sign-out.
+          return h.redirect('/sign-in').code(statusCodes.found)
+        },
+        { before: ['@hapi/yar'] }
+      )
+    }
+  }
+}

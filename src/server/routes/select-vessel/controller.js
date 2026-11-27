@@ -29,7 +29,7 @@ function viewContext(request, vessels, overrides = {}) {
     pageTitle: pageHeading(),
     heading: pageHeading(),
     reference: getJourneyState(request).reference,
-    navigation: buildNavigation(request, { showWhenSignedOut: true }),
+    navigation: buildNavigation(request),
     backLink: {
       href: '/records',
       text: t('header.back')

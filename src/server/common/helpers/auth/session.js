@@ -1,6 +1,8 @@
-// Minimal simulated sign-in flag backed by the @hapi/yar session cache — no real
-// authentication, tokens or passwords. Frontend walkthrough only.
+// Signed-in state backed by the server-side @hapi/yar session cache. Only the
+// signed-in flag, sign-in time and basic account details are stored here.
 const SIGNED_IN_SESSION_KEY = 'signedIn'
+const SIGNED_IN_AT_SESSION_KEY = 'signedInAt'
+const ACCOUNT_SESSION_KEY = 'signedInAccount'
 
 // @hapi/yar only initialises request.yar (assigning a session id) during its
 // onPreAuth lifecycle step, which is skipped for synthetic responses such as an
@@ -14,8 +16,28 @@ export function isSignedIn(request) {
   return request.yar.get(SIGNED_IN_SESSION_KEY) === true
 }
 
-export function signIn(request) {
+export function signIn(request, account, method = 'native') {
+  if (account) {
+    // A new session id on authentication prevents session fixation.
+    request.yar.reset()
+    request.yar.set(ACCOUNT_SESSION_KEY, {
+      userId: account.userId ?? null,
+      email: account.email,
+      name: account.name,
+      method
+    })
+  }
   request.yar.set(SIGNED_IN_SESSION_KEY, true)
+  request.yar.set(SIGNED_IN_AT_SESSION_KEY, Date.now())
+}
+
+export function getSignedInAccount(request) {
+  return isSignedIn(request) ? request.yar.get(ACCOUNT_SESSION_KEY) : null
+}
+
+export function isSessionExpired(request, maxAgeMs, now = Date.now()) {
+  const signedInAt = request.yar.get(SIGNED_IN_AT_SESSION_KEY)
+  return typeof signedInAt !== 'number' || now - signedInAt > maxAgeMs
 }
 
 // Clears the signed-in flag and the in-progress catch-record journey state.

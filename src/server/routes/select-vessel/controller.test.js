@@ -89,7 +89,7 @@ describe('#selectVesselController', () => {
     expect($('label').eq(1).text().trim()).toBe('SEA SPRAY')
   })
 
-  test('Should display Home, Your account, and Sign out navigation links', async () => {
+  test('Should NOT display Home, Your account or Sign out when signed out', async () => {
     const { result } = await server.inject({
       method: 'GET',
       url: '/select-vessel'
@@ -97,9 +97,9 @@ describe('#selectVesselController', () => {
     const $ = load(result)
     const navigation = $('.govuk-service-navigation').text()
 
-    expect(navigation).toContain('Home')
-    expect(navigation).toContain('Your account')
-    expect(navigation).toContain('Sign out')
+    expect(navigation).not.toContain('Home')
+    expect(navigation).not.toContain('Your account')
+    expect(navigation).not.toContain('Sign out')
   })
 
   test('Should render the Save and continue button', async () => {
