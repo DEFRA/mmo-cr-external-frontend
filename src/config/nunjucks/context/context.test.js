@@ -87,6 +87,17 @@ describe('context and cache', () => {
         expect(url.searchParams.get('lang')).toBe('cy')
       })
 
+      test('Should preserve port journey step params in the language link', () => {
+        const result = contextImport.context({
+          ...mockRequest,
+          path: '/add-port',
+          query: { for: 'departure', entry: '1' }
+        })
+        expect(result.languageToggle.href).toBe(
+          '/add-port?for=departure&entry=1&lang=cy'
+        )
+      })
+
       test('Should offer English when the request is in Welsh', () => {
         const result = contextImport.context({
           ...mockRequest,

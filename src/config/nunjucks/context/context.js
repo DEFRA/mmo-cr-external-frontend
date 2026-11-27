@@ -16,15 +16,20 @@ const manifestPath = path.join(
 
 let viteManifest
 
-// Links to the same page in the other language, keeping the journey context (gear being
-// edited, return-to-review path). The i18n plugin stores the choice and strips ?lang.
+// Links to the same page in the other language, keeping all journey query params (port step,
+// gear being edited, return-to-review path, etc.). The i18n plugin stores the choice and strips ?lang.
 function buildLanguageToggle(request, lang) {
   const currentPath = request?.path ?? '/'
   const otherLang = lang === 'cy' ? 'en' : 'cy'
   const params = new URLSearchParams()
-  for (const key of ['gearId', 'return']) {
-    if (typeof request?.query?.[key] === 'string') {
-      params.set(key, request.query[key])
+  for (const [key, value] of Object.entries(request?.query ?? {})) {
+    if (key === 'lang') {
+      continue
+    }
+    for (const item of [value].flat()) {
+      if (typeof item === 'string') {
+        params.append(key, item)
+      }
     }
   }
   params.set('lang', otherLang)
